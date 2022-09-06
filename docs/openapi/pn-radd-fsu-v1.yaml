@@ -1,0 +1,324 @@
+openapi: 3.0.1
+info:
+  title: PN Radd Fsu u-service
+  description: Documentation APIs v1.0
+  version: '1.0'
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+
+tags:
+  - name: documentInquiry
+    description: API di interrogazione per la verifica presenza di  atti e attestazioni opponibili a terzi o avvisi di avvenuta ricezione.
+  - name: documentUpload
+    description: API caricamento file.
+  - name: transactionManagement
+    description: API di gestione della transazione.
+
+paths:
+  /act/inquiry:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: '#/components/parameters/recipientTaxId'
+      - $ref: '#/components/parameters/recipientType'
+      - $ref: '#/components/parameters/qrCode'
+    get:
+      tags:
+        - documentInquiry
+      operationId: actInquiry
+      description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActInquiryResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    ActInquiryResponse:
+      description: Response di verifica presenza atto ed eventuali attestazione opponibili a terzi
+      type: object
+      properties:
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ActInquiryResponseStatus'
+    AORInquiryResponse:
+      description: Response di verifica presenza AAR.
+      type: object
+      properties:
+        result:
+          type: boolean
+          example: true
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+    ActStartTransactionRequest:
+      description: Richiesta  di completamento operazione
+      required:
+        - qrCode
+      allOf:
+        - $ref: '#/components/schemas/AorStartTransactionRequest'
+      properties:
+        qrCode:
+          type: string
+
+    StartTransactionResponse:
+      description: Response alla richiesta di avvio della transazione
+      type: object
+      properties:
+        urlList:
+          type: array
+          items:
+            type: string
+        status:
+          $ref: '#/components/schemas/StartTransactionResponseStatus'
+
+    AorStartTransactionRequest:
+      description: Richiesta  di completamento operazione
+      type: object
+      required:
+        - versionToken
+        - fileKey
+        - operationId
+        - recipientTaxId
+        - checksum
+      properties:
+        versionToken:
+          type: string
+        fileKey:
+          type: string
+        operationId:
+          type: string
+        recipientTaxId:
+          type: string
+          example: "TNTGTR76E21H751S"
+        recipientType:
+          type: string
+          enum: ["PF", "PG"]
+          example: "PF"
+        delegateTaxId:
+          type: string
+          example: "RFRGRZ66E21H751B"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di completamento della transazione,  espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+        checksum:
+          type: string
+          example: "YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo="
+          description: Checksum SHA256 del file caricato nella chiamata di documetUpload, esepresso in base64
+    CompleteTransactionRequest:
+      description: Richiesta  di chiusura della transazione
+      type: object
+      required:
+        - operationId
+        - operationDate
+      properties:
+        operationId:
+          type: string
+          example: "2bb5c29e0cf411ed861d0242ac120002"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di completamento della transazione,  espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+    CompleteTransactionResponse:
+      description: Response alla richiesta di chiusura della transazione
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionResponseStatus'
+
+    AbortTransactionRequest:
+      description: Richiesta  di cancellazione della transazione
+      type: object
+      required:
+        - operationId
+        - operationDate
+      properties:
+        operationId:
+          type: string
+          example: "2bb5c29e0cf411ed861d0242ac120002"
+        reason:
+          type: string
+          default: "abort"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di annullamento della transazione,  espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+    AbortTransactionResponse:
+      description: Response alla richiesta di chiusura della transazione
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionResponseStatus'
+
+    ResponseStatus:
+      description: Stato della response
+      type: object
+      properties:
+        code:
+          description: |
+            Return code.
+            * 0 -> OK
+            * 99 -> KO
+          type: number
+          enum: [0, 99]
+        message:
+          type: string
+          example: OK
+
+    StartTransactionResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 99 -> KO
+                * 2 -> NotReady
+              type: number
+              enum: [2]
+            retryAfter:
+              description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
+              type: number
+              example: 670
+
+
+    TransactionResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK (Anche in caso di  chiamata successiva con identici parametri)
+                * 1 -> Transazione inesistente
+                * 2 -> Transazione già completata (Messaggio di errore differente se già completata per chiamata a complete piuttosto che abort)
+                * 99 -> KO
+              type: number
+              enum: [1,2]
+
+    DocumentUploadRequest:
+      description: Richiesta di upload verso PagoPA
+      type: object
+      required:
+        - operationId
+        - contentType
+      properties:
+        bundleId:
+          type: string
+          example: "TBD"
+          description: Concatenazione di frazionario-pdl-progressivoPDL-timestamp
+        contentType:
+          type: string
+          example: "application/gzip"
+    DocumentUploadResponse:
+      description: Response della Richiesta di upload
+      type: object
+      properties:
+        url:
+          type: string
+          example: "https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host"
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+
+    ActInquiryResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 1 -> QrCode/CF non valido/i
+                * 2 -> Documenti non più disponibili
+                * 3 -> Stampa già eseguita
+                * 99 -> KO
+              type: number
+              enum: [1,2,3]
+
+  parameters:
+    uid:
+      name: uid
+      description: Identificativo del client giustapposizione dei campi frazionario-pdl-timestamp
+      in: header
+      required: true
+      schema:
+        type: string
+      example:
+    recipientTaxId:
+      name: recipientTaxId
+      description: Codice Fiscale Destinatario
+      in: query
+      required: true
+      schema:
+        type: string
+      example: TNTGTR76E21H751S
+    recipientType:
+      name: recipientType
+      description: Sigla, Persona fisica o giuridica
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: ["PF", "PG"]
+      example: PF
+    delegateTaxId:
+      name: delegateTaxId
+      description: Codice Fiscale Delegato
+      in: query
+      schema:
+        type: string
+      example: TNTGTR76E21H751S
+    qrCode:
+      name: qrCode
+      description: Qr Code presente sull'avviso di Avvenuta ricezione
+      in: query
+      required: true
+      schema:
+        type: string
+      example: "TBD"
+
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized
+
+
+  securitySchemes:
+    APIKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key

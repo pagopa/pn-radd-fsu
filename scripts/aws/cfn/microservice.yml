@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Example microservice deploy'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
+      experimental environments without crash official development environment'
+
+  AlarmSNSTopicArn:
+    Type: String
+    Description: ARN of alarm topic
+
+   #ApiDnsName:
+   #  Type: String
+   #  Description: 'The DNS name used for B2B rest API.'
+
+  WebApiDnsName:
+    Type: String
+    Description: 'The DNS name used for WEB rest API.'
+  
+  CorsAllowedDomains:
+    Type: String
+    Description: 'Comma separated list of domains allowed to make cross origin request'
+
+  ContainerImageUri:
+    Type: String
+    Description: 'Exact container image URI with full repository and image digest'
+
+  MicroserviceNumber:
+    Type: Number
+    Description: 'Disambiguation useful for load balancer rules'
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
+  ECSClusterName:
+    Type: String
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  SubnetsIds:
+    Type: String
+    Description: 'subnets ids comma separated list. Where to deploy the microservice'
+
+  VpcId:
+    Type: String
+    Description: 'VpcId where the microservice is going to be deployed'
+  
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: 'Default security group required by infrastructure'
+
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
+
+  ApplicationLoadBalancerDomain:
+    Type: String
+    Description: 'Base URL of the load balancer where the service is going to be reachable'
+
+  NetworkLoadBalancerLink:
+    Type: String
+    Description: 'network load balancer link for API-GW'
+
+  RaddTransactionDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing radd transaction'
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+Resources:
+
+  # PN-Radd-Fsu microservice
+  RaddMicroservice:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-fsu'
+        CpuValue: 1024
+        MemoryAmount: 2GB
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        ContainerImageURI: !Sub '${ContainerImageUri}'
+        ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
+        ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
+        ContainerEnvEntry3: !Sub 'AWS_DYNAMODB_TABLE=${RaddTransactionDynamoTableName}'
+        ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=https://14ej9p2krd.execute-api.eu-south-1.amazonaws.com'
+        MappedPaths: '/radd/*,/radd-private/*'
+        ECSClusterName: !Ref ECSClusterName
+        Subnets: !Ref SubnetsIds
+        VpcId: !Ref VpcId
+        EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadbalancerRulePriority: !Ref MicroserviceNumber
+
+  # Grant operational rights to PN-RADD microservice
+  RaddMicroserviceTaskPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${ProjectName}-radd-fsu-CustomTaskPolicy'
+      Roles:
+        - !GetAtt RaddMicroservice.Outputs.TaskRoleName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:ExecuteTransaction
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+              - dynamodb:Query
+              - dynamodb:TransactGetItems
+              - dynamodb:TransactWriteItems
+              - dynamodb:UpdateItem
+            Resource:
+              - !Sub "${RaddTransactionDynamoTableName}"

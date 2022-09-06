@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Some storage with input and output
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nome dell'ambiente destinazione
+
+  # Unused but required by CD pipeline
+  MicroserviceNumber:
+    Type: Number
+    Description: An unique number that identify the microservice inside the ECS cluster.
+
+  # Unused but required by CD pipeline
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: URL da cui caricare i frammenti di template di infrastruttura
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+Resources:
+
+  ## KINESIS SOURCE STREAM FOR Radd Change Data Capture
+  RaddCdcKinesis:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+      Parameters:
+        StreamName: !Sub '${ProjectName}-radd-fsu-cdc-stream'
+        StreamRetentionPeriodHours: 24
+
+  RaddTransactionDynamoTableName:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-radd-transaction'
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5" 
+      GlobalSecondaryIndexes:
+        -
+          IndexName: "delegate-state-gsi"
+          KeySchema:
+            -
+              AttributeName: "s_delegate"
+              KeyType: "HASH"
+            - 
+              AttributeName: "i_state"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      KinesisStreamSpecification:
+        StreamArn: !GetAtt RaddCdcKinesis.Outputs.KinesisStreamArn
+      StreamSpecification: 
+        StreamViewType: NEW_IMAGE
+
+Outputs:
+  RaddTransactionDynamoTableName:
+    Description: Name of dynamodb table containing radd transaction
+    Value: !Ref RaddTransactionDynamoTableName

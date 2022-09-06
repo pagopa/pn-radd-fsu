@@ -90,7 +90,7 @@ Resources:
         ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=https://14ej9p2krd.execute-api.eu-south-1.amazonaws.com'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

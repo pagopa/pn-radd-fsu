@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Example microservice deploy'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
+      experimental environments without crash official development environment'
+
+  AlarmSNSTopicArn:
+    Type: String
+    Description: ARN of alarm topic
+
+   #ApiDnsName:
+   #  Type: String
+   #  Description: 'The DNS name used for B2B rest API.'
+
+  WebApiDnsName:
+    Type: String
+    Description: 'The DNS name used for WEB rest API.'
+  
+  CorsAllowedDomains:
+    Type: String
+    Description: 'Comma separated list of domains allowed to make cross origin request'
+
+  ContainerImageUri:
+    Type: String
+    Description: 'Exact container image URI with full repository and image digest'
+
+  MicroserviceNumber:
+    Type: Number
+    Description: 'Disambiguation useful for load balancer rules'
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
+  ECSClusterName:
+    Type: String
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  SubnetsIds:
+    Type: String
+    Description: 'subnets ids comma separated list. Where to deploy the microservice'
+
+  VpcId:
+    Type: String
+    Description: 'VpcId where the microservice is going to be deployed'
+  
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: 'Default security group required by infrastructure'
+
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
+
+  ApplicationLoadBalancerDomain:
+    Type: String
+    Description: 'Base URL of the load balancer where the service is going to be reachable'
+
+  NetworkLoadBalancerLink:
+    Type: String
+    Description: 'network load balancer link for API-GW'
+
+  MandatesDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing mandates'
+
+  MandatesDynamoTableHistoryName:
+    Type: String
+    Description: 'Name of dynamodb table containing mandates history'
+
+  MandatesDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing mandates'
+
+  MandatesDynamoTableHistoryArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing mandates history'
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+Resources:
+
+  # PN-Mandate microservice
+  MandateMicroservice:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-mandate'
+        CpuValue: 1024
+        MemoryAmount: 2GB
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        ContainerImageURI: !Sub '${ContainerImageUri}'
+        ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
+        ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
+        ContainerEnvEntry3: !Sub 'AWS_DYNAMODB_TABLE=${MandatesDynamoTableName}'
+        ContainerEnvEntry4: !Sub 'AWS_DYNAMODB_TABLE_HISTORY=${MandatesDynamoTableHistoryName}'
+        ContainerEnvEntry5: 'PN_MANDATE_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
+        ContainerEnvEntry6: !Sub 'PN_MANDATE_CLIENT_INFOPA_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        MappedPaths: '/mandate/*,/mandate-private/*'
+        ECSClusterName: !Ref ECSClusterName
+        Subnets: !Ref SubnetsIds
+        VpcId: !Ref VpcId
+        EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadbalancerRulePriority: !Ref MicroserviceNumber
+
+  # Grant operational rights to PN-Mandate microservice
+  MandateMicroserviceTaskPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${ProjectName}-mandate-CustomTaskPolicy'
+      Roles:
+        - !GetAtt MandateMicroservice.Outputs.TaskRoleName
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:ExecuteTransaction
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+              - dynamodb:Query
+              - dynamodb:TransactGetItems
+              - dynamodb:TransactWriteItems
+              - dynamodb:UpdateItem
+            Resource:
+              - !Sub "${MandatesDynamoTableArn}"
+              - !Sub "${MandatesDynamoTableArn}/*"
+              - !Sub "${MandatesDynamoTableHistoryArn}"
+
+  # Expose PN-Mandate microservice public API with API-GW for WEB usage
+  MandateMicroservicePublicWebAPI:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-mandate'
+        IntendedUsage: WEB
+        DnsName: !Ref WebApiDnsName
+        ProjectName: !Ref ProjectName
+        ServiceApiPath: 'mandate'
+        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  MandateMicroservicePublicWebApiWaf:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-waf-acl.yaml"
+      Parameters:
+        WAFName: !Sub '${ProjectName}-mandate-web'
+        WAFRuleVendors: "AWS, AWS, AWS, AWS"
+        WAFRuleNames: "AWSManagedRulesBotControlRuleSet, AWSManagedRulesKnownBadInputsRuleSet, AWSManagedRulesAdminProtectionRuleSet, AWSManagedRulesCommonRuleSet"
+        APIGatewayARNs: !GetAtt MandateMicroservicePublicWebAPI.Outputs.APIGatewayARN

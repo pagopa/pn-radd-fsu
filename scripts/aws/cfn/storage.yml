@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Some storage with input and output
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nome dell'ambiente destinazione
+
+  # Unused but required by CD pipeline
+  MicroserviceNumber:
+    Type: Number
+    Description: An unique number that identify the microservice inside the ECS cluster.
+
+  # Unused but required by CD pipeline
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: URL da cui caricare i frammenti di template di infrastruttura
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+Resources:
+
+  ## KINESIS SOURCE STREAM FOR MANDATE Change Data Capture
+  MandateCdcKinesis:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+      Parameters:
+        StreamName: !Sub '${ProjectName}-mandate-cdc-stream'
+        StreamRetentionPeriodHours: 24
+  
+  MandatesDynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-Mandate'
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "sk"
+          AttributeType: "S"
+        - AttributeName: "s_delegate"
+          AttributeType: "S"
+        - AttributeName: "i_state"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+        - AttributeName: "sk"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5" 
+      GlobalSecondaryIndexes:
+        -
+          IndexName: "delegate-state-gsi"
+          KeySchema:
+            -
+              AttributeName: "s_delegate"
+              KeyType: "HASH"
+            - 
+              AttributeName: "i_state"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      KinesisStreamSpecification:
+        StreamArn: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamArn
+      StreamSpecification: 
+        StreamViewType: NEW_IMAGE
+     
+
+  MandatesDynamoTableHistory:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-MandateHistory'
+      AttributeDefinitions:
+        - AttributeName: "pk"
+          AttributeType: "S"
+        - AttributeName: "sk"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "pk"
+          KeyType: "HASH"
+        - AttributeName: "sk"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+
+Outputs:
+  MandatesDynamoTableName:
+    Description: Name of dynamodb table containing mandates
+    Value: !Ref MandatesDynamoTable
+
+  MandatesDynamoTableHistoryName:
+    Description: Name of dynamodb table containing mandates history
+    Value: !Ref MandatesDynamoTableHistory
+
+  MandatesDynamoTableArn:
+    Description: ARN of dynamodb table containing mandates
+    Value: !Sub '${MandatesDynamoTable.Arn}'
+
+  MandatesDynamoTableHistoryArn:
+    Description: ARN of dynamodb table containing mandates history
+    Value: !Sub '${MandatesDynamoTableHistory.Arn}'
+
+  # Mandate Change Data Capture kinesis stream
+  MandateCdcKinesisStreamName:
+    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamName
+    Description: kinesis stream name for mandate dynamo table
+  MandateCdcKinesisStreamArn:
+    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamArn
+    Description: kinesis stream Arn for mandate dynamo table
+  MandateCdcKinesisKeyArn:
+    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamKeyArn
+    Description: KMS key arn for mandate stream decryption
+  MandateCdcKinesisStreamReadOnlyRoleArn:
+    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamReadOnlyRoleArn
+    Description: KMS key arn for mandate stream decryption

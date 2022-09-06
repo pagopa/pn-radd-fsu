@@ -22,19 +22,19 @@ Parameters:
 
 Resources:
 
-  ## KINESIS SOURCE STREAM FOR MANDATE Change Data Capture
-  MandateCdcKinesis:
+  ## KINESIS SOURCE STREAM FOR Radd Change Data Capture
+  RaddCdcKinesis:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
       Parameters:
-        StreamName: !Sub '${ProjectName}-mandate-cdc-stream'
+        StreamName: !Sub '${ProjectName}-radd-fsu-cdc-stream'
         StreamRetentionPeriodHours: 24
-  
-  MandatesDynamoTable:
+
+  RaddTransactionDynamoTableName:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub '${ProjectName}-Mandate'
+      TableName: !Sub '${ProjectName}-radd-fsu'
       AttributeDefinitions:
         - AttributeName: "pk"
           AttributeType: "S"
@@ -68,56 +68,11 @@ Resources:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
       KinesisStreamSpecification:
-        StreamArn: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamArn
+        StreamArn: !GetAtt RaddCdcKinesis.Outputs.KinesisStreamArn
       StreamSpecification: 
         StreamViewType: NEW_IMAGE
-     
-
-  MandatesDynamoTableHistory:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub '${ProjectName}-MandateHistory'
-      AttributeDefinitions:
-        - AttributeName: "pk"
-          AttributeType: "S"
-        - AttributeName: "sk"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "pk"
-          KeyType: "HASH"
-        - AttributeName: "sk"
-          KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
 
 Outputs:
-  MandatesDynamoTableName:
-    Description: Name of dynamodb table containing mandates
-    Value: !Ref MandatesDynamoTable
-
-  MandatesDynamoTableHistoryName:
-    Description: Name of dynamodb table containing mandates history
-    Value: !Ref MandatesDynamoTableHistory
-
-  MandatesDynamoTableArn:
-    Description: ARN of dynamodb table containing mandates
-    Value: !Sub '${MandatesDynamoTable.Arn}'
-
-  MandatesDynamoTableHistoryArn:
-    Description: ARN of dynamodb table containing mandates history
-    Value: !Sub '${MandatesDynamoTableHistory.Arn}'
-
-  # Mandate Change Data Capture kinesis stream
-  MandateCdcKinesisStreamName:
-    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamName
-    Description: kinesis stream name for mandate dynamo table
-  MandateCdcKinesisStreamArn:
-    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamArn
-    Description: kinesis stream Arn for mandate dynamo table
-  MandateCdcKinesisKeyArn:
-    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamKeyArn
-    Description: KMS key arn for mandate stream decryption
-  MandateCdcKinesisStreamReadOnlyRoleArn:
-    Value: !GetAtt MandateCdcKinesis.Outputs.KinesisStreamReadOnlyRoleArn
-    Description: KMS key arn for mandate stream decryption
+  RaddTransactionDynamoTableName:
+    Description: Name of dynamodb table containing radd transaction
+    Value: !Ref RaddTransactionDynamoTableName

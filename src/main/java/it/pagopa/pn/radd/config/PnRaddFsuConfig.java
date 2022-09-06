@@ -14,6 +14,6 @@ import org.springframework.context.annotation.Import;
 @Import(SharedAutoConfiguration.class)
 public class PnRaddFsuConfig {
 
-    private String clientInfopaBasepath;
+    private String clientDeliveryBasepath;
     private String clientDatavaultBasepath;
 }

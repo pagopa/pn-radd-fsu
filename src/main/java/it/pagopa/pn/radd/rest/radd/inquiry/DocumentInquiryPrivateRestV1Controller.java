@@ -10,11 +10,11 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class DocumentInquiryRestV1Controller implements DocumentInquiryApi {
+public class DocumentInquiryPrivateRestV1Controller implements DocumentInquiryApi {
 
     DocumentInquiryService documentInquiryService;
 
-    public DocumentInquiryRestV1Controller(DocumentInquiryService documentInquiryService) {
+    public DocumentInquiryPrivateRestV1Controller(DocumentInquiryService documentInquiryService) {
         this.documentInquiryService = documentInquiryService;
     }
 

@@ -2,7 +2,6 @@ package it.pagopa.pn.radd.services.radd.inquiry.v1;
 
 import it.pagopa.pn.radd.middleware.db.DocumentInquiryDao;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;

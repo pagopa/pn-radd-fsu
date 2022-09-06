@@ -63,21 +63,9 @@ Parameters:
     Type: String
     Description: 'network load balancer link for API-GW'
 
-  MandatesDynamoTableName:
+  RaddTransactionDynamoTableName:
     Type: String
-    Description: 'Name of dynamodb table containing mandates'
-
-  MandatesDynamoTableHistoryName:
-    Type: String
-    Description: 'Name of dynamodb table containing mandates history'
-
-  MandatesDynamoTableArn:
-    Type: String
-    Description: 'ARN of dynamodb table containing mandates'
-
-  MandatesDynamoTableHistoryArn:
-    Type: String
-    Description: 'ARN of dynamodb table containing mandates history'
+    Description: 'Name of dynamodb table containing radd transaction'
   
   Version:
     Type: String
@@ -85,24 +73,25 @@ Parameters:
 
 Resources:
 
-  # PN-Mandate microservice
-  MandateMicroservice:
+  # PN-Radd-Fsu microservice
+  RaddMicroservice:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-mandate'
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-fsu'
         CpuValue: 1024
         MemoryAmount: 2GB
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry3: !Sub 'AWS_DYNAMODB_TABLE=${MandatesDynamoTableName}'
-        ContainerEnvEntry4: !Sub 'AWS_DYNAMODB_TABLE_HISTORY=${MandatesDynamoTableHistoryName}'
-        ContainerEnvEntry5: 'PN_MANDATE_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
-        ContainerEnvEntry6: !Sub 'PN_MANDATE_CLIENT_INFOPA_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        MappedPaths: '/mandate/*,/mandate-private/*'
+        ContainerEnvEntry3: !Sub 'AWS_DYNAMODB_TABLE=${RaddTransactionDynamoTableName}'
+        ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -110,13 +99,13 @@ Resources:
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
 
-  # Grant operational rights to PN-Mandate microservice
-  MandateMicroserviceTaskPolicy:
+  # Grant operational rights to PN-RADD microservice
+  RaddMicroserviceTaskPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub '${ProjectName}-mandate-CustomTaskPolicy'
+      PolicyName: !Sub '${ProjectName}-radd-fsu-CustomTaskPolicy'
       Roles:
-        - !GetAtt MandateMicroservice.Outputs.TaskRoleName
+        - !GetAtt RaddMicroservice.Outputs.TaskRoleName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -133,30 +122,28 @@ Resources:
               - dynamodb:TransactWriteItems
               - dynamodb:UpdateItem
             Resource:
-              - !Sub "${MandatesDynamoTableArn}"
-              - !Sub "${MandatesDynamoTableArn}/*"
-              - !Sub "${MandatesDynamoTableHistoryArn}"
+              - !Sub "${RaddTransactionDynamoTableName}"
 
-  # Expose PN-Mandate microservice public API with API-GW for WEB usage
-  MandateMicroservicePublicWebAPI:
+  # Expose PN-Radd-Fsu microservice public API with API-GW for WEB usage
+  RaddMicroservicePublicWebAPI:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-mandate'
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-fsu'
         IntendedUsage: WEB
         DnsName: !Ref WebApiDnsName
         ProjectName: !Ref ProjectName
-        ServiceApiPath: 'mandate'
+        ServiceApiPath: 'radd'
         NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
         ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-  MandateMicroservicePublicWebApiWaf:
+  RaddMicroservicePublicWebApiWaf:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-waf-acl.yaml"
       Parameters:
-        WAFName: !Sub '${ProjectName}-mandate-web'
+        WAFName: !Sub '${ProjectName}-radd-fsu-web'
         WAFRuleVendors: "AWS, AWS, AWS, AWS"
         WAFRuleNames: "AWSManagedRulesBotControlRuleSet, AWSManagedRulesKnownBadInputsRuleSet, AWSManagedRulesAdminProtectionRuleSet, AWSManagedRulesCommonRuleSet"
-        APIGatewayARNs: !GetAtt MandateMicroservicePublicWebAPI.Outputs.APIGatewayARN
+        APIGatewayARNs: !GetAtt RaddMicroservicePublicWebAPI.Outputs.APIGatewayARN

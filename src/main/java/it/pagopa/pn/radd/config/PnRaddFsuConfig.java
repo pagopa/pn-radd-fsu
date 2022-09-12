@@ -15,5 +15,6 @@ import org.springframework.context.annotation.Import;
 public class PnRaddFsuConfig {
 
     private String clientDeliveryBasepath;
+    private String clientDeliveryPushBasepath;
     private String clientDatavaultBasepath;
 }

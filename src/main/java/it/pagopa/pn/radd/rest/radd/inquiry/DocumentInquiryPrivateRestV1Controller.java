@@ -20,6 +20,6 @@ public class DocumentInquiryPrivateRestV1Controller implements DocumentInquiryAp
 
     @Override
     public Mono<ResponseEntity<ActInquiryResponse>> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode, final ServerWebExchange exchange) {
-        return documentInquiryService.actInquiry().map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return documentInquiryService.actInquiry(uid, recipientTaxId, recipientType, qrCode).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

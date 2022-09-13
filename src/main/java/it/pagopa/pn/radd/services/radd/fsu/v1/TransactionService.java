@@ -1,4 +1,4 @@
-package it.pagopa.pn.radd.services.radd.inquiry.v1;
+package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

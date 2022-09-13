@@ -1,8 +1,7 @@
-package it.pagopa.pn.radd.rest.radd.inquiry;
+package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.api.TransactionManagementApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AorStartTransactionRequest;
 import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ServerWebExchange;

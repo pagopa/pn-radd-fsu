@@ -1,4 +1,4 @@
-package it.pagopa.pn.radd.services.radd.inquiry.v1;
+package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.middleware.db.DocumentInquiryDao;

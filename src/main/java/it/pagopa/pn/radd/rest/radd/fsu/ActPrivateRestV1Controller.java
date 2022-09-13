@@ -1,8 +1,8 @@
-package it.pagopa.pn.radd.rest.radd.inquiry;
+package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.api.DocumentInquiryApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponse;
-import it.pagopa.pn.radd.services.radd.inquiry.v1.ActService;
+import it.pagopa.pn.radd.services.radd.fsu.v1.ActService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;

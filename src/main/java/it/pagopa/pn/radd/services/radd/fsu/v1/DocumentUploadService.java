@@ -4,7 +4,9 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.Fi
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -19,16 +21,28 @@ public class DocumentUploadService {
         this.pnSafeStorageClient = pnSafeStorageClient;
     }
 
-    public Mono<DocumentUploadResponse> createFile(String contentType, Mono<DocumentUploadRequest> documentUploadRequest) {
+    public Mono<DocumentUploadResponse> createFile(String uid, Mono<DocumentUploadRequest> documentUploadRequest) {
         // retrieve presigned url
-        return Mono.just(new DocumentUploadResponse())
-                .zipWith(pnSafeStorageClient.createFile(contentType, "documentUploadRequest."))
+        return documentUploadRequest
+                .map(m -> {
+                    if (m == null || StringUtils.isEmpty(m.getContentType()) || StringUtils.isEmpty(m.getBundleId()))
+                        // eccezione
+                        log.info("");
+                    return m;
+                })
+                .flatMap(value -> {
+                    return pnSafeStorageClient.createFile(value.getContentType(), value.getBundleId());
+                })
                 .map(item -> {
-                    FileCreationResponseDto response = item.getT2();
-                    log.info("Response iun : {}", response.getUploadUrl());
-                    return item.getT1();
+                    FileCreationResponseDto response = item;
+                    log.info("Response presigned url : {}", response.getUploadUrl());
+                    DocumentUploadResponse resp = new DocumentUploadResponse();
+                    resp.setUrl(item.getUploadUrl()) ;
+                    ResponseStatus status = new ResponseStatus();
+                    status.code(ResponseStatus.CodeEnum.NUMBER_0);
+                    resp.setStatus(status);
+                    return resp;
                 });
-
     }
 
 }

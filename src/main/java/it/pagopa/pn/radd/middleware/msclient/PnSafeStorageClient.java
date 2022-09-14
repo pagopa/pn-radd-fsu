@@ -6,6 +6,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.Fi
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -15,6 +16,7 @@ import java.net.ConnectException;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
+@Slf4j
 @Component
 public class PnSafeStorageClient extends BaseClient {
     private FileUploadApi fileUploadApi;
@@ -34,6 +36,7 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<FileCreationResponseDto> createFile(String contentType, String operationId){
+        log.info(String.format("Req params: %s %s", contentType, operationId));
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(PRELOADED_STATUS);
         request.setContentType(contentType);

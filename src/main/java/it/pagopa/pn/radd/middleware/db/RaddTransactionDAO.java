@@ -98,7 +98,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .builder()
                 .select(Select.COUNT)
                 .tableName(table)
-                .keyConditionExpression(RaddTransactionEntity.COL_PK + " = :iun AND begins_with(" + RaddTransactionEntity.COL_SK + ", :idPractice)")
+                .keyConditionExpression(RaddTransactionEntity.COL_PK + " = :iun AND " + RaddTransactionEntity.COL_SK + ", :idPractice)")
                 .expressionAttributeValues(expressionValues)
                 .build();
 

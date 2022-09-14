@@ -21,20 +21,19 @@ public class TransactionService {
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
         log.info("Service");
 
-        return request.map(m -> {
-            if (m == null){
-                log.info("Request is null");
-            }
-            log.info("M not null");
-            return m;
-        }).flatMap(value -> pnDataVaultClient.getEnsureFiscalCode(value.getRecipientTaxId()))
-                .map(response -> {
-                    log.info("Code ensure : {}", response);
-                    StartTransactionResponse startTransactionResponse = new StartTransactionResponse();
-                    StartTransactionResponseStatus startTransactionResponseStatus = new StartTransactionResponseStatus();
-                    startTransactionResponseStatus.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
-                    startTransactionResponse.setStatus(startTransactionResponseStatus);
-                    return startTransactionResponse;
-                });
+        return request.map(m-> {
+                if (m != null) log.info("M not null");
+                return m;
+            }).flatMap(item -> {
+                return pnDataVaultClient.getEnsureFiscalCode(item.getRecipientTaxId());
+            })
+            .map(response -> {
+                log.info("Code ensure : {}", response);
+                StartTransactionResponse startTransactionResponse = new StartTransactionResponse();
+                StartTransactionResponseStatus startTransactionResponseStatus = new StartTransactionResponseStatus();
+                startTransactionResponseStatus.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
+                startTransactionResponse.setStatus(startTransactionResponseStatus);
+                return startTransactionResponse;
+            });
     }
 }

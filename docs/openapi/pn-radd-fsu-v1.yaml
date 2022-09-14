@@ -22,6 +22,8 @@ tags:
     description: API caricamento file.
   - name: transactionManagement
     description: API di gestione della transazione.
+  - name: notificationInquiry
+    description: API di interrogazione delle notifiche.
 
 paths:
   /act/inquiry:
@@ -311,6 +313,59 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
+  /notification/{idPractice}:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/idPractice'
+    get:
+      tags:
+        - notificationInquiry
+      operationId: getTransaction
+      description: API utilizzata per il recupero di una transazione
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /notification/practices/{iun}:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/iun'
+    get:
+      tags:
+        - notificationInquiry
+      operationId: getPractices
+      description: API utilizzata per il recupero di transazioni per utente
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPracticesResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
 components:
   schemas:
     ActInquiryResponse:
@@ -525,6 +580,46 @@ components:
               type: number
               enum: [1,2,3]
 
+    NotificationPracticesResponse:
+      description: Id pratiche recuperate
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: string
+
+    NotificationResponse:
+      description: Risposta della notifica
+      type: object
+      properties:
+        iun:
+          type: string
+          example: "LJLH-GNTJ-DVXR-202209-J-1"
+        idPractice:
+          type: string
+          example: "asd1234"
+        fileKey:
+          type: string
+          example: "FL-23-KKL"
+        qrCode:
+          type: string
+          example: "FBD"
+        recipientTaxId:
+          type: string
+          example: "TNTGTR76E21H751S"
+        uid:
+          type: string
+          example: "uddHHHw123mk"
+        date:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        stateOperation:
+          type: string
+          example: "completed"
+
+
   parameters:
     uid:
       name: uid
@@ -566,6 +661,22 @@ components:
       schema:
         type: string
       example: "TBD"
+    idPractice:
+      name: idPractice
+      description: Id della pratica o operation id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "asd123"
+    iun:
+      name: iun
+      description: Identification code
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "LJLH-GNTJ-DVXR-202209-J-1"
 
   responses:
     Forbidden:

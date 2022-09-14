@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.middleware.db.DocumentInquiryDao;
+import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponse;
@@ -14,13 +14,13 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ActService {
 
-    private final DocumentInquiryDao documentInquiryDao;
+    private final RaddTransactionDAO raddTransactionDAO;
     private final PnDeliveryClient pnDeliveryClient;
     private final PnDeliveryPushClient pnDeliveryPushClient;
 
 
-    public ActService(DocumentInquiryDao documentInquiryDao, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient) {
-        this.documentInquiryDao = documentInquiryDao;
+    public ActService( RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient) {
+        this.raddTransactionDAO = raddTransactionDAO;
         this.pnDeliveryClient = pnDeliveryClient;
         this.pnDeliveryPushClient = pnDeliveryPushClient;
     }

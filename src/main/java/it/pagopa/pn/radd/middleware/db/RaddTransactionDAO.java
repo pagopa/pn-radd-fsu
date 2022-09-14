@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 @Repository
 @Slf4j
 @Import(PnAuditLogBuilder.class)
-public class DocumentInquiryDao extends BaseDao {
+public class RaddTransactionDAO extends BaseDao {
 
     private final PnAuditLogBuilder auditLogBuilder;
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
@@ -36,7 +36,7 @@ public class DocumentInquiryDao extends BaseDao {
     String table;
 
 
-    public DocumentInquiryDao(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
+    public RaddTransactionDAO(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                               DynamoDbAsyncClient dynamoDbAsyncClient,
                               AwsConfigs awsConfigs,
                               PnAuditLogBuilder pnAuditLogBuilder) {
@@ -58,7 +58,7 @@ public class DocumentInquiryDao extends BaseDao {
         logEvent.log();
 
         return Mono.fromFuture(
-                countMandateForDelegateAndDelegator(entity.getIun(), entity.getIdPractice())
+                        countTransactionIunIdPractice(entity.getIun(), entity.getIdPractice())
                         .thenCompose(total -> {
                             if (total == 0)
                             {
@@ -89,11 +89,7 @@ public class DocumentInquiryDao extends BaseDao {
     }
 
 
-    private CompletableFuture<Integer> countMandateForDelegateAndDelegator(String iun, String idPractice) {
-        // qui ho entrambi gli id, mi serve sapere se ho già una delega per la coppia delegante-delegato, in pending/attiva e non scaduta ovviamente.
-
-        // uso l'expression filter per filtrare le deleghe valide per il delegato
-        // si accetta il costo di leggere più righe per niente
+    public CompletableFuture<Integer> countTransactionIunIdPractice(String iun, String idPractice) {
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":iun",  AttributeValue.builder().s(iun).build());
         expressionValues.put(":idPractice",  AttributeValue.builder().s(idPractice).build());

@@ -2,8 +2,9 @@ package it.pagopa.pn.radd.rest.radd.fsu;
 
 
 import it.pagopa.pn.radd.rest.radd.v1.api.NotificationInquiryApi;
-import it.pagopa.pn.radd.rest.radd.v1.dto.NotificationPracticesResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.NotificationResponse;
+
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
 import it.pagopa.pn.radd.services.radd.fsu.v1.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +21,12 @@ public class NotificationRestV1Controller implements NotificationInquiryApi {
     }
 
     @Override
-    public Mono<ResponseEntity<NotificationResponse>> getTransaction(String idPractice, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<OperationResponse>> getTransaction(String idPractice, ServerWebExchange exchange) {
         return notificationService.getTransaction(idPractice).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<NotificationPracticesResponse>> getPractices(String iun, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<OperationsResponse>> getPractices(String iun, ServerWebExchange exchange) {
         return notificationService.getPracticesId(iun).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 

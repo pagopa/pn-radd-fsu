@@ -328,7 +328,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationResponse'
+                $ref: '#/components/schemas/OperationResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -357,7 +357,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationOperationsResponse'
+                $ref: '#/components/schemas/OperationsResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -584,7 +584,7 @@ components:
               type: number
               enum: [1,2,3]
 
-    NotificationOperationsResponse:
+    OperationsResponse:
       description: Id pratiche recuperate
       type: object
       properties:
@@ -595,9 +595,9 @@ components:
         result:
           type: boolean
         status:
-          $ref: '#/components/schemas/NotificationOperationsResponseStatus'
+          $ref: '#/components/schemas/OperationResponseStatus'
 
-    NotificationOperationsResponseStatus:
+    OperationResponseStatus:
       description: Stato della response
       allOf:
         - $ref: '#/components/schemas/ResponseStatus'
@@ -612,17 +612,17 @@ components:
               type: number
               enum: [1,2,3]
 
-    NotificationResponse:
+    OperationResponse:
       description: Risposta della notifica
       type: object
       properties:
         element:
-          $ref: '#/components/schemas/NotificationOperationDetailResponse'
+          $ref: '#/components/schemas/OperationDetailResponse'
         result:
           type: boolean
         status:
-          $ref: '#/components/schemas/NotificationOperationsResponseStatus'
-    NotificationOperationDetailResponse:
+          $ref: '#/components/schemas/OperationResponseStatus'
+    OperationDetailResponse:
       description: Stato della response
       type: object
       properties:

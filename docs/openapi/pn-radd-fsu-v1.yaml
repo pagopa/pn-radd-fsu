@@ -313,10 +313,10 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /notification/{idPractice}:
+  /operations/by-id/{operationId}:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
-      - $ref: '#/components/parameters/idPractice'
+      - $ref: '#/components/parameters/operationId'
     get:
       tags:
         - notificationInquiry
@@ -335,12 +335,14 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         403:
           $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
         405:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
 
-  /notification/practices/{iun}:
+  /operations/by-iun/{iun}:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/iun'
@@ -348,20 +350,22 @@ paths:
       tags:
         - notificationInquiry
       operationId: getPractices
-      description: API utilizzata per il recupero di transazioni per utente
+      description: API utilizzata per il recupero di tutte le pratiche associate ad uno iun
       responses:
         200:
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationPracticesResponse'
+                $ref: '#/components/schemas/NotificationOperationsResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
           $ref: '#/components/responses/Unauthorized'
         403:
           $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
         405:
           $ref: '#/components/responses/NotAllowed'
         500:
@@ -580,23 +584,58 @@ components:
               type: number
               enum: [1,2,3]
 
-    NotificationPracticesResponse:
+    NotificationOperationsResponse:
       description: Id pratiche recuperate
       type: object
       properties:
-        data:
+        operationIds:
           type: array
           items:
             type: string
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/NotificationOperationsResponseStatus'
+
+    NotificationOperationsResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 1 -> Nessun elemento associato
+                * 99 -> KO
+              type: number
+              enum: [1,2,3]
 
     NotificationResponse:
       description: Risposta della notifica
       type: object
       properties:
+        element:
+          $ref: '#/components/schemas/NotificationOperationDetailResponse'
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/NotificationOperationsResponseStatus'
+    NotificationOperationDetailResponse:
+      description: Stato della response
+      type: object
+      properties:
+        operationStatus:
+          type: string
+          example: "COMPLETED"
+        operationType:
+          type: string
+          example: "ACT"
         iun:
           type: string
           example: "LJLH-GNTJ-DVXR-202209-J-1"
-        idPractice:
+        operationId:
           type: string
           example: "asd1234"
         fileKey:
@@ -608,16 +647,20 @@ components:
         recipientTaxId:
           type: string
           example: "TNTGTR76E21H751S"
+        delegateTaxId:
+          type: string
+          example: "RFRGRZ66E21H751B"
         uid:
           type: string
           example: "uddHHHw123mk"
-        date:
+        operationStartDate:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
-        stateOperation:
+        operationEndDate:
           type: string
-          example: "completed"
+          format: date-time
+          example: 2017-07-21T18:00:28Z
 
 
   parameters:
@@ -661,9 +704,9 @@ components:
       schema:
         type: string
       example: "TBD"
-    idPractice:
-      name: idPractice
-      description: Id della pratica o operation id
+    operationId:
+      name: operationId
+      description: Id della pratica
       in: path
       required: true
       schema:

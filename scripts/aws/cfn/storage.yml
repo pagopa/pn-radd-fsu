@@ -36,8 +36,10 @@ Resources:
     Properties:
       TableName: !Sub '${ProjectName}-radd-transaction'
       AttributeDefinitions:
-        - AttributeName: "pk"
+        - AttributeName: "operationId"
           AttributeType: "S"
+        - AttributeName: "iun"
+            AttributeType: "S"
       KeySchema:
         - AttributeName: "pk"
           KeyType: "HASH"
@@ -46,14 +48,11 @@ Resources:
         WriteCapacityUnits: "5" 
       GlobalSecondaryIndexes:
         -
-          IndexName: "delegate-state-gsi"
+          IndexName: "iun-global"
           KeySchema:
             -
-              AttributeName: "s_delegate"
+              AttributeName: "iun"
               KeyType: "HASH"
-            - 
-              AttributeName: "i_state"
-              KeyType: "RANGE"
           Projection:
             ProjectionType: "ALL"
           ProvisionedThroughput:

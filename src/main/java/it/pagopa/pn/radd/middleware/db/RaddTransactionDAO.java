@@ -9,16 +9,13 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
+import software.amazon.awssdk.core.async.SdkPublisher;
+import software.amazon.awssdk.enhanced.dynamodb.*;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import software.amazon.awssdk.services.dynamodb.model.Select;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +29,7 @@ public class RaddTransactionDAO extends BaseDao {
     private final PnAuditLogBuilder auditLogBuilder;
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     DynamoDbAsyncClient dynamoDbAsyncClient;
-    DynamoDbAsyncTable<RaddTransactionEntity> mandateTable;
+    DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
     String table;
 
 
@@ -40,7 +37,7 @@ public class RaddTransactionDAO extends BaseDao {
                               DynamoDbAsyncClient dynamoDbAsyncClient,
                               AwsConfigs awsConfigs,
                               PnAuditLogBuilder pnAuditLogBuilder) {
-        this.mandateTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbTable(), TableSchema.fromBean(RaddTransactionEntity.class));
+        this.raddTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbTable(), TableSchema.fromBean(RaddTransactionEntity.class));
         this.table = awsConfigs.getDynamodbTable();
         this.dynamoDbAsyncClient = dynamoDbAsyncClient;
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
@@ -58,7 +55,7 @@ public class RaddTransactionDAO extends BaseDao {
         logEvent.log();
 
         return Mono.fromFuture(
-                        countTransactionIunIdPractice(entity.getIun(), entity.getIdPractice())
+                        countTransactionIunIdPractice(entity.getIun(), entity.getOperationId())
                         .thenCompose(total -> {
                             if (total == 0)
                             {
@@ -67,7 +64,7 @@ public class RaddTransactionDAO extends BaseDao {
                                         .item(entity)
                                         //.conditionExpression()
                                         .build();
-                                return mandateTable.putItem(putRequest).thenApply(x -> {
+                                return raddTable.putItem(putRequest).thenApply(x -> {
                                     log.info("saved Radd transaction object {}", entity);
                                     return entity;
                                 });
@@ -88,6 +85,18 @@ public class RaddTransactionDAO extends BaseDao {
                 });
     }
 
+    public Mono<RaddTransactionEntity> getTransaction(String operationId) {
+
+        Key key = Key.builder().partitionValue(operationId).build();
+
+        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
+
+        return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
+            log.info("Item finded : {}", item);
+            return item;
+        }));
+    }
+
 
     public CompletableFuture<Integer> countTransactionIunIdPractice(String iun, String idPractice) {
         Map<String, AttributeValue> expressionValues = new HashMap<>();
@@ -98,7 +107,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .builder()
                 .select(Select.COUNT)
                 .tableName(table)
-                .keyConditionExpression(RaddTransactionEntity.COL_PK + " = :iun AND " + RaddTransactionEntity.COL_SK + " = :idPractice")
+                .keyConditionExpression(RaddTransactionEntity.COL_IUN + " = :iun AND " + RaddTransactionEntity.COL_OPERATION_ID + " = :idPractice")
                 .expressionAttributeValues(expressionValues)
                 .build();
 

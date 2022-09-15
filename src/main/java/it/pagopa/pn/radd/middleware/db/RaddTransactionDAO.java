@@ -97,6 +97,20 @@ public class RaddTransactionDAO extends BaseDao {
         }));
     }
 
+    public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun) {
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":iun",  AttributeValue.builder().s(iun).build());
+
+
+        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
+                .builder()
+                .queryConditional( QueryConditional.keyEqualTo(Key.builder().partitionValue(iun).build()))
+                .scanIndexForward(true)
+                .build();
+
+        return Flux.from(raddTable.index(RaddTransactionEntity.IUN_INDEX).query(qeRequest).flatMapIterable(Page::items));
+    }
+
 
     public CompletableFuture<Integer> countTransactionIunIdPractice(String iun, String idPractice) {
         Map<String, AttributeValue> expressionValues = new HashMap<>();

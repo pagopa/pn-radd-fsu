@@ -26,7 +26,7 @@ public class NotificationRestV1Controller implements NotificationInquiryApi {
 
     @Override
     public Mono<ResponseEntity<NotificationPracticesResponse>> getPractices(String iun, ServerWebExchange exchange) {
-        return NotificationInquiryApi.super.getPractices(iun, exchange);
+        return notificationService.getPracticesId(iun).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
 }

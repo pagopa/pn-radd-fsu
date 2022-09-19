@@ -97,9 +97,6 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun) {
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":iun",  AttributeValue.builder().s(iun).build());
-
 
         QueryEnhancedRequest qeRequest = QueryEnhancedRequest
                 .builder()
@@ -120,7 +117,8 @@ public class RaddTransactionDAO extends BaseDao {
                 .builder()
                 .select(Select.COUNT)
                 .tableName(table)
-                .keyConditionExpression(RaddTransactionEntity.COL_IUN + " = :iun AND " + RaddTransactionEntity.COL_OPERATION_ID + " = :idPractice")
+                .keyConditionExpression(RaddTransactionEntity.COL_OPERATION_ID + " = :idPractice")
+                .filterExpression(":iun = "+ RaddTransactionEntity.COL_IUN)
                 .expressionAttributeValues(expressionValues)
                 .build();
 

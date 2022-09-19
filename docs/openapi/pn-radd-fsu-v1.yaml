@@ -661,6 +661,9 @@ components:
           type: string
           format: date-time
           example: 2017-07-21T18:00:28Z
+        errorReason:
+          type: string
+          example: "Error"
 
 
   parameters:

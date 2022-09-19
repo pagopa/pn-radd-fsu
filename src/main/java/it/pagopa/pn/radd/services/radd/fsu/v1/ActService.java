@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
@@ -8,6 +9,7 @@ import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -39,6 +41,24 @@ public class ActService {
                             return item.getT1();
                         });
 
+    }
+
+    private boolean validate(String recipientTaxId, String recipientType) {
+        // valida delegato
+
+        /*if (mandateDto.getDelegate().getPerson()
+                && !mandateDto.getDelegate().getFiscalCode().matches("[A-Za-z]{6}[0-9]{2}[A-Za-z]{1}[0-9]{2}[A-Za-z]{1}[0-9]{3}[A-Za-z]{1}"))
+            throw new PnInvalidInputException();
+        if (!mandateDto.getDelegate().getPerson()
+                && !mandateDto.getDelegate().getFiscalCode().matches("[0-9]{11}"))
+            throw new InvalidInputException();
+
+        // la delega richiede la data di fine
+        if (!StringUtils.hasText(mandateDto.getDateto()))
+            throw new InvalidInputException();
+
+        return mandateDto;*/
+        return true;
     }
 
 }

@@ -51,7 +51,6 @@ public class ActService extends BaseService {
                 });
     }
 
-
     private Mono<String> getEnsureRecipientAndDelegate(String recipientTaxId){
         return getEnsureFiscalCode(recipientTaxId, this.pnDataVaultClient);
     }

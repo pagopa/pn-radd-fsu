@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
@@ -25,9 +26,10 @@ public class DocumentUploadService {
         // retrieve presigned url
         return documentUploadRequest
                 .map(m -> {
-                    if (m == null || StringUtils.isEmpty(m.getContentType()) || StringUtils.isEmpty(m.getBundleId()))
-                        // eccezione
-                        log.info("");
+                    if (m == null || StringUtils.isEmpty(m.getContentType()) || StringUtils.isEmpty(m.getBundleId())) {
+                        log.error("Missing input parameters");
+                        throw new PnInvalidInputException();
+                    }
                     return m;
                 })
                 .flatMap(value -> {

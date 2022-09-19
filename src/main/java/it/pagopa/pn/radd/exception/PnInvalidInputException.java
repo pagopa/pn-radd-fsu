@@ -4,10 +4,10 @@ import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
 import org.springframework.http.HttpStatus;
 
 
-public class PnInvalidInputException extends PnHttpResponseException {
+public class PnInvalidInputException extends PnException {
 
     public PnInvalidInputException() {
-        super("Invalid input", HttpStatus.NO_CONTENT.value());
+        super("Parametri non validi", "Alcuni parametri non sono validi");
     }
 
 }

@@ -582,7 +582,7 @@ components:
                 * 3 -> Stampa già eseguita
                 * 99 -> KO
               type: number
-              enum: [1,2,3]
+              enum: [0,1,2,3,99]
 
     OperationsResponse:
       description: Id pratiche recuperate

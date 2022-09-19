@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndatavault.v1.ApiClien
 import it.pagopa.pn.radd.microservice.msclient.generated.pndatavault.v1.api.RecipientsApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndatavault.v1.dto.RecipientTypeDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -33,8 +34,9 @@ public class PnDataVaultClient extends BaseClient {
         this.recipientsApi = new RecipientsApi(apiClient);
     }
 
-    public Mono<String> getEnsureFiscalCode(String fiscalCode){
-        return this.recipientsApi.ensureRecipientByExternalId(RecipientTypeDto.PF, fiscalCode)
+    public Mono<String> getEnsureFiscalCode(String fiscalCode) { //TODO modificare per passare type
+        return this.recipientsApi.ensureRecipientByExternalId(
+                (StringUtils.equalsIgnoreCase("", RecipientTypeDto.PF.getValue()) ? RecipientTypeDto.PF: RecipientTypeDto.PF), fiscalCode)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable ->throwable instanceof TimeoutException || throwable instanceof ConnectException)

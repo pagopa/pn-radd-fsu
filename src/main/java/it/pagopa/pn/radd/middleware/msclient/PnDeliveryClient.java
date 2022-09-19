@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.ApiClient
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.api.InternalOnlyApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.RequestCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -42,6 +43,22 @@ public class PnDeliveryClient extends BaseClient {
                 Retry.backoff(2, Duration.ofMillis(25))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
         );
+    }
+
+    public Mono<SentNotificationDto> getNotifications(String iun){
+        return this.deliveryApi.getSentNotificationPrivate(iun)
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(25))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                );
+    }
+
+    public Mono<String> getPresignedUrlDocument(String iun, String docXid){
+        return Mono.just("testurl");
+    }
+
+    public Mono<String> getPresignedUrlPaymentDocument(String iun, String attchamentName){
+        return Mono.just("testurl");
     }
 
 

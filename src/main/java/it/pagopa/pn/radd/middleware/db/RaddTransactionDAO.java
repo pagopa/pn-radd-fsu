@@ -4,6 +4,7 @@ import it.pagopa.pn.commons.log.PnAuditLogBuilder;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.exception.RaddTransactionAlreadyExist;
+import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -92,8 +93,33 @@ public class RaddTransactionDAO extends BaseDao {
 
         return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
             log.info("Item finded : {}", item);
+            if (item == null) {
+                throw new RaddTransactionNoExistedException();
+            }
             return item;
         }));
+    }
+
+    public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity){
+        String logMessage = String.format("Update Radd Transaction=%s", entity);
+        PnAuditLogEvent logEvent = auditLogBuilder
+                .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
+                .uid(entity.getIun())
+                .build();
+
+        logEvent.log();
+        UpdateItemEnhancedRequest<RaddTransactionEntity> updateRequest = UpdateItemEnhancedRequest
+                .builder(RaddTransactionEntity.class).item(entity).build();
+        return Mono.fromFuture(raddTable.updateItem(updateRequest).thenApply(x->entity)).onErrorResume(throwable -> {
+                    logEvent.generateFailure(throwable.getMessage()).log();
+                    return Mono.error(throwable);
+                })
+                .map(item -> {
+                    log.info("Radd transaction object={}", item);
+                    logEvent.generateSuccess(String.format("Updated Radd transaction object=%s", item)).log();
+
+                    return item;
+                });
     }
 
     public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun) {

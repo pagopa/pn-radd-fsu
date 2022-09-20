@@ -34,8 +34,7 @@ public class PnDeliveryInternalClient  extends BaseClient {
 
 
     public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlDocument(String iun, String docXid){
-        return this.recipientReadApi.getReceivedNotificationDocument(null, null,
-                        null, iun, Integer.valueOf(docXid), null, null)
+        return this.recipientReadApi.getReceivedNotificationDocument(iun, Integer.valueOf(docXid), null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
@@ -43,7 +42,7 @@ public class PnDeliveryInternalClient  extends BaseClient {
     }
 
     public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlPaymentDocument(String iun, String attchamentName){
-        return this.recipientReadApi.getReceivedNotificationAttachment(null, null, null, iun, attchamentName, null)
+        return this.recipientReadApi.getReceivedNotificationAttachment(iun, attchamentName, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

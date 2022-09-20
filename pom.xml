@@ -154,7 +154,7 @@
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<inputSpec>${project.basedir}/docs/openapi/pn-delivery/api-internal-web-recipient-v1.yaml</inputSpec>
+							<inputSpec>${project.basedir}/docs/openapi/pn-delivery/api-external-web-recipient-v1.yaml</inputSpec>
 							<generatorName>java</generatorName>
 							<library>webclient</library>
 							<generateApiDocumentation>false</generateApiDocumentation>

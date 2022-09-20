@@ -2,7 +2,10 @@ package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.api.TransactionManagementApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CompleteTransactionRequest;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CompleteTransactionResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
+import it.pagopa.pn.radd.services.radd.fsu.v1.ActService;
 import it.pagopa.pn.radd.services.radd.fsu.v1.TransactionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,4 +29,9 @@ public class TransactionPrivateRestV1Controller implements TransactionManagement
         log.info("Rest Controller");
         return transactionService.startTransaction(uid, actStartTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
-}
+
+     @Override
+     public Mono<ResponseEntity<CompleteTransactionResponse>> completeActTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
+         return transactionService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+     }
+ }

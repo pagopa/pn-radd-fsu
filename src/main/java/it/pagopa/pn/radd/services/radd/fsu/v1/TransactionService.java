@@ -6,14 +6,9 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.Notif
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
-import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
-import it.pagopa.pn.radd.middleware.msclient.PnDeliveryInternalClient;
-import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
+import it.pagopa.pn.radd.middleware.msclient.*;
 import it.pagopa.pn.radd.pojo.EnsureFiscalCode;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponseStatus;
+import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -37,13 +32,15 @@ public class TransactionService {
     private final RaddTransactionDAO raddTransactionDAO;
     private final PnSafeStorageClient safeStorageClient;
     private final PnDeliveryInternalClient pnDeliveryInternalClient;
+    private final PnDeliveryPushClient pnDeliveryPushClient;
 
-    public TransactionService(PnDataVaultClient pnDataVaultClient, PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient) {
+    public TransactionService(PnDataVaultClient pnDataVaultClient, PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient, PnDeliveryPushClient pnDeliveryPushClient) {
         this.pnDataVaultClient = pnDataVaultClient;
         this.pnDeliveryClient = pnDeliveryClient;
         this.raddTransactionDAO = raddTransactionDAO;
         this.safeStorageClient = safeStorageClient;
         this.pnDeliveryInternalClient = pnDeliveryInternalClient;
+        this.pnDeliveryPushClient = pnDeliveryPushClient;
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
@@ -67,6 +64,18 @@ public class TransactionService {
                 .zipWhen(onlyRequest -> verifyCheckSum(onlyRequest.getFileKey(), onlyRequest.getChecksum()), (onlyRequest, responseCheckSum) -> onlyRequest)
                 .zipWhen(onlyRequest -> sentNotification(iunRef.get()), (onlyRequest, response) -> response);
 
+    }
+
+    public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
+        return completeTransactionRequest.map(req -> req)
+                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId()), (request, entity) -> entity)
+                .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
+                .zipWhen(entity -> {
+                    entity.setStatus("COMPLETED");
+                    return this.raddTransactionDAO.updateStatus(entity);
+                }).map(tupla -> {
+                    return new CompleteTransactionResponse();
+                });
     }
 
     private Mono<StartTransactionResponse> sentNotification(String iun) {
@@ -135,13 +144,13 @@ public class TransactionService {
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setIun(iun);
         entity.setOperationId(request.getOperationId());
-        entity.setDelegateTaxId(ensureFiscalCode.getDelegate());
-        entity.setRecipientTaxId(ensureFiscalCode.getRecipient());
+        entity.setDelegateId(ensureFiscalCode.getDelegate());
+        entity.setRecipientId(ensureFiscalCode.getRecipient());
         entity.setFileKey(request.getFileKey());
         entity.setUid(uid);
         entity.setQrCode(request.getQrCode());
-        entity.setOperationStatus("STARTED");
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+        entity.setStatus("STARTED");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
         entity.setOperationStartDate(simpleDateFormat.format(new Date()));
         return this.raddTransactionDAO.createRaddTransaction(entity);
     }
@@ -189,5 +198,4 @@ public class TransactionService {
                     return response.getIun();
                 }).onErrorResume(Mono::error);
     }
-
 }

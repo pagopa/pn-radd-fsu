@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.ApiCl
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.api.EventComunicationApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.RequestNotificationViewedDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.ResponseNotificationViewedDtoDto;
+import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -14,6 +15,8 @@ import javax.annotation.PostConstruct;
 @Component
 public class PnDeliveryPushClient extends BaseClient {
 
+    //TODO add into application properties
+    private static final String raddType = "__FSU__";
     private EventComunicationApi eventComunicationApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
@@ -29,12 +32,15 @@ public class PnDeliveryPushClient extends BaseClient {
     }
 
 
-    public Mono<ResponseNotificationViewedDtoDto> notifyNotificationViewed(String iun, String recipientType, String recipientInternalId){
+    public Mono<ResponseNotificationViewedDtoDto> notifyNotificationViewed(RaddTransactionEntity entity){
         RequestNotificationViewedDtoDto request = new RequestNotificationViewedDtoDto();
-        request.setIun(iun);
-        request.setRecipientType(recipientType);
-        request.setRecipientInternalId(recipientInternalId);
-        return this.eventComunicationApi.notifyNotificationViewed(iun, request);
+        request.setIun(entity.getIun());
+        request.setRecipientType(entity.getRecipientType());
+        request.setRecipientInternalId(entity.getRecipientId());
+        //request.setRaddBusinessTransactionDate(entity.getOperationStartDate());
+        request.setRaddBusinessTransactionId(entity.getOperationId());
+        request.setRaddType(raddType);
+        return this.eventComunicationApi.notifyNotificationViewed(entity.getIun(), request);
     }
 
 }

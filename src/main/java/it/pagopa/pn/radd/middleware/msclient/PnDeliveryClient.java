@@ -53,13 +53,5 @@ public class PnDeliveryClient extends BaseClient {
                 );
     }
 
-    public Mono<String> getPresignedUrlDocument(String iun, String docXid){
-        return Mono.just("testurl");
-    }
-
-    public Mono<String> getPresignedUrlPaymentDocument(String iun, String attchamentName){
-        return Mono.just("testurl");
-    }
-
 
 }

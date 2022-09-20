@@ -1,12 +1,14 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.internal.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationDocumentDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
+import it.pagopa.pn.radd.middleware.msclient.PnDeliveryInternalClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.pojo.EnsureFiscalCode;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
@@ -34,12 +36,14 @@ public class TransactionService {
     private final PnDeliveryClient pnDeliveryClient;
     private final RaddTransactionDAO raddTransactionDAO;
     private final PnSafeStorageClient safeStorageClient;
+    private final PnDeliveryInternalClient pnDeliveryInternalClient;
 
-    public TransactionService(PnDataVaultClient pnDataVaultClient, PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PnSafeStorageClient safeStorageClient) {
+    public TransactionService(PnDataVaultClient pnDataVaultClient, PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient) {
         this.pnDataVaultClient = pnDataVaultClient;
         this.pnDeliveryClient = pnDeliveryClient;
         this.raddTransactionDAO = raddTransactionDAO;
         this.safeStorageClient = safeStorageClient;
+        this.pnDeliveryInternalClient = pnDeliveryInternalClient;
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
@@ -68,7 +72,6 @@ public class TransactionService {
     private Mono<StartTransactionResponse> sentNotification(String iun) {
 
         return this.pnDeliveryClient.getNotifications(iun).map(item -> {
-
             if (item != null && !item.getDocuments().isEmpty()){
                 return getUrlsList(item.getDocuments(), iun);
             }
@@ -101,11 +104,16 @@ public class TransactionService {
     }
 
     private Mono<String> urlForDocument(String iun,  NotificationDocumentDto documentDto){
-        if (documentDto.getRequiresAck()){
+        log.info(documentDto.toString());
+        //f24standard != null
+        if (documentDto.getTitle() == null){
             //documento normale
-            return this.pnDeliveryClient.getPresignedUrlDocument(iun, documentDto.getDocIdx());
+            return this.pnDeliveryInternalClient.getPresignedUrlPaymentDocument(iun, documentDto.getTitle())
+                    .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
         }
-        return this.pnDeliveryClient.getPresignedUrlPaymentDocument(iun, documentDto.getTitle());
+        return this.pnDeliveryInternalClient.getPresignedUrlDocument(iun, documentDto.getDocIdx())
+                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
+
     }
 
     private Mono<FileDownloadResponseDto> verifyCheckSum(String fileKey, String checkSum){

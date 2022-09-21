@@ -13,13 +13,13 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
-public class NotificationService {
+public class OperationService {
 
     private final RaddTransactionDAO transactionDAO;
     private final RaddTransactionEntityNotificationResponse mapperToNotificationResponse;
 
 
-    public NotificationService(RaddTransactionDAO transactionDAO, RaddTransactionEntityNotificationResponse mapperToNotificationResponse) {
+    public OperationService(RaddTransactionDAO transactionDAO, RaddTransactionEntityNotificationResponse mapperToNotificationResponse) {
         this.transactionDAO = transactionDAO;
         this.mapperToNotificationResponse = mapperToNotificationResponse;
     }

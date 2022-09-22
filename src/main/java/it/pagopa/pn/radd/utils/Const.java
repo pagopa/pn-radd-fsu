@@ -10,5 +10,6 @@ public class Const {
 
     public static final String COMPLETED = "COMPLETED";
     public static final String PRELOADED = "PRELOADED";
+    public static final String STARTED = "STARTED";
 
 }

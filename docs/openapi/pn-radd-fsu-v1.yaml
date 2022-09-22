@@ -26,7 +26,7 @@ tags:
     description: API di interrogazione delle notifiche.
 
 paths:
-  /act/inquiry:
+  /radd-fsu-private/api/v1/act/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -56,7 +56,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /aor/inquiry:
+  /radd-fsu-private/api/v1/aor/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s"
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -85,7 +85,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /documents/upload:
+  /radd-fsu-private/api/v1/documents/upload:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     post:
       tags:
@@ -118,7 +118,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /act/transaction/start:
+  /radd-fsu-private/api/v1/act/transaction/start:
     ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling (response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -151,7 +151,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /act/transaction/complete:
+  /radd-fsu-private/api/v1/act/transaction/complete:
     ## SLA - Tempo risposta medio: < 1s, Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -183,7 +183,7 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /act/transaction/abort:
+  /radd-fsu-private/api/v1/act/transaction/abort:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -215,7 +215,7 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /aor/transaction/start:
+  /radd-fsu-private/api/v1/aor/transaction/start:
     ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling(response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -248,7 +248,7 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /aor/transaction/complete:
+  /radd-fsu-private/api/v1/aor/transaction/complete:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -281,7 +281,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /aor/transaction/abort:
+  /radd-fsu-private/api/v1/aor/transaction/abort:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -313,7 +313,7 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /operations/by-id/{operationId}:
+  /radd-fsu-private/api/v1/operations/by-id/{operationId}:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/operationId'
@@ -342,7 +342,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /operations/by-iun/{iun}:
+  /radd-fsu-private/api/v1/operations/by-iun/{iun}:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/iun'

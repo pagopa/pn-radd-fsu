@@ -1,7 +1,6 @@
 package it.pagopa.pn.radd.exception;
 
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
-import it.pagopa.pn.radd.exception.PnException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -14,11 +13,9 @@ public class ExceptionHelper {
     private ExceptionHelper(){}
 
     public static HttpStatus getHttpStatusFromException(Throwable ex){
-        if (ex instanceof PnException)
-        {
+        if (ex instanceof PnException) {
             return HttpStatus.resolve(((PnException) ex).getStatus());
-        }
-        else
+        } else
             return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
@@ -32,21 +29,17 @@ public class ExceptionHelper {
             log.warn("Cannot get traceid", e);
         }
 
-        if (ex instanceof PnException)
-        {
+        if (ex instanceof PnException) {
             res.setTitle(ex.getMessage());
             res.setDetail(((PnException)ex).getDescription());
             res.setStatus(((PnException) ex).getStatus());
             log.warn("pn-exception catched", ex);
-        }
-        else
-        {
+        } else {
             // nascondo all'utente l'errore
             res.title("Errore generico");
             res.detail("Qualcosa è andato storto, ritenta più tardi");
             log.error("exception catched", ex);
         }
-
         return res;
     }
 }

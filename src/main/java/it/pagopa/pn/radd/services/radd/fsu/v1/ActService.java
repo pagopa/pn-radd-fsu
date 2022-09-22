@@ -50,21 +50,20 @@ public class ActService extends BaseService {
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
         // check if iun exists
-        return Mono.just(new ActInquiryResponse())
-                .zipWhen(tmp -> getEnsureFiscalCode(recipientTaxId, recipientType))
-                .zipWhen(r -> getCheckAar(recipientType, r.getT2(), qrCode))
+        return getEnsureFiscalCode(recipientTaxId, recipientType)
+                .zipWhen(recCode -> getCheckAar(recipientType, recCode, qrCode))
                 .map(item -> {
                     ResponseCheckAarDtoDto response = item.getT2();
                     log.info("Response iun : {}", response.getIun());
-                    ActInquiryResponse actInquiryResponse = item.getT1().getT1();
+                    ActInquiryResponse actInquiryResponse = new ActInquiryResponse();
                     actInquiryResponse.setResult(true);
                     ActInquiryResponseStatus status = new ActInquiryResponseStatus();
                     status.setMessage(Const.OK);
                     status.code(ActInquiryResponseStatus.CodeEnum.NUMBER_0);
                     actInquiryResponse.setStatus(status);
-                    return item.getT1().getT1();
+                    return actInquiryResponse;
                 }).onErrorResume(WebClientResponseException.class, ex -> {
-                    return Mono.just(addActInquryError(ex));
+                    return Mono.just(addActInquiryError(ex));
                 });
     }
 
@@ -181,7 +180,7 @@ public class ActService extends BaseService {
         entity.setFileKey(request.getFileKey());
         entity.setUid(uid);
         entity.setQrCode(request.getQrCode());
-        entity.setStatus("STARTED");
+        entity.setStatus(Const.STARTED);
         entity.setOperationStartDate(DateUtils.formatDate(request.getOperationDate()));
         return this.raddTransactionDAO.createRaddTransaction(entity);
     }
@@ -231,7 +230,7 @@ public class ActService extends BaseService {
         return pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
     }
 
-    private ActInquiryResponse addActInquryError(WebClientResponseException ex){
+    private ActInquiryResponse addActInquiryError(WebClientResponseException ex){
         ActInquiryResponse r = new ActInquiryResponse();
         r.setResult(false);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();

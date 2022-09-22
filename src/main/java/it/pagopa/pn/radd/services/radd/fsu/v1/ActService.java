@@ -62,8 +62,11 @@ public class ActService extends BaseService {
                     status.code(ActInquiryResponseStatus.CodeEnum.NUMBER_0);
                     actInquiryResponse.setStatus(status);
                     return actInquiryResponse;
-                }).onErrorResume(WebClientResponseException.class, ex -> {
-                    return Mono.just(addActInquiryError(ex));
+                }).onErrorResume(ex -> {
+                    if (ex instanceof PnCheckQrCodeException || ex instanceof PnEnsureFiscalCodeException) {
+                        return Mono.just(addErrorResponse(ex));
+                    }
+                    return Mono.error(ex);
                 });
     }
 
@@ -230,17 +233,31 @@ public class ActService extends BaseService {
         return pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
     }
 
-    private ActInquiryResponse addActInquiryError(WebClientResponseException ex){
+    private ActInquiryResponse addErrorResponse(Throwable ex){
         ActInquiryResponse r = new ActInquiryResponse();
         r.setResult(false);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
         status.setMessage(Const.KO);
-        if (ex.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
-            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
-        } else if (ex.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
-            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_2);
-        } else if (ex.getRawStatusCode() == HttpResponseStatus.CONFLICT.code()) {
-            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);
+        WebClientResponseException webClientException = null;
+        if (ex instanceof PnCheckQrCodeException) {
+            webClientException = ((PnCheckQrCodeException) ex).getWebClientEx();
+            if (webClientException.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
+                status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
+            } else if (webClientException.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
+                status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_2);
+            } else if (webClientException.getRawStatusCode() == HttpResponseStatus.CONFLICT.code()) {
+                status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);
+            } else {
+                status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
+            }
+
+        } else if (ex instanceof PnEnsureFiscalCodeException) {
+            webClientException = ((PnEnsureFiscalCodeException) ex).getWebClientEx();
+            if (webClientException.getRawStatusCode() == HttpResponseStatus.BAD_REQUEST.code()) {
+                status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
+            } else {
+                status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
+            }
         } else {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
         }

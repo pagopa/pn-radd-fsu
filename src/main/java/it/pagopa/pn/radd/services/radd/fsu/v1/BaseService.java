@@ -21,7 +21,7 @@ public class BaseService {
     protected Mono<String> getEnsureFiscalCode(String fiscalCode, String type, PnDataVaultClient pnDataVaultClient){
         if (StringUtils.isEmpty(fiscalCode) || !Utils.checkPersonType(type)) {
             log.error("Missing input parameters");
-            throw new PnInvalidInputException("recipientTaxId o recipientType non valorizzato correttamente");
+            return Mono.error(new PnInvalidInputException("recipientTaxId o recipientType non valorizzato correttamente"));
         }
 
         return pnDataVaultClient.getEnsureFiscalCode(fiscalCode, type)

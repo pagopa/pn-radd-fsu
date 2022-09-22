@@ -1,13 +1,16 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.api.InternalOnlyApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.RequestCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -17,6 +20,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 @Component
+@Slf4j
 public class PnDeliveryClient extends BaseClient {
     private InternalOnlyApi deliveryApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
@@ -41,8 +45,8 @@ public class PnDeliveryClient extends BaseClient {
         return this.deliveryApi.checkAarQrCode(request)
                 .retryWhen(
                 Retry.backoff(2, Duration.ofMillis(25))
-                        .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-        );
+                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+        ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnCheckQrCodeException(ex)));
     }
 
     public Mono<SentNotificationDto> getNotifications(String iun){

@@ -194,6 +194,29 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>generate-client-pn-delivery-push-internal</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>process-resources</phase>
+						<configuration>
+							<inputSpec>${project.basedir}/docs/openapi/pn-delivery-push/api-internal-pn-delivery-push-v1.yaml</inputSpec>
+							<generatorName>java</generatorName>
+							<library>webclient</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<generateSupportingFiles>true</generateSupportingFiles>
+							<configOptions>
+								<swaggerAnnotations>false</swaggerAnnotations>
+								<openApiNullable>false</openApiNullable>
+							</configOptions>
+							<modelPackage>${project.groupId}.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api</apiPackage>
+							<modelNameSuffix>Dto</modelNameSuffix>
+						</configuration>
+					</execution>
+					<execution>
 						<id>generate-client-pn-safe-storage</id>
 						<goals>
 							<goal>generate</goal>

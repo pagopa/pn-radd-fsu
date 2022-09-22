@@ -8,6 +8,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.Fi
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
+import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -25,8 +26,6 @@ public class PnSafeStorageClient extends BaseClient {
     private FileDownloadApi fileDownloadApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
-    private final String PRELOADED_STATUS = "PRELOADED";
-
     public PnSafeStorageClient(PnRaddFsuConfig pnRaddFsuConfig) {
         this.pnRaddFsuConfig = pnRaddFsuConfig;
     }
@@ -42,7 +41,7 @@ public class PnSafeStorageClient extends BaseClient {
     public Mono<FileCreationResponseDto> createFile(String contentType, String operationId){
         log.info(String.format("Req params: %s %s", contentType, operationId));
         FileCreationRequestDto request = new FileCreationRequestDto();
-        request.setStatus(PRELOADED_STATUS);
+        request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
         return this.fileUploadApi.createFile(operationId, request)
                 .retryWhen(

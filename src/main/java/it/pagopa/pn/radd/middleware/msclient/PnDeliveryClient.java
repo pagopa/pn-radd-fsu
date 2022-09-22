@@ -33,7 +33,7 @@ public class PnDeliveryClient extends BaseClient {
         this.deliveryApi = new InternalOnlyApi(newApiClient);
     }
 
-    public Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode){
+    public Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode) {
         RequestCheckAarDtoDto request = new RequestCheckAarDtoDto();
         request.setAarQrCodeValue(qrCode);
         request.setRecipientType(recipientType);

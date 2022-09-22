@@ -7,7 +7,11 @@ import org.springframework.http.HttpStatus;
 public class PnInvalidInputException extends PnException {
 
     public PnInvalidInputException() {
-        super("Parametri non validi", "Alcuni parametri non sono validi");
+        this("Alcuni parametri non sono validi");
+    }
+
+    public PnInvalidInputException(String message) {
+        super("Parametri non validi", message);
     }
 
 }

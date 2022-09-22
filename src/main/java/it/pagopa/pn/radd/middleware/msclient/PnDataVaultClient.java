@@ -34,9 +34,9 @@ public class PnDataVaultClient extends BaseClient {
         this.recipientsApi = new RecipientsApi(apiClient);
     }
 
-    public Mono<String> getEnsureFiscalCode(String fiscalCode) { //TODO modificare per passare type
+    public Mono<String> getEnsureFiscalCode(String fiscalCode, String type) {
         return this.recipientsApi.ensureRecipientByExternalId(
-                (StringUtils.equalsIgnoreCase("", RecipientTypeDto.PF.getValue()) ? RecipientTypeDto.PF: RecipientTypeDto.PF), fiscalCode)
+                (StringUtils.equalsIgnoreCase(type, RecipientTypeDto.PF.getValue()) ? RecipientTypeDto.PF: RecipientTypeDto.PF), fiscalCode)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable ->throwable instanceof TimeoutException || throwable instanceof ConnectException)

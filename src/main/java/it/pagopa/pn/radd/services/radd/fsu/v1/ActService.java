@@ -13,7 +13,9 @@ import it.pagopa.pn.radd.pojo.EnsureFiscalCode;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
+import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -47,11 +49,10 @@ public class ActService extends BaseService {
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
-        // retrieve iun
-
+        // check if iun exists
         return Mono.just(new ActInquiryResponse())
-                .zipWhen(tmp -> getEnsureRecipientAndDelegate(recipientTaxId))
-                .zipWhen(r -> pnDeliveryClient.getCheckAar(recipientType, r.getT2(), qrCode))
+                .zipWhen(tmp -> getEnsureFiscalCode(recipientTaxId, recipientType))
+                .zipWhen(r -> getCheckAar(recipientType, r.getT2(), qrCode))
                 .map(item -> {
                     ResponseCheckAarDtoDto response = item.getT2();
                     log.info("Response iun : {}", response.getIun());
@@ -63,12 +64,9 @@ public class ActService extends BaseService {
                     actInquiryResponse.setStatus(status);
                     return item.getT1().getT1();
                 }).onErrorResume(WebClientResponseException.class, ex -> {
-                    return Mono.just(addErrorStatus(ex));
+                    return Mono.just(addActInquryError(ex));
                 });
     }
-
-
-
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
         log.info("Service");
@@ -97,7 +95,7 @@ public class ActService extends BaseService {
         return completeTransactionRequest.map(req -> req)
                 .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
                         .map(entity -> {
-                            if (Strings.isBlank(entity.getStatus()) || entity.getStatus().equals("COMPLETED")){
+                            if (Strings.isBlank(entity.getStatus()) || entity.getStatus().equals(Const.COMPLETED)){
                                 throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta già completa");
                             }
                             return entity;
@@ -105,7 +103,7 @@ public class ActService extends BaseService {
                         (request, entity) -> entity)
                 .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
                 .zipWhen(entity -> {
-                    entity.setStatus("COMPLETED");
+                    entity.setStatus(Const.COMPLETED);
                     return this.raddTransactionDAO.updateStatus(entity);
                 }).map(tupla -> {
                     return new CompleteTransactionResponse();
@@ -163,7 +161,7 @@ public class ActService extends BaseService {
         return this.safeStorageClient.getFile(fileKey).map(response -> {
             log.info("CheckSum response : {}", response.getChecksum());
             log.info("CheckSum Request : {}", checkSum);
-            if (Strings.isBlank(response.getDocumentStatus()) || !response.getDocumentStatus().equals("PRELOADED")){
+            if (StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
                 throw new RaddDocumentStatusException("Status is not preloaded");
             }
             if (Strings.isBlank(response.getChecksum()) ||
@@ -190,25 +188,14 @@ public class ActService extends BaseService {
 
 
     private Mono<EnsureFiscalCode> getEnsureRecipientAndDelegate(ActStartTransactionRequest request){
-        return getEnsureFiscalCode(request.getRecipientTaxId())
+        return getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())
                 .flatMap(ensureRecipient -> {
                     if (!Strings.isBlank(request.getDelegateTaxId())){
-                        return getEnsureFiscalCode(request.getDelegateTaxId())
+                        return getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)
                                 .flatMap(delegateEnsure -> Mono.just(new EnsureFiscalCode(ensureRecipient, delegateEnsure)));
                     }
                     return  Mono.just(new EnsureFiscalCode(ensureRecipient, null));
                 });
-    }
-
-    private Mono<String> getEnsureFiscalCode(String fiscalCode){
-        return this.pnDataVaultClient.getEnsureFiscalCode(fiscalCode)
-                .map(response -> {
-
-                    if (response == null || Strings.isBlank(response)){
-                        throw new RaddFiscalCodeEnsureException();
-                    }
-                    return response;
-                }).onErrorResume(Mono::error);
     }
 
     private Mono<Integer> getCounterNotification(String iun, String operationId){
@@ -232,11 +219,19 @@ public class ActService extends BaseService {
                 }).onErrorResume(Mono::error);
     }
 
-    private Mono<String> getEnsureRecipientAndDelegate(String recipientTaxId){
-        return getEnsureFiscalCode(recipientTaxId, this.pnDataVaultClient);
+    private Mono<String> getEnsureFiscalCode(String recipientTaxId, String type){
+        return getEnsureFiscalCode(recipientTaxId, type, this.pnDataVaultClient);
     }
 
-    private ActInquiryResponse addErrorStatus(WebClientResponseException ex){
+    private Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode) {
+        if (StringUtils.isEmpty(recipientInternalId) || !Utils.checkPersonType(recipientType) || StringUtils.isEmpty(qrCode)) {
+            log.error("Missing input parameters");
+            throw new PnInvalidInputException();
+        }
+        return pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
+    }
+
+    private ActInquiryResponse addActInquryError(WebClientResponseException ex){
         ActInquiryResponse r = new ActInquiryResponse();
         r.setResult(false);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();

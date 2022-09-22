@@ -21,8 +21,6 @@ public class DocumentUploadPrivateRestV1Controller implements DocumentUploadApi 
 
     @Override
     public Mono<ResponseEntity<DocumentUploadResponse>> documentUpload(String uid, Mono<DocumentUploadRequest> documentUploadRequest, ServerWebExchange exchange) {
-//        return documentUploadService.createFile(uid, documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
-        return documentUploadService.createFile(uid, documentUploadRequest)
-                .then(Mono.just(ResponseEntity.noContent().build()));
+        return documentUploadService.createFile(uid, documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

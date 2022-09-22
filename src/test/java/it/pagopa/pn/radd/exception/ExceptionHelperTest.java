@@ -1,4 +1,4 @@
-package it.pagopa.pn.mandate.rest.utils;
+package it.pagopa.pn.radd.exception;
 
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
 import it.pagopa.pn.radd.exception.ExceptionHelper;

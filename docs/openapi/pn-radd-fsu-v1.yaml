@@ -22,7 +22,7 @@ tags:
     description: API caricamento file.
   - name: transactionManagement
     description: API di gestione della transazione.
-  - name: notificationInquiry
+  - name: operationInquiry
     description: API di interrogazione delle notifiche.
 
 paths:
@@ -35,7 +35,7 @@ paths:
       - $ref: '#/components/parameters/qrCode'
     get:
       tags:
-        - documentInquiry
+        - actDocumentInquiry
       operationId: actInquiry
       description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni.
       responses:
@@ -64,7 +64,7 @@ paths:
       - $ref: '#/components/parameters/recipientType'
     get:
       tags:
-        - documentInquiry
+        - aorDocumentInquiry
       operationId: aorInquiry
       description: API utilizzata per la verifica della presenza a sistema di avvisi di avvenuta ricezione per il cliente.
       responses:
@@ -124,8 +124,8 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - transactionManagement
-      operationId: startTransaction
+        - actTransactionManagement
+      operationId: startActTransaction
       description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna dell'atto e delle eventuali attestazioni.
       requestBody:
         content:
@@ -157,7 +157,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - transactionManagement
+        - actTransactionManagement
       operationId: completeActTransaction
       description: API utilizzata per la notifica del completamento dell'operazione di consegna dell'atto e delle eventuali attestazioni.
       requestBody:
@@ -189,8 +189,8 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - transactionManagement
-      operationId: abortTransaction
+        - actTransactionManagement
+      operationId: abortActTransaction
       description: API utilizzata per la notifica  dell'annullamento dell'operazione di consegna dell'atto e delle eventuali attestazioni.
       requestBody:
         content:
@@ -221,11 +221,10 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - transactionManagement
+        - aorTransactionManagement
       operationId: startAorTransaction
       description: API utilizzata per la richiesta di avvio delloperazione di scaricamento e consegna degli avvisi di avvenuta ricezione.
       requestBody:
-
         content:
           application/json:
             schema:
@@ -254,7 +253,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - transactionManagement
+        - aorTransactionManagement
       operationId: completeAorTransaction
       description: API utilizzata per la notifica  del completamento dell'operazione di consegna dell'atto.
       requestBody:
@@ -287,7 +286,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - transactionManagement
+        - aorTransactionManagement
       operationId: abortAorTransaction
       description: API utilizzata per la notifica  dell'annullamento dell'operazione        di consegna del/degli avviso/i di avvenuta ricezione.
       requestBody:

@@ -22,9 +22,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.mock;
 
-// ./mvnw clean install  quando aggiungo classe
-//  mvnw verify(jacoco), mvnw test
-// mvnw springboot :run
 @SpringBootTest
 public class RaddTransactionDAOTest {
 
@@ -46,7 +43,7 @@ public class RaddTransactionDAOTest {
 
     }
 
-    @Test
+    //@Test
     void testCountTransactionIunIdPractice() {
         AwsConfigs awsConfigs = new AwsConfigs();
         String iun = "ium", idPractice = "0", table = awsConfigs.getDynamodbTable();;

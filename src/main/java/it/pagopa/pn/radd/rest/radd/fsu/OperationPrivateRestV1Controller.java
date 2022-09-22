@@ -13,10 +13,10 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class OperationRestV1Controller implements NotificationInquiryApi {
+public class OperationPrivateRestV1Controller implements NotificationInquiryApi {
     private final OperationService operationService;
 
-    public OperationRestV1Controller(OperationService operationService) {
+    public OperationPrivateRestV1Controller(OperationService operationService) {
         this.operationService = operationService;
     }
 

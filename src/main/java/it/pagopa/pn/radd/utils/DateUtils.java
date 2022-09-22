@@ -1,10 +1,8 @@
 package it.pagopa.pn.radd.utils;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class DateUtils {
 
@@ -22,10 +20,26 @@ public class DateUtils {
         return LocalDate.ofInstant(instant, italianZoneId).format(formatter);
     }
 
+    public static String formatDate(Date date)
+    {
+        if (date == null)
+            return null;
+        LocalDateTime dateTime =  LocalDateTime.ofInstant(date.toInstant(), italianZoneId);
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+        return dateTime.format(formatter);
+    }
+
     public static String formatTime(ZonedDateTime datetime)
     {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
         return datetime.format(formatter.withZone(italianZoneId));
+    }
+
+
+    public static LocalDate getLocalDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        return LocalDate.parse(date, formatter);
     }
 
     public static ZonedDateTime parseDate(String date)

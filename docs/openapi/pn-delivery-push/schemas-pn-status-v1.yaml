@@ -1,0 +1,69 @@
+components:
+  schemas:
+    
+    SearchableNotificationStatus:
+      type: string
+      enum:
+        - ACCEPTED
+        - DELIVERING
+        - DELIVERED
+        - VIEWED
+        - EFFECTIVE_DATE
+        - PAID
+        - UNREACHABLE
+        - CANCELLED
+    
+    NotificationStatus:
+      type: string
+      description: >
+        stato di avanzamento del processo di notifica:
+          * `IN_VALIDATION` - notifica depositata in attesa di validazione
+          * `ACCEPTED` - notifica accettata 
+          * `REFUSED` - notifica rifiutata
+          * `DELIVERING` - notifica in spedita
+          * `DELIVERED` - notifica ricevuta da tutti i destinatari
+          * `VIEWED` - notifica presa visione per almeno un destinatario
+          * `EFFECTIVE_DATE` - notifica perfezionata per un destinatario
+          * `PAID` - notifica pagata
+          * `UNREACHABLE` - notifica non recapitabile
+          * `CANCELLED` - notifica annullata dal mittente
+      enum:
+        - IN_VALIDATION
+        - ACCEPTED
+        - DELIVERING
+        - DELIVERED
+        - VIEWED
+        - EFFECTIVE_DATE
+        - PAID
+        - UNREACHABLE
+        - REFUSED
+        - CANCELLED
+    
+    NotificationStatusHistory: 
+      description: elenco degli avanzamenti effettuati dal processo di notifica
+      type: array
+      items:
+        $ref: "#/components/schemas/NotificationStatusHistoryElement"
+    
+    NotificationStatusHistoryElement:
+      description: elenco degli avanzamenti effettuati dal processo di notifica
+      type: object
+      required:
+        - status
+        - activeFrom
+        - relatedTimelineElements
+      properties:
+        status:
+          $ref: "#/components/schemas/NotificationStatus"
+        activeFrom:
+          type: string
+          description: data e ora di raggiungimento dello stato di avanzamento
+          format: date-time
+        relatedTimelineElements:
+          type: array
+          description: Eventi avvenuti nello stato
+          items:
+            $ref: "./schemas-pn-timeline-v1.yaml#/components/schemas/TimelineElementId"
+      
+        
+

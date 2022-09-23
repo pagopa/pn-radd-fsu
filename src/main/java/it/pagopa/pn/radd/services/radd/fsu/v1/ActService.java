@@ -28,7 +28,6 @@ import reactor.util.function.Tuples;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,7 +75,6 @@ public class ActService extends BaseService {
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
-        AtomicReference<String> iunRef = new AtomicReference<>();
         return request
                 .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType().getValue(), tmp.getRecipientTaxId(), tmp.getQrCode())
                         .map(ResponseCheckAarDtoDto::getIun)
@@ -84,21 +82,19 @@ public class ActService extends BaseService {
                 .zipWhen( reqAndIun -> getCounterNotification(reqAndIun.getT2(), reqAndIun.getT1().getOperationId()), (reqAndIun, counter)-> reqAndIun)
                 .zipWhen( reqAndIun -> getEnsureRecipientAndDelegate(reqAndIun.getT1()))
                 .zipWhen( reqIunAndEnsure -> {
-                    iunRef.set(reqIunAndEnsure.getT1().getT2());
-                    log.info("IUN : {}", iunRef.get());
                     log.info("Ensure recipient : {}", reqIunAndEnsure.getT2().getRecipient());
                     return createTransaction(reqIunAndEnsure.getT1().getT1(), reqIunAndEnsure.getT1().getT2(), reqIunAndEnsure.getT2(), uid);
-                }, (reqIunAndEnsure, entity) -> reqIunAndEnsure.getT1().getT1())
+                }, (reqIunAndEnsure, entity) -> Tuples.of(reqIunAndEnsure.getT1().getT2(), reqIunAndEnsure.getT1().getT1()))
 
-                .zipWhen(onlyRequest -> verifyCheckSum(onlyRequest.getFileKey(), onlyRequest.getChecksum()), (onlyRequest, responseCheckSum) -> onlyRequest)
+                .zipWhen(iunAndReq -> verifyCheckSum(iunAndReq.getT2().getFileKey(), iunAndReq.getT2().getChecksum()), (iunAndReq, responseCheckSum) -> iunAndReq)
 
-                .zipWhen(onlyRequest -> notification(iunRef.get(), onlyRequest.getRecipientTaxId()))
+                .zipWhen(iunAndReq -> notification(iunAndReq.getT1(), iunAndReq.getT2().getRecipientTaxId()))
 
-                .flatMap(requestAndUrls ->
-                    legalFact(uid, iunRef.get(), requestAndUrls.getT1().getRecipientType().getValue())
+                .flatMap(iunAndReqAndUrls ->
+                    legalFact(uid, iunAndReqAndUrls.getT1().getT1(), iunAndReqAndUrls.getT1().getT2().getRecipientType().getValue())
                             .collectList().map(listUrl -> {
-                                String urlDoc = requestAndUrls.getT2().getT1();
-                                String urlAttachment = requestAndUrls.getT2().getT2();
+                                String urlDoc = iunAndReqAndUrls.getT2().getT1();
+                                String urlAttachment = iunAndReqAndUrls.getT2().getT2();
                                 if (!Strings.isBlank(urlDoc)) listUrl.add(urlDoc);
                                 if (!Strings.isBlank(urlAttachment)) listUrl.add(urlAttachment);
 

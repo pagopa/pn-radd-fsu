@@ -93,7 +93,7 @@ public class RaddTransactionDAO extends BaseDao {
         return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
             log.info("Item finded : {}", item);
             if (item == null) {
-                throw new RaddTransactionNoExistedException();
+                throw new RaddTransactionNoExistedException(Const.NOT_EXISTS_OPERATION);
             }
             return item;
         }));

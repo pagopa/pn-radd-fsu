@@ -20,7 +20,7 @@ public class Const {
     public static final String ALREADY_COMPLETE_PRINT = "Stampa già eseguita";
 
     /* Transaction message */
-    public static final String NOT_EXISTS_OPERAION = "Transazione inesistente";
+    public static final String NOT_EXISTS_OPERATION = "Transazione inesistente";
     public static final String ALREADY_COMPLETE_OPERATION = "Transazione già completata";
     public static final String ABORT_OPERATION = "Transazione in stato annullata";
 

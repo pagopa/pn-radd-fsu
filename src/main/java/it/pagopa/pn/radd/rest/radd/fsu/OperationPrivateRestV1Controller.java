@@ -1,6 +1,5 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-
 import it.pagopa.pn.radd.rest.radd.v1.api.NotificationInquiryApi;
 
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;

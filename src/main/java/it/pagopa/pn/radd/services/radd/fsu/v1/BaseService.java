@@ -46,7 +46,7 @@ public class BaseService {
             status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
 
         } else if (ex instanceof RaddTransactionNoExistedException) {
-            status.setMessage(Const.NOT_EXISTS_OPERAION);
+            status.setMessage(ex.getMessage());
             status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
 
         } else if (ex instanceof RaddTransactionStatusException) {
@@ -68,7 +68,7 @@ public class BaseService {
         AbortTransactionResponse r = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
         if (ex instanceof RaddTransactionNoExistedException) {
-            status.setMessage(Const.NOT_EXISTS_OPERAION);
+            status.setMessage(ex.getMessage());
             status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
 
         } else if (ex instanceof RaddTransactionStatusException) {

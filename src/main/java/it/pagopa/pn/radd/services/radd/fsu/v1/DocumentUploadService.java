@@ -44,10 +44,10 @@ public class DocumentUploadService {
                     resp.setStatus(status);
                     return resp;
                 }).onErrorResume(WebClientResponseException.class, ex -> {
+                    DocumentUploadResponse resp = new DocumentUploadResponse();
                     ResponseStatus status = new ResponseStatus();
                     status.setMessage(Const.KO);
                     status.code(ResponseStatus.CodeEnum.NUMBER_99);
-                    DocumentUploadResponse resp = new DocumentUploadResponse();
                     resp.setStatus(status);
                     return Mono.just(resp);
                 });

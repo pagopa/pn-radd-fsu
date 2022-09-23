@@ -525,7 +525,6 @@ components:
               type: number
               example: 670
 
-
     TransactionResponseStatus:
       description: Stato della response
       allOf:
@@ -540,7 +539,7 @@ components:
                 * 2 -> Transazione già completata (Messaggio di errore differente se già completata per chiamata a complete piuttosto che abort)
                 * 99 -> KO
               type: number
-              enum: [1,2]
+              enum: [0,1,2,99]
 
     DocumentUploadRequest:
       description: Richiesta di upload verso PagoPA

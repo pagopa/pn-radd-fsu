@@ -86,9 +86,7 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public Mono<RaddTransactionEntity> getTransaction(String operationId) {
-
         Key key = Key.builder().partitionValue(operationId).build();
-
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
 
         return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {

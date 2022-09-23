@@ -33,4 +33,9 @@ public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTra
     public Mono<ResponseEntity<CompleteTransactionResponse>> completeActTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
         return actService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
+
+    @Override
+    public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, Mono<AbortTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
+        return actService.abortTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    }
 }

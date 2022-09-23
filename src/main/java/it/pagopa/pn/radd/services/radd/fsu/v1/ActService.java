@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class ActService extends BaseService {
                     return actInquiryResponse;
                 }).onErrorResume(ex -> {
                     if (ex instanceof PnCheckQrCodeException || ex instanceof PnEnsureFiscalCodeException) {
-                        return Mono.just(addErrorResponse(ex));
+                        return Mono.just(actInquiryErrorResponse(ex));
                     }
                     return Mono.error(ex);
                 });
@@ -75,10 +76,10 @@ public class ActService extends BaseService {
 
         AtomicReference<String> iunRef = new AtomicReference<>();
         return request.zipWhen(tmp -> getIun(
-                        tmp.getRecipientType().getValue(),
-                        tmp.getRecipientTaxId(),
-                        tmp.getQrCode())
-                )
+                tmp.getRecipientType().getValue(),
+                tmp.getRecipientTaxId(),
+                tmp.getQrCode())
+        )
                 .zipWhen( reqAndIun -> getCounterNotification(reqAndIun.getT2(), reqAndIun.getT1().getOperationId()), (reqAndIun, counter)-> reqAndIun)
                 .zipWhen( reqAndIun -> getEnsureRecipientAndDelegate(reqAndIun.getT1()))
                 .zipWhen( reqIunAndEnsure -> {
@@ -96,20 +97,71 @@ public class ActService extends BaseService {
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
         return completeTransactionRequest.map(req -> req)
                 .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
-                        .map(entity -> {
-                            if (Strings.isBlank(entity.getStatus()) || entity.getStatus().equals(Const.COMPLETED)){
-                                throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta già completa");
-                            }
-                            return entity;
-                        }),
+                                .map(entity -> {
+                                    checkTransctionStatus(entity);
+                                    return entity;
+                                }),
                         (request, entity) -> entity)
                 .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
                 .zipWhen(entity -> {
+                    // TODO aggiungere data
                     entity.setStatus(Const.COMPLETED);
                     return this.raddTransactionDAO.updateStatus(entity);
                 }).map(tupla -> {
-                    return new CompleteTransactionResponse();
+                    CompleteTransactionResponse response = new CompleteTransactionResponse();
+                    TransactionResponseStatus status = new TransactionResponseStatus();
+                    status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_0);
+                    status.setMessage(Const.OK);
+                    response.setStatus(status);
+                    return response;
+                }).onErrorResume(ex -> {
+                    if (ex instanceof RaddTransactionNoExistedException || ex instanceof RaddTransactionStatusException) {
+                        return Mono.just(completeErrorResponse(ex));
+                    }
+                    return Mono.error(ex);
                 });
+    }
+
+    public Mono<AbortTransactionResponse> abortTransaction(String uid, Mono<AbortTransactionRequest> abortTransactionRequestMono) {
+        return abortTransactionRequestMono
+                .map(m -> {
+                    if (m == null || StringUtils.isEmpty(m.getOperationId())
+                            || StringUtils.isEmpty(m.getReason())
+                            || m.getOperationDate() == null) {
+                        log.error("Missing input parameters");
+                        throw new PnInvalidInputException();
+                    }
+                    return m;
+                })
+                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId()))
+                .map(entity -> {
+                    RaddTransactionEntity raddEntity = entity.getT2();
+                    checkTransctionStatus(raddEntity);
+                    raddEntity.setErrorReason(entity.getT1().getReason());
+                    raddEntity.setOperationEndDate(DateUtils.formatDate(entity.getT1().getOperationDate()));
+                    raddEntity.setStatus(Const.ABORTED);
+                    return raddTransactionDAO.updateStatus(raddEntity);
+                }).map(result -> {
+                    AbortTransactionResponse response = new AbortTransactionResponse();
+                    TransactionResponseStatus status = new TransactionResponseStatus();
+                    status.setMessage(Const.OK);
+                    status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
+                    response.setStatus(status);
+                    return response;
+                }).onErrorResume(ex -> {
+                    if (ex instanceof RaddTransactionNoExistedException || ex instanceof RaddTransactionStatusException) {
+                        return Mono.just(abortErrorResponse(ex));
+                    }
+                    return Mono.error(ex);
+                });
+    }
+
+    private void checkTransctionStatus(RaddTransactionEntity entity) {
+        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
+            throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta già completa", HttpResponseStatus.CONFLICT.code());
+        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
+            throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta annullata", HttpResponseStatus.FORBIDDEN.code());
+        }
     }
 
     private Mono<StartTransactionResponse> sentNotification(String iun) {
@@ -233,7 +285,7 @@ public class ActService extends BaseService {
         return pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
     }
 
-    private ActInquiryResponse addErrorResponse(Throwable ex){
+    private ActInquiryResponse actInquiryErrorResponse(Throwable ex) {
         ActInquiryResponse r = new ActInquiryResponse();
         r.setResult(false);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
@@ -242,11 +294,17 @@ public class ActService extends BaseService {
         if (ex instanceof PnCheckQrCodeException) {
             webClientException = ((PnCheckQrCodeException) ex).getWebClientEx();
             if (webClientException.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
+                status.setMessage(Const.NOT_VALID_QR_CODE);
                 status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
+
             } else if (webClientException.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
+                status.setMessage(Const.NOT_FOUND_DOCUMENT);
                 status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_2);
+
             } else if (webClientException.getRawStatusCode() == HttpResponseStatus.CONFLICT.code()) {
+                status.setMessage(Const.ALREADY_COMPLETE_PRINT);
                 status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);
+
             } else {
                 status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
             }
@@ -254,7 +312,9 @@ public class ActService extends BaseService {
         } else if (ex instanceof PnEnsureFiscalCodeException) {
             webClientException = ((PnEnsureFiscalCodeException) ex).getWebClientEx();
             if (webClientException.getRawStatusCode() == HttpResponseStatus.BAD_REQUEST.code()) {
+                status.setMessage(Const.NOT_VALID_FISCAL_CODE);
                 status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
+
             } else {
                 status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
             }

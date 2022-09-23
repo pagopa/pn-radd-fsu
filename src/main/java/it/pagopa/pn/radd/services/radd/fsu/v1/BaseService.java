@@ -3,14 +3,15 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.rest.radd.v1.dto.AbortTransactionResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CompleteTransactionResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.TransactionResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -39,7 +40,12 @@ public class BaseService {
     protected CompleteTransactionResponse completeErrorResponse(Throwable ex) {
         CompleteTransactionResponse r = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
-        if (ex instanceof RaddTransactionNoExistedException) {
+        status.setMessage(Const.KO);
+
+        if (ex instanceof PnNotificationException) {
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
+
+        } else if (ex instanceof RaddTransactionNoExistedException) {
             status.setMessage(Const.NOT_EXISTS_OPERAION);
             status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
 
@@ -52,7 +58,6 @@ public class BaseService {
             status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_2);
 
         } else {
-            status.setMessage(Const.KO);
             status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
         }
         r.setStatus(status);

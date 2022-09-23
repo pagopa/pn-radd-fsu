@@ -519,7 +519,7 @@ components:
                 * 99 -> KO
                 * 2 -> NotReady
               type: number
-              enum: [2]
+              enum: [0, 99, 2]
             retryAfter:
               description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
               type: number

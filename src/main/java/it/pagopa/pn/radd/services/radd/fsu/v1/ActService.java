@@ -3,8 +3,10 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.internal.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationDocumentDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -22,11 +24,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,20 +40,22 @@ public class ActService extends BaseService {
     private final PnDataVaultClient pnDataVaultClient;
     private final PnSafeStorageClient safeStorageClient;
     private final PnDeliveryInternalClient pnDeliveryInternalClient;
+    private final PnDeliveryPushInternalClient pnDeliveryPushInternalClient;
 
-    public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient) {
+    public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient, PnDeliveryPushInternalClient pnDeliveryPushInternalClient) {
         this.raddTransactionDAO = raddTransactionDAO;
         this.pnDeliveryClient = pnDeliveryClient;
         this.pnDeliveryPushClient = pnDeliveryPushClient;
         this.pnDataVaultClient = pnDataVaultClient;
         this.safeStorageClient = safeStorageClient;
         this.pnDeliveryInternalClient = pnDeliveryInternalClient;
+        this.pnDeliveryPushInternalClient = pnDeliveryPushInternalClient;
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
         // check if iun exists
-        return getEnsureFiscalCode(recipientTaxId, recipientType)
-                .zipWhen(recCode -> getCheckAar(recipientType, recCode, qrCode))
+        return getEnsureFiscalCode(recipientTaxId, recipientType, this.pnDataVaultClient)
+                .zipWhen(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
                 .map(item -> {
                     ResponseCheckAarDtoDto response = item.getT2();
                     log.info("Response iun : {}", response.getIun());
@@ -72,14 +75,11 @@ public class ActService extends BaseService {
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
-        log.info("Service");
-
         AtomicReference<String> iunRef = new AtomicReference<>();
-        return request.zipWhen(tmp -> getIun(
-                tmp.getRecipientType().getValue(),
-                tmp.getRecipientTaxId(),
-                tmp.getQrCode())
-        )
+        return request
+                .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType().getValue(), tmp.getRecipientTaxId(), tmp.getQrCode())
+                        .map(ResponseCheckAarDtoDto::getIun)
+                )
                 .zipWhen( reqAndIun -> getCounterNotification(reqAndIun.getT2(), reqAndIun.getT1().getOperationId()), (reqAndIun, counter)-> reqAndIun)
                 .zipWhen( reqAndIun -> getEnsureRecipientAndDelegate(reqAndIun.getT1()))
                 .zipWhen( reqIunAndEnsure -> {
@@ -90,8 +90,24 @@ public class ActService extends BaseService {
                 }, (reqIunAndEnsure, entity) -> reqIunAndEnsure.getT1().getT1())
 
                 .zipWhen(onlyRequest -> verifyCheckSum(onlyRequest.getFileKey(), onlyRequest.getChecksum()), (onlyRequest, responseCheckSum) -> onlyRequest)
-                .zipWhen(onlyRequest -> sentNotification(iunRef.get()), (onlyRequest, response) -> response);
 
+                .zipWhen(onlyRequest -> notification(iunRef.get(), onlyRequest.getRecipientTaxId()))
+
+                .flatMap(requestAndUrls ->
+                        legalFact(uid, iunRef.get(), requestAndUrls.getT1().getRecipientType().getValue())
+                                .collectList().map(listUrl -> {
+                            String urlDoc = requestAndUrls.getT2().getT1();
+                            String urlAttachment = requestAndUrls.getT2().getT2();
+                            if (!Strings.isBlank(urlDoc)) listUrl.add(urlDoc);
+                            if (!Strings.isBlank(urlAttachment)) listUrl.add(urlAttachment);
+
+                            StartTransactionResponse response = new StartTransactionResponse();
+                            response.setUrlList(listUrl);
+                            StartTransactionResponseStatus status = new StartTransactionResponseStatus();
+                            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
+                            response.setStatus(status);
+                            return response;
+                        }));
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
@@ -105,6 +121,7 @@ public class ActService extends BaseService {
                 .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
                 .zipWhen(entity -> {
                     // TODO aggiungere data
+                    entity.setUid(uid);
                     entity.setStatus(Const.COMPLETED);
                     return this.raddTransactionDAO.updateStatus(entity);
                 }).map(tupla -> {
@@ -137,6 +154,7 @@ public class ActService extends BaseService {
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
                     checkTransctionStatus(raddEntity);
+                    raddEntity.setUid(uid);
                     raddEntity.setErrorReason(entity.getT1().getReason());
                     raddEntity.setOperationEndDate(DateUtils.formatDate(entity.getT1().getOperationDate()));
                     raddEntity.setStatus(Const.ABORTED);
@@ -156,66 +174,53 @@ public class ActService extends BaseService {
                 });
     }
 
-    private void checkTransctionStatus(RaddTransactionEntity entity) {
-        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
-            throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta già completa", HttpResponseStatus.CONFLICT.code());
-        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
-            throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta annullata", HttpResponseStatus.FORBIDDEN.code());
-        }
+    private Flux<String> legalFact(String uid, String iun, String recipientType){
+        return pnDeliveryPushInternalClient.getNotificationLegalFacts(uid, iun, recipientType)
+                .flatMap(item ->
+                        pnDeliveryPushInternalClient
+                                .getLegalFact(uid, iun, recipientType,
+                                        item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
+                                .mapNotNull(LegalFactDownloadMetadataResponseDto::getUrl)
+                ).onErrorResume(Mono::error);
     }
 
-    private Mono<StartTransactionResponse> sentNotification(String iun) {
-
-        return this.pnDeliveryClient.getNotifications(iun).map(item -> {
-            if (item != null && !item.getDocuments().isEmpty()){
-                return getUrlsList(item.getDocuments(), iun);
-            }
-            return new ArrayList<Mono<String>>();
-
-        }).map(this::getMonoResponse);
+    private Mono<Tuple2<String, String>> notification(String iun, String fiscalCode) {
+        return this.pnDeliveryClient.getNotifications(iun)
+                .zipWhen(response -> docIdAndAttachments(iun, fiscalCode, response), (response, tupleUrl) -> tupleUrl)
+                .onErrorResume(Mono::error);
     }
 
-    private StartTransactionResponse getMonoResponse(List<Mono<String>> list){
-        Flux<String> mergedMono = Flux.fromIterable(list)
-                .flatMapSequential(Function.identity());
-        List<String> elements = new ArrayList<>();
-        mergedMono.subscribe(elements::add);
-        StartTransactionResponse response = getResponse();
-        response.setUrlList(elements);
-        return response;
-    }
+    private Mono<Tuple2<String, String>> docIdAndAttachments(String iun, String fiscalCode, SentNotificationDto sentDTO){
+        return Mono.just(sentDTO)
+                .zipWhen(notification -> {
+                    if (!notification.getDocuments().isEmpty()){
+                        return pnDeliveryInternalClient.getPresignedUrlDocument(iun, notification.getDocuments().get(0).getDocIdx())
+                                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
+                    }
+                    return Mono.just("");
+                }).zipWhen(notAndUrlDoc -> {
+                    SentNotificationDto dto = notAndUrlDoc.getT1();
+                    if (!dto.getRecipients().isEmpty()){
+                        List<NotificationRecipientDto> listDTO =
+                                dto.getRecipients().stream()
+                                        .filter(i -> i.getTaxId().equals(fiscalCode)).collect(Collectors.toList());
 
-    private List<Mono<String>> getUrlsList(List<NotificationDocumentDto> list, String iun){
-        return list.stream().map(document -> urlForDocument(iun, document).map(url -> url)).collect(Collectors.toList());
-    }
-
-    private StartTransactionResponse getResponse(){
-        StartTransactionResponse response = new StartTransactionResponse();
-        StartTransactionResponseStatus status = new StartTransactionResponseStatus();
-        status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
-        response.setStatus(status);
-        response.setUrlList(new ArrayList<>());
-        return response;
-    }
-
-    private Mono<String> urlForDocument(String iun,  NotificationDocumentDto documentDto){
-        log.info(documentDto.toString());
-        //f24standard != null
-        if (documentDto.getTitle() == null){
-            //documento normale
-            return this.pnDeliveryInternalClient.getPresignedUrlPaymentDocument(iun, documentDto.getTitle())
-                    .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
-        }
-        return this.pnDeliveryInternalClient.getPresignedUrlDocument(iun, documentDto.getDocIdx())
-                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
-
+                        if (!listDTO.isEmpty()){
+                            NotificationRecipientDto recipient = listDTO.get(0);
+                            if (recipient.getPayment() != null && recipient.getPayment().getPagoPaForm() != null){
+                                String attachment = recipient.getPayment().getPagoPaForm().getRef().getKey();
+                                return pnDeliveryInternalClient.getPresignedUrlPaymentDocument(iun, attachment)
+                                        .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
+                            }
+                        }
+                    }
+                    return Mono.just("");
+                }, (notificationAndUrlDoc, urlAttachment) ->  Tuples.of(notificationAndUrlDoc.getT2(), urlAttachment));
     }
 
     private Mono<FileDownloadResponseDto> verifyCheckSum(String fileKey, String checkSum){
         return this.safeStorageClient.getFile(fileKey).map(response -> {
-            log.info("CheckSum response : {}", response.getChecksum());
-            log.info("CheckSum Request : {}", checkSum);
-            if (StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
+            if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
                 throw new RaddDocumentStatusException("Status is not preloaded");
             }
             if (Strings.isBlank(response.getChecksum()) ||
@@ -242,10 +247,10 @@ public class ActService extends BaseService {
 
 
     private Mono<EnsureFiscalCode> getEnsureRecipientAndDelegate(ActStartTransactionRequest request){
-        return getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())
+        return getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue(), this.pnDataVaultClient)
                 .flatMap(ensureRecipient -> {
                     if (!Strings.isBlank(request.getDelegateTaxId())){
-                        return getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)
+                        return getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF, this.pnDataVaultClient)
                                 .flatMap(delegateEnsure -> Mono.just(new EnsureFiscalCode(ensureRecipient, delegateEnsure)));
                     }
                     return  Mono.just(new EnsureFiscalCode(ensureRecipient, null));
@@ -260,29 +265,29 @@ public class ActService extends BaseService {
                     }
                     return response;
                 })
-        );
+        ).onErrorResume(Mono::error);
     }
 
-    private Mono<String> getIun(String recipientType, String recipientTaxId, String qrCode){
+    private Mono<ResponseCheckAarDtoDto> controlAndCheckAar(String recipientType, String recipientTaxId, String qrCode){
+        if (StringUtils.isEmpty(recipientTaxId) || !Utils.checkPersonType(recipientType) || StringUtils.isEmpty(qrCode)) {
+            log.error("Missing input parameters");
+            throw new PnInvalidInputException();
+        }
         return this.pnDeliveryClient.getCheckAar(recipientType, recipientTaxId, qrCode)
                 .map(response -> {
                     if (response == null || Strings.isBlank(response.getIun())){
                         throw new RaddIunNotFoundException();
                     }
-                    return response.getIun();
+                    return response;
                 }).onErrorResume(Mono::error);
     }
 
-    private Mono<String> getEnsureFiscalCode(String recipientTaxId, String type){
-        return getEnsureFiscalCode(recipientTaxId, type, this.pnDataVaultClient);
-    }
-
-    private Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode) {
-        if (StringUtils.isEmpty(recipientInternalId) || !Utils.checkPersonType(recipientType) || StringUtils.isEmpty(qrCode)) {
-            log.error("Missing input parameters");
-            throw new PnInvalidInputException();
+    private void checkTransctionStatus(RaddTransactionEntity entity) {
+        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
+            throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta già completa", HttpResponseStatus.CONFLICT.code());
+        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
+            throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta annullata", HttpResponseStatus.FORBIDDEN.code());
         }
-        return pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
     }
 
     private ActInquiryResponse actInquiryErrorResponse(Throwable ex) {
@@ -290,7 +295,8 @@ public class ActService extends BaseService {
         r.setResult(false);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
         status.setMessage(Const.KO);
-        WebClientResponseException webClientException = null;
+
+        WebClientResponseException webClientException;
         if (ex instanceof PnCheckQrCodeException) {
             webClientException = ((PnCheckQrCodeException) ex).getWebClientEx();
             if (webClientException.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {

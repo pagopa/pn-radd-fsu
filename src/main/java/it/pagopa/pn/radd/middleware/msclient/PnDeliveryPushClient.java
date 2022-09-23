@@ -1,7 +1,6 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
 import it.pagopa.pn.radd.exception.PnNotificationException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.api.EventComunicationApi;
@@ -15,9 +14,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class PnDeliveryPushClient extends BaseClient {

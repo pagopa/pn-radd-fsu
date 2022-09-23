@@ -25,7 +25,7 @@ public class DateUtils {
         if (date == null)
             return null;
         LocalDateTime dateTime =  LocalDateTime.ofInstant(date.toInstant(), italianZoneId);
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
         return dateTime.format(formatter);
     }
@@ -38,7 +38,7 @@ public class DateUtils {
 
 
     public static LocalDate getLocalDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         return LocalDate.parse(date, formatter);
     }
 

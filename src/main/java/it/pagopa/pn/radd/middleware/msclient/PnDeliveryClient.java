@@ -54,7 +54,7 @@ public class PnDeliveryClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                );
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnCheckQrCodeException(ex)));
     }
 
 

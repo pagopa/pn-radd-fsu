@@ -1,0 +1,178 @@
+[
+  {
+    "httpRequest": {
+        "path": "/delivery-private/notifications/LJLH-GNTJ-DVXR-202209-J-1",
+        "method": "GET"
+    },
+    "httpResponse": {
+        "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },
+        "body": "{\"abstract\":\"Abstract della notifica\",\"idempotenceToken\":\"\",\"paProtocolNumber\":\"1662580087324\",\"subject\":\"invio notifica con cucumber 07-09-2022 19:48:07\",\"recipients\":[{\"recipientType\":\"PF\",\"taxId\":\"FRMTTR76M06B715E\",\"internalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\",\"denomination\":\"Mario Cucumber denomination\",\"digitalDomicile\":{\"type\":\"PEC\",\"address\":\"FRMTTR76M06B715E@pnpagopa.postecert.local\"},\"physicalAddress\":{\"address\":\"Via senza nome\",\"zip\":\"40100\",\"municipality\":\"Milano\",\"province\":\"MI\",\"foreignState\":\"ITALIA\"},\"payment\":{\"noticeCode\":\"302011662580087324\",\"creditorTaxId\":\"77777777777\",\"pagoPaForm\":{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-YXGY-RXJX-ZK5Z-41TQ\",\"versionToken\":\"v1\"}},\"f24flatRate\":{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-VUAR-SGM7-X550-ICD6\",\"versionToken\":\"v1\"}},\"f24standard\":{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-42DD-5KED-WHWY-CHTE\",\"versionToken\":\"v1\"}}}}],\"documents\":[{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-Y1GA-XO08-1Y67-CI3Q\",\"versionToken\":\"v1\"},\"docIdx\":\"0\"}, {\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-Y1GA-XO08-1Y67-CI3Q\",\"versionToken\":\"v1\"},\"docIdx\":\"0\"}, {\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-Y1GA-XO08-1Y67-CI3Q\",\"versionToken\":\"v1\"},\"docIdx\":\"0\"}],\"notificationFeePolicy\":\"FLAT_RATE\",\"cancelledIun\":\"\",\"physicalCommunicationType\":\"REGISTERED_LETTER_890\",\"senderDenomination\":\"comune di milano\",\"senderTaxId\":\"CFComuneMilano\",\"group\":\"\",\"senderPaId\":\"026e8c72-7944-4dcd-8668-f596447fec6d\",\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\",\"sentAt\":\"2022-09-07T19:48:07.766026Z\",\"documentsAvailable\":true}"
+    }
+  },
+  {
+    "httpRequest": {
+        "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/history?numberOfRecipients=1&pathCreatedAt=.*",
+        "method": "GET"
+    },
+    "httpResponse": {
+        "body": "{\"notificationStatus\":\"DELIVERING\",\"notificationStatusHistory\":[{\"status\":\"ACCEPTED\",\"activeFrom\":\"2022-09-07T19:48:07.766026Z\",\"relatedTimelineElements\":[\"UZRA-WEXA-RZTG-202209-U-1_request_accepted\",\"UZRA-WEXA-RZTG-202209-U-1_aar_gen_0\",\"UZRA-WEXA-RZTG-202209-U-1_get_address0_source_PLATFORM_attempt_0\",\"UZRA-WEXA-RZTG-202209-U-1_get_address0_source_SPECIAL_attempt_0\"]},{\"status\":\"DELIVERING\",\"activeFrom\":\"2022-09-07T19:49:16.116951Z\",\"relatedTimelineElements\":[\"UZRA-WEXA-RZTG-202209-U-1_send_digital_domicile0_source_SPECIAL_attempt_1\"]}],\"timeline\":[{\"elementId\":\"UZRA-WEXA-RZTG-202209-U-1_request_accepted\",\"timestamp\":\"2022-09-07T19:48:07.766026Z\",\"legalFactsIds\":[{\"key\":\"safestorage://PN_LEGAL_FACTS-0002-FGRI-52AZ-3FW9-9I6W\",\"category\":\"SENDER_ACK\"}],\"category\":\"REQUEST_ACCEPTED\"},{\"elementId\":\"UZRA-WEXA-RZTG-202209-U-1_aar_gen_0\",\"timestamp\":\"2022-09-07T19:48:46.02962Z\",\"legalFactsIds\":[],\"category\":\"AAR_GENERATION\",\"details\":{\"recIndex\":0,\"errors\":[],\"numberOfPages\":1,\"generatedAarUrl\":\"safestorage://PN_AAR-0002-RXLQ-A839-JRXD-MPI4\"}},{\"elementId\":\"UZRA-WEXA-RZTG-202209-U-1_get_address0_source_PLATFORM_attempt_0\",\"timestamp\":\"2022-09-07T19:49:15.472606Z\",\"legalFactsIds\":[],\"category\":\"GET_ADDRESS\",\"details\":{\"recIndex\":0,\"digitalAddressSource\":\"PLATFORM\",\"isAvailable\":false,\"attemptDate\":\"2022-09-07T19:49:15.472604Z\",\"errors\":[]}},{\"elementId\":\"UZRA-WEXA-RZTG-202209-U-1_get_address0_source_SPECIAL_attempt_0\",\"timestamp\":\"2022-09-07T19:49:15.503586Z\",\"legalFactsIds\":[],\"category\":\"GET_ADDRESS\",\"details\":{\"recIndex\":0,\"digitalAddressSource\":\"SPECIAL\",\"isAvailable\":true,\"attemptDate\":\"2022-09-07T19:49:15.503585Z\",\"errors\":[]}},{\"elementId\":\"UZRA-WEXA-RZTG-202209-U-1_send_digital_domicile0_source_SPECIAL_attempt_1\",\"timestamp\":\"2022-09-07T19:49:16.116951Z\",\"legalFactsIds\":[],\"category\":\"SEND_DIGITAL_DOMICILE\",\"details\":{\"recIndex\":0,\"digitalAddress\":{\"type\":\"PEC\",\"address\":\"FRMTTR76M06B715E@pnpagopa.postecert.local\"},\"digitalAddressSource\":\"SPECIAL\",\"errors\":[],\"retryNumber\":0}}]}"
+    }
+  },
+  {
+    "httpRequest": {
+        "path": "/delivery/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/.*",
+        "method": "GET"
+    },
+    "httpResponse": {
+        "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },
+        "body": "{\"filename\":\"un_attachement.pdf\",\"contentType\":\"application/pdf\",\"contentLength\":3028,\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\",\"url\":\"https://localhost:1080/safe-storage/storage/ilfile.pdf\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/datavault-private/v1/recipients/external/PF",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "body": "\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\""
+    }   
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/check-aar-qr-code"
+      
+    },
+    "httpResponse": {
+        "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },
+        "body": "{\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed"
+    },
+    "httpResponse": {
+      "body": "{\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files",
+      "method": "POST"
+    },
+    "httpResponse": {
+        "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },
+      "body": "{\"uploadMethod\": \"PUT\", \"uploadUrl\": \"http://localhost:1080/safe-storage/storage/unFile\", \"key\": \"key\", \"secret\": \"x6fean8hhggcnan7\", \"resultCode\": \"200.00\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/.*",
+      "method": "GET"
+    },
+    "httpResponse": {
+       "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },  
+      "body": "{ \"key\": \"key\", \"versionId\": \"v1\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"documentStatus\": \"PRELOADED\", \"download\" : {\"url\":\"http://localhost:1080/safe-storage/storage/unFile\"}}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/.*",
+      "method": "POST"
+    },
+    "httpResponse": {
+        "headers": {
+          "content-type": [
+            "application/json"
+          ]
+        },
+      "body": "{\"resultCode\":\"200.00\",\"resultDescription\":\"Ok\"}"
+    }
+  },
+  {
+    "httpRequest": {
+        "path": "/safe-storage/storage/.*",
+        "method": "PUT"
+    },
+    "httpResponse": {
+      "headers": {
+        "x-amz-version-id": ["v1"],
+        "x-amz-checksum-sha256": ["jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE="]
+      },
+      "body": ""
+    }
+  },
+  {
+    "httpRequest": {
+        "path": "/safe-storage/storage/.*",
+        "method": "GET"
+    },
+    "httpResponse": {
+      "headers": {
+          "content-type": ["application/pdf"]
+      },
+      "body": {
+          "type": "BINARY",
+          "base64Bytes": "JVBERi0xLjMNCiXi48/TDQoNCjEgMCBvYmoNCjw8DQovVHlwZSAvQ2F0YWxvZw0KL091dGxpbmVzIDIgMCBSDQovUGFnZXMgMyAwIFINCj4+DQplbmRvYmoNCg0KMiAwIG9iag0KPDwNCi9UeXBlIC9PdXRsaW5lcw0KL0NvdW50IDANCj4+DQplbmRvYmoNCg0KMyAwIG9iag0KPDwNCi9UeXBlIC9QYWdlcw0KL0NvdW50IDINCi9LaWRzIFsgNCAwIFIgNiAwIFIgXSANCj4+DQplbmRvYmoNCg0KNCAwIG9iag0KPDwNCi9UeXBlIC9QYWdlDQovUGFyZW50IDMgMCBSDQovUmVzb3VyY2VzIDw8DQovRm9udCA8PA0KL0YxIDkgMCBSIA0KPj4NCi9Qcm9jU2V0IDggMCBSDQo+Pg0KL01lZGlhQm94IFswIDAgNjEyLjAwMDAgNzkyLjAwMDBdDQovQ29udGVudHMgNSAwIFINCj4+DQplbmRvYmoNCg0KNSAwIG9iag0KPDwgL0xlbmd0aCAxMDc0ID4+DQpzdHJlYW0NCjIgSg0KQlQNCjAgMCAwIHJnDQovRjEgMDAyNyBUZg0KNTcuMzc1MCA3MjIuMjgwMCBUZA0KKCBBIFNpbXBsZSBQREYgRmlsZSApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY4OC42MDgwIFRkDQooIFRoaXMgaXMgYSBzbWFsbCBkZW1vbnN0cmF0aW9uIC5wZGYgZmlsZSAtICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNjY0LjcwNDAgVGQNCigganVzdCBmb3IgdXNlIGluIHRoZSBWaXJ0dWFsIE1lY2hhbmljcyB0dXRvcmlhbHMuIE1vcmUgdGV4dC4gQW5kIG1vcmUgKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA2NTIuNzUyMCBUZA0KKCB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDYyOC44NDgwIFRkDQooIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNjE2Ljg5NjAgVGQNCiggdGV4dC4gQW5kIG1vcmUgdGV4dC4gQm9yaW5nLCB6enp6ei4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNjA0Ljk0NDAgVGQNCiggbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDU5Mi45OTIwIFRkDQooIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNTY5LjA4ODAgVGQNCiggQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA1NTcuMTM2MCBUZA0KKCB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBFdmVuIG1vcmUuIENvbnRpbnVlZCBvbiBwYWdlIDIgLi4uKSBUag0KRVQNCmVuZHN0cmVhbQ0KZW5kb2JqDQoNCjYgMCBvYmoNCjw8DQovVHlwZSAvUGFnZQ0KL1BhcmVudCAzIDAgUg0KL1Jlc291cmNlcyA8PA0KL0ZvbnQgPDwNCi9GMSA5IDAgUiANCj4+DQovUHJvY1NldCA4IDAgUg0KPj4NCi9NZWRpYUJveCBbMCAwIDYxMi4wMDAwIDc5Mi4wMDAwXQ0KL0NvbnRlbnRzIDcgMCBSDQo+Pg0KZW5kb2JqDQoNCjcgMCBvYmoNCjw8IC9MZW5ndGggNjc2ID4+DQpzdHJlYW0NCjIgSg0KQlQNCjAgMCAwIHJnDQovRjEgMDAyNyBUZg0KNTcuMzc1MCA3MjIuMjgwMCBUZA0KKCBTaW1wbGUgUERGIEZpbGUgMiApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY4OC42MDgwIFRkDQooIC4uLmNvbnRpbnVlZCBmcm9tIHBhZ2UgMS4gWWV0IG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA2NzYuNjU2MCBUZA0KKCBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY2NC43MDQwIFRkDQooIHRleHQuIE9oLCBob3cgYm9yaW5nIHR5cGluZyB0aGlzIHN0dWZmLiBCdXQgbm90IGFzIGJvcmluZyBhcyB3YXRjaGluZyApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY1Mi43NTIwIFRkDQooIHBhaW50IGRyeS4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA2NDAuODAwMCBUZA0KKCBCb3JpbmcuICBNb3JlLCBhIGxpdHRsZSBtb3JlIHRleHQuIFRoZSBlbmQsIGFuZCBqdXN0IGFzIHdlbGwuICkgVGoNCkVUDQplbmRzdHJlYW0NCmVuZG9iag0KDQo4IDAgb2JqDQpbL1BERiAvVGV4dF0NCmVuZG9iag0KDQo5IDAgb2JqDQo8PA0KL1R5cGUgL0ZvbnQNCi9TdWJ0eXBlIC9UeXBlMQ0KL05hbWUgL0YxDQovQmFzZUZvbnQgL0hlbHZldGljYQ0KL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcNCj4+DQplbmRvYmoNCg0KMTAgMCBvYmoNCjw8DQovQ3JlYXRvciAoUmF2ZSBcKGh0dHA6Ly93d3cubmV2cm9uYS5jb20vcmF2ZVwpKQ0KL1Byb2R1Y2VyIChOZXZyb25hIERlc2lnbnMpDQovQ3JlYXRpb25EYXRlIChEOjIwMDYwMzAxMDcyODI2KQ0KPj4NCmVuZG9iag0KDQp4cmVmDQowIDExDQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMTkgMDAwMDAgbg0KMDAwMDAwMDA5MyAwMDAwMCBuDQowMDAwMDAwMTQ3IDAwMDAwIG4NCjAwMDAwMDAyMjIgMDAwMDAgbg0KMDAwMDAwMDM5MCAwMDAwMCBuDQowMDAwMDAxNTIyIDAwMDAwIG4NCjAwMDAwMDE2OTAgMDAwMDAgbg0KMDAwMDAwMjQyMyAwMDAwMCBuDQowMDAwMDAyNDU2IDAwMDAwIG4NCjAwMDAwMDI1NzQgMDAwMDAgbg0KDQp0cmFpbGVyDQo8PA0KL1NpemUgMTENCi9Sb290IDEgMCBSDQovSW5mbyAxMCAwIFINCj4+DQoNCnN0YXJ0eHJlZg0KMjcxNA0KJSVFT0YNCg=="
+      }
+    }
+  },
+  {
+    "httpRequest": {
+        "path": "/delivery-push/LJLH-GNTJ-DVXR-202209-J-1/legal-facts",
+        "method": "GET"
+    },
+    "httpResponse": {
+      "headers": {
+          "content-type": ["application/json"]
+      },
+      "body": [
+          {
+            "taxId": "string",
+            "iun": "string",
+            "legalFactsId": {
+              "key": "string",
+              "category": "SENDER_ACK"
+            }
+          }
+        ]
+    }
+  },{
+    "httpRequest": {
+        "path": "/delivery-push/LJLH-GNTJ-DVXR-202209-J-1/legal-facts/SENDER_ACK/string",
+        "method": "GET"
+    },
+    "httpResponse": {
+      "headers": {
+          "content-type": ["application/json"]
+      },
+      "body": 
+        {
+          "filename": "string",
+          "contentLength": 54092,
+          "url": "uploadUrl/LJLH-GNTJ-DVXR-202209-J-1",
+          "retryAfter": 0
+        }
+    }
+  }
+]

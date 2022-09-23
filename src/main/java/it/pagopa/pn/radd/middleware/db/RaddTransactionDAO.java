@@ -7,6 +7,7 @@ import it.pagopa.pn.radd.exception.RaddTransactionAlreadyExist;
 import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
@@ -55,7 +56,7 @@ public class RaddTransactionDAO extends BaseDao {
         logEvent.log();
 
         return Mono.fromFuture(
-                        countTransactionIunIdPractice(entity.getIun(), entity.getOperationId())
+                        countFromIunAndIdPracticeAndStatus(entity.getIun(), entity.getOperationId())
                         .thenCompose(total -> {
                             if (total == 0)
                             {
@@ -131,19 +132,25 @@ public class RaddTransactionDAO extends BaseDao {
         return Flux.from(raddTable.index(RaddTransactionEntity.IUN_INDEX).query(qeRequest).flatMapIterable(Page::items));
     }
 
-
-    public CompletableFuture<Integer> countTransactionIunIdPractice(String iun, String idPractice) {
+    public CompletableFuture<Integer> countFromIunAndIdPracticeAndStatus(String iun, String idPractice){
+        String query = ":iun = "+ RaddTransactionEntity.COL_IUN + " AND (" +
+                RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " + RaddTransactionEntity.COL_STATUS + " = :aborted" +
+                ")";
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":iun",  AttributeValue.builder().s(iun).build());
         expressionValues.put(":idPractice",  AttributeValue.builder().s(idPractice).build());
-
+        expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
+        expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
+        return this.getCounterQuery(expressionValues, query);
+    }
+    private CompletableFuture<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression){
         QueryRequest qeRequest = QueryRequest
                 .builder()
                 .select(Select.COUNT)
                 .tableName(table)
                 .keyConditionExpression(RaddTransactionEntity.COL_OPERATION_ID + " = :idPractice")
-                .filterExpression(":iun = "+ RaddTransactionEntity.COL_IUN)
-                .expressionAttributeValues(expressionValues)
+                .filterExpression(filterExpression)
+                .expressionAttributeValues(values)
                 .build();
 
         return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);

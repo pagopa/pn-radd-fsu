@@ -109,17 +109,7 @@ public class ActService extends BaseService {
                                 response.setStatus(status);
                                 return response;
                             })
-                ).onErrorResume(ex -> {
-                    StartTransactionResponse response = new StartTransactionResponse();
-                    StartTransactionResponseStatus status = new StartTransactionResponseStatus();
-                    status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
-                    response.setStatus(status);
-                    if (ex instanceof PnException){
-                        PnException exception = (PnException) ex;
-                        status.setMessage(exception.getDescription());
-                    }
-                    return Mono.just(response);
-                });
+                );
 
     }
 
@@ -271,14 +261,14 @@ public class ActService extends BaseService {
     }
 
     private Mono<Integer> getCounterNotification(String iun, String operationId){
-        return Mono.fromFuture(this.raddTransactionDAO.countTransactionIunIdPractice(iun, operationId)
+        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndIdPracticeAndStatus(iun, operationId)
                 .thenApply(response -> {
                     if (response > 0){
                         throw new RaddTransactionAlreadyExist();
                     }
                     return response;
                 })
-        ).onErrorResume(Mono::error);
+        );
     }
 
     private Mono<ResponseCheckAarDtoDto> controlAndCheckAar(String recipientType, String recipientTaxId, String qrCode){

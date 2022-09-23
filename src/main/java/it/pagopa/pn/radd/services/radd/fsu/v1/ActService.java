@@ -25,8 +25,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -115,11 +113,11 @@ public class ActService extends BaseService {
                                 .map(entity -> {
                                     checkTransctionStatus(entity);
                                     return entity;
-                                }),
-                        (request, entity) -> entity)
-                .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
-                .zipWhen(entity -> {
-                    entity.setOperationEndDate(DateUtils.formatDate(Instant.now()));
+                                }))
+                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2()), (reqAndEntity, response) -> reqAndEntity)
+                .zipWhen(reqAndEntity -> {
+                    RaddTransactionEntity entity = reqAndEntity.getT2();
+                    entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
                     entity.setUid(uid);
                     entity.setStatus(Const.COMPLETED);
                     return this.raddTransactionDAO.updateStatus(entity);

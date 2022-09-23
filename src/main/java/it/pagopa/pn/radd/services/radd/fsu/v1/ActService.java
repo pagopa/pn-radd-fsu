@@ -26,6 +26,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -94,20 +95,32 @@ public class ActService extends BaseService {
                 .zipWhen(onlyRequest -> notification(iunRef.get(), onlyRequest.getRecipientTaxId()))
 
                 .flatMap(requestAndUrls ->
-                        legalFact(uid, iunRef.get(), requestAndUrls.getT1().getRecipientType().getValue())
-                                .collectList().map(listUrl -> {
-                            String urlDoc = requestAndUrls.getT2().getT1();
-                            String urlAttachment = requestAndUrls.getT2().getT2();
-                            if (!Strings.isBlank(urlDoc)) listUrl.add(urlDoc);
-                            if (!Strings.isBlank(urlAttachment)) listUrl.add(urlAttachment);
+                    legalFact(uid, iunRef.get(), requestAndUrls.getT1().getRecipientType().getValue())
+                            .collectList().map(listUrl -> {
+                                String urlDoc = requestAndUrls.getT2().getT1();
+                                String urlAttachment = requestAndUrls.getT2().getT2();
+                                if (!Strings.isBlank(urlDoc)) listUrl.add(urlDoc);
+                                if (!Strings.isBlank(urlAttachment)) listUrl.add(urlAttachment);
 
-                            StartTransactionResponse response = new StartTransactionResponse();
-                            response.setUrlList(listUrl);
-                            StartTransactionResponseStatus status = new StartTransactionResponseStatus();
-                            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
-                            response.setStatus(status);
-                            return response;
-                        }));
+                                StartTransactionResponse response = new StartTransactionResponse();
+                                response.setUrlList(listUrl);
+                                StartTransactionResponseStatus status = new StartTransactionResponseStatus();
+                                status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
+                                response.setStatus(status);
+                                return response;
+                            })
+                ).onErrorResume(ex -> {
+                    StartTransactionResponse response = new StartTransactionResponse();
+                    StartTransactionResponseStatus status = new StartTransactionResponseStatus();
+                    status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
+                    response.setStatus(status);
+                    if (ex instanceof PnException){
+                        PnException exception = (PnException) ex;
+                        status.setMessage(exception.getDescription());
+                    }
+                    return Mono.just(response);
+                });
+
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
@@ -120,7 +133,7 @@ public class ActService extends BaseService {
                         (request, entity) -> entity)
                 .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
                 .zipWhen(entity -> {
-                    // TODO aggiungere data
+                    entity.setOperationEndDate(DateUtils.formatDate(Instant.now()));
                     entity.setUid(uid);
                     entity.setStatus(Const.COMPLETED);
                     return this.raddTransactionDAO.updateStatus(entity);

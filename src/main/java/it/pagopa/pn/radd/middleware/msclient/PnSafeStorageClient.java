@@ -1,6 +1,8 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
+import it.pagopa.pn.radd.exception.PnDocumentException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileDownloadApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileUploadApi;
@@ -11,6 +13,7 @@ import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -47,7 +50,7 @@ public class PnSafeStorageClient extends BaseClient {
                 .retryWhen(
                 Retry.backoff(2, Duration.ofMillis(25))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-        );
+        ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnDocumentException(ex)));
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){

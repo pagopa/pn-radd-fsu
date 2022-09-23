@@ -1,12 +1,10 @@
 package it.pagopa.pn.radd.exception;
 
-import it.pagopa.pn.commons.exceptions.PnHttpResponseException;
-import org.springframework.http.HttpStatus;
 
-public class RaddTransactionAlreadyExist extends PnHttpResponseException {
+public class RaddTransactionAlreadyExist extends PnException {
 
     public RaddTransactionAlreadyExist() {
-        super("Non è possibile creare due Transaction per lo stesso utente", HttpStatus.CONFLICT.value());
+        super("Transaction db", "Transazione già esistente o con stato completed o aborted");
     }
 
 }

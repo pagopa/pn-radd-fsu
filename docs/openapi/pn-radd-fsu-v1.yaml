@@ -16,14 +16,18 @@ servers:
   - url: https://tbd/
 
 tags:
-  - name: documentInquiry
-    description: API di interrogazione per la verifica presenza di  atti e attestazioni opponibili a terzi o avvisi di avvenuta ricezione.
+  - name: actDocumentInquiry
+    description: API di interrogazione per la verifica presenza di  atti e attestazioni opponibili a terzi.
+  - name: aorDocumentInquiry
+    description: API di interrogazione per la verifica presenza di avvisi di avvenuta ricezione.
   - name: documentUpload
     description: API caricamento file.
-  - name: transactionManagement
-    description: API di gestione della transazione.
-  - name: operationInquiry
-    description: API di interrogazione delle notifiche.
+  - name: actTransactionManagement
+    description: API di gestione della transazione per atti e attestazioni opponibili a terzi.
+  - name: aorTransactionManagement
+    description: API di gestione della transazione per avvisi di avvenuta ricezione.
+  - name: notificationInquiry
+    description: API di interrogazione delle pratiche.
 
 paths:
   /radd-fsu-private/api/v1/act/inquiry:
@@ -519,12 +523,11 @@ components:
                 * 99 -> KO
                 * 2 -> NotReady
               type: number
-              enum: [2]
+              enum: [0, 99, 2]
             retryAfter:
               description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
               type: number
               example: 670
-
 
     TransactionResponseStatus:
       description: Stato della response
@@ -540,7 +543,7 @@ components:
                 * 2 -> Transazione già completata (Messaggio di errore differente se già completata per chiamata a complete piuttosto che abort)
                 * 99 -> KO
               type: number
-              enum: [1,2]
+              enum: [0,1,2,99]
 
     DocumentUploadRequest:
       description: Richiesta di upload verso PagoPA
@@ -609,7 +612,7 @@ components:
                 * 1 -> Nessun elemento associato
                 * 99 -> KO
               type: number
-              enum: [1,2,3]
+              enum: [0,1,99]
 
     OperationResponse:
       description: Risposta della notifica

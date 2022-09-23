@@ -13,7 +13,7 @@ public class RaddTransactionEntity {
 
     public static final String COL_IUN = "iun";
     public static final String COL_OPERATION_ID = "operationId";
-    public static final String COL_STATUS = "status";
+    public static final String COL_STATUS = "operation_status";
     public static final String COL_FILE_KEY = "fileKey";
     public static final String COL_QR_CODE = "qrCode";
     public static final String COL_RECIPIENT_ID = "recipientId";

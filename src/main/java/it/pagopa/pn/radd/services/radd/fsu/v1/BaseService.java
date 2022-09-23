@@ -1,8 +1,12 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.RaddFiscalCodeEnsureException;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
+import it.pagopa.pn.radd.rest.radd.v1.dto.AbortTransactionResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CompleteTransactionResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.TransactionResponseStatus;
+import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +35,52 @@ public class BaseService {
                     }
                     return response;
                 }).onErrorResume(Mono::error);
+    }
+
+    protected CompleteTransactionResponse completeErrorResponse(Throwable ex) {
+        CompleteTransactionResponse r = new CompleteTransactionResponse();
+        TransactionResponseStatus status = new TransactionResponseStatus();
+        status.setMessage(Const.KO);
+
+        if (ex instanceof PnNotificationException) {
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
+
+        } else if (ex instanceof RaddTransactionNoExistedException) {
+            status.setMessage(ex.getMessage());
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
+
+        } else if (ex instanceof RaddTransactionStatusException) {
+            if (((RaddTransactionStatusException)ex).getStatus() == HttpResponseStatus.FORBIDDEN.code()) {
+                status.setMessage(Const.ABORT_OPERATION);
+            } else {
+                status.setMessage(Const.ALREADY_COMPLETE_OPERATION);
+            }
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_2);
+
+        } else {
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
+        }
+        r.setStatus(status);
+        return r;
+    }
+
+    protected AbortTransactionResponse abortErrorResponse(Throwable ex) {
+        AbortTransactionResponse r = new AbortTransactionResponse();
+        TransactionResponseStatus status = new TransactionResponseStatus();
+        if (ex instanceof RaddTransactionNoExistedException) {
+            status.setMessage(ex.getMessage());
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
+
+        } else if (ex instanceof RaddTransactionStatusException) {
+            status.setMessage(Const.ALREADY_COMPLETE_OPERATION);
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_2);
+
+        } else {
+            status.setMessage(Const.KO);
+            status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
+        }
+        r.setStatus(status);
+        return r;
     }
 
 }

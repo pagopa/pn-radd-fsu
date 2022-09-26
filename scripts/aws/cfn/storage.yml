@@ -39,9 +39,9 @@ Resources:
         - AttributeName: "operationId"
           AttributeType: "S"
         - AttributeName: "iun"
-            AttributeType: "S"
+          AttributeType: "S"
       KeySchema:
-        - AttributeName: "pk"
+        - AttributeName: "operationId"
           KeyType: "HASH"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"

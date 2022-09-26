@@ -122,4 +122,4 @@ Resources:
               - dynamodb:TransactWriteItems
               - dynamodb:UpdateItem
             Resource:
-              - !Sub "${RaddTransactionDynamoTableName}"
+              - !Sub "${RaddTransactionDynamoTableArn}"

@@ -31,7 +31,7 @@ Resources:
         StreamName: !Sub '${ProjectName}-radd-fsu-cdc-stream'
         StreamRetentionPeriodHours: 24
 
-  RaddTransactionDynamoTableName:
+  RaddTransactionDynamoTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub '${ProjectName}-radd-transaction'
@@ -64,6 +64,9 @@ Resources:
         StreamViewType: NEW_IMAGE
 
 Outputs:
-  RaddTransactionDynamoTableName:
+  RaddTransactionDynamoTable:
     Description: Name of dynamodb table containing radd transaction
-    Value: !Ref RaddTransactionDynamoTableName
+    Value: !Ref RaddTransactionDynamoTable
+  RaddTransactionDynamoTableArn:
+    Description: ARN of dynamodb table containing transaction
+    Value: !Sub '${RaddTransactionDynamoTable.Arn}'

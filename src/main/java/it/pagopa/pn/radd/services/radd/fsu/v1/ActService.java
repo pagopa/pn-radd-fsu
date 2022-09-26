@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.internal.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
@@ -11,7 +12,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.Fi
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
-import it.pagopa.pn.radd.pojo.EnsureFiscalCode;
+import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
@@ -23,12 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,8 +40,9 @@ public class ActService extends BaseService {
     private final PnSafeStorageClient safeStorageClient;
     private final PnDeliveryInternalClient pnDeliveryInternalClient;
     private final PnDeliveryPushInternalClient pnDeliveryPushInternalClient;
+    private final TransactionDataMapper transactionDataMapper;
 
-    public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient, PnDeliveryPushInternalClient pnDeliveryPushInternalClient) {
+    public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, PnDeliveryInternalClient pnDeliveryInternalClient, PnDeliveryPushInternalClient pnDeliveryPushInternalClient, TransactionDataMapper transactionDataMapper) {
         this.raddTransactionDAO = raddTransactionDAO;
         this.pnDeliveryClient = pnDeliveryClient;
         this.pnDeliveryPushClient = pnDeliveryPushClient;
@@ -51,6 +50,7 @@ public class ActService extends BaseService {
         this.safeStorageClient = safeStorageClient;
         this.pnDeliveryInternalClient = pnDeliveryInternalClient;
         this.pnDeliveryPushInternalClient = pnDeliveryPushInternalClient;
+        this.transactionDataMapper = transactionDataMapper;
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
@@ -76,32 +76,28 @@ public class ActService extends BaseService {
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
-        AtomicReference<String> iunRef = new AtomicReference<>();
         return request
-                .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType().getValue(), tmp.getRecipientTaxId(), tmp.getQrCode())
-                        .map(ResponseCheckAarDtoDto::getIun)
-                )
-                .zipWhen( reqAndIun -> getCounterNotification(reqAndIun.getT2(), reqAndIun.getT1().getOperationId()), (reqAndIun, counter)-> reqAndIun)
-                .zipWhen( reqAndIun -> getEnsureRecipientAndDelegate(reqAndIun.getT1()))
-                .zipWhen( reqIunAndEnsure -> {
-                    iunRef.set(reqIunAndEnsure.getT1().getT2());
-                    log.info("IUN : {}", iunRef.get());
-                    log.info("Ensure recipient : {}", reqIunAndEnsure.getT2().getRecipient());
-                    return createTransaction(reqIunAndEnsure.getT1().getT1(), reqIunAndEnsure.getT1().getT2(), reqIunAndEnsure.getT2(), uid);
-                }, (reqIunAndEnsure, entity) -> reqIunAndEnsure.getT1().getT1())
+                .map(this::validateAndSettingsData)
+                .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getRecipientId(), tmp.getQrCode())
+                        .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
+                                                                transaction.setIun(iun);
+                                                                return transaction;
+                })
+                .zipWhen( transaction -> getCounterNotification(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
+                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transactionWithEnsure) -> transactionWithEnsure)
+                .zipWhen( transaction -> {
+                    log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
+                    return createTransaction(transaction, uid);
+                }, (transaction, entity) -> transaction)
 
-                .zipWhen(onlyRequest -> verifyCheckSum(onlyRequest.getFileKey(), onlyRequest.getChecksum()), (onlyRequest, responseCheckSum) -> onlyRequest)
+                .zipWhen(transaction -> verifyCheckSum(transaction.getFileKey(), transaction.getChecksum()), (transaction, responseCheckSum) -> transaction)
 
-                .zipWhen(onlyRequest -> notification(iunRef.get(), onlyRequest.getRecipientTaxId()))
+                .zipWhen(this::notification, (transaction, transactionWithUlrs) -> transactionWithUlrs)
 
-                .flatMap(requestAndUrls ->
-                    legalFact(uid, iunRef.get(), requestAndUrls.getT1().getRecipientType().getValue())
+                .flatMap(transaction ->
+                    legalFact(uid,transaction.getIun(), transaction.getRecipientType())
                             .collectList().map(listUrl -> {
-                                String urlDoc = requestAndUrls.getT2().getT1();
-                                String urlAttachment = requestAndUrls.getT2().getT2();
-                                if (!Strings.isBlank(urlDoc)) listUrl.add(urlDoc);
-                                if (!Strings.isBlank(urlAttachment)) listUrl.add(urlAttachment);
-
+                                listUrl.addAll(transaction.getUrls());
                                 StartTransactionResponse response = new StartTransactionResponse();
                                 response.setUrlList(listUrl);
                                 StartTransactionResponseStatus status = new StartTransactionResponseStatus();
@@ -117,13 +113,13 @@ public class ActService extends BaseService {
         return completeTransactionRequest.map(req -> req)
                 .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
                                 .map(entity -> {
-                                    checkTransctionStatus(entity);
+                                    checkTransactionStatus(entity);
                                     return entity;
-                                }),
-                        (request, entity) -> entity)
-                .zipWhen(this.pnDeliveryPushClient::notifyNotificationViewed, (entity, response) -> entity)
-                .zipWhen(entity -> {
-                    entity.setOperationEndDate(DateUtils.formatDate(Instant.now()));
+                                }))
+                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2()), (reqAndEntity, response) -> reqAndEntity)
+                .zipWhen(reqAndEntity -> {
+                    RaddTransactionEntity entity = reqAndEntity.getT2();
+                    entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
                     entity.setUid(uid);
                     entity.setStatus(Const.COMPLETED);
                     return this.raddTransactionDAO.updateStatus(entity);
@@ -156,7 +152,7 @@ public class ActService extends BaseService {
                 .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId()))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
-                    checkTransctionStatus(raddEntity);
+                    checkTransactionStatus(raddEntity);
                     raddEntity.setUid(uid);
                     raddEntity.setErrorReason(entity.getT1().getReason());
                     raddEntity.setOperationEndDate(DateUtils.formatDate(entity.getT1().getOperationDate()));
@@ -187,38 +183,52 @@ public class ActService extends BaseService {
                 ).onErrorResume(Mono::error);
     }
 
-    private Mono<Tuple2<String, String>> notification(String iun, String fiscalCode) {
-        return this.pnDeliveryClient.getNotifications(iun)
-                .zipWhen(response -> docIdAndAttachments(iun, fiscalCode, response), (response, tupleUrl) -> tupleUrl)
+    private Mono<TransactionData> notification(TransactionData transaction) {
+        return this.pnDeliveryClient.getNotifications(transaction.getIun())
+                .zipWhen(response -> docIdAndAttachments(transaction, response), (response, tupleUrl) -> tupleUrl)
+                .map(urls -> {
+                    transaction.getUrls().addAll(urls);
+                    return transaction;
+                })
                 .onErrorResume(Mono::error);
     }
 
-    private Mono<Tuple2<String, String>> docIdAndAttachments(String iun, String fiscalCode, SentNotificationDto sentDTO){
+    private Mono<List<String>> docIdAndAttachments(TransactionData transaction, SentNotificationDto sentDTO){
         return Mono.just(sentDTO)
                 .zipWhen(notification -> {
-                    if (!notification.getDocuments().isEmpty()){
-                        return pnDeliveryInternalClient.getPresignedUrlDocument(iun, notification.getDocuments().get(0).getDocIdx())
-                                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
+                    if (notification.getDocuments().isEmpty()){
+                        return Mono.just(new ArrayList<String>());
                     }
-                    return Mono.just("");
-                }).zipWhen(notAndUrlDoc -> {
-                    SentNotificationDto dto = notAndUrlDoc.getT1();
+                    return retrieveUrlsDocuments(transaction.getIun(), sentDTO).collectList();
+                })
+                .zipWhen(notAndUrls -> {
+                    SentNotificationDto dto = notAndUrls.getT1();
                     if (!dto.getRecipients().isEmpty()){
                         List<NotificationRecipientDto> listDTO =
                                 dto.getRecipients().stream()
-                                        .filter(i -> i.getTaxId().equals(fiscalCode)).collect(Collectors.toList());
+                                        .filter(i -> i.getTaxId().equals(transaction.getRecipientId())).collect(Collectors.toList());
 
                         if (!listDTO.isEmpty()){
                             NotificationRecipientDto recipient = listDTO.get(0);
                             if (recipient.getPayment() != null && recipient.getPayment().getPagoPaForm() != null){
                                 String attachment = recipient.getPayment().getPagoPaForm().getRef().getKey();
-                                return pnDeliveryInternalClient.getPresignedUrlPaymentDocument(iun, attachment)
+                                return pnDeliveryInternalClient.getPresignedUrlPaymentDocument(transaction.getIun(), attachment)
                                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
                             }
                         }
                     }
                     return Mono.just("");
-                }, (notificationAndUrlDoc, urlAttachment) ->  Tuples.of(notificationAndUrlDoc.getT2(), urlAttachment));
+                }, (notAndTransaction, urlAttachment) ->  {
+                    List<String> urls = notAndTransaction.getT2();
+                    urls.add(urlAttachment);
+                    return urls;
+                });
+    }
+
+    private Flux<String> retrieveUrlsDocuments(String iun, SentNotificationDto documents){
+        return Flux.fromStream(documents.getDocuments().stream())
+                .flatMap(document -> pnDeliveryInternalClient.getPresignedUrlDocument(iun, document.getDocIdx())
+                        .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
     }
 
     private Mono<FileDownloadResponseDto> verifyCheckSum(String fileKey, String checkSum){
@@ -234,34 +244,40 @@ public class ActService extends BaseService {
         });
     }
 
-    private Mono<RaddTransactionEntity> createTransaction(ActStartTransactionRequest request, String iun, EnsureFiscalCode ensureFiscalCode, String uid){
+    private Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIun(iun);
-        entity.setOperationId(request.getOperationId());
-        entity.setDelegateId(ensureFiscalCode.getDelegate());
-        entity.setRecipientId(ensureFiscalCode.getRecipient());
-        entity.setFileKey(request.getFileKey());
+        entity.setIun(transaction.getIun());
+        log.info("Operation Id : {}", transaction.getOperationId());
+        entity.setOperationId(transaction.getOperationId());
+        entity.setDelegateId(transaction.getEnsureDelegateId());
+        entity.setRecipientId(transaction.getEnsureRecipientId());
+        entity.setFileKey(transaction.getFileKey());
         entity.setUid(uid);
-        entity.setQrCode(request.getQrCode());
+        entity.setQrCode(transaction.getQrCode());
         entity.setStatus(Const.STARTED);
-        entity.setOperationStartDate(DateUtils.formatDate(request.getOperationDate()));
+        entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
         return this.raddTransactionDAO.createRaddTransaction(entity);
     }
 
 
-    private Mono<EnsureFiscalCode> getEnsureRecipientAndDelegate(ActStartTransactionRequest request){
-        return getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue(), this.pnDataVaultClient)
+    private Mono<TransactionData> getEnsureRecipientAndDelegate(TransactionData transaction){
+        return getEnsureFiscalCode(transaction.getRecipientId(), transaction.getRecipientType(), this.pnDataVaultClient)
                 .flatMap(ensureRecipient -> {
-                    if (!Strings.isBlank(request.getDelegateTaxId())){
-                        return getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF, this.pnDataVaultClient)
-                                .flatMap(delegateEnsure -> Mono.just(new EnsureFiscalCode(ensureRecipient, delegateEnsure)));
+                    if (!Strings.isBlank(transaction.getDelegateId())){
+                        return getEnsureFiscalCode(transaction.getDelegateId(), Const.PF, this.pnDataVaultClient)
+                                .flatMap(delegateEnsure -> {
+                                    transaction.setEnsureRecipientId(ensureRecipient);
+                                    transaction.setEnsureDelegateId(delegateEnsure);
+                                    return Mono.just(transaction);
+                                });
                     }
-                    return  Mono.just(new EnsureFiscalCode(ensureRecipient, null));
+                    transaction.setEnsureRecipientId(ensureRecipient);
+                    return  Mono.just(transaction);
                 });
     }
 
     private Mono<Integer> getCounterNotification(String iun, String operationId){
-        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndIdPracticeAndStatus(iun, operationId)
+        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(iun, operationId)
                 .thenApply(response -> {
                     if (response > 0){
                         throw new RaddTransactionAlreadyExist();
@@ -285,13 +301,30 @@ public class ActService extends BaseService {
                 }).onErrorResume(Mono::error);
     }
 
-    private void checkTransctionStatus(RaddTransactionEntity entity) {
+    private void checkTransactionStatus(RaddTransactionEntity entity) {
         if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
             throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta già completa", HttpResponseStatus.CONFLICT.code());
         } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
             throw new RaddTransactionStatusException("Stato Transazione incoerente", "La trasazione risulta annullata", HttpResponseStatus.FORBIDDEN.code());
         }
     }
+
+    private TransactionData validateAndSettingsData(ActStartTransactionRequest request){
+        if (Strings.isBlank(request.getOperationId())){
+            throw new RaddTransactionStatusException("Id operazione", "Id operazione non valorizzato", HttpResponseStatus.BAD_REQUEST.code());
+        }
+        if (Strings.isBlank(request.getRecipientTaxId())){
+            throw new RaddTransactionStatusException("Codice Fiscale", "Codice fiscale non valorizzato", HttpResponseStatus.BAD_REQUEST.code());
+        }
+        if (Strings.isBlank(request.getQrCode())){
+            throw new RaddTransactionStatusException("QRCode", "QRCode non valorizzato", HttpResponseStatus.BAD_REQUEST.code());
+        }
+        if (!Utils.checkPersonType(request.getRecipientType().getValue())){
+            throw new PnInvalidInputException("Recipient Type non valorizzato correttamente");
+        }
+        return this.transactionDataMapper.toTransaction(request);
+    }
+
 
     private ActInquiryResponse actInquiryErrorResponse(Throwable ex) {
         ActInquiryResponse r = new ActInquiryResponse();

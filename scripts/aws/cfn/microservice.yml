@@ -66,6 +66,10 @@ Parameters:
   RaddTransactionDynamoTableName:
     Type: String
     Description: 'Name of dynamodb table containing radd transaction'
+
+  RaddTransactionDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing radd transaction'
   
   Version:
     Type: String

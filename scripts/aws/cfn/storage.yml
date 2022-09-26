@@ -64,7 +64,7 @@ Resources:
         StreamViewType: NEW_IMAGE
 
 Outputs:
-  RaddTransactionDynamoTable:
+  RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction
     Value: !Ref RaddTransactionDynamoTable
   RaddTransactionDynamoTableArn:

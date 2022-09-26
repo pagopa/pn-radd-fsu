@@ -15,6 +15,7 @@ public class TransactionDataMapper {
         transactionData.setQrCode(request.getQrCode());
         transactionData.setFileKey(request.getFileKey());
         transactionData.setOperationDate(request.getOperationDate());
+        transactionData.setOperationId(request.getOperationId());
         transactionData.setChecksum(request.getChecksum());
         return transactionData;
     }

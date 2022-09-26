@@ -56,7 +56,7 @@ public class RaddTransactionDAO extends BaseDao {
         logEvent.log();
 
         return Mono.fromFuture(
-                        countFromIunAndIdPracticeAndStatus(entity.getIun(), entity.getOperationId())
+                        countFromIunAndOperationIdAndStatus(entity.getIun(), entity.getOperationId())
                         .thenCompose(total -> {
                             if (total == 0)
                             {
@@ -132,13 +132,13 @@ public class RaddTransactionDAO extends BaseDao {
         return Flux.from(raddTable.index(RaddTransactionEntity.IUN_INDEX).query(qeRequest).flatMapIterable(Page::items));
     }
 
-    public CompletableFuture<Integer> countFromIunAndIdPracticeAndStatus(String iun, String idPractice){
+    public CompletableFuture<Integer> countFromIunAndOperationIdAndStatus(String iun, String operationId){
         String query = ":iun = "+ RaddTransactionEntity.COL_IUN + " AND (" +
                 RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " + RaddTransactionEntity.COL_STATUS + " = :aborted" +
                 ")";
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":iun",  AttributeValue.builder().s(iun).build());
-        expressionValues.put(":idPractice",  AttributeValue.builder().s(idPractice).build());
+        expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
         expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
         return this.getCounterQuery(expressionValues, query);
@@ -148,7 +148,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .builder()
                 .select(Select.COUNT)
                 .tableName(table)
-                .keyConditionExpression(RaddTransactionEntity.COL_OPERATION_ID + " = :idPractice")
+                .keyConditionExpression(RaddTransactionEntity.COL_OPERATION_ID + " = :operationId")
                 .filterExpression(filterExpression)
                 .expressionAttributeValues(values)
                 .build();

@@ -247,6 +247,7 @@ public class ActService extends BaseService {
     private Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setIun(transaction.getIun());
+        log.info("Operation Id : {}", transaction.getOperationId());
         entity.setOperationId(transaction.getOperationId());
         entity.setDelegateId(transaction.getEnsureDelegateId());
         entity.setRecipientId(transaction.getEnsureRecipientId());
@@ -276,7 +277,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<Integer> getCounterNotification(String iun, String operationId){
-        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndIdPracticeAndStatus(iun, operationId)
+        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(iun, operationId)
                 .thenApply(response -> {
                     if (response > 0){
                         throw new RaddTransactionAlreadyExist();

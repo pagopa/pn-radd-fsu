@@ -24,8 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -185,41 +185,50 @@ public class ActService extends BaseService {
 
     private Mono<TransactionData> notification(TransactionData transaction) {
         return this.pnDeliveryClient.getNotifications(transaction.getIun())
-                .zipWhen(response -> docIdAndAttachments(transaction.getIun(), transaction.getEnsureRecipientId(), response), (response, tupleUrl) -> tupleUrl)
-                .map(url -> {
-                    transaction.getUrls().add(url.getT1());
-                    transaction.getUrls().add(url.getT2());
+                .zipWhen(response -> docIdAndAttachments(transaction, response), (response, tupleUrl) -> tupleUrl)
+                .map(urls -> {
+                    transaction.getUrls().addAll(urls);
                     return transaction;
                 })
                 .onErrorResume(Mono::error);
     }
 
-    private Mono<Tuple2<String, String>> docIdAndAttachments(String iun, String fiscalCode, SentNotificationDto sentDTO){
+    private Mono<List<String>> docIdAndAttachments(TransactionData transaction, SentNotificationDto sentDTO){
         return Mono.just(sentDTO)
                 .zipWhen(notification -> {
-                    if (!notification.getDocuments().isEmpty()){
-                        return pnDeliveryInternalClient.getPresignedUrlDocument(iun, notification.getDocuments().get(0).getDocIdx())
-                                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
+                    if (notification.getDocuments().isEmpty()){
+                        return Mono.just(new ArrayList<String>());
                     }
-                    return Mono.just("");
-                }).zipWhen(notAndUrlDoc -> {
-                    SentNotificationDto dto = notAndUrlDoc.getT1();
+                    return retrieveUrlsDocuments(transaction.getIun(), sentDTO).collectList();
+                })
+                .zipWhen(notAndUrls -> {
+                    SentNotificationDto dto = notAndUrls.getT1();
                     if (!dto.getRecipients().isEmpty()){
                         List<NotificationRecipientDto> listDTO =
                                 dto.getRecipients().stream()
-                                        .filter(i -> i.getTaxId().equals(fiscalCode)).collect(Collectors.toList());
+                                        .filter(i -> i.getTaxId().equals(transaction.getRecipientId())).collect(Collectors.toList());
 
                         if (!listDTO.isEmpty()){
                             NotificationRecipientDto recipient = listDTO.get(0);
                             if (recipient.getPayment() != null && recipient.getPayment().getPagoPaForm() != null){
                                 String attachment = recipient.getPayment().getPagoPaForm().getRef().getKey();
-                                return pnDeliveryInternalClient.getPresignedUrlPaymentDocument(iun, attachment)
+                                return pnDeliveryInternalClient.getPresignedUrlPaymentDocument(transaction.getIun(), attachment)
                                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
                             }
                         }
                     }
                     return Mono.just("");
-                }, (notificationAndUrlDoc, urlAttachment) ->  Tuples.of(notificationAndUrlDoc.getT2(), urlAttachment));
+                }, (notAndTransaction, urlAttachment) ->  {
+                    List<String> urls = notAndTransaction.getT2();
+                    urls.add(urlAttachment);
+                    return urls;
+                });
+    }
+
+    private Flux<String> retrieveUrlsDocuments(String iun, SentNotificationDto documents){
+        return Flux.fromStream(documents.getDocuments().stream())
+                .flatMap(document -> pnDeliveryInternalClient.getPresignedUrlDocument(iun, document.getDocIdx())
+                        .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
     }
 
     private Mono<FileDownloadResponseDto> verifyCheckSum(String fileKey, String checkSum){

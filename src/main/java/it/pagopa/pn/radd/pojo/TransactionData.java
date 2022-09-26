@@ -4,6 +4,7 @@ package it.pagopa.pn.radd.pojo;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class TransactionData {
     private String delegateId;
     private String ensureRecipientId;
     private String ensureDelegateId;
-    private List<String> urls;
+    private List<String> urls = new ArrayList<>();
 
 
 

@@ -51,9 +51,7 @@ public class PnSafeStorageClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> {
-                    return Mono.error(new PnDocumentException(ex));
-                });
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnDocumentException(ex)));
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){

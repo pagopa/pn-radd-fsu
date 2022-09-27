@@ -19,4 +19,5 @@ public class PnRaddFsuConfig {
     private String clientDeliveryPushInternalBasepath;
     private String clientDatavaultBasepath;
     private String clientSafeStorageBasepath;
+    private String safeStorageCxId;
 }

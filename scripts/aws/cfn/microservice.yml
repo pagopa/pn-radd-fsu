@@ -59,6 +59,10 @@ Parameters:
     Type: String
     Description: 'Base URL of the load balancer where the service is going to be reachable'
 
+  SandboxSafeStorageBaseUrl:
+    Type: String
+    Description: 'Url to the SafeStorage microservice'
+
   NetworkLoadBalancerLink:
     Type: String
     Description: 'network load balancer link for API-GW'
@@ -94,7 +98,7 @@ Resources:
         ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=https://14ej9p2krd.execute-api.eu-south-1.amazonaws.com'
+        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

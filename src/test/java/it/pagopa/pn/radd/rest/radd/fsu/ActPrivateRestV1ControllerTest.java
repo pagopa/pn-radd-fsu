@@ -31,7 +31,7 @@ class ActPrivateRestV1ControllerTest {
         ActInquiryResponse response = new ActInquiryResponse();
         response.setResult(true);
 
-        String path = "/radd-fsu-private/api/v1/act/inquiry";
+        String path = "/radd-private/api/v1/act/inquiry";
         Mockito.when(actService
                 .actInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
                 ).thenReturn(Mono.just(response));
@@ -60,7 +60,7 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-fsu-private/api/v1/act/transaction/complete";
+        String path = "/radd-private/api/v1/act/transaction/complete";
         Mockito.when(actService
                 .completeTransaction(Mockito.anyString(), Mockito.any())
         ).thenReturn(Mono.just(response));
@@ -87,7 +87,7 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-fsu-private/api/v1/act/transaction/start";
+        String path = "/radd-private/api/v1/act/transaction/start";
         Mockito.when(actService
                 .startTransaction(Mockito.anyString(), Mockito.any())
         ).thenReturn(Mono.just(response));

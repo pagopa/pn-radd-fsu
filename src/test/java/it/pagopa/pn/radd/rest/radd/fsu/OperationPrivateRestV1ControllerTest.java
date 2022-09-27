@@ -30,7 +30,7 @@ class OperationPrivateRestV1ControllerTest {
         OperationResponse response = new OperationResponse();
         response.setElement(new OperationDetailResponse());
 
-        String path = "/radd-fsu-private/api/v1/operations/by-id/{operationId}"
+        String path = "/radd-private/api/v1/operations/by-id/{operationId}"
                         .replace("{operationId}", "1200");
         Mockito.when(operationService
                 .getTransaction(Mockito.anyString()))
@@ -49,7 +49,7 @@ class OperationPrivateRestV1ControllerTest {
         OperationsResponse response = new OperationsResponse();
         response.setResult(true);
 
-        String path = "/radd-fsu-private/api/v1/operations/by-iun/{iun}"
+        String path = "/radd-private/api/v1/operations/by-iun/{iun}"
                 .replace("{iun}", "iun-123");
         Mockito.when(operationService
                 .getPracticesId(Mockito.anyString()))

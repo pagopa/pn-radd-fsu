@@ -47,7 +47,8 @@ public class PnSafeStorageClient extends BaseClient {
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
-        return this.fileUploadApi.createFile(operationId, request)
+        request.setDocumentType("PN_NOTIFICATION_ATTACHMENTS");
+        return this.fileUploadApi.createFile(operationId, request) // TODO set correct header
                 .retryWhen(
                 Retry.backoff(2, Duration.ofMillis(25))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

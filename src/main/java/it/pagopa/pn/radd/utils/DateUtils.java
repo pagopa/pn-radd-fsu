@@ -20,13 +20,10 @@ public class DateUtils {
         return LocalDate.ofInstant(instant, italianZoneId).format(formatter);
     }
 
-    public static String formatDate(Date date)
-    {
-        if (date == null)
-            return null;
+    public static String formatDate(Date date)  {
+        if (date == null) return null;
         LocalDateTime dateTime =  LocalDateTime.ofInstant(date.toInstant(), italianZoneId);
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
         return dateTime.format(formatter);
     }
 

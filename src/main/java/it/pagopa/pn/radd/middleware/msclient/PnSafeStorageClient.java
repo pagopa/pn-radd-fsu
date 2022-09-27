@@ -49,9 +49,11 @@ public class PnSafeStorageClient extends BaseClient {
         request.setDocumentType(Const.DOCUMENT_TYPE);
         return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(
-                Retry.backoff(2, Duration.ofMillis(25))
-                        .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-        ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnDocumentException(ex)));
+                        Retry.backoff(2, Duration.ofMillis(25))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                ).onErrorResume(WebClientResponseException.class, ex -> {
+                    return Mono.error(new PnDocumentException(ex));
+                });
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){

@@ -11,6 +11,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Random;
@@ -19,7 +20,7 @@ import java.util.Random;
 @RestController
 public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTransactionManagementApi {
 
-    private final Random rnd = new Random();
+    private final SecureRandom rnd = new SecureRandom();
 
     private final PnDeliveryInternalClient pnDeliveryInternalClient;
 

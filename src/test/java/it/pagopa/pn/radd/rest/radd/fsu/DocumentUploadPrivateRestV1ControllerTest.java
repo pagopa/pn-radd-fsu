@@ -36,7 +36,7 @@ class DocumentUploadPrivateRestV1ControllerTest {
         req.setBundleId("bundleId");
         req.setContentType("application/json");
 
-        String path = "/radd-fsu-private/api/v1/documents/upload";
+        String path = "/radd-private/api/v1/documents/upload";
         Mockito.when(documentUploadService.createFile( Mockito.anyString(), Mockito.any() ))
                 .thenReturn(Mono.just(response));
         webTestClient.post()

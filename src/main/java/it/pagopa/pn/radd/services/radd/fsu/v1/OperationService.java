@@ -1,13 +1,10 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-
-import io.netty.handler.codec.http.HttpResponseStatus;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
-import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -34,7 +31,7 @@ public class OperationService {
                     response.setElement(mapperToNotificationResponse.toDto(entity));
                     response.setResult(true);
                     OperationResponseStatus status = new OperationResponseStatus();
-                    status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
+                    status.setCode(OperationResponseStatus.CodeEnum.NUMBER_0);
                     response.setStatus(status);
                     return response;
                 }).onErrorResume(ex -> {
@@ -46,15 +43,24 @@ public class OperationService {
     }
 
     public Mono<OperationsResponse> getPracticesId(String iun){
-        return transactionDAO.getTransactionsFromIun(iun).map(RaddTransactionEntity::getOperationId).collectList().map(operationsId -> {
-            OperationsResponse notificationPracticesResponse = new OperationsResponse();
-            notificationPracticesResponse.setOperationIds(operationsId);
-            notificationPracticesResponse.setResult(true);
-            OperationResponseStatus status = new OperationResponseStatus();
-            status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
-            notificationPracticesResponse.setStatus(status);
-            return notificationPracticesResponse;
-        });
+        return transactionDAO.getTransactionsFromIun(iun)
+                .map(RaddTransactionEntity::getOperationId)
+                .collectList()
+                .map(operationsId -> {
+                    OperationsResponse notificationPracticesResponse = new OperationsResponse();
+                    OperationResponseStatus status = new OperationResponseStatus();
+                    if (operationsId.isEmpty()){
+                        status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
+                        status.setMessage("Non ci sono operation id");
+                        notificationPracticesResponse.setResult(false);
+                    } else {
+                        status.setCode(OperationResponseStatus.CodeEnum.NUMBER_0);
+                        notificationPracticesResponse.setOperationIds(operationsId);
+                        notificationPracticesResponse.setResult(true);
+                    }
+                    notificationPracticesResponse.setStatus(status);
+                    return notificationPracticesResponse;
+                });
     }
 
     protected OperationResponse getOperationErrorResponse(Throwable ex) {

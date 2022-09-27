@@ -5,10 +5,9 @@ import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
 import it.pagopa.pn.radd.exception.PnDocumentException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileDownloadApi;
+import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileMetadataUpdateApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileUploadApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationRequestDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.*;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,7 @@ import java.util.concurrent.TimeoutException;
 public class PnSafeStorageClient extends BaseClient {
     private FileUploadApi fileUploadApi;
     private FileDownloadApi fileDownloadApi;
+    private FileMetadataUpdateApi fileMetadataUpdateApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
     public PnSafeStorageClient(PnRaddFsuConfig pnRaddFsuConfig) {
@@ -39,6 +39,7 @@ public class PnSafeStorageClient extends BaseClient {
         newApiClient.setBasePath(pnRaddFsuConfig.getClientSafeStorageBasepath());
         this.fileUploadApi = new FileUploadApi(newApiClient);
         this.fileDownloadApi = new FileDownloadApi(newApiClient);
+        this.fileMetadataUpdateApi = new FileMetadataUpdateApi(newApiClient);
     }
 
     public Mono<FileCreationResponseDto> createFile(String contentType, String operationId){
@@ -56,6 +57,17 @@ public class PnSafeStorageClient extends BaseClient {
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
         log.info("Req params : {}", fileKey);
         return fileDownloadApi.getFile(fileKey, "pn-radd-fsu", true)
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(25))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                );
+    }
+
+    public Mono<OperationResultCodeResponseDto> updateFileMetadata(String fileKey){
+        log.info("Req params : {}", fileKey);
+        UpdateFileMetadataRequestDto request = new UpdateFileMetadataRequestDto();
+        request.setStatus(Const.ATTACHED);
+        return fileMetadataUpdateApi.updateFileMetadata(fileKey, "pn-radd-fsu", request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

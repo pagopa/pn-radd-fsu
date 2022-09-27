@@ -13,6 +13,11 @@ public class Const {
     public static final String STARTED = "STARTED";
     public static final String ABORTED = "ABORTED";
 
+
+    public static final String ATTACHED = "ATTACHED";
+
+
+
     /* Inquiry message */
     public static final String NOT_VALID_QR_CODE = "QrCode non valido";
     public static final String NOT_VALID_FISCAL_CODE = "CF non valido";

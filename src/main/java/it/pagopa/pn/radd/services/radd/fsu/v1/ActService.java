@@ -91,7 +91,7 @@ public class ActService extends BaseService {
                 }, (transaction, entity) -> transaction)
 
                 .zipWhen(transaction -> verifyCheckSum(transaction.getFileKey(), transaction.getChecksum()), (transaction, responseCheckSum) -> transaction)
-
+                .zipWhen(this::updateFileMetadata, (transaction, t2) -> transaction)
                 .zipWhen(this::notification, (transaction, transactionWithUlrs) -> transactionWithUlrs)
 
                 .flatMap(transaction ->
@@ -241,6 +241,15 @@ public class ActService extends BaseService {
                 throw new RaddChecksumException();
             }
             return response;
+        });
+    }
+
+    private Mono<TransactionData> updateFileMetadata(TransactionData transactionData){
+        return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey()).map(response -> {
+            if (!response.getResultCode().equals("200")){
+                throw new PnException("Update File Metadata", response.getResultDescription(), Integer.parseInt(response.getResultCode()));
+            }
+            return transactionData;
         });
     }
 

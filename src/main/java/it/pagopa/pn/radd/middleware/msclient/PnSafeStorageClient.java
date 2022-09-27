@@ -1,7 +1,6 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
 import it.pagopa.pn.radd.exception.PnDocumentException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileDownloadApi;
@@ -47,8 +46,8 @@ public class PnSafeStorageClient extends BaseClient {
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
-        request.setDocumentType("PN_NOTIFICATION_ATTACHMENTS");
-        return this.fileUploadApi.createFile(operationId, request) // TODO set correct header
+        request.setDocumentType(Const.DOCUMENT_TYPE);
+        return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(
                 Retry.backoff(2, Duration.ofMillis(25))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
@@ -57,7 +56,7 @@ public class PnSafeStorageClient extends BaseClient {
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
         log.info("Req params : {}", fileKey);
-        return fileDownloadApi.getFile(fileKey, "pn-radd-fsu", true)
+        return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), true)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
@@ -68,7 +67,7 @@ public class PnSafeStorageClient extends BaseClient {
         log.info("Req params : {}", fileKey);
         UpdateFileMetadataRequestDto request = new UpdateFileMetadataRequestDto();
         request.setStatus(Const.ATTACHED);
-        return fileMetadataUpdateApi.updateFileMetadata(fileKey, "pn-radd-fsu", request)
+        return fileMetadataUpdateApi.updateFileMetadata(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

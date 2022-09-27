@@ -1,10 +1,13 @@
 package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.commons.log.PnAuditLogBuilder;
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,18 +22,20 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RaddTransactionDAOTest extends BaseTest {
+class RaddTransactionDAOTest extends BaseTest {
 
     @InjectMocks
     private RaddTransactionDAO raddTransactionDAO;
 
-    private PnAuditLogBuilder auditLogBuilder;
+    @Mock
+    PnAuditLogBuilder auditLogBuilder;
     @Mock
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     @Mock
@@ -39,32 +44,33 @@ public class RaddTransactionDAOTest extends BaseTest {
     DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
     @Mock
     AwsConfigs awsConfigs;
-
     @Mock
     Map<String, AttributeValue> expressionValues;
 
+
+    @BeforeEach
+    public void setUp(){
+        Mockito.when(auditLogBuilder.build())
+                .thenReturn(new PnAuditLogEvent(PnAuditLogEventType.AUD_DL_CREATE, new HashMap<>(), "", new Object()));
+
+        Mockito.when(auditLogBuilder.uid(Mockito.any()))
+                .thenReturn(auditLogBuilder);
+
+        Mockito.when(auditLogBuilder.before(Mockito.any(), Mockito.any()))
+                .thenReturn(auditLogBuilder);
+    }
 
     @Test
     void testCreateRaddTransaction() {
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setIun("iun");
         entity.setOperationId("operationId");
-//        PnAuditLogBuilder pnAuditLogBuilder = new PnAuditLogBuilder();
-//        Mockito.when(auditLogBuilder.before(PnAuditLogEventType.AUD_DL_CREATE, String.format("message")))
-//                        .thenReturn(pnAuditLogBuilder);
-//
-//        Mockito.when(auditLogBuilder.uid(entity.getIun()))
-//                .thenReturn(pnAuditLogBuilder);
-//
-//        Mockito.when(auditLogBuilder.build())
-//                .thenReturn(new PnAuditLogEvent(PnAuditLogEventType.AUD_DL_CREATE, new HashMap<>(), "", new Object()));
-
         QueryResponse queryResponse = QueryResponse.builder().count(0).build();
         Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
                 .thenReturn(CompletableFuture.completedFuture(queryResponse));
 
-//        StepVerifier.create(raddTransactionDAO.createRaddTransaction(entity))
-//                .expectNext(entity).verifyComplete();
+        StepVerifier.create(raddTransactionDAO.createRaddTransaction(entity))
+                .expectNext(entity).verifyComplete();
     }
 
     @Test

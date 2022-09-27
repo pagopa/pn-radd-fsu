@@ -1,9 +1,8 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.LegalFactsApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.CxTypeAuthFleetDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.LegalFactsPrivateApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
@@ -18,7 +17,7 @@ import javax.annotation.PostConstruct;
 @Component
 public class PnDeliveryPushInternalClient extends BaseClient {
 
-    private LegalFactsApi legalFactsApi;
+    private LegalFactsPrivateApi legalFactsApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
     public PnDeliveryPushInternalClient(PnRaddFsuConfig pnRaddFsuConfig) {
@@ -29,26 +28,15 @@ public class PnDeliveryPushInternalClient extends BaseClient {
     public void init(){
         ApiClient newApiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()));
         newApiClient.setBasePath(pnRaddFsuConfig.getClientDeliveryPushInternalBasepath());
-        this.legalFactsApi = new LegalFactsApi(newApiClient);
+        this.legalFactsApi = new LegalFactsPrivateApi(newApiClient);
     }
 
 
     public Flux<LegalFactListElementDto> getNotificationLegalFacts(String uid, String iun, String recipientType) {
-        return this.legalFactsApi.getNotificationLegalFacts(
-                uid, CxTypeAuthFleetDto.valueOf(recipientType), "_fsu_",
-                iun,
-                null, null);
+        return this.legalFactsApi.getNotificationLegalFactsPrivate(uid, iun, "_fsu_");
     }
 
-    public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(
-            String uid, String iun, String recipientType, LegalFactCategoryDto categoryDto, String factId
-    ) {
-        return this.legalFactsApi.getLegalFact(
-                uid,
-                CxTypeAuthFleetDto.valueOf(recipientType),
-                "_fus_",
-                iun,  categoryDto, factId,
-                null, null
-        );
+    public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String uid, String iun, String recipientType, LegalFactCategoryDto categoryDto, String factId) {
+        return this.legalFactsApi.getLegalFactPrivate(recipientType,iun,categoryDto, factId, null);
     }
 }

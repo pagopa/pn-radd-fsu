@@ -5,11 +5,13 @@ import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.exception.RaddTransactionAlreadyExist;
 import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
+import it.pagopa.pn.radd.exception.RaddTransactionStatusException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -58,9 +60,8 @@ public class RaddTransactionDAO extends BaseDao {
         return Mono.fromFuture(
                         countFromIunAndOperationIdAndStatus(entity.getIun(), entity.getOperationId())
                         .thenCompose(total -> {
-                            if (total == 0)
-                            {
-                                log.info("no current mandate for delegator-delegate pair, can proceed to create mandate");
+                            if (total == 0) {
+                                log.info("no current transaction for delegator-delegate pair, can proceed to create transaction");
                                 PutItemEnhancedRequest<RaddTransactionEntity> putRequest = PutItemEnhancedRequest.builder(RaddTransactionEntity.class)
                                         .item(entity)
                                         //.conditionExpression()
@@ -86,6 +87,7 @@ public class RaddTransactionDAO extends BaseDao {
                 });
     }
 
+
     public Mono<RaddTransactionEntity> getTransaction(String operationId) {
         Key key = Key.builder().partitionValue(operationId).build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
@@ -109,7 +111,15 @@ public class RaddTransactionDAO extends BaseDao {
         logEvent.log();
         UpdateItemEnhancedRequest<RaddTransactionEntity> updateRequest = UpdateItemEnhancedRequest
                 .builder(RaddTransactionEntity.class).item(entity).build();
-        return Mono.fromFuture(raddTable.updateItem(updateRequest).thenApply(x->entity)).onErrorResume(throwable -> {
+        return Mono.fromFuture(
+                    raddTable.updateItem(updateRequest).thenApply(x -> {
+                        if (!x.getStatus().equals(entity.getStatus())){
+                            throw new RaddTransactionStatusException("Update Status", "Lo stato della transazione non è stato aggiornato", HttpStatus.INTERNAL_SERVER_ERROR.value());
+                        }
+                        return x;
+                    })
+                )
+                .onErrorResume(throwable -> {
                     logEvent.generateFailure(throwable.getMessage()).log();
                     return Mono.error(throwable);
                 })

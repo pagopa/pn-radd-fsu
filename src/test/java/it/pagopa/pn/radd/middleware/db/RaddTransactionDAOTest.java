@@ -3,47 +3,46 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.commons.log.PnAuditLogBuilder;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
+import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import reactor.core.CoreSubscriber;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import software.amazon.awssdk.services.dynamodb.model.Select;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-@SpringBootTest
-public class RaddTransactionDAOTest {
-/*
+class RaddTransactionDAOTest extends BaseTest {
+
     @InjectMocks
     private RaddTransactionDAO raddTransactionDAO;
+
     @Mock
-    private PnAuditLogBuilder auditLogBuilder;
+    PnAuditLogBuilder auditLogBuilder;
     @Mock
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     @Mock
@@ -52,153 +51,83 @@ public class RaddTransactionDAOTest {
     DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
     @Mock
     AwsConfigs awsConfigs;
+    @Mock
+    Map<String, AttributeValue> expressionValues;
+
+
+    @BeforeEach
+    public void setUp() {
+        Mockito.when(auditLogBuilder.build())
+                .thenReturn(new PnAuditLogEvent(PnAuditLogEventType.AUD_DL_CREATE, new HashMap<>(), "", new Object()));
+
+        Mockito.when(auditLogBuilder.uid(Mockito.any()))
+                .thenReturn(auditLogBuilder);
+
+        Mockito.when(auditLogBuilder.before(Mockito.any(), Mockito.any()))
+                .thenReturn(auditLogBuilder);
+    }
+    //TODO test commentato temporaneamente
+    //@Test
+    void testCreateRaddTransaction() {
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setIun("iun");
+        entity.setOperationId("operationId");
+
+        QueryResponse queryResponse = QueryResponse.builder().count(0).build();
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
+                .thenReturn(CompletableFuture.completedFuture(queryResponse));
+
+        StepVerifier.create(raddTransactionDAO.createRaddTransaction(entity))
+                .expectNext(entity).verifyComplete();
+    }
 
     @Test
     void testUpdateStatusOnThrow() {
-        RaddTransactionEntity entity = new RaddTransactionEntity();
-        String logMessage = String.format("Update Radd Transaction=%s", entity);
-
-        UpdateItemEnhancedRequest<RaddTransactionEntity> updateRequest = UpdateItemEnhancedRequest
-                .builder(RaddTransactionEntity.class).item(entity).build();
-
-        Throwable returnThrowable = new Throwable();
-
-        Mono<CompletableFuture> monoCompletableFuture = new Mono<>() {
-            @Override
-            public void subscribe(CoreSubscriber<? super CompletableFuture> coreSubscriber) {
-
-            }
-        };
-
-//        Mockito.when(monoCompletableFuture.onErrorResume(throwable -> Mono.error(throwable)))
-//                .thenThrow(returnThrowable);
-
-//        Mockito.when(Mono.fromFuture(raddTable.updateItem(updateRequest).thenApply(x->entity)).onErrorResume(throwable -> {return Mono.error(throwable);}))
-//                .thenThrow(returnThrowable);
     }
 
     @Test
     void testGetTransaction() {
-        String operationId = "0";
-        Key key = Key.builder().partitionValue(operationId).build();
-
+        Key key = Key.builder().partitionValue("operationId").build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
 
+        RaddTransactionEntity entity = new RaddTransactionEntity();
         CompletableFuture<RaddTransactionEntity> completableFuture = new CompletableFuture<>();
-        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        completableFuture.complete(raddTransactionEntity);
-
-//        Mockito.when(completableFuture.thenApply(item -> {
-//            if (item == null) {
-//                throw new RaddTransactionNoExistedException();
-//            }
-//            return item;
-//        })).thenReturn(completableFuture);
-
-        Mono<RaddTransactionEntity> monoRaddTransactionEntity = new Mono<>() {
-            @Override
-            public void subscribe(CoreSubscriber<? super RaddTransactionEntity> coreSubscriber) {
-
-            }
-        };
-
-//        Mockito.when(Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
-//            if (item == null) {
-//                throw new RaddTransactionNoExistedException();
-//            }
-//            return item;
-//        }))).thenReturn(monoRaddTransactionEntity);
-//        assertNotNull(raddTransactionDAO.getTransaction(operationId));
+        completableFuture.complete(entity);
+        Mockito.when(raddTable.getItem(request)).thenReturn(completableFuture);
+        StepVerifier.create(raddTransactionDAO.getTransaction("operationId")).expectNext(entity).verifyComplete();
     }
 
-    @Test
+//    @Test
     void testGetTransactionOnThrow() {
-        String operationId = "0";
-        Key key = Key.builder().partitionValue(operationId).build();
-
-        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
-
-        CompletableFuture completableFuture = new CompletableFuture();
-        RaddTransactionEntity raddTransactionEntity = null;
-        completableFuture.complete(raddTransactionEntity);
-
-        Mockito.when(completableFuture.thenApply(item -> {
-            if (item == null) {
-                throw new RaddTransactionNoExistedException();
-            }
-            return item;
-        })).thenThrow(new RaddTransactionNoExistedException());
-
-        Mono<RaddTransactionEntity> monoRaddTransactionEntity = new Mono<>() {
-            @Override
-            public void subscribe(CoreSubscriber<? super RaddTransactionEntity> coreSubscriber) {
-
-            }
-        };
-
-//        Mockito.when(Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
-//            if (item == null) {
-//                throw new RaddTransactionNoExistedException();
-//            }
-//            return item;
-//        }))).thenReturn(monoRaddTransactionEntity);
-//        assertThrows(RaddTransactionNoExistedException.class, () -> {raddTransactionDAO.getTransaction(operationId);});
+        RaddTransactionEntity entity = null;
+        CompletableFuture<RaddTransactionEntity> completableFuture = new CompletableFuture<>();
+        completableFuture.complete(entity);
+        Mockito.when(raddTable.getItem((GetItemEnhancedRequest) Mockito.any())).thenReturn(completableFuture);
+        StepVerifier.create(raddTransactionDAO.getTransaction("operationId")).expectError(RaddTransactionNoExistedException.class).verify();
     }
 
     @Test
-    void testGetTransactionsFromIun() {
-        String iun = "iun";
-        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
-                .builder()
-                .queryConditional( QueryConditional.keyEqualTo(Key.builder().partitionValue(iun).build()))
-                .scanIndexForward(true)
-                .build();
+    void testGetTransactionFromIun() {
+        RaddTransactionEntity entity = new RaddTransactionEntity();
 
-        org.reactivestreams.Publisher returnPublisher = subscriber -> {
+        Page<RaddTransactionEntity> page = Page.create(List.of(entity));
+        SdkPublisher<Page<RaddTransactionEntity>> publisher = (PagePublisher<RaddTransactionEntity>) subscriber -> { subscriber.onNext(page); };
+        DynamoDbAsyncIndex<RaddTransactionEntity> dynamoDbAsyncIndex = mock(DynamoDbAsyncIndex.class);
 
-        };
-        SdkPublisher returnSdkPublisher = SdkPublisher.adapt(returnPublisher);
-        SdkPublisher callSdkPublisher = mock(SdkPublisher.class);
+        Mockito.when(dynamoDbAsyncIndex.query((QueryEnhancedRequest) Mockito.any())).thenReturn(publisher);
+        Mockito.when(raddTable.index(RaddTransactionEntity.IUN_INDEX)).thenReturn(dynamoDbAsyncIndex);
 
-
-        Mockito.when(callSdkPublisher.flatMapIterable(Mockito.any())).thenReturn(returnSdkPublisher);
-
-        DynamoDbAsyncIndex callDynamoDbAsyncIndex = mock(DynamoDbAsyncIndex.class);
-        Mockito.when(callDynamoDbAsyncIndex.query(qeRequest)).thenReturn(returnSdkPublisher);
-
-        DynamoDbAsyncIndex returnDynamoDbAsyncIndex = mock(DynamoDbAsyncIndex.class);
-        Mockito.when(raddTable.index(RaddTransactionEntity.IUN_INDEX)).thenReturn(returnDynamoDbAsyncIndex);
-
-//        Flux<RaddTransactionEntity> raddTransactionEntityFlux = raddTransactionDAO.getTransactionsFromIun(iun);
+        raddTransactionDAO
+                .getTransactionsFromIun("operationId")
+                .collectList()
+                .doOnNext(element -> assertEquals(entity, element.get(0)));
     }
 
     @Test
-    void testCountTransactionIunIdPractice() throws ExecutionException, InterruptedException {
-        AwsConfigs awsConfigs = new AwsConfigs();
-        String iun = "iun", idPractice = "0", table = awsConfigs.getDynamodbTable();
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":iun",  AttributeValue.builder().s(iun).build());
-        expressionValues.put(":idPractice",  AttributeValue.builder().s(idPractice).build());
-
-        QueryRequest qeRequest = QueryRequest
-                .builder()
-                .select(Select.COUNT)
-                .tableName(table)
-                .keyConditionExpression(RaddTransactionEntity.COL_OPERATION_ID + " = :idPractice")
-                .filterExpression(":iun = "+ RaddTransactionEntity.COL_IUN)
-                .expressionAttributeValues(expressionValues)
-                .build();
-
-        CompletableFuture<QueryResponse> firstResponseCompletableFuture = new CompletableFuture<>();
+    void testCountFromIunAndOperationIdAndStatus() throws ExecutionException, InterruptedException {
         QueryResponse queryResponse = QueryResponse.builder().count(10).build();
-        firstResponseCompletableFuture.complete(queryResponse);
-        CompletableFuture<QueryResponse> secondQueryResponseCompletableFuture = mock(CompletableFuture.class);
-        Mockito.when(dynamoDbAsyncClient.query(qeRequest)).thenReturn(firstResponseCompletableFuture);
-        CompletableFuture<Integer> returnCompletableFuture = new CompletableFuture<>();
-        Mockito.when(secondQueryResponseCompletableFuture.thenApply(QueryResponse::count)).thenReturn(returnCompletableFuture);
-        CompletableFuture<Integer> integerCompletableFuture = raddTransactionDAO.countTransactionIunIdPractice(iun, idPractice);
-        assertNotNull(integerCompletableFuture);
-        assertEquals(10, integerCompletableFuture.get().intValue());
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
+                .thenReturn(CompletableFuture.completedFuture(queryResponse));
+        assertEquals(10, raddTransactionDAO.countFromIunAndOperationIdAndStatus("iun", "operationId").get().intValue());
     }
-    */
 }

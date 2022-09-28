@@ -10,8 +10,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 @Slf4j
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
-@ActiveProfiles("unittest")
 public abstract class BaseTest {
 
     @Autowired
@@ -22,5 +22,6 @@ public abstract class BaseTest {
     public void killMockServer(){
         mockServer.kill();
     }
+
 
 }

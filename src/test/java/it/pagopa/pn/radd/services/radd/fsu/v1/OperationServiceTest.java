@@ -8,6 +8,7 @@ import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
 import it.pagopa.pn.radd.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -16,14 +17,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.Duration;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @Slf4j
@@ -91,6 +92,41 @@ class OperationServiceTest extends BaseTest {
         assertEquals(entity.getOperationStartDate(), DateUtils.formatDate(response.getElement().getOperationStartDate()));
         assertEquals(entity.getOperationEndDate(), DateUtils.formatDate(response.getElement().getOperationEndDate()));
         assertEquals(entity.getErrorReason(), response.getElement().getErrorReason());
+    }
+
+    @Test
+    void testGetPracticesWhenTransactionListIsEmpty(){
+        Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.empty());
+
+        OperationsResponse response = operationService.getPracticesId("test").block(d);
+
+        assertNotNull(response);
+        assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
+        assertFalse(response.getResult());
+    }
+
+    @Test
+    void testGetPracticesReturnListOfOperationId(){
+        RaddTransactionEntity entity1 = new RaddTransactionEntity();
+        entity1.setIun("Iun 1");
+        entity1.setOperationId("Operation id 1");
+        RaddTransactionEntity entity2 = new RaddTransactionEntity();
+        entity2.setIun("Iun2");
+        entity2.setOperationId("Operation id 2");
+        Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.just(entity1, entity2));
+
+        OperationsResponse response = operationService.getPracticesId("test").block(d);
+
+        assertNotNull(response);
+        assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+        assertTrue(response.getResult());
+        assertFalse(response.getOperationIds().isEmpty());
+        assertEquals(2, response.getOperationIds().size());
+        for (String item : response.getOperationIds()) {
+            if (!item.equals(entity1.getOperationId()) && !item.equals(entity2.getOperationId())){
+                fail("Operation id not mapped");
+            }
+        }
     }
 
 }

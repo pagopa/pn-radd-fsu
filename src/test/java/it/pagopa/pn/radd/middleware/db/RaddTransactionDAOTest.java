@@ -66,7 +66,7 @@ class RaddTransactionDAOTest extends BaseTest {
         Mockito.when(auditLogBuilder.before(Mockito.any(), Mockito.any()))
                 .thenReturn(auditLogBuilder);
     }
-    //TODO test commentato temporaneamente
+
     @Test
     void testCreateRaddTransaction() {
         RaddTransactionEntity entity = new RaddTransactionEntity();

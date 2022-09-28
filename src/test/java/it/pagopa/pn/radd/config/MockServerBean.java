@@ -12,10 +12,12 @@ import java.io.IOException;
 
 @Slf4j
 public class MockServerBean {
-    private final ClientAndServer mockServer;
+    private ClientAndServer mockServer;
+    private final int port;
 
     public MockServerBean(int port){
         this.initializationExpection();
+        this.port = port;
         this.mockServer = ClientAndServer.startClientAndServer(port);
         log.info("Mock server started on : {}", port);
     }
@@ -31,10 +33,4 @@ public class MockServerBean {
             log.warn(" - File webhook not found");
         }
     }
-
-    public void kill(){
-        Stop.stopQuietly(mockServer);
-        log.info("MockServer is died");
-    }
-
 }

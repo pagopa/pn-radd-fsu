@@ -41,8 +41,10 @@ public class PnSafeStorageClient extends BaseClient {
         this.fileMetadataUpdateApi = new FileMetadataUpdateApi(newApiClient);
     }
 
-    public Mono<FileCreationResponseDto> createFile(String contentType, String operationId){
-        log.info(String.format("Req params: %s %s", contentType, operationId));
+    public Mono<FileCreationResponseDto> createFile(String contentType, String bundleId){
+        log.info(String.format("Req params: %s %s", contentType, bundleId));
+        log.info(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
+        log.info(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);

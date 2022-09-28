@@ -45,6 +45,24 @@
       "body": "\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\""
     }   
   },
+
+  {
+    "httpRequest": {
+      "path": "/datavault-private/v1/recipients/external/PG",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "status": 400,
+        "title": "Codice fiscale non valido",
+        "detail": "Il formato del codice fiscale non è valido",
+        "traceId": "123987653p",
+        "errors": []
+      }
+    }
+  },
+
   {
     "httpRequest": {
       "path": "/delivery-private/check-aar-qr-code"

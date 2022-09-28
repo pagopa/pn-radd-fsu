@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
+import it.pagopa.pn.radd.exception.PnDocumentException;
+import it.pagopa.pn.radd.exception.PnEnsureFiscalCodeException;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
@@ -43,13 +46,16 @@ public class DocumentUploadService {
                     status.setMessage(Const.OK);
                     resp.setStatus(status);
                     return resp;
-                }).onErrorResume(WebClientResponseException.class, ex -> {
-                    DocumentUploadResponse resp = new DocumentUploadResponse();
-                    ResponseStatus status = new ResponseStatus();
-                    status.setMessage(Const.KO);
-                    status.code(ResponseStatus.CodeEnum.NUMBER_99);
-                    resp.setStatus(status);
-                    return Mono.just(resp);
+                }).onErrorResume(ex -> {
+                    if (ex instanceof PnDocumentException) {
+                        DocumentUploadResponse resp = new DocumentUploadResponse();
+                        ResponseStatus status = new ResponseStatus();
+                        status.setMessage(Const.KO);
+                        status.code(ResponseStatus.CodeEnum.NUMBER_99);
+                        resp.setStatus(status);
+                        return Mono.just(resp);
+                    }
+                    return Mono.error(ex);
                 });
     }
 

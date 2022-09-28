@@ -14,9 +14,8 @@ public class Const {
     public static final String ABORTED = "ABORTED";
     public static final String ATTACHED = "ATTACHED";
 
-    public static final String DOCUMENT_TYPE = "PN_NOTIFICATION_ATTACHMENTS";
-
-
+    public static final String DOCUMENT_TYPE = "PN_RADD_FSU_ATTACHMENT";
+    
     /* Inquiry message */
     public static final String NOT_VALID_QR_CODE = "QrCode non valido";
     public static final String NOT_VALID_FISCAL_CODE = "CF non valido";

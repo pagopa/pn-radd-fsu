@@ -1,9 +1,14 @@
 package it.pagopa.pn.radd.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+@Slf4j
 public class DateUtils {
 
     private static final ZoneId italianZoneId =  ZoneId.of("Europe/Rome");
@@ -20,13 +25,10 @@ public class DateUtils {
         return LocalDate.ofInstant(instant, italianZoneId).format(formatter);
     }
 
-    public static String formatDate(Date date)
-    {
-        if (date == null)
-            return null;
+    public static String formatDate(Date date)  {
+        if (date == null) return null;
         LocalDateTime dateTime =  LocalDateTime.ofInstant(date.toInstant(), italianZoneId);
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
         return dateTime.format(formatter);
     }
 
@@ -36,6 +38,13 @@ public class DateUtils {
         return datetime.format(formatter.withZone(italianZoneId));
     }
 
+    public static Date parseDateString(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        LocalDateTime localDate = LocalDateTime.parse(date, formatter);
+        ZonedDateTime time = localDate.atZone(italianZoneId);
+        return Date.from(time.toInstant());
+
+    }
 
     public static LocalDate getLocalDate(String date) {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;

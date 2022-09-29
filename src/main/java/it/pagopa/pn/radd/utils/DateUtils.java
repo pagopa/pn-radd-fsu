@@ -51,6 +51,10 @@ public class DateUtils {
         return LocalDate.parse(date, formatter);
     }
 
+    public static OffsetDateTime getOffsetDateTime(String date){
+        return LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME).atOffset(ZoneOffset.UTC);
+    }
+
     public static ZonedDateTime parseDate(String date)
     {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;

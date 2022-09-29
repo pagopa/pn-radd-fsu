@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.api.InternalOnlyApi;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.RequestCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
@@ -52,9 +53,26 @@ public class PnDeliveryClient extends BaseClient {
     public Mono<SentNotificationDto> getNotifications(String iun){
         return this.deliveryApi.getSentNotificationPrivate(iun)
                 .retryWhen(
-                        Retry.backoff(2, Duration.ofMillis(25))
+                        Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnCheckQrCodeException(ex)));
+    }
+
+
+    public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlDocument(String iun, String docXid, String recipientTaxId){
+        return this.deliveryApi.getReceivedNotificationDocumentPrivate(iun, Integer.valueOf(docXid), recipientTaxId, null)
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(500))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                );
+    }
+
+    public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlPaymentDocument(String iun, String attchamentName, String recipientTaxId){
+        return this.deliveryApi.getReceivedNotificationAttachmentPrivate(iun, attchamentName, recipientTaxId,null)
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(500))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                );
     }
 
 

@@ -7,8 +7,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class TransactionDataMapper {
 
-    public TransactionData toTransaction(ActStartTransactionRequest request){
+    public TransactionData toTransaction(String uid, ActStartTransactionRequest request){
         TransactionData transactionData = new TransactionData();
+        transactionData.setUid(uid);
         transactionData.setRecipientType(request.getRecipientType().getValue());
         transactionData.setRecipientId(request.getRecipientTaxId());
         transactionData.setDelegateId(request.getDelegateTaxId());
@@ -17,6 +18,7 @@ public class TransactionDataMapper {
         transactionData.setOperationDate(request.getOperationDate());
         transactionData.setOperationId(request.getOperationId());
         transactionData.setChecksum(request.getChecksum());
+        transactionData.setVersionId(request.getVersionToken());
         return transactionData;
     }
 

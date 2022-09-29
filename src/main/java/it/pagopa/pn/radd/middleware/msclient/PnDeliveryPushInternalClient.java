@@ -10,8 +10,12 @@ import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import javax.annotation.PostConstruct;
+import java.net.ConnectException;
+import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 
 @Component
@@ -32,11 +36,19 @@ public class PnDeliveryPushInternalClient extends BaseClient {
     }
 
 
-    public Flux<LegalFactListElementDto> getNotificationLegalFacts(String uid, String iun, String recipientType) {
-        return this.legalFactsApi.getNotificationLegalFactsPrivate(uid, iun, "_fsu_");
+    public Flux<LegalFactListElementDto> getNotificationLegalFacts(String recipientInternalId, String iun) {
+        return this.legalFactsApi.getNotificationLegalFactsPrivate(recipientInternalId, iun, null)
+                .retryWhen(
+                    Retry.backoff(2, Duration.ofMillis(250))
+                        .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                );
     }
 
-    public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String uid, String iun, String recipientType, LegalFactCategoryDto categoryDto, String factId) {
-        return this.legalFactsApi.getLegalFactPrivate(recipientType,iun,categoryDto, factId, null);
+    public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {
+        return this.legalFactsApi.getLegalFactPrivate(recipientInternalId,iun, categoryDto, legalFactId, null)
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(250))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                );
     }
 }

@@ -98,7 +98,7 @@ Resources:
         ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
         ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFESTORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
+        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry8: 'PN_RADD_SAFESTORAGECXID=pn-radd-fsu'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName

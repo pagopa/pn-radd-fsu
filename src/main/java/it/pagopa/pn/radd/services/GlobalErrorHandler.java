@@ -16,10 +16,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-@Configuration
-@Order(-2)
+
 @Slf4j
-public class GlobalErrorHandler implements ErrorWebExceptionHandler {
+public class GlobalErrorHandler {
 
   private final ObjectMapper objectMapper;
 
@@ -27,7 +26,7 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
     this.objectMapper = objectMapper;
   }
 
-  @Override
+
   @NonNull
   public Mono<Void> handle(@NonNull ServerWebExchange serverWebExchange, @NonNull Throwable throwable) {
 
@@ -42,8 +41,6 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
     }
     serverWebExchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
     return serverWebExchange.getResponse().writeWith(Mono.just(dataBuffer));
-    
-
-  } 
+  }
 
 }

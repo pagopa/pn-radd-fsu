@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnDocumentException;
+import it.pagopa.pn.radd.exception.PnSafeStorageException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileDownloadApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileMetadataUpdateApi;
@@ -42,9 +43,9 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<FileCreationResponseDto> createFile(String contentType, String bundleId){
-        log.info(String.format("Req params: %s %s", contentType, bundleId));
-        log.info(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
-        log.info(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
+        log.debug(String.format("Req params: %s %s", contentType, bundleId));
+        log.debug(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
+        log.debug(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
@@ -57,12 +58,12 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
-        log.info("Req params : {}", fileKey);
+        log.debug("Req params : {}", fileKey);
         return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), true)
                 .retryWhen(
-                        Retry.backoff(2, Duration.ofMillis(25))
+                        Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                );
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnSafeStorageException(ex)));
     }
 
     public Mono<OperationResultCodeResponseDto> updateFileMetadata(String fileKey){
@@ -71,9 +72,9 @@ public class PnSafeStorageClient extends BaseClient {
         request.setStatus(Const.ATTACHED);
         return fileMetadataUpdateApi.updateFileMetadata(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(
-                        Retry.backoff(2, Duration.ofMillis(25))
+                        Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                );
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnSafeStorageException(ex)));
     }
 
 

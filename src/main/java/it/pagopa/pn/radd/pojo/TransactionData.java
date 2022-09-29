@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class TransactionData {
+    private String uid;
     private String iun;
     private String qrCode;
     private String operationId;
@@ -22,6 +23,7 @@ public class TransactionData {
     private String delegateId;
     private String ensureRecipientId;
     private String ensureDelegateId;
+    private String versionId;
     private List<String> urls = new ArrayList<>();
 
 

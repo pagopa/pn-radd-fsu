@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.middleware.msclient.PnDeliveryInternalClient;
+import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.rest.radd.v1.api.AorDocumentInquiryApi;
 import it.pagopa.pn.radd.rest.radd.v1.api.AorTransactionManagementApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Random;
 
 
 @RestController
@@ -22,11 +21,12 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
 
     private final SecureRandom rnd = new SecureRandom();
 
-    private final PnDeliveryInternalClient pnDeliveryInternalClient;
+    private final PnDeliveryClient pnDeliveryClient;
 
-    public AorPrivateRestV1Controller(PnDeliveryInternalClient pnDeliveryInternalClient) {
-        this.pnDeliveryInternalClient = pnDeliveryInternalClient;
+    public AorPrivateRestV1Controller(PnDeliveryClient pnDeliveryClient) {
+        this.pnDeliveryClient = pnDeliveryClient;
     }
+
 
     @Override
     public Mono<ResponseEntity<AORInquiryResponse>> aorInquiry(String uid, String recipientTaxId,
@@ -73,7 +73,7 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
         final String docIdx = "0";
 
         return Mono.just(response)
-                .zipWhen(r -> pnDeliveryInternalClient.getPresignedUrlDocument(iun, docIdx),
+                .zipWhen(r -> pnDeliveryClient.getPresignedUrlDocument(iun, docIdx, null),
                         (r, n) -> {
                             r.setUrlList(Arrays.asList(n.getUrl()));
                             return r;

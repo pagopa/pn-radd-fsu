@@ -131,6 +131,31 @@ class DocumentUploadServiceTest extends BaseTest {
 
     }
 
+    @Test
+    void testWhenContentTypeIsEmpty(){
+        DocumentUploadRequest documentUploadRequest=new DocumentUploadRequest();
+        documentUploadRequest.setContentType("");
+        documentUploadRequest.setBundleId("testid");
+        Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", Mono.just(documentUploadRequest));
+        response.onErrorResume( PnInvalidInputException.class, exception ->{
+            assertEquals("Parametri non validi", exception.getMessage());
+            return Mono.empty();
+        }).block();
+
+    }
+
+    @Test
+    void testWhenBundleIdIsEmpty(){
+        DocumentUploadRequest documentUploadRequest=new DocumentUploadRequest();
+        documentUploadRequest.setContentType("testid");
+        documentUploadRequest.setBundleId("");
+        Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", Mono.just(documentUploadRequest));
+        response.onErrorResume( PnInvalidInputException.class, exception ->{
+            assertEquals("Parametri non validi", exception.getMessage());
+            return Mono.empty();
+        }).block();
+
+    }
 
 
 }

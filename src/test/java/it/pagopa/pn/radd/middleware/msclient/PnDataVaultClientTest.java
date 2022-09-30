@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PnDataVaultClientTest extends BaseTest {
+class PnDataVaultClientTest extends BaseTest {
 
     @Autowired
     private PnDataVaultClient pnDataVaultClient;
@@ -17,7 +17,7 @@ public class PnDataVaultClientTest extends BaseTest {
     void testGetEnsureFiscalCode() {
         String fiscalCode = "" , type = "PF";
         String responseFiscal = pnDataVaultClient.getEnsureFiscalCode(fiscalCode, type).block();
-        assertEquals(responseFiscal, "\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\"");
+        assertEquals("\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\"", responseFiscal);
     }
 
     @Test

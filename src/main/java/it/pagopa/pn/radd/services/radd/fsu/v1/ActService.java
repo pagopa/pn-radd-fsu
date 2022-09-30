@@ -232,12 +232,14 @@ public class ActService extends BaseService {
 
     private Mono<FileDownloadResponseDto> verifyCheckSum(String fileKey, String checkSum, String versionId){
         return this.safeStorageClient.getFile(fileKey).map(response -> {
+            /*
             if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
                 throw new RaddDocumentStatusException("Status is not preloaded");
             }
             if (!StringUtils.equals(response.getVersionId(), versionId)){
                 throw new PnException("Version id", "Version id non corrispondono",  HttpStatus.BAD_REQUEST.value());
             }
+            */
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(checkSum)){
                 throw new RaddChecksumException();

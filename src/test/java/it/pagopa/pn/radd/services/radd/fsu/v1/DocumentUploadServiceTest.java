@@ -157,5 +157,15 @@ class DocumentUploadServiceTest extends BaseTest {
 
     }
 
+    @Test
+    void testWhenRequestIsNull(){
+
+        Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", null);
+        response.onErrorResume( PnInvalidInputException.class, exception ->{
+            assertEquals("Parametri non validi", exception.getMessage());
+            return Mono.empty();
+        }).block();
+
+    }
 
 }

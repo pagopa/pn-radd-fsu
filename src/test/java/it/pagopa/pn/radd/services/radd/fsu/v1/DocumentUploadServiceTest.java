@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.exception.PnDocumentException;
 import it.pagopa.pn.radd.exception.PnException;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationRequestDto;
@@ -10,7 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+
+import java.nio.charset.Charset;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -45,6 +51,28 @@ class DocumentUploadServiceTest extends BaseTest {
                 }
         ).block();
     }
+
+    @Test
+    void testWhenIdAndBoundleKO(){
+        String id="idTest";
+        DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
+        bundleId.setBundleId("idTest");
+        bundleId.setContentType("test");
+        FileCreationRequestDto request = new FileCreationRequestDto();
+        request.setContentType(bundleId.getContentType());
+        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId())
+        ).thenReturn(Mono.error(new PnDocumentException(new WebClientResponseException(99, "Error", new HttpHeaders(), new byte[1], Charset.defaultCharset() ))));
+        Mono<DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
+        response.onErrorResume( ex ->{
+                    log.info(ex.getMessage());
+                    assertNotNull(ex);
+                    assertNotNull(ex.getMessage());
+                    assertEquals( ResponseStatus.CodeEnum.NUMBER_99.toString()  , ((PnException) ex).getDescription());
+                    return Mono.empty();
+                }
+        ).block();
+    }
+
 
     @Test
     void testWhenIdAndBoundleId(){

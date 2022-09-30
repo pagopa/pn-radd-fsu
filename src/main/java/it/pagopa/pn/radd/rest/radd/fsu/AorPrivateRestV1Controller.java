@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.Arrays;
 
 
 @RestController
@@ -72,12 +71,12 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
         final String iun = "LJLH-GNTJ-DVXR-202209-J-1";
         final String docIdx = "0";
 
-        return Mono.just(response)
-                .zipWhen(r -> pnDeliveryClient.getPresignedUrlDocument(iun, docIdx, null),
-                        (r, n) -> {
-                            r.setUrlList(Arrays.asList(n.getUrl()));
-                            return r;
-                        })
-                .map(re -> ResponseEntity.status(HttpStatus.OK).body(re));
+        return aorStartTransactionRequest
+                .zipWhen(r -> pnDeliveryClient.getPresignedUrlDocument(iun, docIdx, r.getRecipientTaxId()), (request, urls) -> urls)
+                .zipWith(Mono.just(response))
+                .map(urlAndResponse -> {
+                    urlAndResponse.getT2().setUrlList(urlAndResponse.getT2().getUrlList());
+                    return ResponseEntity.status(HttpStatus.OK).body(urlAndResponse.getT2());
+                });
     }
 }

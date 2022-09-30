@@ -27,12 +27,6 @@ public class ActServiceTest extends BaseTest {
     @InjectMocks
     ActService actService;
 
-    /*Mono<ResponseCheckAarDtoDto> controlAndCheckAar(String recipientType, String recipientTaxId, String qrCode){
-        if (StringUtils.isEmpty(recipientTaxId) || !Utils.checkPersonType(recipientType) || StringUtils.isEmpty(qrCode)) {
-        log.error("Missing input parameters");
-        throw new PnInvalidInputException();
-    }*/
-
     @Test
     void testWhenBundleIdIsEmpty(){
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();

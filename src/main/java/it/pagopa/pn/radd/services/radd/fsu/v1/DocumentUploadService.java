@@ -27,10 +27,15 @@ public class DocumentUploadService {
     }
 
     public Mono<DocumentUploadResponse> createFile(String uid, Mono<DocumentUploadRequest> documentUploadRequest) {
+       if (documentUploadRequest==null){
+            log.error("Missing input parameters");
+            return Mono.error( new PnInvalidInputException() );
+        }
         // retrieve presigned url
         return documentUploadRequest
                 .map(m -> {
-                    if (m == null || StringUtils.isEmpty(m.getContentType()) || StringUtils.isEmpty(m.getBundleId())) {
+                    if ( StringUtils.isEmpty(m.getContentType())
+                            || StringUtils.isEmpty(m.getBundleId())) {
                         log.error("Missing input parameters");
                         throw new PnInvalidInputException();
                     }

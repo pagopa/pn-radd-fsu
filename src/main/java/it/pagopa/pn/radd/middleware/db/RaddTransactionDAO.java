@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.exception.RaddTransactionStatusException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -87,12 +88,14 @@ public class RaddTransactionDAO extends BaseDao {
                 });
     }
 
-
     public Mono<RaddTransactionEntity> getTransaction(String operationId) {
         Key key = Key.builder().partitionValue(operationId).build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setOperationId(operationId);
+        raddTransactionEntity.setOperationType(OperationTypeEnum.ACT.name());
 
-        return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
+        return Mono.fromFuture(raddTable.getItem(raddTransactionEntity).thenApply(item -> {
             log.info("Item finded : {}", item);
             if (item == null) {
                 throw new RaddTransactionNoExistedException(Const.NOT_EXISTS_OPERATION);
@@ -153,6 +156,7 @@ public class RaddTransactionDAO extends BaseDao {
         expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
         return this.getCounterQuery(expressionValues, query);
     }
+
     private CompletableFuture<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression){
         QueryRequest qeRequest = QueryRequest
                 .builder()

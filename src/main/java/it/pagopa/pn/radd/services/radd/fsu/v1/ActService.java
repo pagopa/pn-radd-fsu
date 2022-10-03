@@ -263,6 +263,7 @@ public class ActService extends BaseService {
         entity.setUid(uid);
         entity.setQrCode(transaction.getQrCode());
         entity.setStatus(Const.STARTED);
+        entity.setOperationType(transaction.getOperationType());
         entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
         return this.raddTransactionDAO.createRaddTransaction(entity);
     }

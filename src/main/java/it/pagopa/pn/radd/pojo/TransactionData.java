@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.pojo;
 
-
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +24,7 @@ public class TransactionData {
     private String ensureRecipientId;
     private String ensureDelegateId;
     private String versionId;
+    private OperationTypeEnum operationType;
     private List<String> urls = new ArrayList<>();
 
 

@@ -4,7 +4,7 @@ import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddFiscalCodeEnsureException;
-import it.pagopa.pn.radd.middleware.msclient.*;
+import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -18,22 +18,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @Slf4j
-public class ActServiceTest extends BaseTest {
+public class BaseServiceTest extends BaseTest {
 
     @InjectMocks
-    ActService actService;
+    BaseService baseService;
 
     @Mock
     PnDataVaultClient pnDataVaultClient;
-
-
-
 
     @Test
     void testWhenBundleIdIsEmpty(){
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
         PnDataVaultClient pnDataVaultClient = new PnDataVaultClient(pnRaddFsuConfig);
-        Mono<String> response = actService.getEnsureFiscalCode("", Const.PF, pnDataVaultClient);
+        Mono<String> response = baseService.getEnsureFiscalCode("", Const.PF, pnDataVaultClient);
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Parametri non validi", exception.getMessage());
             return Mono.empty();
@@ -45,7 +42,7 @@ public class ActServiceTest extends BaseTest {
     void testWhenFiscalCodeIsNotCorrect(){
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
         PnDataVaultClient pnDataVaultClient = new PnDataVaultClient(pnRaddFsuConfig);
-        Mono<String> response = actService.getEnsureFiscalCode("test", "fiscalcodeNotCorrect", pnDataVaultClient);
+        Mono<String> response = baseService.getEnsureFiscalCode("test", "fiscalcodeNotCorrect", pnDataVaultClient);
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Parametri non validi", exception.getMessage());
             return Mono.empty();
@@ -58,7 +55,7 @@ public class ActServiceTest extends BaseTest {
 
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(""));
-        Mono<String> response = actService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
+        Mono<String> response = baseService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
         response.onErrorResume( RaddFiscalCodeEnsureException.class, exception ->{
             assertEquals(409, exception.getStatusCode());
             return Mono.empty();
@@ -70,11 +67,10 @@ public class ActServiceTest extends BaseTest {
     void testWhenResponseIsFull(){
 
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())
-        ).thenReturn( Mono.just("data"));
-        Mono<String> response = actService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
+            ).thenReturn( Mono.just("data"));
+        Mono<String> response = baseService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
 
         assertTrue(!response.toString().isEmpty());
 
     }
-
 }

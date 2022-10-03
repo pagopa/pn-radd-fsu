@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.rest.radd.v1.api.AorDocumentInquiryApi;
 import it.pagopa.pn.radd.rest.radd.v1.api.AorTransactionManagementApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.services.radd.fsu.v1.AorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,22 +22,18 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
     private final SecureRandom rnd = new SecureRandom();
 
     private final PnDeliveryClient pnDeliveryClient;
+    private final AorService aorService;
 
-    public AorPrivateRestV1Controller(PnDeliveryClient pnDeliveryClient) {
+    public AorPrivateRestV1Controller(PnDeliveryClient pnDeliveryClient, AorService aorService) {
         this.pnDeliveryClient = pnDeliveryClient;
+        this.aorService = aorService;
     }
 
 
     @Override
     public Mono<ResponseEntity<AORInquiryResponse>> aorInquiry(String uid, String recipientTaxId,
                                                                String recipientType, ServerWebExchange exchange) {
-        AORInquiryResponse response = new AORInquiryResponse();
-        response.setResult(Boolean.TRUE);
-        ResponseStatus status = new ResponseStatus();
-        status.setCode(ResponseStatus.CodeEnum.NUMBER_0);
-        status.setMessage("OK");
-        response.setStatus(status);
-        return Mono.delay(Duration.ofMillis(rnd.nextInt(500))).just(ResponseEntity.status(HttpStatus.OK).body(response));
+        return aorService.aorInquiry(uid, recipientTaxId, recipientType).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override

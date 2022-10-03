@@ -3,7 +3,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.RaddFiscalCodeEnsureException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
@@ -13,12 +13,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ENSURE_FISCAL_CODE_EMPTY;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @Slf4j
-public class BaseServiceTest extends BaseTest {
+class BaseServiceTest extends BaseTest {
 
     @InjectMocks
     BaseService baseService;
@@ -32,7 +32,7 @@ public class BaseServiceTest extends BaseTest {
         PnDataVaultClient pnDataVaultClient = new PnDataVaultClient(pnRaddFsuConfig);
         Mono<String> response = baseService.getEnsureFiscalCode("", Const.PF, pnDataVaultClient);
         response.onErrorResume( PnInvalidInputException.class, exception ->{
-            assertEquals("Parametri non validi", exception.getMessage());
+            assertEquals("recipientTaxId o recipientType non valorizzato correttamente", exception.getMessage());
             return Mono.empty();
         }).block();
 
@@ -44,7 +44,7 @@ public class BaseServiceTest extends BaseTest {
         PnDataVaultClient pnDataVaultClient = new PnDataVaultClient(pnRaddFsuConfig);
         Mono<String> response = baseService.getEnsureFiscalCode("test", "fiscalcodeNotCorrect", pnDataVaultClient);
         response.onErrorResume( PnInvalidInputException.class, exception ->{
-            assertEquals("Parametri non validi", exception.getMessage());
+            assertEquals("recipientTaxId o recipientType non valorizzato correttamente", exception.getMessage());
             return Mono.empty();
         }).block();
     }
@@ -56,8 +56,8 @@ public class BaseServiceTest extends BaseTest {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(""));
         Mono<String> response = baseService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
-        response.onErrorResume( RaddFiscalCodeEnsureException.class, exception ->{
-            assertEquals(409, exception.getStatusCode());
+        response.onErrorResume( RaddGenericException.class, exception ->{
+            assertEquals(ENSURE_FISCAL_CODE_EMPTY, exception.getExceptionType());
             return Mono.empty();
         }).block();
     }
@@ -70,7 +70,7 @@ public class BaseServiceTest extends BaseTest {
             ).thenReturn( Mono.just("data"));
         Mono<String> response = baseService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
 
-        assertTrue(!response.toString().isEmpty());
+        assertFalse(response.toString().isEmpty());
 
     }
 }

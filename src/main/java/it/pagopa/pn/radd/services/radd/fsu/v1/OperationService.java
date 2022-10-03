@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.mapper.OperationResponseMapper;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -26,20 +27,8 @@ public class OperationService {
     public Mono<OperationResponse> getTransaction(String operationId){
         log.info("Find transaction with {} operation id", operationId);
         return transactionDAO.getTransaction(operationId)
-                .map(entity -> {
-                    OperationResponse response = new OperationResponse();
-                    response.setElement(mapperToNotificationResponse.toDto(entity));
-                    response.setResult(true);
-                    OperationResponseStatus status = new OperationResponseStatus();
-                    status.setCode(OperationResponseStatus.CodeEnum.NUMBER_0);
-                    response.setStatus(status);
-                    return response;
-                }).onErrorResume(ex -> {
-                    if (ex instanceof RaddTransactionNoExistedException) {
-                        return Mono.just(getOperationErrorResponse(ex));
-                    }
-                    return Mono.error(ex);
-                });
+                .map(entity -> OperationResponseMapper.fromResult(mapperToNotificationResponse.toDto(entity)))
+                .onErrorResume(RaddGenericException.class, ex -> Mono.just(OperationResponseMapper.fromException(ex)));
     }
 
     public Mono<OperationsResponse> getPracticesId(String iun){
@@ -61,15 +50,6 @@ public class OperationService {
                     notificationPracticesResponse.setStatus(status);
                     return notificationPracticesResponse;
                 });
-    }
-
-    protected OperationResponse getOperationErrorResponse(Throwable ex) {
-        OperationResponse r = new OperationResponse();
-        OperationResponseStatus status = new OperationResponseStatus();
-        status.setMessage(ex.getMessage());
-        status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
-        r.setStatus(status);
-        return r;
     }
 
 

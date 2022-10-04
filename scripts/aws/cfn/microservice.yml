@@ -75,6 +75,10 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing radd transaction'
   
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
+  
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -106,6 +110,8 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
+         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+
 
   # Grant operational rights to PN-RADD microservice
   RaddMicroserviceTaskPolicy:

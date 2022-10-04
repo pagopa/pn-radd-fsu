@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.pojo;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 public class TransactionData {
     private String uid;
     private String iun;
@@ -24,6 +26,8 @@ public class TransactionData {
     private String ensureRecipientId;
     private String ensureDelegateId;
     private String versionId;
+    private OperationTypeEnum operationType;
+    private List<String> iuns = new ArrayList<>();
     private List<String> urls = new ArrayList<>();
 
 

@@ -32,7 +32,7 @@ class AorServiceTest extends BaseTest {
                 .onErrorResume(ex -> {
                    if (ex instanceof RaddGenericException){
                        assertNotNull(((RaddGenericException) ex).getExceptionType());
-                       assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILDE_FOR_CF, ((RaddGenericException) ex).getExceptionType());
+                       assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ((RaddGenericException) ex).getExceptionType());
                    }
                    fail("Bad type exception");
                    return null;
@@ -53,7 +53,7 @@ class AorServiceTest extends BaseTest {
         assertNotNull(inquiryResponse);
         assertFalse(inquiryResponse.getResult());
         assertEquals(new BigDecimal(99), inquiryResponse.getStatus().getCode().getValue());
-        assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILDE_FOR_CF.getMessage(), inquiryResponse.getStatus().getMessage());
+        assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF.getMessage(), inquiryResponse.getStatus().getMessage());
     }
 
     @Test

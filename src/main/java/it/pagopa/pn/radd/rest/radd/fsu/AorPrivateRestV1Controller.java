@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.Duration;
 
@@ -20,12 +19,9 @@ import java.time.Duration;
 public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTransactionManagementApi {
 
     private final SecureRandom rnd = new SecureRandom();
-
-    private final PnDeliveryClient pnDeliveryClient;
     private final AorService aorService;
 
-    public AorPrivateRestV1Controller(PnDeliveryClient pnDeliveryClient, AorService aorService) {
-        this.pnDeliveryClient = pnDeliveryClient;
+    public AorPrivateRestV1Controller(AorService aorService) {
         this.aorService = aorService;
     }
 
@@ -58,22 +54,6 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
 
     @Override
     public Mono<ResponseEntity<StartTransactionResponse>> startAorTransaction(String uid, Mono<AorStartTransactionRequest> aorStartTransactionRequest, ServerWebExchange exchange) {
-        StartTransactionResponse response = new StartTransactionResponse();
-        StartTransactionResponseStatus status = new StartTransactionResponseStatus();
-        status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
-        status.setMessage("OK");
-        status.setRetryAfter(BigDecimal.valueOf(600));
-        response.setStatus(status);
-
-        final String iun = "LJLH-GNTJ-DVXR-202209-J-1";
-        final String docIdx = "0";
-
-        return aorStartTransactionRequest
-                .zipWhen(r -> pnDeliveryClient.getPresignedUrlDocument(iun, docIdx, r.getRecipientTaxId()), (request, urls) -> urls)
-                .zipWith(Mono.just(response))
-                .map(urlAndResponse -> {
-                    urlAndResponse.getT2().setUrlList(urlAndResponse.getT2().getUrlList());
-                    return ResponseEntity.status(HttpStatus.OK).body(urlAndResponse.getT2());
-                });
+        return aorService.startTransaction(uid, aorStartTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

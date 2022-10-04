@@ -4,7 +4,6 @@ package it.pagopa.pn.radd.config;
 import lombok.extern.slf4j.Slf4j;
 import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.integration.ClientAndServer;
-import org.mockserver.stop.Stop;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 

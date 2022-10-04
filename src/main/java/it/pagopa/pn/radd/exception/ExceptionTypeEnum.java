@@ -21,7 +21,7 @@ public enum ExceptionTypeEnum {
     ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato"),
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
-    NO_NOTIFICATIONS_FAILDE_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
+    NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
     ;
     private final String title;
     private final String message;

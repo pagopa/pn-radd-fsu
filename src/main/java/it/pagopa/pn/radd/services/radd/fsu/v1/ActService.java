@@ -7,7 +7,6 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.Notif
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
@@ -34,28 +33,22 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 @Service
 @Slf4j
 public class ActService extends BaseService {
-
-    private final RaddTransactionDAO raddTransactionDAO;
     private final PnDeliveryClient pnDeliveryClient;
     private final PnDeliveryPushClient pnDeliveryPushClient;
-    private final PnDataVaultClient pnDataVaultClient;
-    private final PnSafeStorageClient safeStorageClient;
     private final PnDeliveryPushInternalClient pnDeliveryPushInternalClient;
     private final TransactionDataMapper transactionDataMapper;
 
     public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, PnDeliveryPushInternalClient pnDeliveryPushInternalClient, TransactionDataMapper transactionDataMapper) {
-        this.raddTransactionDAO = raddTransactionDAO;
+        super(pnDataVaultClient, raddTransactionDAO, safeStorageClient);
         this.pnDeliveryClient = pnDeliveryClient;
         this.pnDeliveryPushClient = pnDeliveryPushClient;
-        this.pnDataVaultClient = pnDataVaultClient;
-        this.safeStorageClient = safeStorageClient;
         this.pnDeliveryPushInternalClient = pnDeliveryPushInternalClient;
         this.transactionDataMapper = transactionDataMapper;
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
         // check if iun exists
-        return getEnsureFiscalCode(recipientTaxId, recipientType, this.pnDataVaultClient)
+        return getEnsureFiscalCode(recipientTaxId, recipientType)
                 .zipWhen(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
                 .map(item -> ActInquiryResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(ActInquiryResponseMapper.fromException(ex)));
@@ -64,19 +57,19 @@ public class ActService extends BaseService {
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
         return request
                 .map(req -> validateAndSettingsData(uid, req))
+                .log()
                 .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getRecipientId(), tmp.getQrCode())
                         .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
                                                                 transaction.setIun(iun);
                                                                 return transaction;
                 })
                 .zipWhen( transaction -> getCounterNotification(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
-                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transactionWithEnsure) -> transactionWithEnsure)
+                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
-                    return createTransaction(transaction, uid, OperationTypeEnum.ACT);
-                }, (transaction, entity) -> transaction)
-
-                .zipWhen(transaction -> verifyCheckSum(transaction.getFileKey(), transaction.getChecksum(), transaction.getVersionId()), (transaction, responseCheckSum) -> transaction)
+                    return this.createTransaction(transaction, uid, transaction.getIun());
+                }, (transaction, entity) -> transaction )
+                .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, t2) -> transaction)
                 .zipWhen(this::notification, (transaction, transactionWithUlrs) -> transactionWithUlrs)
 
@@ -191,64 +184,6 @@ public class ActService extends BaseService {
                 .flatMap(document ->
                         pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), document.getDocIdx(), transaction.getEnsureRecipientId())
                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
-    }
-
-    private Mono<FileDownloadResponseDto> verifyCheckSum(String fileKey, String checkSum, String versionId){
-        return this.safeStorageClient.getFile(fileKey).map(response -> {
-            /*
-            if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
-                throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
-            }
-
-            if (!StringUtils.equals(response.getVersionId(), versionId)){
-                throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
-            }
-            */
-            if (Strings.isBlank(response.getChecksum()) ||
-                    !response.getChecksum().equals(checkSum)){
-                throw new RaddGenericException(CHECKSUM_VALIDATION, KO);
-            }
-            return response;
-        });
-    }
-
-    private Mono<TransactionData> updateFileMetadata(TransactionData transactionData){
-        return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey()).map(resp -> transactionData);
-    }
-
-    private Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid, OperationTypeEnum operationType){
-        RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIun(transaction.getIun());
-        entity.setOperationId(transaction.getOperationId());
-        entity.setDelegateId(transaction.getEnsureDelegateId());
-        entity.setRecipientId(transaction.getEnsureRecipientId());
-        entity.setRecipientType(transaction.getRecipientType());
-        entity.setFileKey(transaction.getFileKey());
-        entity.setUid(uid);
-        entity.setQrCode(transaction.getQrCode());
-        entity.setStatus(Const.STARTED);
-        if (operationType != null) {
-            entity.setOperationType(operationType.name());
-        }
-        entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
-        return this.raddTransactionDAO.createRaddTransaction(entity);
-    }
-
-
-    private Mono<TransactionData> getEnsureRecipientAndDelegate(TransactionData transaction){
-        return getEnsureFiscalCode(transaction.getRecipientId(), transaction.getRecipientType(), this.pnDataVaultClient)
-                .flatMap(ensureRecipient -> {
-                    if (!Strings.isBlank(transaction.getDelegateId())){
-                        return getEnsureFiscalCode(transaction.getDelegateId(), Const.PF, this.pnDataVaultClient)
-                                .flatMap(delegateEnsure -> {
-                                    transaction.setEnsureRecipientId(ensureRecipient);
-                                    transaction.setEnsureDelegateId(delegateEnsure);
-                                    return Mono.just(transaction);
-                                });
-                    }
-                    transaction.setEnsureRecipientId(ensureRecipient);
-                    return  Mono.just(transaction);
-                });
     }
 
     private Mono<Integer> getCounterNotification(String iun, String operationId){

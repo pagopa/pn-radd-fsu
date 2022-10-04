@@ -219,18 +219,49 @@
   {
     "httpRequest": {
       "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
-      "body": {
-        "recipientType": "PF",
-        "recipientInternalId": "1924814",
-        "raddType": "__FSU__",
-        "raddBusinessTransactionId": "",
+      "body" : {
+        "recipientType" : "PF",
+        "recipientInternalId" : "1924814",
+        "raddType" : "__FSU__",
+        "raddBusinessTransactionId" : null,
         "raddBusinessTransactionDate" : "2022-09-30T13:57:00Z"
       },
       "method": "POST"
     },
     "httpResponse": {
       "statusCode": 200,
-      "body": "{\"resultCode\":200.00,\"resultDescription\":\"OK\"}"
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
+      "body" : {
+        "recipientType" : "PF",
+        "recipientInternalId" : "1924814",
+        "raddType" : "__FSU__",
+        "raddBusinessTransactionId" : null,
+        "raddBusinessTransactionDate" : "2022-09-30T13:57:00Z"
+      },
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Invalid input",
+        "detail": "Iun parameter is absent.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
     }
   },
   {
@@ -243,20 +274,64 @@
     },
     "httpResponse": {
       "statusCode": 200,
-      "body": "{\"resultCode\":200.00,\"resultDescription\":\"OK\"}"
+      "body": "{\"string\":\"OK\"}"
     }
   },
   {
     "httpRequest": {
       "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/legal-facts",
       "queryStringParameters" : {
-        "recipientInternalId" : [ "" ]
+        "recipientInternalId" : [ "854Bgs31a" ]
       },
       "method": "GET"
     },
     "httpResponse": {
       "statusCode": 400,
-      "body": "{\"resultCode\":400.00,\"resultDescription\":\"Invalid input\"}"
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Invalid input",
+        "detail": "Iun parameter is absent.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/legal-facts/PEC_RECEIPT/98765",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "854Bgs31a" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": "{\"string\":\"OK\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/legal-facts/PEC_RECEIPT/98765",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "854Bgs31a" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Invalid input",
+        "detail": "Iun parameter is absent.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
     }
   },
   {

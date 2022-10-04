@@ -1,48 +1,70 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
+import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class PnDeliveryPushInternalClientTest {
+public class PnDeliveryPushInternalClientTest extends BaseTest {
     @Autowired
     PnDeliveryPushInternalClient pnDeliveryPushInternalClient;
 
-//    @Test
+    @Test
     void testGetNotificationLegalFacts() {
-        String recipientInternalId = "12345", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
-        LegalFactCategoryDto categoryDto = LegalFactCategoryDto.ANALOG_DELIVERY;
-        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
-        monoResponse.doOnNext(response -> {
-            assertNotNull(response);
-        }).block();
+        String recipientInternalId = "854Bgs31a", iun = "LJLH-GNTJ-DVXR-202209-J-1";
+        Flux<LegalFactListElementDto> fluxResponse = pnDeliveryPushInternalClient.getNotificationLegalFacts(recipientInternalId, iun);
+        fluxResponse.map(response -> {
+            assertEquals("LJLH-GNTJ-DVXR-202209-J-1", response.getIun());
+            return null;
+        });
     }
 
-//    @Test
-    void testGetNotificationLegalFactsCode400() {
-        String recipientInternalId = "12345", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
-        LegalFactCategoryDto categoryDto = LegalFactCategoryDto.ANALOG_DELIVERY;
-        Mono<LegalFactDownloadMetadataResponseDto> response = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
-        response.onErrorResume(WebClientResponseException.class, exception -> {
-            assertEquals(HttpStatus.valueOf(400), exception.getStatusCode());
-            exception.getMessage();
+    @Test
+    void testGetNotificationLegalFactsCode404() {
+        String recipientInternalId = "", iun = "LJLH-GNTJ-DVXR-202209-J-1";
+        Flux<LegalFactListElementDto> response = pnDeliveryPushInternalClient.getNotificationLegalFacts(recipientInternalId, iun);
+        response.onErrorResume(exception -> {
+            if (exception instanceof PnRaddException){
+                assertEquals(404, ((PnRaddException) exception).getWebClientEx().getStatusCode().value());
+                return Mono.empty();
+            }
+            fail("Badly type exception");
             return Mono.empty();
-        }).block();
+        }).blockFirst();
+
     }
 
 //    @Test
     void testGetLegalFacts() {
-
+        String recipientInternalId = "854Bgs31a", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
+        LegalFactCategoryDto categoryDto = LegalFactCategoryDto.PEC_RECEIPT;
+        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
+        monoResponse.map(response -> {
+            fail("GOOD type exception");
+            return Mono.empty();
+        }).block();
     }
 
-//    @Test
-    void testGetLegalFactsCode400() {
-
+    @Test
+    void testGetLegalFactsCode404() {
+        String recipientInternalId = "", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
+        LegalFactCategoryDto categoryDto = LegalFactCategoryDto.PEC_RECEIPT;
+        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
+        monoResponse.onErrorResume(exception -> {
+            if (exception instanceof PnRaddException){
+                assertEquals(404, ((PnRaddException) exception).getWebClientEx().getStatusCode().value());
+                return Mono.empty();
+            }
+            fail("Badly type exception");
+            return Mono.empty();
+        });
     }
 }

@@ -15,6 +15,7 @@ import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -72,7 +73,7 @@ public class ActService extends BaseService {
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transactionWithEnsure) -> transactionWithEnsure)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
-                    return createTransaction(transaction, uid);
+                    return createTransaction(transaction, uid, OperationTypeEnum.ACT);
                 }, (transaction, entity) -> transaction)
 
                 .zipWhen(transaction -> verifyCheckSum(transaction.getFileKey(), transaction.getChecksum(), transaction.getVersionId()), (transaction, responseCheckSum) -> transaction)
@@ -92,7 +93,7 @@ public class ActService extends BaseService {
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
         return completeTransactionRequest.map(this::validateCompleteRequest)
-                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
+                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
                                 .map(entity -> {
                                     checkTransactionStatus(entity);
                                     return entity;
@@ -120,7 +121,7 @@ public class ActService extends BaseService {
                     }
                     return m;
                 })
-                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId()))
+                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId(), OperationTypeEnum.ACT))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
                     checkTransactionStatus(raddEntity);
@@ -215,7 +216,7 @@ public class ActService extends BaseService {
         return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey()).map(resp -> transactionData);
     }
 
-    private Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
+    private Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid, OperationTypeEnum operationType){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setIun(transaction.getIun());
         entity.setOperationId(transaction.getOperationId());
@@ -226,6 +227,9 @@ public class ActService extends BaseService {
         entity.setUid(uid);
         entity.setQrCode(transaction.getQrCode());
         entity.setStatus(Const.STARTED);
+        if (operationType != null) {
+            entity.setOperationType(operationType.name());
+        }
         entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
         return this.raddTransactionDAO.createRaddTransaction(entity);
     }

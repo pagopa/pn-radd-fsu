@@ -6,7 +6,7 @@ import it.pagopa.pn.radd.utils.DateUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RaddTransactionEntityNotificationResponse  implements BaseMapperInterface<OperationDetailResponse, RaddTransactionEntity> {
+public class RaddTransactionEntityNotificationResponse implements BaseMapperInterface<OperationDetailResponse, RaddTransactionEntity> {
 
     private RaddTransactionEntityNotificationResponse(){
         super();
@@ -23,6 +23,7 @@ public class RaddTransactionEntityNotificationResponse  implements BaseMapperInt
         dto.setIun(source.getIun());
         dto.setOperationId(source.getOperationId());
         dto.setRecipientTaxId(source.getRecipientId());
+        dto.setRecipientType(source.getRecipientType());
         dto.setDelegateTaxId(source.getDelegateId());
         dto.setFileKey(source.getFileKey());
         dto.setUid(source.getUid());
@@ -31,7 +32,7 @@ public class RaddTransactionEntityNotificationResponse  implements BaseMapperInt
         dto.setOperationStatus(source.getStatus());
         dto.setErrorReason(source.getErrorReason());
         dto.setQrCode(source.getQrCode());
-        dto.setOperationType(source.getRecipientType());
+        dto.setOperationType(source.getOperationType());
         return dto;
     }
 }

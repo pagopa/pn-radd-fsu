@@ -1,10 +1,12 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
-
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 
 @DynamoDbBean
 @Data
@@ -22,17 +24,16 @@ public class RaddTransactionEntity {
     public static final String COL_UID = "uid";
     public static final String COL_OPERATION_START_DATE = "operationStartDate";
     public static final String COL_OPERATION_END_DATE = "operationEndDate";
+    public static final String COL_OPERATION_TYPE = "operationType";
     public static final String COL_VERSION_TOKEN = "versionToken";
     public static final String COL_ERROR_REASON = "errorReason";
     public static final String IUN_INDEX = "iun-global";
-
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_OPERATION_ID)}))
     private String operationId;
 
     @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = { IUN_INDEX}), @DynamoDbAttribute(COL_IUN)}))
     private String iun;
-
 
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_FILE_KEY)}))
@@ -60,6 +61,9 @@ public class RaddTransactionEntity {
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_OPERATION_END_DATE)}))
     private String operationEndDate;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_OPERATION_TYPE)}))
+    private String operationType;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_VERSION_TOKEN)}))
     private String versionToken;

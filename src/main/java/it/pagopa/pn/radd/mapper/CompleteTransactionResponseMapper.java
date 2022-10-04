@@ -16,8 +16,6 @@ public class CompleteTransactionResponseMapper {
         return response;
     }
 
-
-
     public static CompleteTransactionResponse fromException(RaddGenericException ex){
         CompleteTransactionResponse r = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();

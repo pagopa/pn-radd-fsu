@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.pojo;
 
-
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 

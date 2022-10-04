@@ -649,6 +649,9 @@ components:
         recipientTaxId:
           type: string
           example: "TNTGTR76E21H751S"
+        recipientType:
+          type: string
+          example: "PF"
         delegateTaxId:
           type: string
           example: "RFRGRZ66E21H751B"

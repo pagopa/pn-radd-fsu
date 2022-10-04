@@ -93,7 +93,7 @@ public class ActService extends BaseService {
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
         return completeTransactionRequest.map(this::validateCompleteRequest)
-                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
+                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
                                 .map(entity -> {
                                     checkTransactionStatus(entity);
                                     return entity;
@@ -121,7 +121,7 @@ public class ActService extends BaseService {
                     }
                     return m;
                 })
-                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId()))
+                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId(), OperationTypeEnum.ACT))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
                     checkTransactionStatus(raddEntity);

@@ -110,7 +110,7 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
 
 
   # Grant operational rights to PN-RADD microservice

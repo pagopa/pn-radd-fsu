@@ -87,7 +87,7 @@ class OperationServiceTest extends BaseTest {
         assertEquals(entity.getFileKey(), response.getElement().getFileKey());
         assertEquals(entity.getQrCode(), response.getElement().getQrCode());
         assertEquals(entity.getRecipientId(), response.getElement().getRecipientTaxId());
-        assertEquals(entity.getRecipientType(), response.getElement().getOperationType());
+        assertEquals(entity.getRecipientType(), response.getElement().getRecipientType());
         assertEquals(entity.getDelegateId(), response.getElement().getDelegateTaxId());
         assertEquals(entity.getUid(), response.getElement().getUid());
         assertEquals(entity.getStatus(), response.getElement().getOperationStatus());

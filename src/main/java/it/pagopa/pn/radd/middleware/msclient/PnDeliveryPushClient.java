@@ -1,7 +1,8 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.PnNotificationException;
+import it.pagopa.pn.radd.exception.ExceptionCodeEnum;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.EventComunicationApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.PaperNotificationFailedApi;
@@ -28,8 +29,6 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Component
 public class PnDeliveryPushClient extends BaseClient {
-
-    //TODO add into application properties
     private static final String raddType = "__FSU__";
     private EventComunicationApi eventComunicationApi;
     private PaperNotificationFailedApi paperNotificationFailedApi;
@@ -60,7 +59,7 @@ public class PnDeliveryPushClient extends BaseClient {
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 )
-                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnNotificationException(ex)));
+                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new RaddGenericException(ex.getLocalizedMessage(), ExceptionCodeEnum.KO)));
     }
 
 

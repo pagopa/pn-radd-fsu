@@ -1,7 +1,8 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.BaseTest;
-import it.pagopa.pn.radd.exception.PnEnsureFiscalCodeException;
+import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndatavault.v1.dto.RecipientTypeDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
@@ -15,16 +16,16 @@ class PnDataVaultClientTest extends BaseTest {
 
     @Test
     void testGetEnsureFiscalCode() {
-        String fiscalCode = "" , type = "PF";
+        String fiscalCode = "" , type = RecipientTypeDto.PF.getValue();
         String responseFiscal = pnDataVaultClient.getEnsureFiscalCode(fiscalCode, type).block();
         assertEquals("\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\"", responseFiscal);
     }
 
     @Test
     void testGetEnsureFiscalCodeError400() {
-        String fiscalCode = "" , type = "PG";
+        String fiscalCode = "" , type = RecipientTypeDto.PG.getValue();
         Mono<String> response = pnDataVaultClient.getEnsureFiscalCode(fiscalCode, type);
-        response.onErrorResume(PnEnsureFiscalCodeException.class,  exception -> {
+        response.onErrorResume(PnRaddException.class, exception -> {
             assertEquals(400, exception.getWebClientEx().getStatusCode().value());
             return Mono.empty();
         }).block();

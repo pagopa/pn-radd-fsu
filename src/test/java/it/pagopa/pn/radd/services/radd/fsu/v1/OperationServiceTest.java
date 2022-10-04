@@ -2,7 +2,9 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 
 import it.pagopa.pn.radd.config.BaseTest;
-import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
+import it.pagopa.pn.radd.exception.ExceptionCodeEnum;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -42,10 +44,10 @@ class OperationServiceTest extends BaseTest {
     void testWhenNoTransactionForOperationId(){
         OperationResponse r = new OperationResponse();
         OperationResponseStatus status = new OperationResponseStatus();
-        status.setMessage("Transazione non trovata");
+        status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(dao.getTransaction(Mockito.any())).thenReturn(Mono.error(new RaddTransactionNoExistedException()));
+        Mockito.when(dao.getTransaction(Mockito.any())).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST, ExceptionCodeEnum.KO)));
         StepVerifier.create(operationService.getTransaction("erer"))
                 .expectNext(r).verifyComplete();
     }

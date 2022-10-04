@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
 import it.pagopa.pn.common.rest.error.v1.dto.ProblemError;
 import it.pagopa.pn.radd.exception.PnException;
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.PnSafeStorageException;
 import it.pagopa.pn.radd.pojo.PnSafeStoreExModel;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
@@ -38,11 +41,27 @@ public class RestExceptionHandler {
         rs.setStatus(ex.getStatus());
         rs.setTitle(ex.getMessage());
         rs.setDetail(ex.getDescription());
-        rs.setStatus(ex.getStatus());
         rs.setTimestamp(OffsetDateTime.now());
         settingTraceId(rs);
         return ResponseEntity.status(HttpStatus.valueOf(ex.getStatus()))
                 .body(Mono.just(rs));
+    }
+
+    @ExceptionHandler(PnInvalidInputException.class)
+    public ResponseEntity<Mono<Problem>> pnInvalidInputHandler(PnInvalidInputException ex){
+        Problem rs = new Problem();
+        rs.setStatus(HttpStatus.BAD_REQUEST.value());
+        rs.setTitle(ex.getReason());
+        rs.setTimestamp(OffsetDateTime.now());
+        settingTraceId(rs);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Mono.just(rs));
+    }
+
+    @ExceptionHandler(PnRaddException.class)
+    public ResponseEntity<Mono<String>> pnInvalidInputHandler(PnRaddException ex){
+        return ResponseEntity.status(ex.getWebClientEx().getStatusCode())
+                .body(Mono.just(ex.getWebClientEx().getResponseBodyAsString()));
     }
 
     @ExceptionHandler(PnSafeStorageException.class)

@@ -4,9 +4,7 @@ import it.pagopa.pn.commons.log.PnAuditLogBuilder;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.config.BaseTest;
-import it.pagopa.pn.radd.exception.RaddTransactionAlreadyExist;
-import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
-import it.pagopa.pn.radd.exception.RaddTransactionStatusException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,7 +96,7 @@ class RaddTransactionDAOTest extends BaseTest {
                 .thenReturn(CompletableFuture.completedFuture(queryResponse));
 
         StepVerifier.create(raddTransactionDAO.createRaddTransaction(entity))
-                .expectError(RaddTransactionAlreadyExist.class).verify();
+                .expectError(RaddGenericException.class).verify();
     }
 
     @Test
@@ -134,7 +132,7 @@ class RaddTransactionDAOTest extends BaseTest {
                 .thenReturn(CompletableFuture.completedFuture(entityUpdated));
 
         StepVerifier.create(raddTransactionDAO.updateStatus(entityToUpdate))
-                .expectError(RaddTransactionStatusException.class).verify();
+                .expectError(RaddGenericException.class).verify();
     }
 
     @Test
@@ -156,7 +154,7 @@ class RaddTransactionDAOTest extends BaseTest {
         completableFuture.complete(entity);
         Mockito.when(raddTable.getItem((GetItemEnhancedRequest) Mockito.any())).thenReturn(completableFuture);
         StepVerifier.create(raddTransactionDAO.getTransaction("operationId"))
-                .expectError(RaddTransactionNoExistedException.class).verify();
+                .expectError(RaddGenericException.class).verify();
     }
 
     @Test

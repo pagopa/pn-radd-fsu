@@ -24,7 +24,6 @@ public class TransactionData {
     private String ensureRecipientId;
     private String ensureDelegateId;
     private String versionId;
-    private OperationTypeEnum operationType;
     private List<String> urls = new ArrayList<>();
 
 

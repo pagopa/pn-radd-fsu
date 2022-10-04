@@ -89,19 +89,25 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public Mono<RaddTransactionEntity> getTransaction(String operationId) {
-        Key key = Key.builder().partitionValue(operationId).build();
-        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
-        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setOperationId(operationId);
-        raddTransactionEntity.setOperationType(OperationTypeEnum.ACT.name());
+//        Key key = Key.builder().partitionValue(operationId).build();
+//        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
+//        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+//        raddTransactionEntity.setOperationId(operationId);
+//        raddTransactionEntity.setOperationType(OperationTypeEnum.ACT.name());
+//
+//        return Mono.fromFuture(raddTable.getItem(raddTransactionEntity).thenApply(item -> {
+//            log.info("Item finded : {}", item);
+//            if (item == null) {
+//                throw new RaddTransactionNoExistedException(Const.NOT_EXISTS_OPERATION);
+//            }
+//            return item;
+//        }));
 
-        return Mono.fromFuture(raddTable.getItem(raddTransactionEntity).thenApply(item -> {
-            log.info("Item finded : {}", item);
-            if (item == null) {
-                throw new RaddTransactionNoExistedException(Const.NOT_EXISTS_OPERATION);
-            }
-            return item;
-        }));
+        String query = ":operationType = "+ RaddTransactionEntity.COL_OPERATION_TYPE;
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
+        expressionValues.put(":operationType",  AttributeValue.builder().s(OperationTypeEnum.ACT.name()).build());
+        return this.findOneQuery(expressionValues, query);
     }
 
     public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity){
@@ -168,6 +174,22 @@ public class RaddTransactionDAO extends BaseDao {
                 .build();
 
         return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);
+    }
+
+    private Mono<RaddTransactionEntity> findOneQuery(Map<String, AttributeValue> values, String filterExpression) {
+        QueryRequest qeRequest = QueryRequest
+                .builder()
+                .select(Select.ALL_ATTRIBUTES)
+                .tableName(table)
+                .keyConditionExpression(RaddTransactionEntity.COL_OPERATION_ID + " = :operationId")
+                .filterExpression(filterExpression)
+                .expressionAttributeValues(values)
+                .build();
+        return Mono.fromFuture(dynamoDbAsyncClient.query(qeRequest).thenApply(x -> {
+            RaddTransactionEntity user = new RaddTransactionEntity();
+            user.setOperationType("" + x.count());
+            return user;
+        }));
     }
 
 

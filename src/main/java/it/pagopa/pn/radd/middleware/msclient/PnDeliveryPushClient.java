@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionCodeEnum;
+import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.EventComunicationApi;
@@ -21,7 +22,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import javax.annotation.PostConstruct;
-import java.awt.print.Paper;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Component
 public class PnDeliveryPushClient extends BaseClient {
-    private static final String raddType = "__FSU__";
+    private static final String RADD_TYPE = "__FSU__";
     private EventComunicationApi eventComunicationApi;
     private PaperNotificationFailedApi paperNotificationFailedApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
@@ -53,7 +53,7 @@ public class PnDeliveryPushClient extends BaseClient {
         request.setRecipientInternalId(entity.getRecipientId());
         request.setRaddBusinessTransactionDate(DateUtils.getOffsetDateTime(entity.getOperationStartDate()));
         request.setRaddBusinessTransactionId(entity.getOperationId());
-        request.setRaddType(raddType);
+        request.setRaddType(RADD_TYPE);
         return this.eventComunicationApi.notifyNotificationViewed(entity.getIun(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
@@ -68,7 +68,7 @@ public class PnDeliveryPushClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                );
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
 }

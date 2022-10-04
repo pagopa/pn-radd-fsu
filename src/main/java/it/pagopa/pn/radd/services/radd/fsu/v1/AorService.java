@@ -1,14 +1,13 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.RaddAorInquiryException;
+import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.mapper.AORInquiryResponseMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -26,11 +25,14 @@ public class AorService extends BaseService {
 
     public Mono<AORInquiryResponse> aorInquiry(String uid, String recipientTaxId,
                                                String recipientType){
+        if (StringUtils.isBlank(recipientTaxId)){
+            throw new PnInvalidInputException("Il campo codice fiscale non è valorizzato");
+        }
         return this.pnDeliveryPushClient.getPaperNotificationFailed(recipientTaxId).collectList()
                 .map(listNotification -> {
 
                     if (listNotification == null){
-                        throw new RaddAorInquiryException("IUN", "Non ci sono notifiche non consegnate");
+                        throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED, ExceptionCodeEnum.KO);
                     }
 
                     List< ResponsePaperNotificationFailedDtoDto> filter = listNotification
@@ -38,35 +40,12 @@ public class AorService extends BaseService {
                             .filter(item -> StringUtils.equals(item.getRecipientInternalId(), recipientTaxId))
                             .collect(Collectors.toList());
                     if (filter.isEmpty()) {
-                        throw new RaddAorInquiryException("IUN", "Non ci sono notifiche non consegnate per questo codice fiscale");
+                        throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILDE_FOR_CF, ExceptionCodeEnum.KO);
                     }
-                    return buildInquiryResponse(null);
-                }).onErrorResume(ex -> Mono.just(buildInquiryResponse(ex)));
-
+                    return AORInquiryResponseMapper.fromResult();
+                }).onErrorResume(RaddGenericException.class, ex -> Mono.just(AORInquiryResponseMapper.fromException(ex)));
     }
 
-    private AORInquiryResponse buildInquiryResponse(Throwable error){
-        AORInquiryResponse response = new AORInquiryResponse();
-        ResponseStatus status = new ResponseStatus();
-        response.setResult(true);
-        response.setStatus(status);
-
-        if (error != null){
-            log.error("Error : {}", error.getMessage());
-            status.setCode(ResponseStatus.CodeEnum.NUMBER_99);
-            response.setResult(false);
-            if (error instanceof RaddAorInquiryException){
-                status.setMessage(((RaddAorInquiryException) error).getDescription());
-            } else if (error instanceof WebClientResponseException){
-                //throw new exception
-            } else {
-                status.setMessage("Errore generico");
-            }
-            return response;
-        }
-        status.setCode(ResponseStatus.CodeEnum.NUMBER_0);
-        return response;
-    }
 
 
 

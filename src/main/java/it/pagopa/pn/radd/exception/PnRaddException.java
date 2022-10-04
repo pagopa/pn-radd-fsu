@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 public class PnRaddException extends Exception {
 
-    private WebClientResponseException webClientEx;
+    private final WebClientResponseException webClientEx;
 
     public PnRaddException(WebClientResponseException webClientEx){
         this.webClientEx = webClientEx;

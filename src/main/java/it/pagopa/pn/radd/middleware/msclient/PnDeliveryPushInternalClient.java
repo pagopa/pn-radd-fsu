@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.LegalFactsPrivateApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
@@ -8,6 +9,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -41,7 +43,7 @@ public class PnDeliveryPushInternalClient extends BaseClient {
                 .retryWhen(
                     Retry.backoff(2, Duration.ofMillis(250))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                );
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
     public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {
@@ -49,6 +51,6 @@ public class PnDeliveryPushInternalClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(250))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                );
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 }

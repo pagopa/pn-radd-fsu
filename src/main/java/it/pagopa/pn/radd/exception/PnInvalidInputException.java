@@ -1,13 +1,14 @@
 package it.pagopa.pn.radd.exception;
 
-public class PnInvalidInputException extends PnException {
+import lombok.Getter;
 
-    public PnInvalidInputException() {
-        this("Alcuni parametri non sono validi");
+@Getter
+public class PnInvalidInputException extends RuntimeException {
+    private final String reason;
+
+
+    public PnInvalidInputException(String reason) {
+        super(reason);
+        this.reason = reason;
     }
-
-    public PnInvalidInputException(String message) {
-        super("Parametri non validi", message);
-    }
-
 }

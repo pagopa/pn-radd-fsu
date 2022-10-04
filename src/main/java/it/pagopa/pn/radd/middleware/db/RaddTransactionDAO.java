@@ -3,16 +3,13 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.commons.log.PnAuditLogBuilder;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
-import it.pagopa.pn.radd.exception.RaddTransactionAlreadyExist;
-import it.pagopa.pn.radd.exception.RaddTransactionNoExistedException;
-import it.pagopa.pn.radd.exception.RaddTransactionStatusException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -73,7 +70,7 @@ public class RaddTransactionDAO extends BaseDao {
                                 });
                             }
                             else {
-                                throw new RaddTransactionAlreadyExist();
+                                throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST, ExceptionCodeEnum.KO);
                             }
                         }))
                 .onErrorResume(throwable -> {
@@ -89,25 +86,23 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public Mono<RaddTransactionEntity> getTransaction(String operationId) {
-//        Key key = Key.builder().partitionValue(operationId).build();
-//        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
-//        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-//        raddTransactionEntity.setOperationId(operationId);
-//        raddTransactionEntity.setOperationType(OperationTypeEnum.ACT.name());
-//
-//        return Mono.fromFuture(raddTable.getItem(raddTransactionEntity).thenApply(item -> {
-//            log.info("Item finded : {}", item);
-//            if (item == null) {
-//                throw new RaddTransactionNoExistedException(Const.NOT_EXISTS_OPERATION);
-//            }
-//            return item;
-//        }));
 
         String query = ":operationType = "+ RaddTransactionEntity.COL_OPERATION_TYPE;
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
         expressionValues.put(":operationType",  AttributeValue.builder().s(OperationTypeEnum.ACT.name()).build());
         return this.findOneQuery(expressionValues, query);
+
+//        Key key = Key.builder().partitionValue(operationId).build();
+//        GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
+//
+//        return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
+//            log.info("Item finded : {}", item);
+//            if (item == null) {
+//                throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST, ExceptionCodeEnum.KO);
+//            }
+//            return item;
+//        }));
     }
 
     public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity){
@@ -123,7 +118,7 @@ public class RaddTransactionDAO extends BaseDao {
         return Mono.fromFuture(
                     raddTable.updateItem(updateRequest).thenApply(x -> {
                         if (!x.getStatus().equals(entity.getStatus())){
-                            throw new RaddTransactionStatusException("Update Status", "Lo stato della transazione non è stato aggiornato", HttpStatus.INTERNAL_SERVER_ERROR.value());
+                            throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS, ExceptionCodeEnum.KO);
                         }
                         return x;
                     })

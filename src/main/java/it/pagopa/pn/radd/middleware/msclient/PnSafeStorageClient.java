@@ -1,8 +1,9 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.PnDocumentException;
+import it.pagopa.pn.radd.exception.ExceptionCodeEnum;
 import it.pagopa.pn.radd.exception.PnSafeStorageException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileDownloadApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileMetadataUpdateApi;
@@ -20,6 +21,8 @@ import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
+
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
 
 @Slf4j
 @Component
@@ -54,7 +57,7 @@ public class PnSafeStorageClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnDocumentException(ex)));
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new RaddGenericException(DOCUMENT_UPLOAD_ERROR, ExceptionCodeEnum.KO)));
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){

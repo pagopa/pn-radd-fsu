@@ -1,17 +1,18 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.BaseTest;
-import it.pagopa.pn.radd.exception.PnCheckQrCodeException;
+import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PnDeliveryClientTest extends BaseTest {
 
@@ -29,8 +30,8 @@ class PnDeliveryClientTest extends BaseTest {
     void testGetCheckAarCode400() {
         String recipientType = "PF", recipientInternalId = "PG-4fc75df3-0913-407e-bdaa-e50329708b7d", qrCode = "UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw";
         Mono<ResponseCheckAarDtoDto> response = pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
-        response.onErrorResume(PnCheckQrCodeException.class, exception -> {
-            assertEquals(400, exception.getWebClientEx().getStatusCode().value());
+        response.onErrorResume(RaddGenericException.class, exception -> {
+            assertEquals(CF_OR_QRCODE_NOT_VALID, exception.getExceptionType());
             return Mono.empty();
         }).block();
     }
@@ -50,9 +51,8 @@ class PnDeliveryClientTest extends BaseTest {
     void testGetNotificationsCode400() {
         String iun = "LJLH-GNTJ";
         Mono<SentNotificationDto> response = pnDeliveryClient.getNotifications(iun);
-        response.onErrorResume(PnCheckQrCodeException.class, exception -> {
+        response.onErrorResume(PnRaddException.class, exception -> {
             assertEquals(400, exception.getWebClientEx().getStatusCode().value());
-            exception.getMessage();
             return Mono.empty();
         }).block();
     }
@@ -73,10 +73,13 @@ class PnDeliveryClientTest extends BaseTest {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", docXid = "12984594", recipientTaxId = "65df2qm7y";
         Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlDocument(iun, docXid, recipientTaxId);
 
-        response.onErrorResume(WebClientResponseException.class, exception -> {
-            assertEquals(HttpStatus.valueOf(400), exception.getStatusCode());
-            exception.getMessage();
-            return Mono.empty();
+        response.onErrorResume(exception -> {
+            if (exception instanceof PnRaddException){
+                assertEquals(HttpStatus.valueOf(400), ((PnRaddException) exception).getWebClientEx().getStatusCode());
+                return Mono.empty();
+            }
+            fail("Type exception bad");
+            return null;
         }).block();
     }
 
@@ -95,10 +98,13 @@ class PnDeliveryClientTest extends BaseTest {
     void testGetPresignedUrlPaymentDocumentCode400() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", attachmentName = "paymentDoc", recipientTaxId = "12df2qm7y";
         Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId);
-        response.onErrorResume(WebClientResponseException.class, exception -> {
-            assertEquals(HttpStatus.valueOf(400), exception.getStatusCode());
-            exception.getMessage();
-            return Mono.empty();
+        response.onErrorResume(exception -> {
+            if (exception instanceof PnRaddException){
+                assertEquals(HttpStatus.valueOf(400), ((PnRaddException) exception).getWebClientEx().getStatusCode());
+                return Mono.empty();
+            }
+            fail("Type exception bad");
+            return null;
         }).block();
     }
 }

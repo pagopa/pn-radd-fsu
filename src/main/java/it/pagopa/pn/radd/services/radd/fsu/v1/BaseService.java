@@ -71,9 +71,9 @@ public class BaseService {
         return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey()).map(resp -> transactionData);
     }
 
-    protected Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid, String iun){
+    protected Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIun(iun);
+        entity.setIun(transaction.getIun());
         entity.setOperationId(transaction.getOperationId());
         entity.setDelegateId(transaction.getEnsureDelegateId());
         entity.setRecipientId(transaction.getEnsureRecipientId());

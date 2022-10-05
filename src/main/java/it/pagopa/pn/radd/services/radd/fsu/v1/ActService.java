@@ -67,7 +67,7 @@ public class ActService extends BaseService {
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
-                    return this.createTransaction(transaction, uid, transaction.getIun());
+                    return this.createTransaction(transaction, uid);
                 }, (transaction, entity) -> transaction )
                 .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, t2) -> transaction)

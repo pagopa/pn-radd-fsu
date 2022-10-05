@@ -21,9 +21,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-
-
 @Slf4j
 @Service
 public class AorService extends BaseService {
@@ -57,17 +54,13 @@ public class AorService extends BaseService {
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<AorStartTransactionRequest> aorStartTransactionRequest){
         return aorStartTransactionRequest.map(req -> validationAorStartTransaction(uid, req))
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transactionReq) -> transactionReq)
-                .zipWhen(transaction -> {
-                    transaction.setIuns(new ArrayList<>());
-                    transaction.setUrls(new ArrayList<>());
-                    return this.getIunFromPaperNotificationFailed(transaction.getEnsureRecipientId())
-                                .flatMap(item -> {
+                .zipWhen(transaction -> this.getIunFromPaperNotificationFailed(transaction.getEnsureRecipientId())
+                                .map(item -> {
                                     transaction.getIuns().add(item.getIun());
                                     transaction.getUrls().add(item.getAarUrl());
-                                    return createTransaction(transaction, uid, item.getIun())
-                                            .map(entity -> item);
-                                }).collectList().map(list -> transaction);
-                },(transaction, transactionWithIuns) -> transactionWithIuns)
+                                    return item;
+                                }).collectList().map(list -> transaction), (transaction, transactionWithIuns) -> transactionWithIuns)
+                .zipWhen(transactionData -> this.createTransaction(transactionData, uid), (transaction, entity) -> transaction)
                 .zipWhen(this::verifyCheckSum, (transaction, responseChecksum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
                 .map(transactionData -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))

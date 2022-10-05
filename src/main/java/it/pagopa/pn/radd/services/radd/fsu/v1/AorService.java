@@ -1,10 +1,18 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.exception.*;
-import it.pagopa.pn.radd.mapper.AORInquiryResponseMapper;
+import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
+import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
+import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
+import it.pagopa.pn.radd.pojo.TransactionData;
+import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.utils.Const;
+import it.pagopa.pn.radd.utils.DateUtils;
+import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -14,6 +22,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTION_ALREADY_ABORTED;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTION_ALREADY_COMPLETED;
 
 @Slf4j
 @Service

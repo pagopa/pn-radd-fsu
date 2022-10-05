@@ -65,7 +65,7 @@ public class PnDeliveryClient extends BaseClient {
             } else if (ex.getRawStatusCode() == HttpResponseStatus.BAD_REQUEST.code()) {
                 message = ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
             } else {
-                return Mono.error(new RaddGenericException(ExceptionTypeEnum.GENERIC_ERROR, HttpStatus.INTERNAL_SERVER_ERROR));
+                return Mono.error(new PnRaddException(ex));
             }
             return Mono.error(new RaddGenericException(message, codeEnum));
         });

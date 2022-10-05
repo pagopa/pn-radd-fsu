@@ -32,7 +32,7 @@ class ActServiceTest extends BaseTest {
     void testWhenBundleIdIsEmpty(){
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
         PnDataVaultClient pnDataVaultClient = new PnDataVaultClient(pnRaddFsuConfig);
-        Mono<String> response = actService.getEnsureFiscalCode("", Const.PF, pnDataVaultClient);
+        Mono<String> response = actService.getEnsureFiscalCode("", Const.PF);
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("recipientTaxId o recipientType non valorizzato correttamente", exception.getMessage());
             return Mono.empty();
@@ -44,7 +44,7 @@ class ActServiceTest extends BaseTest {
     void testWhenFiscalCodeIsNotCorrect(){
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
         PnDataVaultClient pnDataVaultClient = new PnDataVaultClient(pnRaddFsuConfig);
-        Mono<String> response = actService.getEnsureFiscalCode("test", "fiscalcodeNotCorrect", pnDataVaultClient);
+        Mono<String> response = actService.getEnsureFiscalCode("test", "fiscalcodeNotCorrect");
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("recipientTaxId o recipientType non valorizzato correttamente", exception.getMessage());
             return Mono.empty();
@@ -57,7 +57,7 @@ class ActServiceTest extends BaseTest {
 
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(""));
-        Mono<String> response = actService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
+        Mono<String> response = actService.getEnsureFiscalCode("test", Const.PF);
         /* TODO Catch correct exception
         response.onErrorResume( RaddFiscalCodeEnsureException.class, exception ->{
             assertEquals(409, exception.getStatusCode());
@@ -72,7 +72,7 @@ class ActServiceTest extends BaseTest {
 
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())
         ).thenReturn( Mono.just("data"));
-        Mono<String> response = actService.getEnsureFiscalCode("test", Const.PF, pnDataVaultClient);
+        Mono<String> response = actService.getEnsureFiscalCode("test", Const.PF);
 
         assertTrue(!response.toString().isEmpty());
 

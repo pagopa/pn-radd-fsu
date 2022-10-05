@@ -11,10 +11,8 @@ public enum ExceptionTypeEnum {
     TRANSACTION_ALREADY_ABORTED("Stato Transazione incoerente", "La trasazione risulta annullata"),
     TRANSACTION_NOT_UPDATE_STATUS("TRANSACTION_NOT_UPDATE_STATUS", "Lo stato della transazione non è stato aggiornato"),
     CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde"),
-
     DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto"),
     DOCUMENT_UPLOAD_ERROR("DOCUMENT_UPLOAD_ERROR", "si è verificato un errore durante il caricamento"),
-
     VERSION_ID_VALIDATION("VERSION_ID_VALIDATION", "Version id non corrispondono"),
     QR_CODE_VALIDATION("QR_CODE_VALIDATION", "QrCode non valido"),
     DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Documenti non più disponibili"),
@@ -22,6 +20,8 @@ public enum ExceptionTypeEnum {
     CF_OR_QRCODE_NOT_VALID("CF_OR_QRCODE_NOT_VALID", "Input non valido"),
     ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato"),
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
+    NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
+    NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
     ;
     private final String title;
     private final String message;

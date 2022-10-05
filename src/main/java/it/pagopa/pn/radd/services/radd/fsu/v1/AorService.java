@@ -2,24 +2,18 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.AORInquiryResponseMapper;
-import it.pagopa.pn.radd.mapper.StartTransactionResponseMapper;
-import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
-import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
-import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
-import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AorStartTransactionRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
-import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -50,6 +44,24 @@ public class AorService extends BaseService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(AORInquiryResponseMapper.fromException(ex)));
     }
 
+    public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
+        return completeTransactionRequest.map(this::validateCompleteRequest)
+                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
+                        .map(entity -> {
+                            checkTransactionStatus(entity);
+                            return entity;
+                        }))
+                //.zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2()), (reqAndEntity, response) -> reqAndEntity)
+                .zipWhen(reqAndEntity -> {
+                    RaddTransactionEntity entity = reqAndEntity.getT2();
+                    entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
+                    entity.setUid(uid);
+                    entity.setStatus(Const.COMPLETED);
+                    return this.raddTransactionDAO.updateStatus(entity);
+                })
+                .map(entity -> CompleteTransactionResponseMapper.fromResult())
+                .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
+    }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, Mono<AorStartTransactionRequest> aorStartTransactionRequest){
         return aorStartTransactionRequest.map(req -> validationAorStartTransaction(uid, req))
@@ -65,6 +77,39 @@ public class AorService extends BaseService {
                 .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
                 .map(transactionData -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))
                 .onErrorResume(RaddGenericException.class, exception -> Mono.just(StartTransactionResponseMapper.fromException(exception)));
+    }
+    private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){
+        if (StringUtils.isEmpty(req.getOperationId())){
+            throw new PnInvalidInputException("Operation id non valorizzato");
+        }
+        return req;
+    }
+    public Mono<AbortTransactionResponse> abortTransaction(String uid, Mono<AbortTransactionRequest> monoAbortTransactionRequest){
+        return monoAbortTransactionRequest
+                .map(m -> {
+                    if (m == null || StringUtils.isEmpty(m.getOperationId())
+                            || StringUtils.isEmpty(m.getReason())
+                            || m.getOperationDate() == null) {
+                        log.error("Missing input parameters");
+                        throw new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate");
+                    }
+                    return m;
+                })
+                //todo : capire se viene sempre estratto il valore corrispondente al campo "type" da DB.
+                //todo: La transaction estratta deve avere un type corrispondente a "aor" e non a "act"
+                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId()))
+                .map(entity -> {
+                    RaddTransactionEntity raddEntity = entity.getT2();
+                    checkTransactionStatus(raddEntity);
+                    raddEntity.setUid(uid);
+                    raddEntity.setErrorReason(entity.getT1().getReason());
+                    raddEntity.setOperationEndDate(DateUtils.formatDate(entity.getT1().getOperationDate()));
+                    raddEntity.setStatus(Const.ABORTED);
+                    return raddTransactionDAO.updateStatus(raddEntity);
+                })
+                .map(result -> AbortTransactionResponseMapper.fromResult())
+                .onErrorResume(RaddGenericException.class,
+                        ex -> Mono.just(AbortTransactionResponseMapper.fromException(ex)));
     }
 
     private TransactionData validationAorStartTransaction(String uid, AorStartTransactionRequest req){
@@ -84,6 +129,13 @@ public class AorService extends BaseService {
         return this.pnDeliveryPushClient.getPaperNotificationFailed(recipientTaxId)
                 .filter(item -> StringUtils.equalsIgnoreCase(recipientTaxId, item.getRecipientInternalId()))
                 .onErrorResume(NullPointerException.class, ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED, ExceptionCodeEnum.KO)));
+    }
+    private void checkTransactionStatus(RaddTransactionEntity entity) {
+        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
+            throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED, ExceptionCodeEnum.NUMBER_2);
+        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
+            throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED, ExceptionCodeEnum.NUMBER_2);
+        }
     }
 
 }

@@ -3,13 +3,12 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.AORInquiryResponseMapper;
 import it.pagopa.pn.radd.mapper.AbortTransactionResponseMapper;
+import it.pagopa.pn.radd.mapper.CompleteTransactionResponseMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AbortTransactionRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AbortTransactionResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +58,31 @@ public class AorService extends BaseService {
                 }).onErrorResume(RaddGenericException.class, ex -> Mono.just(AORInquiryResponseMapper.fromException(ex)));
     }
 
+    public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
+        return completeTransactionRequest.map(this::validateCompleteRequest)
+                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
+                        .map(entity -> {
+                            checkTransactionStatus(entity);
+                            return entity;
+                        }))
+                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2()), (reqAndEntity, response) -> reqAndEntity)
+                .zipWhen(reqAndEntity -> {
+                    RaddTransactionEntity entity = reqAndEntity.getT2();
+                    entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
+                    entity.setUid(uid);
+                    entity.setStatus(Const.COMPLETED);
+                    return this.raddTransactionDAO.updateStatus(entity);
+                })
+                .map(entity -> CompleteTransactionResponseMapper.fromResult())
+                .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
+    }
 
+    private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){
+        if (StringUtils.isEmpty(req.getOperationId())){
+            throw new PnInvalidInputException("Operation id non valorizzato");
+        }
+        return req;
+    }
     public Mono<AbortTransactionResponse> abortTransaction(String uid, Mono<AbortTransactionRequest> monoAbortTransactionRequest){
         return monoAbortTransactionRequest
                 .map(m -> {

@@ -4,7 +4,6 @@ import it.pagopa.pn.radd.rest.radd.v1.api.ActDocumentInquiryApi;
 import it.pagopa.pn.radd.rest.radd.v1.api.ActTransactionManagementApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.ActService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,16 +28,22 @@ public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTra
 
     @Override
     public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
-        return actService.startTransaction(uid, actStartTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return actStartTransactionRequest
+                .zipWhen(request -> actService.startTransaction(uid, request), (req, resp) -> resp)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
     public Mono<ResponseEntity<CompleteTransactionResponse>> completeActTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
-        return actService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return completeTransactionRequest
+                .zipWhen(req -> actService.completeTransaction(uid, req), (req, resp) -> resp)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, Mono<AbortTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
-        return actService.abortTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
+        return abortTransactionRequest
+                .zipWhen(req -> actService.abortTransaction(uid, req), (req, resp) -> resp)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

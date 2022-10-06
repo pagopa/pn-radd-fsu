@@ -24,7 +24,6 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.awssdk.services.dynamodb.model.Select;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -155,6 +154,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .queryConditional( QueryConditional.keyEqualTo(Key.builder().partitionValue(iun).build()))
                 .scanIndexForward(true)
                 .build();
+
 
         return Flux.from(raddTable.index(RaddTransactionEntity.IUN_INDEX).query(qeRequest).flatMapIterable(Page::items));
     }

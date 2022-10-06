@@ -9,6 +9,7 @@ public enum ExceptionTypeEnum {
     TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted"),
     TRANSACTION_ALREADY_COMPLETED("Stato Transazione incoerente", "La trasazione risulta già completa"),
     TRANSACTION_ALREADY_ABORTED("Stato Transazione incoerente", "La trasazione risulta annullata"),
+    TRANSACTION_ERROR_STATUS("Stato Transazione incoerente", "La trasazione risulta in errore"),
     TRANSACTION_NOT_UPDATE_STATUS("TRANSACTION_NOT_UPDATE_STATUS", "Lo stato della transazione non è stato aggiornato"),
     CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde"),
     DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto"),

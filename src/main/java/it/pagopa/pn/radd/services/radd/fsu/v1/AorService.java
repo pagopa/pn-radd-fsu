@@ -20,12 +20,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTION_ALREADY_ABORTED;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTION_ALREADY_COMPLETED;
-
 @Slf4j
 @Service
 public class AorService extends BaseService {
@@ -74,8 +68,8 @@ public class AorService extends BaseService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
     }
 
-    public Mono<StartTransactionResponse> startTransaction(String uid, Mono<AorStartTransactionRequest> aorStartTransactionRequest){
-        return aorStartTransactionRequest.map(req -> validationAorStartTransaction(uid, req))
+    public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request){
+        return validationAorStartTransaction(uid, request)
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transactionReq) -> transactionReq)
                 .zipWhen(transaction -> this.getIunFromPaperNotificationFailed(transaction.getEnsureRecipientId())
                                 .map(item -> {
@@ -87,7 +81,10 @@ public class AorService extends BaseService {
                 .zipWhen(this::verifyCheckSum, (transaction, responseChecksum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
                 .map(transactionData -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))
-                .onErrorResume(RaddGenericException.class, exception -> Mono.just(StartTransactionResponseMapper.fromException(exception)));
+                .onErrorResume(RaddGenericException.class, ex ->
+                        this.settingErrorReason(ex, request.getOperationId())
+                                .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
+                );
     }
     private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){
         if (StringUtils.isEmpty(req.getOperationId())){
@@ -123,7 +120,7 @@ public class AorService extends BaseService {
                         ex -> Mono.just(AbortTransactionResponseMapper.fromException(ex)));
     }
 
-    private TransactionData validationAorStartTransaction(String uid, AorStartTransactionRequest req){
+    private Mono<TransactionData> validationAorStartTransaction(String uid, AorStartTransactionRequest req){
         if (Strings.isBlank(req.getOperationId())){
             throw new PnInvalidInputException("Id operazione non valorizzato");
         }
@@ -133,20 +130,13 @@ public class AorService extends BaseService {
         if (!Utils.checkPersonType(req.getRecipientType().getValue())){
             throw new PnInvalidInputException("Recipient Type non valorizzato correttamente");
         }
-        return this.transactionDataMapper.toTransaction(uid, req);
+        return Mono.just(this.transactionDataMapper.toTransaction(uid, req));
     }
 
     private Flux<ResponsePaperNotificationFailedDtoDto> getIunFromPaperNotificationFailed(String recipientTaxId){
         return this.pnDeliveryPushClient.getPaperNotificationFailed(recipientTaxId)
                 .filter(item -> StringUtils.equalsIgnoreCase(recipientTaxId, item.getRecipientInternalId()))
                 .onErrorResume(NullPointerException.class, ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED, ExceptionCodeEnum.KO)));
-    }
-    private void checkTransactionStatus(RaddTransactionEntity entity) {
-        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
-            throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED, ExceptionCodeEnum.NUMBER_2);
-        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
-            throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED, ExceptionCodeEnum.NUMBER_2);
-        }
     }
 
 }

@@ -16,8 +16,7 @@ import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionCodeEnum.KO;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.CHECKSUM_VALIDATION;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ENSURE_FISCAL_CODE_EMPTY;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 
 
 @Slf4j
@@ -50,15 +49,15 @@ public class BaseService {
 
     protected Mono<FileDownloadResponseDto> verifyCheckSum(TransactionData transaction){
         return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-            /*
+
             if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
                 throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             }
 
-            if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId)){
+            if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())){
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
-            */
+
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
                 throw new RaddGenericException(CHECKSUM_VALIDATION, KO);
@@ -83,6 +82,7 @@ public class BaseService {
         entity.setOperationType(transaction.getOperationType().name());
         entity.setQrCode(transaction.getQrCode());
         entity.setStatus(Const.STARTED);
+        entity.setErrorReason("");
         entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
         return this.raddTransactionDAO.createRaddTransaction(entity);
     }
@@ -100,6 +100,30 @@ public class BaseService {
                     }
                     return response;
                 });
+    }
+
+    protected Mono<RaddTransactionEntity> settingErrorReason(RaddGenericException ex, String operationId){
+        return this.raddTransactionDAO.getTransaction(operationId)
+                .flatMap(entity -> {
+                    entity.setStatus(Const.ERROR);
+                    entity.setErrorReason(ex.getExceptionType().getMessage());
+                    log.info("Error message {}", ex.getMessage());
+                    return this.raddTransactionDAO.updateStatus(entity);
+                })
+                .onErrorResume(exception -> {
+                    log.error("Exception into settings Reason {}", exception.getMessage());
+                    return Mono.empty();
+                });
+    }
+
+    protected void checkTransactionStatus(RaddTransactionEntity entity) {
+        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
+            throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED, ExceptionCodeEnum.NUMBER_2);
+        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
+            throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED, ExceptionCodeEnum.NUMBER_2);
+        } else if (StringUtils.equals(entity.getStatus(), Const.ERROR)){
+            throw new RaddGenericException(TRANSACTION_ERROR_STATUS, ExceptionCodeEnum.NUMBER_2);
+        }
     }
 
 }

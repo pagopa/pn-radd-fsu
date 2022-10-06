@@ -11,6 +11,7 @@ public class Const {
     public static final String COMPLETED = "COMPLETED";
     public static final String PRELOADED = "PRELOADED";
     public static final String STARTED = "STARTED";
+    public static final String ERROR = "ERROR";
     public static final String ABORTED = "ABORTED";
     public static final String ATTACHED = "ATTACHED";
 

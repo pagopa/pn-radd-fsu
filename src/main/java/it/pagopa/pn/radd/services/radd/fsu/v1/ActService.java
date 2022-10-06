@@ -54,10 +54,8 @@ public class ActService extends BaseService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(ActInquiryResponseMapper.fromException(ex)));
     }
 
-    public Mono<StartTransactionResponse> startTransaction(String uid, Mono<ActStartTransactionRequest> request){
-        return request
-                .map(req -> validateAndSettingsData(uid, req))
-                .log()
+    public Mono<StartTransactionResponse> startTransaction(String uid, ActStartTransactionRequest request){
+        return validateAndSettingsData(uid, request)
                 .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getRecipientId(), tmp.getQrCode())
                         .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
                                                                 transaction.setIun(iun);
@@ -80,12 +78,16 @@ public class ActService extends BaseService {
                                 listUrl.addAll(transaction.getUrls());
                                 return StartTransactionResponseMapper.fromResult(listUrl);
                             }), (transaction, response) -> response
-                ).onErrorResume(RaddGenericException.class, ex -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
+                )
+                .onErrorResume(RaddGenericException.class, ex ->
+                    this.settingErrorReason(ex, request.getOperationId())
+                            .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
+                );
 
     }
 
-    public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
-        return completeTransactionRequest.map(this::validateCompleteRequest)
+    public Mono<CompleteTransactionResponse> completeTransaction(String uid, CompleteTransactionRequest completeTransactionRequest) {
+        return this.validateCompleteRequest(completeTransactionRequest)
                 .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
                                 .map(entity -> {
                                     checkTransactionStatus(entity);
@@ -100,33 +102,35 @@ public class ActService extends BaseService {
                     return this.raddTransactionDAO.updateStatus(entity);
                 })
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
-                .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
+                .onErrorResume(RaddGenericException.class, ex ->
+                        this.settingErrorReason(ex, completeTransactionRequest.getOperationId())
+                                .flatMap(entity -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)))
+                );
     }
 
-    public Mono<AbortTransactionResponse> abortTransaction(String uid, Mono<AbortTransactionRequest> abortTransactionRequestMono) {
-        return abortTransactionRequestMono
-                .map(m -> {
-                    if (m == null || StringUtils.isEmpty(m.getOperationId())
-                            || StringUtils.isEmpty(m.getReason())
-                            || m.getOperationDate() == null) {
-                        log.error("Missing input parameters");
-                        throw new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate");
-                    }
-                    return m;
-                })
-                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId(), OperationTypeEnum.ACT))
-                .map(entity -> {
-                    RaddTransactionEntity raddEntity = entity.getT2();
+    public Mono<AbortTransactionResponse> abortTransaction(String uid, AbortTransactionRequest req) {
+
+        if (req == null || StringUtils.isEmpty(req.getOperationId())
+                || StringUtils.isEmpty(req.getReason())) {
+            log.error("Missing input parameters");
+            throw new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate");
+        }
+
+
+        return raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
+                .map(raddEntity -> {
                     checkTransactionStatus(raddEntity);
                     raddEntity.setUid(uid);
-                    raddEntity.setErrorReason(entity.getT1().getReason());
-                    raddEntity.setOperationEndDate(DateUtils.formatDate(entity.getT1().getOperationDate()));
+                    raddEntity.setErrorReason(req.getReason());
+                    raddEntity.setOperationEndDate(DateUtils.formatDate(req.getOperationDate()));
                     raddEntity.setStatus(Const.ABORTED);
                     return raddTransactionDAO.updateStatus(raddEntity);
                 })
                 .map(result -> AbortTransactionResponseMapper.fromResult())
-                .onErrorResume(RaddGenericException.class,
-                        ex -> Mono.just(AbortTransactionResponseMapper.fromException(ex)));
+                .onErrorResume(RaddGenericException.class, ex ->
+                        this.settingErrorReason(ex, req.getOperationId())
+                                .flatMap(entity -> Mono.just(AbortTransactionResponseMapper.fromException(ex)))
+                );
     }
 
     private Flux<String> legalFact(TransactionData transaction){
@@ -211,15 +215,7 @@ public class ActService extends BaseService {
                 });
     }
 
-    private void checkTransactionStatus(RaddTransactionEntity entity) {
-        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
-            throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED, ExceptionCodeEnum.NUMBER_2);
-        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
-            throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED, ExceptionCodeEnum.NUMBER_2);
-        }
-    }
-
-    private TransactionData validateAndSettingsData(String uid, ActStartTransactionRequest request){
+    private Mono<TransactionData> validateAndSettingsData(String uid, ActStartTransactionRequest request){
         if (Strings.isBlank(request.getOperationId())){
             throw new PnInvalidInputException("Id operazione non valorizzato");
         }
@@ -232,14 +228,14 @@ public class ActService extends BaseService {
         if (!Utils.checkPersonType(request.getRecipientType().getValue())){
             throw new PnInvalidInputException("Recipient Type non valorizzato correttamente");
         }
-        return this.transactionDataMapper.toTransaction(uid, request);
+        return Mono.just(this.transactionDataMapper.toTransaction(uid, request));
     }
 
-    private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){
+    private Mono<CompleteTransactionRequest> validateCompleteRequest(CompleteTransactionRequest req){
         if (StringUtils.isEmpty(req.getOperationId())){
             throw new PnInvalidInputException("Operation id non valorizzato");
         }
-        return req;
+        return Mono.just(req);
     }
 
 }

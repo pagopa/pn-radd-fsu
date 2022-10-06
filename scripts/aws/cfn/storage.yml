@@ -16,20 +16,15 @@ Parameters:
     Type: String
     Description: URL da cui caricare i frammenti di template di infrastruttura
   
+  CdcKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send CDC'
+  
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
 
 Resources:
-
-  ## KINESIS SOURCE STREAM FOR Radd Change Data Capture
-  RaddCdcKinesis:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
-      Parameters:
-        StreamName: !Sub '${ProjectName}-radd-fsu-cdc-stream'
-        StreamRetentionPeriodHours: 24
 
   RaddTransactionDynamoTable:
     Type: AWS::DynamoDB::Table
@@ -59,7 +54,7 @@ Resources:
             ReadCapacityUnits: 5
             WriteCapacityUnits: 5
       KinesisStreamSpecification:
-        StreamArn: !GetAtt RaddCdcKinesis.Outputs.KinesisStreamArn
+        StreamArn: !Ref CdcKinesisSourceStreamArn
       StreamSpecification: 
         StreamViewType: NEW_IMAGE
 

@@ -316,7 +316,7 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /radd-private/api/v1/operations/by-id/{operationId}:
+  /radd-private/api/v1/act/operations/by-id/{operationId}:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/operationId'
@@ -344,8 +344,36 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
+  /radd-private/api/v1/aor/operations/by-id/{operationId}:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/operationId'
+    get:
+      tags:
+        - notificationInquiry
+      operationId: getTransactionAor
+      description: API utilizzata per il recupero di una transazione Aor
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
 
-  /radd-private/api/v1/operations/by-iun/{iun}:
+  /radd-private/api/v1/act/operations/by-iun/{iun}:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/iun'

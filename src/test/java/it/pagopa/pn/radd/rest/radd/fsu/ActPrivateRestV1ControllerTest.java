@@ -84,7 +84,12 @@ class ActPrivateRestV1ControllerTest {
         response.status(status);
 
         ActStartTransactionRequest req = new ActStartTransactionRequest();
+        req.setQrCode("abcQrcode");
+        req.setVersionToken("123TokenDocument");
+        req.setFileKey("123FileKey");
         req.setOperationId("123");
+        req.setRecipientTaxId("TNTGTR76E21H751S");
+        req.setChecksum("YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo");
         req.setOperationDate(new Date());
 
         String path = "/radd-private/api/v1/act/transaction/start";

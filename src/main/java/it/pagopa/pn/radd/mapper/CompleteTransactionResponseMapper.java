@@ -7,6 +7,10 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class CompleteTransactionResponseMapper {
 
+    private CompleteTransactionResponseMapper () {
+        // do nothing
+    }
+
     public static CompleteTransactionResponse fromResult(){
         CompleteTransactionResponse response = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();

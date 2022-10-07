@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.mapper;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
+import it.pagopa.pn.radd.utils.Const;
 
 public class AORInquiryResponseMapper {
 
@@ -11,6 +12,7 @@ public class AORInquiryResponseMapper {
         ResponseStatus status = new ResponseStatus();
         response.setResult(true);
         response.setStatus(status);
+        status.setMessage(Const.OK);
         status.setCode(ResponseStatus.CodeEnum.NUMBER_0);
         return response;
     }

@@ -24,10 +24,12 @@ class PnSafeStorageClientTest extends BaseTest {
     void testCreateFile() {
         String contentType = "application/pdf", operationId = "operationId";
         Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, operationId);
-        monoResponse.doOnNext(response -> {
+        monoResponse.map(response -> {
             assertEquals("http://localhost:1080/safe-storage/storage/unFile", response.getUploadUrl());
             assertEquals("AZ23RF12", response.getSecret());
             assertEquals("8F7E/9A3B/1234/AB87", response.getKey());
+            assertEquals("PUT", response.getUploadMethod().getValue());
+            return Mono.empty();
         }).block();
     }
 
@@ -48,20 +50,21 @@ class PnSafeStorageClientTest extends BaseTest {
 
     @Test
     void testGetFileForDownload() {
-        String fileKey = "8F7E/9A3B/1234/AB87";
+        String fileKey = "AB87";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
-        monoResponse.doOnNext(response -> {
+        monoResponse.map(response -> {
             assertEquals("random/path/of/the/file", response.getKey());
             assertEquals("3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ", response.getVersionId());
             assertEquals(new BigDecimal(3028), response.getContentLength());
             assertEquals("PN_LEGALFACT", response.getDocumentType());
             assertEquals("PRELOADED", response.getDocumentStatus());
-        });
+            return Mono.empty();
+        }).block();
     }
 
     @Test
     void testGetFileForDownloadCode404() {
-        String fileKey = "8F7E/9A3B/1234/AB87";
+        String fileKey = "ABC";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof PnSafeStorageException){
@@ -75,37 +78,52 @@ class PnSafeStorageClientTest extends BaseTest {
 
     @Test
     void testGetFileForGlacier() {
-        String fileKey = "8F7E/9A3B/1234/AB87";
+        String fileKey = "AB49";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
-        monoResponse.doOnNext(response -> {
+        monoResponse.map(response -> {
             if(response.getDownload() != null) {
-                assertEquals(new BigDecimal(86400), response.getDownload().getRetryAfter());
-            }
-        });
-    }
+                assertEquals("https://presignedurldemo.s3.eu-west-2.amazonaws.com/", response.getDownload().getUrl());
+                assertEquals("2032-04-12T12:32:04Z", response.getRetentionUntil().toString());
+                assertEquals("jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=", response.getChecksum());
+                assertEquals("PN_LEGALFACT", response.getDocumentType());
+                assertEquals("PRELOADED", response.getDocumentStatus());
 
-    @Test
-    void testGetFileForGlacierCode404() {
-        String fileKey = "8F7E/9A3B/1234/AB87";
-        Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
-        monoResponse.onErrorResume(PnSafeStorageException.class, exception -> {
-            assertEquals(404, exception.getWebClientEx().getStatusCode().value());
+            }
             return Mono.empty();
         }).block();
     }
 
     @Test
+    void testGetFileForGlacierCode404() {
+        String fileKey = "XYZ";
+        Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
+        monoResponse.onErrorResume(exception -> {
+            if (exception instanceof PnSafeStorageException){
+                assertEquals(404, ((PnSafeStorageException) exception).getWebClientEx().getStatusCode().value());
+                return Mono.empty();
+            }
+            fail("Badly type exception");
+            return null;
+        }).block();
+    }
+
+    @Test
     void testUpdateFileMetadata() {
-        String fileKey = "8F7E/9A3B/1234/AB87";
+        String fileKey = "8F7E/9A3B";
         Mono<OperationResultCodeResponseDto> monoResponse = pnSafeStorageClient.updateFileMetadata(fileKey);
-        monoResponse.doOnNext(response -> {
+        monoResponse.map(response -> {
             assertEquals("200", response.getResultCode());
+            assertEquals("Il file non è stato trovato.", response.getResultDescription());
+            if(response.getErrorList() != null) {
+                assertEquals("retentionDate cannot be anticipated", response.getErrorList().get(0));
+            }
+            return Mono.empty();
         });
     }
 
     @Test
     void testUpdateFileMetadataCode404() {
-        String fileKey = "8F7E/9A3B/1234/AB87";
+        String fileKey = "8F7E";
         Mono<OperationResultCodeResponseDto> monoResponse = pnSafeStorageClient.updateFileMetadata(fileKey);
         monoResponse.onErrorResume(PnSafeStorageException.class, exception -> {
             assertEquals(404, exception.getWebClientEx().getStatusCode().value());

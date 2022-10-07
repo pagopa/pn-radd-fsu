@@ -6,7 +6,6 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.Notif
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
@@ -74,10 +73,13 @@ public class ActService extends BaseService {
                 .zipWhen(transaction ->
                     legalFact(transaction)
                             .collectList().map(listUrl -> {
-                                log.info("Creo la risposta");
                                 listUrl.addAll(transaction.getUrls());
                                 return StartTransactionResponseMapper.fromResult(listUrl);
                             }), (transaction, response) -> response
+                )
+                .onErrorResume(PnRaddException.class, ex ->
+                        this.settingErrorReason(ex, request.getOperationId())
+                                .flatMap(entity -> Mono.error(ex))
                 )
                 .onErrorResume(RaddGenericException.class, ex ->
                     this.settingErrorReason(ex, request.getOperationId())
@@ -102,9 +104,12 @@ public class ActService extends BaseService {
                     return this.raddTransactionDAO.updateStatus(entity);
                 })
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
+                .onErrorResume(PnRaddException.class, ex ->
+                    this.settingErrorReason(ex, completeTransactionRequest.getOperationId())
+                            .flatMap(entity -> Mono.error(ex))
+                )
                 .onErrorResume(RaddGenericException.class, ex ->
-                        this.settingErrorReason(ex, completeTransactionRequest.getOperationId())
-                                .flatMap(entity -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)))
+                        Mono.just(CompleteTransactionResponseMapper.fromException(ex))
                 );
     }
 
@@ -129,8 +134,7 @@ public class ActService extends BaseService {
                 })
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex ->
-                        this.settingErrorReason(ex, req.getOperationId())
-                                .flatMap(entity -> Mono.just(AbortTransactionResponseMapper.fromException(ex)))
+                        Mono.just(AbortTransactionResponseMapper.fromException(ex))
                 );
     }
 
@@ -138,7 +142,13 @@ public class ActService extends BaseService {
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .flatMap(item ->pnDeliveryPushInternalClient
                             .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
-                            .mapNotNull(LegalFactDownloadMetadataResponseDto::getUrl)
+                            .mapNotNull(legalFact -> {
+                                if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
+                                    log.info("Finded legal fact with retry after {}", legalFact.getRetryAfter());
+                                   throw new RaddGenericException(RETRY_AFTER, ExceptionCodeEnum.NUMBER_2, legalFact.getRetryAfter());
+                                }
+                                return legalFact.getUrl();
+                            })
                 );
     }
 

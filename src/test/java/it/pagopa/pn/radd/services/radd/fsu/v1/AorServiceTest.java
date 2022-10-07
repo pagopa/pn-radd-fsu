@@ -40,12 +40,12 @@ class AorServiceTest extends BaseTest {
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(new ResponsePaperNotificationFailedDtoDto()));
         aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF")
                 .onErrorResume(ex -> {
-                   if (ex instanceof RaddGenericException){
-                       assertNotNull(((RaddGenericException) ex).getExceptionType());
-                       assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ((RaddGenericException) ex).getExceptionType());
-                   }
-                   fail("Bad type exception");
-                   return null;
+                    if (ex instanceof RaddGenericException){
+                        assertNotNull(((RaddGenericException) ex).getExceptionType());
+                        assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ((RaddGenericException) ex).getExceptionType());
+                    }
+                    fail("Bad type exception");
+                    return null;
                 }).block();
     }
 

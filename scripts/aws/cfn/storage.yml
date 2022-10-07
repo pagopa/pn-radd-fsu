@@ -33,11 +33,15 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "operationId"
           AttributeType: "S"
+        - AttributeName: "operationType"
+            AttributeType: "S"
         - AttributeName: "iun"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "operationId"
           KeyType: "HASH"
+        - AttributeName: "operationType"
+            KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5" 

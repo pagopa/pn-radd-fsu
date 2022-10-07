@@ -1,6 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientDto;
@@ -26,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static it.pagopa.pn.radd.exception.ExceptionCodeEnum.KO;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 
 @Service
@@ -144,7 +145,7 @@ public class ActService extends BaseService {
                             .mapNotNull(legalFact -> {
                                 if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
                                     log.info("Finded legal fact with retry after {}", legalFact.getRetryAfter());
-                                   throw new RaddGenericException(RETRY_AFTER, ExceptionCodeEnum.NUMBER_2, legalFact.getRetryAfter());
+                                   throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
                                 }
                                 return legalFact.getUrl();
                             })
@@ -204,7 +205,7 @@ public class ActService extends BaseService {
         return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(iun, operationId)
                 .thenApply(response -> {
                     if (response > 0){
-                        throw new RaddGenericException(TRANSACTION_ALREADY_EXIST, KO);
+                        throw new RaddGenericException(TRANSACTION_ALREADY_EXIST);
                     }
                     return response;
                 })
@@ -219,7 +220,7 @@ public class ActService extends BaseService {
         return this.pnDeliveryClient.getCheckAar(recipientType, recipientTaxId, qrCode)
                 .map(response -> {
                     if (response == null || Strings.isBlank(response.getIun())){
-                        throw new RaddGenericException(IUN_NOT_FOUND, KO);
+                        throw new RaddGenericException(IUN_NOT_FOUND);
                     }
                     return response;
                 });

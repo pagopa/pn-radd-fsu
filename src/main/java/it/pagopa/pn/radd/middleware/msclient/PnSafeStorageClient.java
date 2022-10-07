@@ -1,7 +1,6 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.ExceptionCodeEnum;
 import it.pagopa.pn.radd.exception.PnSafeStorageException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
@@ -57,7 +56,7 @@ public class PnSafeStorageClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new RaddGenericException(DOCUMENT_UPLOAD_ERROR, ExceptionCodeEnum.KO)));
+                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){

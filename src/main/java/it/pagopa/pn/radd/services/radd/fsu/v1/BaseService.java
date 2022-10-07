@@ -1,6 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -17,9 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 
-import static it.pagopa.pn.radd.exception.ExceptionCodeEnum.KO;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-
 
 @Slf4j
 public class BaseService {
@@ -62,7 +62,7 @@ public class BaseService {
             */
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
-                throw new RaddGenericException(CHECKSUM_VALIDATION, KO);
+                throw new RaddGenericException(CHECKSUM_VALIDATION);
             }
             return response;
         });
@@ -102,7 +102,7 @@ public class BaseService {
         return this.pnDataVaultClient.getEnsureFiscalCode(fiscalCode, type)
                 .map(response -> {
                     if (Strings.isEmpty(response)){
-                        throw new RaddGenericException(ENSURE_FISCAL_CODE_EMPTY, ExceptionCodeEnum.KO);
+                        throw new RaddGenericException(ENSURE_FISCAL_CODE_EMPTY);
                     }
                     return response;
                 });
@@ -129,11 +129,11 @@ public class BaseService {
 
     protected void checkTransactionStatus(RaddTransactionEntity entity) {
         if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
-            throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED, ExceptionCodeEnum.NUMBER_2);
+            throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED);
         } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
-            throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED, ExceptionCodeEnum.NUMBER_2);
+            throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED);
         } else if (StringUtils.equals(entity.getStatus(), Const.ERROR)){
-            throw new RaddGenericException(TRANSACTION_ERROR_STATUS, ExceptionCodeEnum.NUMBER_2);
+            throw new RaddGenericException(TRANSACTION_ERROR_STATUS);
         }
     }
 

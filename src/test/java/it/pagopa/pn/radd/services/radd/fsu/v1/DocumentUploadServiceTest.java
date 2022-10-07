@@ -1,15 +1,22 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
+
 import it.pagopa.pn.radd.config.BaseTest;
-import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.exception.PnException;
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
+import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.*;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
+
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -54,7 +61,7 @@ class DocumentUploadServiceTest extends BaseTest {
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setContentType(bundleId.getContentType());
         Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId())
-        ).thenReturn(Mono.error( new RaddGenericException(DOCUMENT_UPLOAD_ERROR, ExceptionCodeEnum.KO)));
+        ).thenReturn(Mono.error( new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
         Mono<DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
         response.onErrorResume(ex ->{
             if (ex instanceof RaddGenericException){

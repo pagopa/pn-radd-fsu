@@ -1,6 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
@@ -12,6 +14,7 @@ import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +47,7 @@ public class AorService extends BaseService {
                                 .collectList()
                                 .map(list -> {
                                     if (list.isEmpty()){
-                                        throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ExceptionCodeEnum.KO);
+                                        throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF);
                                     }
                                     return AORInquiryResponseMapper.fromResult();
                                 }), (ensure, resp) -> resp
@@ -54,12 +57,11 @@ public class AorService extends BaseService {
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {
         return completeTransactionRequest.map(this::validateCompleteRequest)
-                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId())
+                .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.AOR)
                         .map(entity -> {
                             checkTransactionStatus(entity);
                             return entity;
                         }))
-                //.zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2()), (reqAndEntity, response) -> reqAndEntity)
                 .zipWhen(reqAndEntity -> {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
                     entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
@@ -106,9 +108,7 @@ public class AorService extends BaseService {
                     }
                     return m;
                 })
-                //todo : capire se viene sempre estratto il valore corrispondente al campo "type" da DB.
-                //todo: La transaction estratta deve avere un type corrispondente a "aor" e non a "act"
-                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId()))
+                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId(), OperationTypeEnum.AOR))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
                     checkTransactionStatus(raddEntity);
@@ -142,7 +142,7 @@ public class AorService extends BaseService {
     private Flux<ResponsePaperNotificationFailedDtoDto> getIunFromPaperNotificationFailed(String recipientTaxId){
         return this.pnDeliveryPushClient.getPaperNotificationFailed(recipientTaxId)
                 .filter(item -> StringUtils.equalsIgnoreCase(recipientTaxId, item.getRecipientInternalId()))
-                .onErrorResume(NullPointerException.class, ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED, ExceptionCodeEnum.KO)));
+                .onErrorResume(NullPointerException.class, ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED)));
     }
 
 }

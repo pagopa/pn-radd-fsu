@@ -3,7 +3,6 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.commons.log.PnAuditLogBuilder;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
-import it.pagopa.pn.radd.exception.ExceptionCodeEnum;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
@@ -75,7 +74,7 @@ public class RaddTransactionDAO extends BaseDao {
                                 });
                             }
                             else {
-                                throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST, ExceptionCodeEnum.KO);
+                                throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST);
                             }
                         }))
                 .onErrorResume(throwable -> {
@@ -96,7 +95,7 @@ public class RaddTransactionDAO extends BaseDao {
         return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
             log.info("Item finded : {}", item);
             if (item == null) {
-                throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST, ExceptionCodeEnum.KO);
+                throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST);
             }
             return item;
         }));
@@ -110,7 +109,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .collectList()
                 .map(m -> {
                     if (m.isEmpty()) {
-                        throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST, ExceptionCodeEnum.KO);
+                        throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST);
                     }
                     return m.get(0);
                 })
@@ -130,7 +129,7 @@ public class RaddTransactionDAO extends BaseDao {
         return Mono.fromFuture(
                 raddTable.updateItem(updateRequest).thenApply(x -> {
                     if (!x.getStatus().equals(entity.getStatus())){
-                        throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS, ExceptionCodeEnum.KO);
+                        throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS);
                     }
                     return x;
                 })

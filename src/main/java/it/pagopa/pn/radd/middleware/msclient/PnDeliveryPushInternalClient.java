@@ -19,7 +19,6 @@ import java.net.ConnectException;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
-
 @Component
 public class PnDeliveryPushInternalClient extends BaseClient {
 
@@ -36,7 +35,6 @@ public class PnDeliveryPushInternalClient extends BaseClient {
         newApiClient.setBasePath(pnRaddFsuConfig.getClientDeliveryPushInternalBasepath());
         this.legalFactsApi = new LegalFactsPrivateApi(newApiClient);
     }
-
 
     public Flux<LegalFactListElementDto> getNotificationLegalFacts(String recipientInternalId, String iun) {
         return this.legalFactsApi.getNotificationLegalFactsPrivate(recipientInternalId, iun, null)

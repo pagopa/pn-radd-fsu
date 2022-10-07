@@ -2,7 +2,9 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.*;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.api.InternalOnlyApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
@@ -10,13 +12,9 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.Reque
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ActInquiryResponseStatus;
-import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -55,7 +53,6 @@ public class PnDeliveryClient extends BaseClient {
         ).onErrorResume(WebClientResponseException.class, ex -> {
             log.error("Error : {}", ex.getResponseBodyAsString());
             ExceptionTypeEnum message;
-            ExceptionCodeEnum codeEnum = ExceptionCodeEnum.KO;
             if (ex.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
                 message = ExceptionTypeEnum.QR_CODE_VALIDATION;
             } else if (ex.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
@@ -67,7 +64,7 @@ public class PnDeliveryClient extends BaseClient {
             } else {
                 return Mono.error(new PnRaddException(ex));
             }
-            return Mono.error(new RaddGenericException(message, codeEnum));
+            return Mono.error(new RaddGenericException(message));
         });
     }
 

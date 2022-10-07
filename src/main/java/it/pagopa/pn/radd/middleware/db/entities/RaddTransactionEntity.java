@@ -3,10 +3,7 @@ package it.pagopa.pn.radd.middleware.db.entities;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 @DynamoDbBean
 @Data
@@ -62,7 +59,7 @@ public class RaddTransactionEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_OPERATION_END_DATE)}))
     private String operationEndDate;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_OPERATION_TYPE)}))
+    @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_OPERATION_TYPE)}))
     private String operationType;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_VERSION_TOKEN)}))

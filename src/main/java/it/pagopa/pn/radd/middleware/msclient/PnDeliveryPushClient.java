@@ -59,7 +59,7 @@ public class PnDeliveryPushClient extends BaseClient {
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 )
-                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new RaddGenericException(ex.getLocalizedMessage(), ExceptionCodeEnum.KO)));
+                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
 

@@ -15,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
+
 import static it.pagopa.pn.radd.exception.ExceptionCodeEnum.KO;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 
@@ -49,7 +51,7 @@ public class BaseService {
 
     protected Mono<FileDownloadResponseDto> verifyCheckSum(TransactionData transaction){
         return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-
+            /*
             if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
                 throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             }
@@ -57,7 +59,7 @@ public class BaseService {
             if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())){
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
-
+            */
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
                 throw new RaddGenericException(CHECKSUM_VALIDATION, KO);
@@ -72,7 +74,11 @@ public class BaseService {
 
     protected Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIun(transaction.getIun());
+        if(StringUtils.isBlank(transaction.getIun())){
+            entity.setIun(Arrays.toString(transaction.getIuns().toArray()));
+        } else {
+            entity.setIun(transaction.getIun());
+        }
         entity.setOperationId(transaction.getOperationId());
         entity.setDelegateId(transaction.getEnsureDelegateId());
         entity.setRecipientId(transaction.getEnsureRecipientId());
@@ -102,17 +108,22 @@ public class BaseService {
                 });
     }
 
-    protected Mono<RaddTransactionEntity> settingErrorReason(RaddGenericException ex, String operationId){
+    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId){
         return this.raddTransactionDAO.getTransaction(operationId)
                 .flatMap(entity -> {
                     entity.setStatus(Const.ERROR);
-                    entity.setErrorReason(ex.getExceptionType().getMessage());
-                    log.info("Error message {}", ex.getMessage());
+                    entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
+                    if(ex instanceof RaddGenericException){
+                        entity.setErrorReason(((RaddGenericException) ex).getExceptionType().getMessage());
+                        log.info("Error message {}", ex.getMessage());
+                    } else if (ex instanceof PnRaddException){
+                        entity.setErrorReason(((PnRaddException) ex).getWebClientEx().getMessage());
+                    }
                     return this.raddTransactionDAO.updateStatus(entity);
                 })
                 .onErrorResume(exception -> {
                     log.error("Exception into settings Reason {}", exception.getMessage());
-                    return Mono.empty();
+                    return Mono.just(new RaddTransactionEntity());
                 });
     }
 

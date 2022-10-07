@@ -21,7 +21,11 @@ public enum ExceptionTypeEnum {
     CF_OR_QRCODE_NOT_VALID("CF_OR_QRCODE_NOT_VALID", "Input non valido"),
     ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato"),
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
+
+    RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download"),
+
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
+
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
     ;
     private final String title;

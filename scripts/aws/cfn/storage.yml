@@ -34,7 +34,7 @@ Resources:
         - AttributeName: "operationId"
           AttributeType: "S"
         - AttributeName: "operationType"
-            AttributeType: "S"
+          AttributeType: "S"
         - AttributeName: "iun"
           AttributeType: "S"
       KeySchema:

@@ -41,7 +41,7 @@ Resources:
         - AttributeName: "operationId"
           KeyType: "HASH"
         - AttributeName: "operationType"
-            KeyType: "RANGE"
+          KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5" 

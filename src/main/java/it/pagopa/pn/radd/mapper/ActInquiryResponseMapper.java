@@ -25,14 +25,13 @@ public class ActInquiryResponseMapper {
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
         status.setMessage((ex.getExceptionType() == null) ? ex.getMessage() : ex.getExceptionType().getMessage());
 
-        if (ex.getExceptionType() == ExceptionTypeEnum.QR_CODE_VALIDATION) {
+        if (ex.getExceptionType() == ExceptionTypeEnum.QR_CODE_VALIDATION
+                || ex.getExceptionType() == ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_NOT_FOUND) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_2);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);
-        } else if (ex.getExceptionType() == ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID) {
-            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
         } else {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
         }

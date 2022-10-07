@@ -91,6 +91,7 @@ public class AorService extends BaseService {
                                 .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
                 );
     }
+
     private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){
         if (StringUtils.isEmpty(req.getOperationId())){
             throw new PnInvalidInputException("Operation id non valorizzato");

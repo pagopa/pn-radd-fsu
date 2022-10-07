@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationDetailResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
+import it.pagopa.pn.radd.utils.Const;
 
 public class OperationResponseMapper {
 
@@ -14,6 +15,7 @@ public class OperationResponseMapper {
         response.setResult(true);
         OperationResponseStatus status = new OperationResponseStatus();
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_0);
+        status.setMessage(Const.OK);
         response.setStatus(status);
         return response;
     }

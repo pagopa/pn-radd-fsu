@@ -38,14 +38,17 @@ public class AorService extends BaseService {
         if (StringUtils.isBlank(recipientTaxId)){
             throw new PnInvalidInputException("Il campo codice fiscale non è valorizzato");
         }
-        return this.getIunFromPaperNotificationFailed(recipientTaxId)
-                .collectList()
-                .map(list -> {
-                    if (list.isEmpty()){
-                        throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ExceptionCodeEnum.KO);
-                    }
-                    return AORInquiryResponseMapper.fromResult();
-                })
+        return  this.getEnsureFiscalCode(recipientTaxId, recipientType)
+                .zipWhen(ensureFiscalCode ->
+                        this.getIunFromPaperNotificationFailed(ensureFiscalCode)
+                                .collectList()
+                                .map(list -> {
+                                    if (list.isEmpty()){
+                                        throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ExceptionCodeEnum.KO);
+                                    }
+                                    return AORInquiryResponseMapper.fromResult();
+                                }), (ensure, resp) -> resp
+                )
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(AORInquiryResponseMapper.fromException(ex)));
     }
 
@@ -115,7 +118,10 @@ public class AorService extends BaseService {
                     raddEntity.setStatus(Const.ABORTED);
                     return raddTransactionDAO.updateStatus(raddEntity);
                 })
-                .map(result -> AbortTransactionResponseMapper.fromResult())
+                .map(result -> {
+                    log.info("Return result of abort transaction");
+                    return AbortTransactionResponseMapper.fromResult();
+                })
                 .onErrorResume(RaddGenericException.class,
                         ex -> Mono.just(AbortTransactionResponseMapper.fromException(ex)));
     }

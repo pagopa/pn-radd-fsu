@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.mapper;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponseStatus;
+import it.pagopa.pn.radd.utils.Const;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class StartTransactionResponseMapper {
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
         status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
         response.setStatus(status);
+        status.setMessage(Const.OK);
         return response;
     }
 

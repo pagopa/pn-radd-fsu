@@ -102,9 +102,12 @@ public class ActService extends BaseService {
                     return this.raddTransactionDAO.updateStatus(entity);
                 })
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
+                .onErrorResume(PnRaddException.class, ex ->
+                    this.settingErrorReason(ex, completeTransactionRequest.getOperationId())
+                            .flatMap(entity -> Mono.error(ex))
+                )
                 .onErrorResume(RaddGenericException.class, ex ->
-                        this.settingErrorReason(ex, completeTransactionRequest.getOperationId())
-                                .flatMap(entity -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)))
+                        Mono.just(CompleteTransactionResponseMapper.fromException(ex))
                 );
     }
 
@@ -128,8 +131,7 @@ public class ActService extends BaseService {
                 })
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex ->
-                        this.settingErrorReason(ex, req.getOperationId())
-                                .flatMap(entity -> Mono.just(AbortTransactionResponseMapper.fromException(ex)))
+                        Mono.just(AbortTransactionResponseMapper.fromException(ex))
                 );
     }
 

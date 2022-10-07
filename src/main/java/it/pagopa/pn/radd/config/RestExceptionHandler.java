@@ -19,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
@@ -43,12 +42,14 @@ public class RestExceptionHandler {
         rs.setDetail(ex.getDescription());
         rs.setTimestamp(OffsetDateTime.now());
         settingTraceId(rs);
+        log.error(ex.getDescription());
         return ResponseEntity.status(HttpStatus.valueOf(ex.getStatus()))
                 .body(Mono.just(rs));
     }
 
     @ExceptionHandler(PnInvalidInputException.class)
     public ResponseEntity<Mono<Problem>> pnInvalidInputHandler(PnInvalidInputException ex){
+        log.error(ex.getReason());
         Problem rs = new Problem();
         rs.setStatus(HttpStatus.BAD_REQUEST.value());
         rs.setTitle(ex.getReason());
@@ -60,6 +61,7 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(PnRaddException.class)
     public ResponseEntity<Mono<String>> pnInvalidInputHandler(PnRaddException ex){
+        log.error(ex.getWebClientEx().getResponseBodyAsString());
         return ResponseEntity.status(ex.getWebClientEx().getStatusCode())
                 .body(Mono.just(ex.getWebClientEx().getResponseBodyAsString()));
     }

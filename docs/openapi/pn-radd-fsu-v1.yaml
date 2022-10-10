@@ -323,8 +323,8 @@ paths:
     get:
       tags:
         - notificationInquiry
-      operationId: getTransaction
-      description: API utilizzata per il recupero di una transazione
+      operationId: getActTransactionByOperationId
+      description: API utilizzata per il recupero di una transazione legata ad un atto opponibille ai terzi
       responses:
         200:
           description: OK
@@ -351,8 +351,8 @@ paths:
     get:
       tags:
         - notificationInquiry
-      operationId: getTransactionAor
-      description: API utilizzata per il recupero di una transazione Aor
+      operationId: getAorTransactionByOperationId
+      description: API utilizzata per il recupero di una transazione legata ad un AAR
       responses:
         200:
           description: OK
@@ -380,8 +380,8 @@ paths:
     get:
       tags:
         - notificationInquiry
-      operationId: getPractices
-      description: API utilizzata per il recupero di tutte le pratiche associate ad uno iun
+      operationId: getActPracticesByIun
+      description: API utilizzata per il recupero di tutte le pratiche legate ad atti opponibili ai terzi ed associate ad uno specifico iun
       responses:
         200:
           description: OK
@@ -389,6 +389,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OperationsResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-private/api/v1/aor/operations/by-iun/{iun}:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/iun'
+    get:
+      tags:
+        - notificationInquiry
+      operationId: getAorPracticesByIun
+      description: API utilizzata per il recupero di tutte le pratiche legate ad un AAR ed associate ad uno specifico iun
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-private/api/v1/act/operations/by-internalId/{internalId}:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/internalId'
+    get:
+      tags:
+        - notificationInquiry
+      operationId: getActPracticesByInternalId
+      description: API utilizzata per il recupero di tutte le pratiche legate ad atti opponibili ai terzi ed associate ad uno specifico internal id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsDetailsResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-private/api/v1/aor/operations/by-internalId/{internalId}:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/internalId'
+    get:
+      tags:
+        - notificationInquiry
+      operationId: getAorPracticesByInternalId
+      description: API utilizzata per il recupero di tutte le pratiche legate ad AAR ed associate ad uno specifico internal id
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsDetailsResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -626,6 +710,18 @@ components:
           type: boolean
         status:
           $ref: '#/components/schemas/OperationResponseStatus'
+    OperationsDetailsResponse:
+      description: Id pratiche recuperate
+      type: object
+      properties:
+        elements:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationDetailResponse'
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/OperationResponseStatus'
 
     OperationResponseStatus:
       description: Stato della response
@@ -756,6 +852,14 @@ components:
       schema:
         type: string
       example: "LJLH-GNTJ-DVXR-202209-J-1"
+    internalId:
+      name: internalId
+      description: Internal recipient or delegate tax id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "PF-4fc75df3-0913-407e-bdaa-e50329708b7d"
 
   responses:
     Forbidden:

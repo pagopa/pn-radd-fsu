@@ -56,7 +56,6 @@ public class RaddTransactionDAO extends BaseDao {
                 .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
                 .uid(entity.getIun())
                 .build();
-
         logEvent.log();
 
         return Mono.fromFuture(
@@ -118,6 +117,7 @@ public class RaddTransactionDAO extends BaseDao {
 
     public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity){
         String logMessage = String.format("Update Radd Transaction=%s", entity);
+        // TODO check audit log event type
         PnAuditLogEvent logEvent = auditLogBuilder
                 .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
                 .uid(entity.getIun())

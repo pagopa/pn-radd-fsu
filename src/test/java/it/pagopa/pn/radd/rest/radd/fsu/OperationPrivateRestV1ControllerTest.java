@@ -31,7 +31,7 @@ class OperationPrivateRestV1ControllerTest {
         String path = "/radd-private/api/v1/act/operations/by-id/{operationId}"
                         .replace("{operationId}", "1200");
         Mockito.when(operationService
-                .getTransaction(Mockito.anyString()))
+                .getTransaction(Mockito.anyString(), Mockito.any()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)

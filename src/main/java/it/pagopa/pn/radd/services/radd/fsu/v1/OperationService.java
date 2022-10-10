@@ -28,7 +28,11 @@ public class OperationService {
     public Mono<OperationResponse> getTransaction(String operationId, OperationTypeEnum type){
         log.info("Find transaction with {} operation id", operationId);
         return transactionDAO.getTransaction(operationId, type)
-                .map(entity -> OperationResponseMapper.fromResult(mapperToNotificationResponse.toDto(entity)))
+                .map(entity ->
+                        OperationResponseMapper.fromResult(
+                                mapperToNotificationResponse.toDto(entity)
+                        )
+                )
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(OperationResponseMapper.fromException(ex)));
     }
 

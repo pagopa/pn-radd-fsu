@@ -11,6 +11,7 @@ import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
 import it.pagopa.pn.radd.utils.DateUtils;
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -42,19 +43,20 @@ class OperationServiceTest extends BaseTest {
     @Test
     void testWhenNoTransactionForOperationId(){
         OperationResponse r = new OperationResponse();
+        r.setResult(false);
         OperationResponseStatus status = new OperationResponseStatus();
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(dao.getTransaction(Mockito.any())).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
-        StepVerifier.create(operationService.getTransaction("erer"))
+        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        StepVerifier.create(operationService.getTransaction("erer", OperationTypeEnum.ACT))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
     void testWhenDaoThrowOtherException(){
-        Mockito.when(dao.getTransaction(Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
-        StepVerifier.create(operationService.getTransaction("erer"))
+        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        StepVerifier.create(operationService.getTransaction("erer", OperationTypeEnum.ACT))
                 .expectError(NullPointerException.class).verify();
     }
 
@@ -75,9 +77,9 @@ class OperationServiceTest extends BaseTest {
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReadon");
 
-        Mockito.when(dao.getTransaction(Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
 
-        OperationResponse response = operationService.getTransaction("err").block(d);
+        OperationResponse response = operationService.getTransaction("err", OperationTypeEnum.ACT).block(d);
 
         assertNotNull(response);
         assertNotNull(response.getElement());

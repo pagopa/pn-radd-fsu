@@ -10,6 +10,7 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -102,10 +103,7 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public Mono<RaddTransactionEntity> getTransaction(String operationId, OperationTypeEnum operationType) {
-        String query = "operationType = :".concat(RaddTransactionEntity.COL_OPERATION_TYPE);
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":".concat(RaddTransactionEntity.COL_OPERATION_TYPE), AttributeValue.builder().s(operationType.name()).build());
-        return Mono.from(this.findQuery(operationId,query,expressionValues)
+        return Mono.from(this.findQuery(operationId, operationType.name(), null, null)
                 .collectList()
                 .map(m -> {
                     if (m.isEmpty()) {
@@ -147,10 +145,14 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun) {
-
         QueryEnhancedRequest qeRequest = QueryEnhancedRequest
                 .builder()
-                .queryConditional( QueryConditional.keyEqualTo(Key.builder().partitionValue(iun).build()))
+                .queryConditional(QueryConditional.keyEqualTo(
+                        Key.builder()
+                                .partitionValue(iun)
+                                .build()
+                        )
+                )
                 .scanIndexForward(true)
                 .build();
 
@@ -183,13 +185,18 @@ public class RaddTransactionDAO extends BaseDao {
         return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);
     }
 
-    private Flux<RaddTransactionEntity> findQuery(String partitionValue, String query, Map<String, AttributeValue> values) {
-        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
+    private Flux<RaddTransactionEntity> findQuery(String partitionValue, String sortKey, String query, Map<String, AttributeValue> values) {
+        Key.Builder builderKeys = Key.builder().partitionValue(partitionValue);
+        if (!StringUtils.isBlank(sortKey)){
+            builderKeys.sortValue(sortKey);
+        }
+        QueryEnhancedRequest.Builder qeRequestBuilder = QueryEnhancedRequest
                 .builder()
-                .queryConditional(QueryConditional.keyEqualTo(Key.builder().partitionValue(partitionValue).build()))
-                .filterExpression(Expression.builder().expression(query).expressionValues(values).build())
-                .build();
-        return Flux.from(raddTable.query(qeRequest).flatMapIterable(Page::items));
+                .queryConditional(QueryConditional.keyEqualTo(builderKeys.build()));
+        if (!StringUtils.isBlank(query) && values != null){
+            qeRequestBuilder.filterExpression(Expression.builder().expression(query).expressionValues(values).build());
+        }
+        return Flux.from(raddTable.query(qeRequestBuilder.build()).flatMapIterable(Page::items));
     }
 
 }

@@ -120,7 +120,6 @@ public class ActService extends BaseService {
                 || StringUtils.isEmpty(req.getReason())) {
             log.error("Missing input parameters");
             throw new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate");
-            //return Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate"));
         }
 
 

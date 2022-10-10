@@ -23,10 +23,10 @@ public class OperationResponseMapper {
     public static OperationResponse fromException(RaddGenericException ex) {
         OperationResponse r = new OperationResponse();
         OperationResponseStatus status = new OperationResponseStatus();
+        r.setResult(false);
         status.setMessage(ex.getExceptionType().getMessage());
         status.setCode((ex.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST) ?
                 OperationResponseStatus.CodeEnum.NUMBER_1 : OperationResponseStatus.CodeEnum.NUMBER_99);
-
         r.setStatus(status);
         return r;
     }

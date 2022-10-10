@@ -19,6 +19,8 @@ import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -126,7 +128,7 @@ class ActServiceTest extends BaseTest {
         completeTransactionRequest.setOperationId("Id");
 
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setIuns(List.of("iun"));
         raddTransactionEntity.setOperationId("operationId");
         raddTransactionEntity.setStatus(Const.PRELOADED);
 
@@ -151,7 +153,7 @@ class ActServiceTest extends BaseTest {
         completeTransactionRequest.setOperationId("Id");
 
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setIuns(List.of("iun"));
         raddTransactionEntity.setOperationId("operationId");
         raddTransactionEntity.setStatus(Const.COMPLETED);
 
@@ -168,7 +170,7 @@ class ActServiceTest extends BaseTest {
         completeTransactionRequest.setOperationId("Id");
 
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setIuns(List.of("iun"));
         raddTransactionEntity.setOperationId("operationId");
         raddTransactionEntity.setStatus(Const.ABORTED);
 
@@ -185,7 +187,7 @@ class ActServiceTest extends BaseTest {
         completeTransactionRequest.setOperationId("Id");
 
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setIuns(List.of("iun"));
         raddTransactionEntity.setOperationId("operationId");
         raddTransactionEntity.setStatus(Const.ERROR);
 
@@ -202,7 +204,7 @@ class ActServiceTest extends BaseTest {
         completeTransactionRequest.setOperationId("Id");
 
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setIuns(List.of("iun"));
         raddTransactionEntity.setOperationId("operationId");
         raddTransactionEntity.setStatus(Const.ERROR);
 
@@ -210,7 +212,7 @@ class ActServiceTest extends BaseTest {
         Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
 
         CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeTransactionRequest).block();
-        assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage(), completeTransactionResponse.getStatus().getMessage());
+        assertEquals(ExceptionTypeEnum.TRANSACTION_ERROR_STATUS.getMessage(), completeTransactionResponse.getStatus().getMessage());
     }
 
     @Test

@@ -2,30 +2,25 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.PnException;
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationRequestDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponseNotificationViewedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
-import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 
 @Slf4j
@@ -42,6 +37,9 @@ class ActServiceTest extends BaseTest {
 
     @Mock
     TransactionDataMapper transactionDataMapper;
+
+    @Mock
+    PnDeliveryPushClient pnDeliveryPushClient;
 
     @Test
     void testWhenResponseIsFull(){
@@ -123,6 +121,99 @@ class ActServiceTest extends BaseTest {
     }
 
     @Test
+    void testCompleteTransactionWithEntity() {
+        CompleteTransactionRequest completeTransactionRequest= new CompleteTransactionRequest();
+        completeTransactionRequest.setOperationId("Id");
+
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setOperationId("operationId");
+        raddTransactionEntity.setStatus(Const.PRELOADED);
+
+        Mono<RaddTransactionEntity> monoEntity = Mono.just(raddTransactionEntity);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
+
+        ResponseNotificationViewedDtoDto responseNotificationViewedDtoDto = new ResponseNotificationViewedDtoDto();
+        Mono<ResponseNotificationViewedDtoDto> monoNotificationViewedDtoDto = Mono.just(responseNotificationViewedDtoDto);
+        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(raddTransactionEntity)).thenReturn(monoNotificationViewedDtoDto);
+
+        Mockito.when(raddTransactionDAO.updateStatus(raddTransactionEntity)).thenReturn(monoEntity);
+
+        CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeTransactionRequest).block();
+        assertNotNull(completeTransactionResponse);
+        assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, completeTransactionResponse.getStatus().getCode());
+        assertEquals(Const.OK, completeTransactionResponse.getStatus().getMessage());
+    }
+
+    @Test
+    void testWhenCompleteTransactionThrowErrorStatusCompleted() {
+        CompleteTransactionRequest completeTransactionRequest= new CompleteTransactionRequest();
+        completeTransactionRequest.setOperationId("Id");
+
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setOperationId("operationId");
+        raddTransactionEntity.setStatus(Const.COMPLETED);
+
+        Mono<RaddTransactionEntity> monoEntity = Mono.just(raddTransactionEntity);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
+
+        CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeTransactionRequest).block();
+        assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_COMPLETED.getMessage(), completeTransactionResponse.getStatus().getMessage());
+    }
+
+    @Test
+    void testWhenCompleteTransactionThrowErrorStatusAborted() {
+        CompleteTransactionRequest completeTransactionRequest= new CompleteTransactionRequest();
+        completeTransactionRequest.setOperationId("Id");
+
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setOperationId("operationId");
+        raddTransactionEntity.setStatus(Const.ABORTED);
+
+        Mono<RaddTransactionEntity> monoEntity = Mono.just(raddTransactionEntity);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
+
+        CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeTransactionRequest).block();
+        assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_ABORTED.getMessage(), completeTransactionResponse.getStatus().getMessage());
+    }
+
+    @Test
+    void testWhenCompleteTransactionThrowErrorStatusError() {
+        CompleteTransactionRequest completeTransactionRequest= new CompleteTransactionRequest();
+        completeTransactionRequest.setOperationId("Id");
+
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setOperationId("operationId");
+        raddTransactionEntity.setStatus(Const.ERROR);
+
+        Mono<RaddTransactionEntity> monoEntity = Mono.just(raddTransactionEntity);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
+
+        CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeTransactionRequest).block();
+        assertEquals(ExceptionTypeEnum.TRANSACTION_ERROR_STATUS.getMessage(), completeTransactionResponse.getStatus().getMessage());
+    }
+
+    @Test
+    void testWhenCompleteTransactionThrowErrorGetTransaction() {
+        CompleteTransactionRequest completeTransactionRequest= new CompleteTransactionRequest();
+        completeTransactionRequest.setOperationId("Id");
+
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setIun("iun");
+        raddTransactionEntity.setOperationId("operationId");
+        raddTransactionEntity.setStatus(Const.ERROR);
+
+        Mono<RaddTransactionEntity> monoEntity = Mono.just(raddTransactionEntity);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
+
+        CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeTransactionRequest).block();
+        assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage(), completeTransactionResponse.getStatus().getMessage());
+    }
+
+    @Test
     void testWhenCompleteTransactionReturnsCorrectly(){
         CompleteTransactionRequest completeTransactionRequest= new CompleteTransactionRequest();
         completeTransactionRequest.setOperationId("Id");
@@ -146,8 +237,6 @@ class ActServiceTest extends BaseTest {
         StepVerifier.create(actService.actInquiry("test", "test","test","test"))
                 .expectError(PnInvalidInputException.class).verify();
     }
-
-
 
     //@Test
     void testWhenAbortFunctionParametersAreInvalid(){

@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class AbortTransactionResponseMapperTest {
 
     @Test
-    public void fromResult() {
+    void fromResult() {
         TransactionResponseStatus status = new TransactionResponseStatus();
         status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
         status.setMessage("OK");
@@ -24,7 +24,7 @@ class AbortTransactionResponseMapperTest {
     }
 
     @Test
-    public void fromException() {
+    void fromException() {
         TransactionResponseStatus status = new TransactionResponseStatus();
         status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
 

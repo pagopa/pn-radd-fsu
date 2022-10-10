@@ -6,6 +6,8 @@ import it.pagopa.pn.radd.rest.radd.v1.dto.AorStartTransactionRequest;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+
 @Component
 public class TransactionDataMapper {
 
@@ -22,6 +24,7 @@ public class TransactionDataMapper {
         transactionData.setChecksum(request.getChecksum());
         transactionData.setOperationType(OperationTypeEnum.ACT);
         transactionData.setVersionId(request.getVersionToken());
+        transactionData.setIuns(new ArrayList<>());
         return transactionData;
     }
 
@@ -37,6 +40,7 @@ public class TransactionDataMapper {
         transactionData.setOperationId(request.getOperationId());
         transactionData.setChecksum(request.getChecksum());
         transactionData.setVersionId(request.getVersionToken());
+        transactionData.setIuns(new ArrayList<>());
         return transactionData;
     }
 

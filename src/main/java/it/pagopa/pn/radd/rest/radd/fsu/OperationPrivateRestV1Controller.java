@@ -2,7 +2,8 @@ package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.api.NotificationInquiryApi;
 
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationAorResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
 import it.pagopa.pn.radd.services.radd.fsu.v1.OperationService;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -21,13 +22,25 @@ public class OperationPrivateRestV1Controller implements NotificationInquiryApi 
     }
 
     @Override
-    public Mono<ResponseEntity<OperationResponse>> getActTransactionByOperationId(String idPractice, ServerWebExchange exchange) {
-        return operationService.getTransaction(idPractice, OperationTypeEnum.ACT).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    public Mono<ResponseEntity<OperationActResponse>> getActTransactionByOperationId(String idPractice, ServerWebExchange exchange) {
+        return operationService.getTransactionActByOperationIdAndType(idPractice).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
     public Mono<ResponseEntity<OperationsResponse>> getActPracticesByIun(String iun, ServerWebExchange exchange) {
-        return operationService.getActPracticesId(iun).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return operationService.getTransactionByIun(iun, OperationTypeEnum.ACT)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
+    @Override
+    public Mono<ResponseEntity<OperationsResponse>> getAorPracticesByIun(String iun, ServerWebExchange exchange) {
+        return operationService.getTransactionByIun(iun, OperationTypeEnum.AOR)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    }
+
+    @Override
+    public Mono<ResponseEntity<OperationAorResponse>> getAorTransactionByOperationId(String operationId, ServerWebExchange exchange) {
+        return operationService.getTransactionAorByOperationIdAndType(operationId)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    }
 }

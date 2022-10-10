@@ -331,7 +331,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/OperationActResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -359,7 +359,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationResponse'
+                $ref: '#/components/schemas/OperationAorResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -444,7 +444,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationsDetailsResponse'
+                $ref: '#/components/schemas/OperationsActDetailsResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -472,7 +472,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperationsDetailsResponse'
+                $ref: '#/components/schemas/OperationsAorDetailsResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -710,14 +710,26 @@ components:
           type: boolean
         status:
           $ref: '#/components/schemas/OperationResponseStatus'
-    OperationsDetailsResponse:
+    OperationsActDetailsResponse:
       description: Id pratiche recuperate
       type: object
       properties:
         elements:
           type: array
           items:
-            $ref: '#/components/schemas/OperationDetailResponse'
+            $ref: '#/components/schemas/OperationActDetailResponse'
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/OperationResponseStatus'
+    OperationsAorDetailsResponse:
+      description: Id pratiche recuperate
+      type: object
+      properties:
+        elements:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationAorDetailResponse'
         result:
           type: boolean
         status:
@@ -738,18 +750,18 @@ components:
               type: number
               enum: [0,1,99]
 
-    OperationResponse:
+    OperationActResponse:
       description: Risposta della notifica
       type: object
       properties:
         element:
-          $ref: '#/components/schemas/OperationDetailResponse'
+          $ref: '#/components/schemas/OperationActDetailResponse'
         result:
           type: boolean
         status:
           $ref: '#/components/schemas/OperationResponseStatus'
-    OperationDetailResponse:
-      description: Stato della response
+    OperationActDetailResponse:
+      description: Dettagli della response Act
       type: object
       properties:
         operationStatus:
@@ -761,6 +773,63 @@ components:
         iun:
           type: string
           example: "LJLH-GNTJ-DVXR-202209-J-1"
+        operationId:
+          type: string
+          example: "asd1234"
+        fileKey:
+          type: string
+          example: "FL-23-KKL"
+        qrCode:
+          type: string
+          example: "FBD"
+        recipientTaxId:
+          type: string
+          example: "TNTGTR76E21H751S"
+        recipientType:
+          type: string
+          example: "PF"
+        delegateTaxId:
+          type: string
+          example: "RFRGRZ66E21H751B"
+        uid:
+          type: string
+          example: "uddHHHw123mk"
+        operationStartDate:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        operationEndDate:
+          type: string
+          format: date-time
+          example: 2017-07-21T18:00:28Z
+        errorReason:
+          type: string
+          example: "Error"
+    OperationAorResponse:
+      description: Risposta della notifica
+      type: object
+      properties:
+        element:
+          $ref: '#/components/schemas/OperationAorDetailResponse'
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/OperationResponseStatus'
+    OperationAorDetailResponse:
+      description: Dettagli della response Act
+      type: object
+      properties:
+        operationStatus:
+          type: string
+          example: "COMPLETED"
+        operationType:
+          type: string
+          example: "ACT"
+        iuns:
+          type: array
+          items:
+            type: string
+            example: "welcome"
         operationId:
           type: string
           example: "asd1234"

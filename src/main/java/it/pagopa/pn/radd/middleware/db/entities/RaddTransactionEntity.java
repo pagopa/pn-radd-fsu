@@ -5,12 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
+import java.util.List;
+
 @DynamoDbBean
 @Data
 @NoArgsConstructor
 public class RaddTransactionEntity {
 
-    public static final String COL_IUN = "iun";
+    public static final String COL_IUNS = "iuns";
     public static final String COL_OPERATION_ID = "operationId";
     public static final String COL_STATUS = "operation_status";
     public static final String COL_FILE_KEY = "fileKey";
@@ -24,14 +26,10 @@ public class RaddTransactionEntity {
     public static final String COL_OPERATION_TYPE = "operationType";
     public static final String COL_VERSION_TOKEN = "versionToken";
     public static final String COL_ERROR_REASON = "errorReason";
-    public static final String IUN_INDEX = "iun-global";
+
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_OPERATION_ID)}))
     private String operationId;
-
-    @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = { IUN_INDEX}), @DynamoDbAttribute(COL_IUN)}))
-    private String iun;
-
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_FILE_KEY)}))
     private String fileKey;
@@ -41,6 +39,7 @@ public class RaddTransactionEntity {
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECIPIENT_ID)}))
     private String recipientId;
+
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECIPIENT_TYPE)}))
     private String recipientType;
 
@@ -67,5 +66,8 @@ public class RaddTransactionEntity {
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_ERROR_REASON)}))
     private String errorReason;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_IUNS)}))
+    private List<String> iuns;
 
 }

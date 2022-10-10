@@ -2,15 +2,15 @@ package it.pagopa.pn.radd.mapper;
 
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationDetailResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActDetailResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 
-public class OperationResponseMapper {
+public class OperationActResponseMapper {
 
-    public static OperationResponse fromResult(OperationDetailResponse result){
-        OperationResponse response = new OperationResponse();
+    public static OperationActResponse fromResult(OperationActDetailResponse result){
+        OperationActResponse response = new OperationActResponse();
         response.setElement(result);
         response.setResult(true);
         OperationResponseStatus status = new OperationResponseStatus();
@@ -20,8 +20,8 @@ public class OperationResponseMapper {
         return response;
     }
 
-    public static OperationResponse fromException(RaddGenericException ex) {
-        OperationResponse r = new OperationResponse();
+    public static OperationActResponse fromException(RaddGenericException ex) {
+        OperationActResponse r = new OperationActResponse();
         OperationResponseStatus status = new OperationResponseStatus();
         r.setResult(false);
         status.setMessage(ex.getExceptionType().getMessage());

@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ActInquiryResponseMapperTest {
 
     @Test
-    public void fromResult() {
+    void fromResult() {
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
         status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_0);
         status.setMessage("OK");
@@ -24,7 +24,7 @@ class ActInquiryResponseMapperTest {
     }
 
     @Test
-    public void fromException() {
+    void fromException() {
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
         status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
 

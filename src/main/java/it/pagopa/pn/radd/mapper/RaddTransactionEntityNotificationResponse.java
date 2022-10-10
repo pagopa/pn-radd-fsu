@@ -1,26 +1,26 @@
 package it.pagopa.pn.radd.mapper;
 
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationDetailResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActDetailResponse;
 import it.pagopa.pn.radd.utils.DateUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RaddTransactionEntityNotificationResponse implements BaseMapperInterface<OperationDetailResponse, RaddTransactionEntity> {
+public class RaddTransactionEntityNotificationResponse implements BaseMapperInterface<OperationActDetailResponse, RaddTransactionEntity> {
 
     private RaddTransactionEntityNotificationResponse(){
         super();
     }
 
     @Override
-    public RaddTransactionEntity toEntity(OperationDetailResponse source) {
+    public RaddTransactionEntity toEntity(OperationActDetailResponse source) {
         return null;
     }
 
     @Override
-    public OperationDetailResponse toDto(RaddTransactionEntity source) {
-        OperationDetailResponse dto = new OperationDetailResponse();
-        dto.setIun(source.getIun());
+    public OperationActDetailResponse toDto(RaddTransactionEntity source) {
+        OperationActDetailResponse dto = new OperationActDetailResponse();
+        dto.setIun((source.getIuns() != null && !source.getIuns().isEmpty()) ? source.getIuns().get(0) : null);
         dto.setOperationId(source.getOperationId());
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());

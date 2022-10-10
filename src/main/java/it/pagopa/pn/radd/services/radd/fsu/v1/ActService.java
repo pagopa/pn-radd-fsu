@@ -58,10 +58,10 @@ public class ActService extends BaseService {
         return validateAndSettingsData(uid, request)
                 .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getRecipientId(), tmp.getQrCode())
                         .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
-                                                                transaction.setIun(iun);
+                                                                transaction.getIuns().add(iun);
                                                                 return transaction;
                 })
-                .zipWhen( transaction -> getCounterNotification(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
+                .zipWhen( transaction -> getCounterTransactions(transaction.getSingleIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
@@ -79,11 +79,11 @@ public class ActService extends BaseService {
                             }), (transaction, response) -> response
                 )
                 .onErrorResume(PnRaddException.class, ex ->
-                        this.settingErrorReason(ex, request.getOperationId())
+                        this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                                 .flatMap(entity -> Mono.error(ex))
                 )
                 .onErrorResume(RaddGenericException.class, ex ->
-                    this.settingErrorReason(ex, request.getOperationId())
+                    this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
                 );
 
@@ -106,7 +106,7 @@ public class ActService extends BaseService {
                 })
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
                 .onErrorResume(PnRaddException.class, ex ->
-                    this.settingErrorReason(ex, completeTransactionRequest.getOperationId())
+                    this.settingErrorReason(ex, completeTransactionRequest.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.error(ex))
                 )
                 .onErrorResume(RaddGenericException.class, ex ->
@@ -139,9 +139,9 @@ public class ActService extends BaseService {
     }
 
     private Flux<String> legalFact(TransactionData transaction){
-        return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
+        return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getSingleIun())
                 .flatMap(item ->pnDeliveryPushInternalClient
-                            .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
+                            .getLegalFact(transaction.getEnsureRecipientId(), transaction.getSingleIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                             .mapNotNull(legalFact -> {
                                 if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
                                     log.info("Finded legal fact with retry after {}", legalFact.getRetryAfter());
@@ -153,7 +153,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<TransactionData> notification(TransactionData transaction) {
-        return this.pnDeliveryClient.getNotifications(transaction.getIun())
+        return this.pnDeliveryClient.getNotifications(transaction.getSingleIun())
                 .zipWhen(response -> docIdAndAttachments(transaction, response),
                         (response, tupleUrl) -> tupleUrl)
                 .map(urls -> {
@@ -180,7 +180,7 @@ public class ActService extends BaseService {
                         if (!listDTO.isEmpty()){
                             NotificationRecipientDto recipient = listDTO.get(0);
                             if (recipient.getPayment() != null && recipient.getPayment().getPagoPaForm() != null){
-                                return pnDeliveryClient.getPresignedUrlPaymentDocument(transaction.getIun(), "PAGOPA", transaction.getEnsureRecipientId())
+                                return pnDeliveryClient.getPresignedUrlPaymentDocument(transaction.getSingleIun(), "PAGOPA", transaction.getEnsureRecipientId())
                                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
                             }
                         }
@@ -197,11 +197,11 @@ public class ActService extends BaseService {
 
         return Flux.fromStream(documents.getDocuments().stream())
                 .flatMap(document ->
-                        pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), document.getDocIdx(), transaction.getEnsureRecipientId())
+                        pnDeliveryClient.getPresignedUrlDocument(transaction.getSingleIun(), document.getDocIdx(), transaction.getEnsureRecipientId())
                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
     }
 
-    private Mono<Integer> getCounterNotification(String iun, String operationId){
+    private Mono<Integer> getCounterTransactions(String iun, String operationId){
         return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(iun, operationId)
                 .thenApply(response -> {
                     if (response > 0){

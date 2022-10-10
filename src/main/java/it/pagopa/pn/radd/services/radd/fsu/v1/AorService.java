@@ -87,7 +87,7 @@ public class AorService extends BaseService {
                 .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
                 .map(transactionData -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))
                 .onErrorResume(RaddGenericException.class, ex ->
-                        this.settingErrorReason(ex, request.getOperationId())
+                        this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR)
                                 .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
                 );
     }

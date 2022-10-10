@@ -35,8 +35,6 @@ Resources:
           AttributeType: "S"
         - AttributeName: "operationType"
           AttributeType: "S"
-        - AttributeName: "iun"
-          AttributeType: "S"
       KeySchema:
         - AttributeName: "operationId"
           KeyType: "HASH"
@@ -44,19 +42,7 @@ Resources:
           KeyType: "RANGE"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5" 
-      GlobalSecondaryIndexes:
-        -
-          IndexName: "iun-global"
-          KeySchema:
-            -
-              AttributeName: "iun"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
+        WriteCapacityUnits: "5"
       KinesisStreamSpecification:
         StreamArn: !Ref CdcKinesisSourceStreamArn
       StreamSpecification: 

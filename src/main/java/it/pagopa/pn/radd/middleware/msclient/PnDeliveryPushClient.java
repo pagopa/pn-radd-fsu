@@ -52,7 +52,7 @@ public class PnDeliveryPushClient extends BaseClient {
         request.setRaddBusinessTransactionDate(DateUtils.getOffsetDateTime(entity.getOperationStartDate()));
         request.setRaddBusinessTransactionId(entity.getOperationId());
         request.setRaddType(RADD_TYPE);
-        return this.eventComunicationApi.notifyNotificationViewed(entity.getIun(), request)
+        return this.eventComunicationApi.notifyNotificationViewed(entity.getIuns().get(0), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

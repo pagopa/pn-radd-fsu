@@ -11,13 +11,12 @@ import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
-
-import java.util.Arrays;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 
@@ -74,11 +73,7 @@ public class BaseService {
 
     protected Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        if(StringUtils.isBlank(transaction.getIun())){
-            entity.setIun(Arrays.toString(transaction.getIuns().toArray()));
-        } else {
-            entity.setIun(transaction.getIun());
-        }
+        entity.setIuns(transaction.getIuns());
         entity.setOperationId(transaction.getOperationId());
         entity.setDelegateId(transaction.getEnsureDelegateId());
         entity.setRecipientId(transaction.getEnsureRecipientId());
@@ -108,8 +103,8 @@ public class BaseService {
                 });
     }
 
-    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId){
-        return this.raddTransactionDAO.getTransaction(operationId)
+    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType){
+        return this.raddTransactionDAO.getTransaction(operationId, operationType)
                 .flatMap(entity -> {
                     entity.setStatus(Const.ERROR);
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());

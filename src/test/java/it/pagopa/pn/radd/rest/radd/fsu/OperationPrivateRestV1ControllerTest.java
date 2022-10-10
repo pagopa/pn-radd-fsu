@@ -10,6 +10,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @WebFluxTest(controllers = {OperationPrivateRestV1Controller.class})
 class OperationPrivateRestV1ControllerTest {
 
@@ -24,14 +26,14 @@ class OperationPrivateRestV1ControllerTest {
     private OperationService operationService;
 
     @Test
-    void getTransactionTest() {
-        OperationResponse response = new OperationResponse();
-        response.setElement(new OperationDetailResponse());
+    void testWhenCalledActTransactionByOperationId() {
+        OperationActResponse response = new OperationActResponse();
+        response.setElement(new OperationActDetailResponse());
 
         String path = "/radd-private/api/v1/act/operations/by-id/{operationId}"
-                        .replace("{operationId}", "1200");
+                .replace("{operationId}", "1200");
         Mockito.when(operationService
-                .getTransaction(Mockito.anyString(), Mockito.any()))
+                        .getTransactionActByOperationIdAndType(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)
@@ -43,14 +45,54 @@ class OperationPrivateRestV1ControllerTest {
     }
 
     @Test
-    void getPracticesTest() {
+    void testWhenCalledActTransactionByIun() {
+        OperationsResponse response = new OperationsResponse();
+        response.setResult(true);
+        response.setOperationIds(List.of("OperationId1"));
+
+        String path = "/radd-private/api/v1/act/operations/by-iun/{iun}"
+                .replace("{iun}", "pppwww233");
+        Mockito.when(operationService
+                        .getTransactionByIun(Mockito.anyString(), Mockito.any()))
+                .thenReturn(Mono.just(response));
+        webTestClient.get()
+                .uri(path)
+                .header(PN_PAGOPA_UID, "myUid")
+                .header( PN_PAGOPA_CX_ID, "cxId")
+                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testWhenCalledAorTransactionByIun() {
         OperationsResponse response = new OperationsResponse();
         response.setResult(true);
 
-        String path = "/radd-private/api/v1/act/operations/by-iun/{iun}"
+        String path = "/radd-private/api/v1/aor/operations/by-iun/{iun}"
                 .replace("{iun}", "iun-123");
         Mockito.when(operationService
-                .getActPracticesId(Mockito.anyString()))
+                        .getTransactionByIun(Mockito.any(), Mockito.any()))
+                .thenReturn(Mono.just(response));
+        webTestClient.get()
+                .uri(path)
+                .header(PN_PAGOPA_UID, "myUid")
+                .header( PN_PAGOPA_CX_ID, "cxId")
+                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+
+    @Test
+    void testWhenCalledAorTransactionByOperationId() {
+        OperationAorResponse response = new OperationAorResponse();
+        response.setElement(new OperationAorDetailResponse());
+
+        String path = "/radd-private/api/v1/aor/operations/by-id/{operationId}"
+                .replace("{operationId}", "1200");
+        Mockito.when(operationService
+                        .getTransactionAorByOperationIdAndType(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)

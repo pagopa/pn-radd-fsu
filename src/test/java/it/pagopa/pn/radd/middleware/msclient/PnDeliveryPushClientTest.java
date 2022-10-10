@@ -22,18 +22,18 @@ class PnDeliveryPushClientTest extends BaseTest {
     @Test
     void testNotifyNotificationViewed() {
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIun("LJLH-GNTJ-DVXR-202209-J-1");
+        entity.setIuns(List.of("LJLH-GNTJ-DVXR-202209-J-1"));
         entity.setRecipientType(RecipientTypeDto.PF.getValue());
         entity.setOperationStartDate("2022-09-30T13:57:00.000");
         entity.setRecipientId("1924814");
         Mono<ResponseNotificationViewedDtoDto> monoResponse = pnDeliveryPushClient.notifyNotificationViewed(entity);
-        monoResponse.doOnNext(response -> assertEquals(entity.getIun(), response.getIun())).block();
+        monoResponse.doOnNext(response -> assertEquals(entity.getIuns().get(0), response.getIun())).block();
     }
 
     @Test
     void testNotifyNotificationViewedCode400() {
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIun("LJLH-GNTJ-DVXR-202209-J-1");
+        entity.setIuns(List.of("LJLH-GNTJ-DVXR-202209-J-1"));
         entity.setRecipientType(RecipientTypeDto.PF.getValue());
         entity.setOperationStartDate("2022-09-30T13:57:00.000");
         entity.setRecipientId("");

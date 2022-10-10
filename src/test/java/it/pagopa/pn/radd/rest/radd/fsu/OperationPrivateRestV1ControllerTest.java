@@ -50,7 +50,7 @@ class OperationPrivateRestV1ControllerTest {
         String path = "/radd-private/api/v1/act/operations/by-iun/{iun}"
                 .replace("{iun}", "iun-123");
         Mockito.when(operationService
-                .getPracticesId(Mockito.anyString()))
+                .getActPracticesId(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)

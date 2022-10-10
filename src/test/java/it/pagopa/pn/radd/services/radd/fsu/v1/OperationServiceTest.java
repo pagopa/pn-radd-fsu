@@ -99,7 +99,7 @@ class OperationServiceTest extends BaseTest {
     void testGetPracticesWhenTransactionListIsEmpty(){
         Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.empty());
 
-        OperationsResponse response = operationService.getPracticesId("test").block(d);
+        OperationsResponse response = operationService.getActPracticesId("test").block(d);
 
         assertNotNull(response);
         assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
@@ -116,7 +116,7 @@ class OperationServiceTest extends BaseTest {
         entity2.setOperationId("Operation id 2");
         Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.just(entity1, entity2));
 
-        OperationsResponse response = operationService.getPracticesId("test").block(d);
+        OperationsResponse response = operationService.getActPracticesId("test").block(d);
 
         assertNotNull(response);
         assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());

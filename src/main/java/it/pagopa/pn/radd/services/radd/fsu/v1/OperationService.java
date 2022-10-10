@@ -6,6 +6,7 @@ import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -24,14 +25,14 @@ public class OperationService {
     }
 
 
-    public Mono<OperationResponse> getTransaction(String operationId){
+    public Mono<OperationResponse> getTransaction(String operationId, OperationTypeEnum type){
         log.info("Find transaction with {} operation id", operationId);
-        return transactionDAO.getTransaction(operationId)
+        return transactionDAO.getTransaction(operationId, type)
                 .map(entity -> OperationResponseMapper.fromResult(mapperToNotificationResponse.toDto(entity)))
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(OperationResponseMapper.fromException(ex)));
     }
 
-    public Mono<OperationsResponse> getPracticesId(String iun){
+    public Mono<OperationsResponse> getActPracticesId(String iun){
         return transactionDAO.getTransactionsFromIun(iun)
                 .map(RaddTransactionEntity::getOperationId)
                 .collectList()

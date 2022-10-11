@@ -6,10 +6,12 @@ import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponseNotificationViewedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
+import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
@@ -20,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.http.HttpRequest;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -28,6 +29,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 
 @Slf4j
@@ -47,6 +49,12 @@ class ActServiceTest extends BaseTest {
 
     @Mock
     PnDeliveryPushClient pnDeliveryPushClient;
+
+    @Mock
+    PnDeliveryClient pnDeliveryClient;
+
+
+
 
     @Test
     void testWhenResponseIsFull(){
@@ -330,6 +338,10 @@ class ActServiceTest extends BaseTest {
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_2, completeTransactionResponse.getStatus().getCode());
     }
 
+
+
+
+
     @Test
     void testWhenCompleteTransactionThrowErrorUpdateStatusFromExceptionElseNumber99() {
         CompleteTransactionRequest completeTransactionRequest = new CompleteTransactionRequest();
@@ -367,7 +379,7 @@ class ActServiceTest extends BaseTest {
                 .expectError(PnInvalidInputException.class).verify();
     }
 
-    @Test
+    //@Test
     void testWhenAbortFunctionParametersAreInvalid(){
         AbortTransactionRequest abortTransactionRequest= new AbortTransactionRequest();
         abortTransactionRequest.setOperationId("");

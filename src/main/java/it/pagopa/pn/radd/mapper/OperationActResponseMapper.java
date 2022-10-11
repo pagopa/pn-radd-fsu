@@ -9,6 +9,10 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class OperationActResponseMapper {
 
+    private OperationActResponseMapper() {
+        // do othing
+    }
+
     public static OperationActResponse fromResult(OperationActDetailResponse result){
         OperationActResponse response = new OperationActResponse();
         response.setElement(result);

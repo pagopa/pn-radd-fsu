@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.mapper;
 
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
@@ -8,9 +9,11 @@ import it.pagopa.pn.radd.utils.Const;
 public class DocumentUploadResponseMapper {
 
 
-    public static DocumentUploadResponse fromResult(String url){
+    public static DocumentUploadResponse fromResult(FileCreationResponseDto file){
         DocumentUploadResponse resp = new DocumentUploadResponse();
-        resp.setUrl(url) ;
+        resp.setUrl(file.getUploadUrl());
+        resp.setFileKey(file.getKey());
+        resp.setSecret(file.getSecret());
         ResponseStatus status = new ResponseStatus();
         status.code(ResponseStatus.CodeEnum.NUMBER_0);
         status.setMessage(Const.OK);

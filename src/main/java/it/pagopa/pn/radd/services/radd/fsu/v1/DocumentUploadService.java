@@ -41,7 +41,7 @@ public class DocumentUploadService {
                 .flatMap(value -> pnSafeStorageClient.createFile(value.getContentType(), value.getBundleId()))
                 .map(item -> {
                     log.info("Response presigned url : {}", item.getUploadUrl());
-                    return DocumentUploadResponseMapper.fromResult(item.getUploadUrl());
+                    return DocumentUploadResponseMapper.fromResult(item);
                 }).onErrorResume(RaddGenericException.class, ex -> Mono.just(DocumentUploadResponseMapper.fromException(ex)));
     }
 

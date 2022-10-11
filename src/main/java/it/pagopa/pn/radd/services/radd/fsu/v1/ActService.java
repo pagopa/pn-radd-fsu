@@ -116,8 +116,8 @@ public class ActService extends BaseService {
 
     public Mono<AbortTransactionResponse> abortTransaction(String uid, AbortTransactionRequest req) {
 
-        if (req == null || StringUtils.isEmpty(req.getOperationId())
-                || StringUtils.isEmpty(req.getReason())) {
+        if (req == null || StringUtils.isBlank(req.getOperationId())
+                || StringUtils.isBlank(req.getReason())) {
             log.error("Missing input parameters");
             return Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate"));
         }
@@ -213,7 +213,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<ResponseCheckAarDtoDto> controlAndCheckAar(String recipientType, String recipientTaxId, String qrCode){
-        if (StringUtils.isEmpty(recipientTaxId) || !Utils.checkPersonType(recipientType) || StringUtils.isEmpty(qrCode)) {
+        if (StringUtils.isBlank(recipientTaxId) || !Utils.checkPersonType(recipientType) || StringUtils.isBlank(qrCode)) {
             log.error("Missing input parameters");
             throw new PnInvalidInputException("Codice fiscale, tipo utente o codice fiscale non valorizzato");
         }

@@ -11,6 +11,10 @@ import java.util.ArrayList;
 @Component
 public class TransactionDataMapper {
 
+    private TransactionDataMapper() {
+        // do nothing
+    }
+
     public TransactionData toTransaction(String uid, ActStartTransactionRequest request){
         TransactionData transactionData = new TransactionData();
         transactionData.setUid(uid);

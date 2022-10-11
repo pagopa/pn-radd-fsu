@@ -8,6 +8,10 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class AbortTransactionResponseMapper {
 
+    private AbortTransactionResponseMapper () {
+        // do nothing
+    }
+
     public static AbortTransactionResponse fromResult(){
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -31,6 +35,5 @@ public class AbortTransactionResponseMapper {
         response.setStatus(status);
         return response;
     }
-
 
 }

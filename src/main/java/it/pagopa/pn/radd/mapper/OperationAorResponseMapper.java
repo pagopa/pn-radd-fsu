@@ -9,9 +9,12 @@ import it.pagopa.pn.radd.utils.DateUtils;
 
 public class OperationAorResponseMapper {
 
+    private OperationAorResponseMapper () {
+        // do nothing
+    }
+
     public static OperationAorResponse fromResult(RaddTransactionEntity result){
         OperationAorResponse response = new OperationAorResponse();
-
         response.setElement(getDetail(result));
         response.setResult(true);
         OperationResponseStatus status = new OperationResponseStatus();

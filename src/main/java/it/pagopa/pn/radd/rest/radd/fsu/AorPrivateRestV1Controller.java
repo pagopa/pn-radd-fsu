@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-
 @RestController
 public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTransactionManagementApi {
     private final AorService aorService;
@@ -33,13 +32,6 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
 
     @Override
     public Mono<ResponseEntity<CompleteTransactionResponse>> completeAorTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
-        /*CompleteTransactionResponse response = new CompleteTransactionResponse();
-        TransactionResponseStatus status = new TransactionResponseStatus();
-        status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_0);
-        status.setMessage("OK");
-        response.setStatus(status);
-        return Mono.delay(Duration.ofMillis(rnd.nextInt(500))).just(ResponseEntity.status(HttpStatus.OK).body(response));
-        */
         return aorService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
 
     }

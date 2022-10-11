@@ -10,7 +10,7 @@ import it.pagopa.pn.radd.utils.Const;
 public class OperationActResponseMapper {
 
     private OperationActResponseMapper() {
-        // do othing
+        // do nothing
     }
 
     public static OperationActResponse fromResult(OperationActDetailResponse result){

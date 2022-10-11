@@ -8,6 +8,9 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class DocumentUploadResponseMapper {
 
+    private DocumentUploadResponseMapper () {
+        // do nothing
+    }
 
     public static DocumentUploadResponse fromResult(FileCreationResponseDto file){
         DocumentUploadResponse resp = new DocumentUploadResponse();

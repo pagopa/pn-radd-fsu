@@ -8,6 +8,10 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class ActInquiryResponseMapper {
 
+    private ActInquiryResponseMapper () {
+        // do nothing
+    }
+
     public static ActInquiryResponse fromResult(){
         ActInquiryResponse actInquiryResponse = new ActInquiryResponse();
         actInquiryResponse.setResult(true);

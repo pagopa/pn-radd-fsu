@@ -11,8 +11,9 @@ import java.util.List;
 
 public class StartTransactionResponseMapper {
 
-
-
+    private StartTransactionResponseMapper() {
+        // do nothing
+    }
 
     public static StartTransactionResponse fromResult(List<String> result){
         StartTransactionResponse response = new StartTransactionResponse();

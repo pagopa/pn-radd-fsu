@@ -7,6 +7,10 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class AorInquiryResponseMapper {
 
+    private AorInquiryResponseMapper () {
+        // do nothing
+    }
+
     public static AORInquiryResponse fromResult(){
         AORInquiryResponse response = new AORInquiryResponse();
         ResponseStatus status = new ResponseStatus();

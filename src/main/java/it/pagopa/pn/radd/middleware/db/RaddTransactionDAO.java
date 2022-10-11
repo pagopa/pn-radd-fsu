@@ -155,16 +155,20 @@ public class RaddTransactionDAO extends BaseDao {
 
     public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun, OperationTypeEnum operationType){
 
-        AttributeValue attributeValue = AttributeValue.builder()
+        AttributeValue at1 = AttributeValue.builder()
                 .s(iun)
+                .build();
+        AttributeValue at2 = AttributeValue.builder()
+                .s(operationType.name())
                 .build();
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":value", attributeValue);
+        expressionValues.put(":value", at1);
+        expressionValues.put(":operationTypeValue", at2);
 
         Expression expression = Expression.builder()
                 .expression("contains(iuns, :value) AND " +
-                        RaddTransactionEntity.COL_OPERATION_TYPE + " = " + operationType.name())
+                        RaddTransactionEntity.COL_OPERATION_TYPE + " = :operationTypeValue")
                 .expressionValues(expressionValues)
                 .build();
 

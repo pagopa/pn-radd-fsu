@@ -28,7 +28,10 @@ class PnDeliveryPushClientTest extends BaseTest {
         entity.setRecipientId("1924814");
         Mono<ResponseNotificationViewedDtoDto> monoResponse = pnDeliveryPushClient.notifyNotificationViewed(entity);
         monoResponse.map(response -> {
-            assertEquals(entity.getIun(), response.getIun());
+            assertNotNull(entity);
+            assertNotNull(entity.getIuns());
+            assertFalse(entity.getIuns().isEmpty());
+            assertEquals(entity.getIuns().get(0), response.getIun());
             return Mono.empty();
         }).block();
     }

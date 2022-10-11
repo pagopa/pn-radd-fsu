@@ -49,10 +49,10 @@ public class AorService extends BaseService {
                                     if (list.isEmpty()){
                                         throw new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF);
                                     }
-                                    return AORInquiryResponseMapper.fromResult();
+                                    return AorInquiryResponseMapper.fromResult();
                                 }), (ensure, resp) -> resp
                 )
-                .onErrorResume(RaddGenericException.class, ex -> Mono.just(AORInquiryResponseMapper.fromException(ex)));
+                .onErrorResume(RaddGenericException.class, ex -> Mono.just(AorInquiryResponseMapper.fromException(ex)));
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest) {

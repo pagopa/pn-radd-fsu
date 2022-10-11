@@ -5,7 +5,7 @@ import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 
-public class AORInquiryResponseMapper {
+public class AorInquiryResponseMapper {
 
     public static AORInquiryResponse fromResult(){
         AORInquiryResponse response = new AORInquiryResponse();

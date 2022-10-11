@@ -129,13 +129,13 @@ public class AorService extends BaseService {
 
     private Mono<TransactionData> validationAorStartTransaction(String uid, AorStartTransactionRequest req){
         if (Strings.isBlank(req.getOperationId())){
-            throw new PnInvalidInputException("Id operazione non valorizzato");
+            return Mono.error(new PnInvalidInputException("Id operazione non valorizzato"));
         }
         if (Strings.isBlank(req.getRecipientTaxId())){
-            throw new PnInvalidInputException("Codice fiscale non valorizzato");
+            return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
         }
         if (!Utils.checkPersonType(req.getRecipientType().getValue())){
-            throw new PnInvalidInputException("Recipient Type non valorizzato correttamente");
+            return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
         return Mono.just(this.transactionDataMapper.toTransaction(uid, req));
     }

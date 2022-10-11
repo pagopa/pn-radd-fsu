@@ -14,7 +14,7 @@ class AbortTransactionResponseMapperTest {
     @Test
     void fromResult() {
         TransactionResponseStatus status = new TransactionResponseStatus();
-        status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
+        status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_0);
         status.setMessage("OK");
 
         AbortTransactionResponse response = AbortTransactionResponseMapper.fromResult();

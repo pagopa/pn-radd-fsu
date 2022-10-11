@@ -16,7 +16,7 @@ public class AbortTransactionResponseMapper {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
         status.setMessage(Const.OK);
-        status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_1);
+        status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_0);
         response.setStatus(status);
         return response;
     }

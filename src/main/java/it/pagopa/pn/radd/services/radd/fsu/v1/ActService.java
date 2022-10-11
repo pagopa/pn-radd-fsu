@@ -119,7 +119,7 @@ public class ActService extends BaseService {
         if (req == null || StringUtils.isEmpty(req.getOperationId())
                 || StringUtils.isEmpty(req.getReason())) {
             log.error("Missing input parameters");
-            throw new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate");
+            return Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate"));
         }
 
 
@@ -228,16 +228,16 @@ public class ActService extends BaseService {
 
     private Mono<TransactionData> validateAndSettingsData(String uid, ActStartTransactionRequest request){
         if (Strings.isBlank(request.getOperationId())){
-            throw new PnInvalidInputException("Id operazione non valorizzato");
+            return Mono.error(new PnInvalidInputException("Id operazione non valorizzato"));
         }
         if (Strings.isBlank(request.getRecipientTaxId())){
-            throw new PnInvalidInputException("Codice fiscale non valorizzato");
+            return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
         }
         if (Strings.isBlank(request.getQrCode())){
-            throw new PnInvalidInputException("QRCode non valorizzato");
+            return Mono.error(new PnInvalidInputException("QRCode non valorizzato"));
         }
-        if (!Utils.checkPersonType(request.getRecipientType().getValue())){
-            throw new PnInvalidInputException("Recipient Type non valorizzato correttamente");
+        if (request.getRecipientType() == null || !Utils.checkPersonType(request.getRecipientType().getValue())){
+            return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
         return Mono.just(this.transactionDataMapper.toTransaction(uid, request));
     }

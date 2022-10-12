@@ -1,6 +1,7 @@
 {
   "Parameters" : {
-    "SandboxSafeStorageBaseUrl": "https://14ej9p2krd.execute-api.eu-south-1.amazonaws.com/dev",
+    "SafeStorageCxId": "pn-delivery",
+    "SandboxSafeStorageBaseUrl": "https://eo6pdvms24.execute-api.eu-south-1.amazonaws.com/coll",
     "NotificationCheckAddress": "true"
   }
 }

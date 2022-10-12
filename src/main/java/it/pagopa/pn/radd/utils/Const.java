@@ -8,14 +8,19 @@ public class Const {
     public static final String PF = "PF";
     public static final String PG = "PG";
 
-    public static final String COMPLETED = "COMPLETED";
+    //Status document
+    public static final String DOCUMENT_TYPE = "PN_RADD_FSU_ATTACHMENT";
     public static final String PRELOADED = "PRELOADED";
-    public static final String STARTED = "STARTED";
-    public static final String ERROR = "ERROR";
-    public static final String ABORTED = "ABORTED";
     public static final String ATTACHED = "ATTACHED";
 
-    public static final String DOCUMENT_TYPE = "PN_RADD_FSU_ATTACHMENT";
+    //Status transaction entity
+    public static final String STARTED = "STARTED";
+    public static final String ERROR = "ERROR";
+    public static final String COMPLETED = "COMPLETED";
+    public static final String ABORTED = "ABORTED";
+
+
+
 
     /* Inquiry message */
     public static final String NOT_VALID_QR_CODE = "QrCode non valido";

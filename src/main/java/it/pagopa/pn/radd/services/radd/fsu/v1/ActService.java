@@ -244,7 +244,7 @@ public class ActService extends BaseService {
 
     private Mono<CompleteTransactionRequest> validateCompleteRequest(CompleteTransactionRequest req){
         if (StringUtils.isEmpty(req.getOperationId())){
-            throw new PnInvalidInputException("Operation id non valorizzato");
+            return Mono.error(new PnInvalidInputException("Operation id non valorizzato"));
         }
         return Mono.just(req);
     }

@@ -6,6 +6,7 @@ import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponseNotificationViewedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -320,6 +321,25 @@ class ActServiceTest extends BaseTest {
             assertEquals("Alcuni paramentri come operazione id o data di operazione non sono valorizzate", exception.getMessage() );
             return Mono.empty();}
          ).block();
+    }
+
+    @Test
+    void testActInquiryWhenControlCheckArrResponseError() {
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
+        Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new ResponseCheckAarDtoDto()));
+        ActInquiryResponse monoResponse = actService.actInquiry("test", "test",Const.PF,"test").block();
+        assertNotNull(monoResponse.getResult());
+        assertEquals(false, monoResponse.getResult());
+        assertEquals(ExceptionTypeEnum.IUN_NOT_FOUND.getMessage(), monoResponse.getStatus().getMessage());
+    }
+
+    @Test
+    void testActInquiryWhenRequestIsEmpty() {
+        actService.completeTransaction("test", new CompleteTransactionRequest())
+            .onErrorResume(PnInvalidInputException.class, exception ->{
+                assertEquals("Operation id non valorizzato", exception.getMessage() );
+                return Mono.empty();}
+            ).block();
     }
 
 }

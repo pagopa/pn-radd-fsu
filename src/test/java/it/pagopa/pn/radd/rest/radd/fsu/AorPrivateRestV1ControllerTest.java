@@ -1,7 +1,8 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
+
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
-import it.pagopa.pn.radd.services.radd.fsu.v1.ActService;
+import it.pagopa.pn.radd.services.radd.fsu.v1.AorService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.Date;
 
-@WebFluxTest(controllers = {ActPrivateRestV1Controller.class})
-class ActPrivateRestV1ControllerTest {
+@WebFluxTest(controllers = {AorPrivateRestV1Controller.class})
+class AorPrivateRestV1ControllerTest {
 
     public static final String PN_PAGOPA_CX_ID = "x-pagopa-pn-cx-id";
     public static final String PN_PAGOPA_CX_TYPE = "x-pagopa-pn-cx-type";
@@ -24,24 +25,23 @@ class ActPrivateRestV1ControllerTest {
     WebTestClient webTestClient;
 
     @MockBean
-    private ActService actService;
+    private AorService aorService;
 
     @Test
-    void actInquiryTest() {
-        ActInquiryResponse response = new ActInquiryResponse();
+    void aorInquiryTest() {
+        AORInquiryResponse response = new AORInquiryResponse();
         response.setResult(true);
 
-        String path = "/radd-private/api/v1/act/inquiry";
-        Mockito.when(actService
-                .actInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
-                ).thenReturn(Mono.just(response));
+        String path = "/radd-private/api/v1/aor/inquiry";
+        Mockito.when(aorService
+                .aorInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
+        ).thenReturn(Mono.just(response));
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path(path)
-                                .queryParam("uid", "123-456")
-                                .queryParam("recipientTaxId", "MRASSS90A67H718I")
-                                .queryParam("recipientType", "PF")
-                                .queryParam("qrCode", "qrCode").build())
+                        .queryParam("uid", "123-456")
+                        .queryParam("recipientTaxId", "MRASSS90A67H718I")
+                        .queryParam("recipientType", "PF").build())
                 .header(PN_PAGOPA_UID, "myUid")
                 .header( PN_PAGOPA_CX_ID, "cxId")
                 .header( PN_PAGOPA_CX_TYPE, "PA")
@@ -50,7 +50,38 @@ class ActPrivateRestV1ControllerTest {
     }
 
     @Test
-    void completeActTransactionTest() {
+    void startActTransactionTest() {
+        StartTransactionResponse response = new StartTransactionResponse();
+        StartTransactionResponseStatus status = new StartTransactionResponseStatus();
+        status.setMessage("OK");
+        response.status(status);
+
+        AorStartTransactionRequest req = new AorStartTransactionRequest();
+        req.setVersionToken("123TokenDocument");
+        req.setFileKey("123FileKey");
+        req.setOperationId("123");
+        req.setRecipientTaxId("TNTGTR76E21H751S");
+        req.setChecksum("YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo");
+        req.setOperationDate(new Date());
+
+        String path = "/radd-private/api/v1/aor/transaction/start";
+        Mockito.when(aorService
+                .startTransaction(Mockito.anyString(), Mockito.any())
+        ).thenReturn(Mono.just(response));
+
+        webTestClient.post()
+                .uri(path)
+                .header(PN_PAGOPA_UID, "myUid")
+                .header( PN_PAGOPA_CX_ID, "cxId")
+                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(req), AorStartTransactionRequest.class)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void completeAorTransactionTest() {
         CompleteTransactionResponse response = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
         status.setMessage("OK");
@@ -60,8 +91,8 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/act/transaction/complete";
-        Mockito.when(actService
+        String path = "/radd-private/api/v1/aor/transaction/complete";
+        Mockito.when(aorService
                 .completeTransaction(Mockito.anyString(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
@@ -77,7 +108,7 @@ class ActPrivateRestV1ControllerTest {
     }
 
     @Test
-    void abortActTransactionTest() {
+    void abortAorTransactionTest() {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
         status.setMessage("OK");
@@ -87,9 +118,8 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/act/transaction/abort";
-        Mockito.when(actService
-                .abortTransaction(Mockito.anyString(), Mockito.any())
+        String path = "/radd-private/api/v1/aor/transaction/abort";
+        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()
@@ -103,36 +133,5 @@ class ActPrivateRestV1ControllerTest {
                 .expectStatus().isOk();
     }
 
-    @Test
-    void startActTransactionTest() {
-        StartTransactionResponse response = new StartTransactionResponse();
-        StartTransactionResponseStatus status = new StartTransactionResponseStatus();
-        status.setMessage("OK");
-        response.status(status);
-
-        ActStartTransactionRequest req = new ActStartTransactionRequest();
-        req.setQrCode("abcQrcode");
-        req.setVersionToken("123TokenDocument");
-        req.setFileKey("123FileKey");
-        req.setOperationId("123");
-        req.setRecipientTaxId("TNTGTR76E21H751S");
-        req.setChecksum("YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo");
-        req.setOperationDate(new Date());
-
-        String path = "/radd-private/api/v1/act/transaction/start";
-        Mockito.when(actService
-                .startTransaction(Mockito.anyString(), Mockito.any())
-        ).thenReturn(Mono.just(response));
-
-        webTestClient.post()
-                .uri(path)
-                .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
-                .accept(MediaType.APPLICATION_JSON)
-                .body(Mono.just(req), ActStartTransactionRequest.class)
-                .exchange()
-                .expectStatus().isOk();
-    }
 
 }

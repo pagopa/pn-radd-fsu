@@ -104,7 +104,7 @@ Resources:
         ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_INTERNAL_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry8: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
-        ContainerEnvEntry9: 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
+        ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

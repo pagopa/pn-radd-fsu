@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class RaddTransactionDAOTest extends BaseTest {
 
@@ -112,7 +113,9 @@ class RaddTransactionDAOTest extends BaseTest {
                 .thenReturn(CompletableFuture.completedFuture(entityUpdated));
 
         RaddTransactionEntity response = raddTransactionDAO.updateStatus(entityToUpdate).block(d);
-        assertEquals(response, entityToUpdate);
+        assertNotNull(response);
+        assertEquals(response.getOperationId(), entityToUpdate.getOperationId());
+        assertEquals(response.getStatus(), entityToUpdate.getStatus());
     }
 
     @Test

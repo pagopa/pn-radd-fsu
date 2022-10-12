@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.*;
@@ -9,7 +10,6 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.Op
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
-import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -60,7 +60,7 @@ class ActServiceStartTransactionTest extends BaseTest {
     private TransactionDataMapper transactionDataMapper;
 
 
-    public ActStartTransactionRequest createActStartTransactionRequest(){
+    private ActStartTransactionRequest createActStartTransactionRequest(){
         ActStartTransactionRequest actStartTransactionRequest = new ActStartTransactionRequest();
         actStartTransactionRequest.setOperationId("Id");
         actStartTransactionRequest.setQrCode("QrCode");
@@ -74,7 +74,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         return actStartTransactionRequest;
     }
 
-    public RaddTransactionEntity createRaddTransactionEntity(){
+    private RaddTransactionEntity createRaddTransactionEntity(){
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setIuns(List.of("testIun"));
         raddTransactionEntity.setOperationId("Id");
@@ -86,7 +86,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         return raddTransactionEntity;
     }
 
-    public FileDownloadResponseDto createFileDownloadResponseDto (){
+    private FileDownloadResponseDto createFileDownloadResponseDto (){
         FileDownloadResponseDto fileDownloadResponseDto = new FileDownloadResponseDto();
         fileDownloadResponseDto.setStatus(Const.PRELOADED);
         fileDownloadResponseDto.setVersionId("VersionTokenX");
@@ -94,7 +94,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         return fileDownloadResponseDto ;
     }
 
-    public SentNotificationDto createSentNotificationDto(){
+    private SentNotificationDto createSentNotificationDto(){
         NotificationPaymentInfoDto notificationPaymentInfoDto = new NotificationPaymentInfoDto();
         notificationPaymentInfoDto.setPagoPaForm(new NotificationPaymentAttachmentDto());
 
@@ -112,7 +112,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         return sentNotificationDto;
     }
 
-    public Stream<LegalFactListElementDto> createLegalFactListElementDto(){
+    private Stream<LegalFactListElementDto> createLegalFactListElementDto(){
 
         LegalFactsIdDto legalFactsIdDto = new LegalFactsIdDto();
         legalFactsIdDto.setCategory(LegalFactCategoryDto.SENDER_ACK);
@@ -127,7 +127,7 @@ class ActServiceStartTransactionTest extends BaseTest {
 
     @Test
     void testStartTransactionWithEntity() {
-        ActStartTransactionRequest request = createActStartTransactionRequest() ;
+        ActStartTransactionRequest request = createActStartTransactionRequest();
         RaddTransactionEntity raddTransactionEntity = createRaddTransactionEntity();
         ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();
         responseCheckAarDtoDto.setIun("testIun");
@@ -156,4 +156,20 @@ class ActServiceStartTransactionTest extends BaseTest {
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0, startTransactionResponse.getStatus().getCode());
         assertEquals(Const.OK, startTransactionResponse.getStatus().getMessage());
     }
+
+    @Test
+    void testStartWhenIunNotFoundThenReturnNumber99(){
+        ActStartTransactionRequest request = createActStartTransactionRequest();
+        ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();
+        Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(responseCheckAarDtoDto));
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
+        Mockito.when(raddTransactionDAO.updateStatus(Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
+
+
+        StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();
+        assertNotNull(startTransactionResponse);
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_99, startTransactionResponse.getStatus().getCode());
+        assertEquals(ExceptionTypeEnum.IUN_NOT_FOUND.getMessage(), startTransactionResponse.getStatus().getMessage());
+    }
+
 }

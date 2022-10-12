@@ -1,14 +1,14 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.util.List;
 
 @DynamoDbBean
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 public class RaddTransactionEntity {
 

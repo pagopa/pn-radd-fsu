@@ -396,7 +396,7 @@
           "application/json"
         ]
       },
-      "body": "{\"key\": \"random/path/of/the/file\", \"versionId\": \"3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"documentStatus\": \"PRELOADED\", \"download\" : {\"url\":\"http://localhost:1080/safe-storage/storage/unFile\"}}"
+      "body": "{\"key\": \"random/path/of/the/file\", \"versionId\": \"3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"status\": \"PRELOADED\", \"download\" : {\"url\":\"http://localhost:1080/safe-storage/storage/unFile\"}}"
     }
   },
   {
@@ -426,7 +426,7 @@
           "application/json"
         ]
       },
-      "body": "{\"key\": \"random/path/of/the/file\", \"versionId\": \"3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"documentStatus\": \"PRELOADED\", \"download\" : {\"url\":\"https://presignedurldemo.s3.eu-west-2.amazonaws.com/\"}}"
+      "body": "{\"key\": \"random/path/of/the/file\", \"versionId\": \"3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"status\": \"PRELOADED\", \"download\" : {\"url\":\"https://presignedurldemo.s3.eu-west-2.amazonaws.com/\"}}"
     }
   },
   {

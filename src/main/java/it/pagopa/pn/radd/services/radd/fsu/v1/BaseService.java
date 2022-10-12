@@ -19,6 +19,7 @@ import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
+import static it.pagopa.pn.radd.utils.Const.KO;
 
 @Slf4j
 public class BaseService {
@@ -50,15 +51,15 @@ public class BaseService {
 
     protected Mono<FileDownloadResponseDto> verifyCheckSum(TransactionData transaction){
         return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-            /*
-            if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
+            log.info("Document status is : {}", response.getStatus());
+            if (!StringUtils.equals(response.getStatus(), Const.PRELOADED)){
                 throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             }
-
+            log.info("Document version is : {}", response.getVersionId());
             if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())){
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
-            */
+            log.info("Document checksum is : {}", response.getChecksum());
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
                 throw new RaddGenericException(CHECKSUM_VALIDATION);

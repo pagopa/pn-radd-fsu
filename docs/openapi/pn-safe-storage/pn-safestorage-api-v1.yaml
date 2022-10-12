@@ -559,7 +559,7 @@ components:
         - contentLength
         - checksum
         - documentType
-        - documentStatus
+        - status
         - retentionUntil
       properties:  
         key:
@@ -574,7 +574,7 @@ components:
           type: string
           description: Il tipo del documento
           example: PN_NOTIFICATION_ATTACHMENTS
-        documentStatus:
+        status:
           type: string
           description: Lo stato del documento
           example: ATTACHED

@@ -15,4 +15,5 @@ public abstract class BaseTest {
 
     @Autowired
     private MockServerBean mockServer;
+
 }

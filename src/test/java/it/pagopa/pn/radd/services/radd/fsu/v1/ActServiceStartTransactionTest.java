@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
-public class ActServiceStartTransactionTest extends BaseTest {
+class ActServiceStartTransactionTest extends BaseTest {
     @InjectMocks
     ActService actService;
 
@@ -88,7 +88,7 @@ public class ActServiceStartTransactionTest extends BaseTest {
 
     public FileDownloadResponseDto createFileDownloadResponseDto (){
         FileDownloadResponseDto fileDownloadResponseDto = new FileDownloadResponseDto();
-        fileDownloadResponseDto.setDocumentStatus(Const.PRELOADED);
+        fileDownloadResponseDto.setStatus(Const.PRELOADED);
         fileDownloadResponseDto.setVersionId("VersionTokenX");
         fileDownloadResponseDto.setChecksum("Checksum");
         return fileDownloadResponseDto ;

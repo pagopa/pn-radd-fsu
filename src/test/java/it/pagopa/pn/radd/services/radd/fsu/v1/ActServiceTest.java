@@ -396,6 +396,23 @@ class ActServiceTest extends BaseTest {
 
     }
 
+    @Test
+    void abortTransactionReturnsRaddGenericException(){
+        AbortTransactionRequest request = new AbortTransactionRequest();
+        request.setOperationId("Id");
+        request.setReason("reason");
+        request.setOperationDate(new Date());
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setStatus(Const.STARTED);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when( raddTransactionDAO.updateStatus(Mockito.any())).thenThrow(RaddGenericException.class);
+        actService.abortTransaction("test", request)
+                .onErrorResume(RaddGenericException.class, exception ->{
+                    assertNotNull(exception);
+                    return Mono.empty();
+                }).block();
+
+    }
 
 
 

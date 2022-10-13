@@ -164,11 +164,11 @@ class OperationServiceTest extends BaseTest {
                 .expectError(NullPointerException.class).verify();
     }
 
-    //@Test
+    @Test
     void testWhenRetrieveAorTransactionWithOperationIdThenReturnResponse(){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setOperationId("testOperation");
-        entity.setIun("iunTest");
+        entity.setIun("[iunTest, testIun]");
         entity.setFileKey("FileKey test");
         entity.setQrCode("qrcodeTest");
         entity.setRecipientId("FiscalCodeTest");
@@ -189,7 +189,8 @@ class OperationServiceTest extends BaseTest {
         assertNotNull(response);
         assertNotNull(response.getElement());
         assertEquals(entity.getOperationId(), response.getElement().getOperationId());
-        assertEquals(entity.getIun(), response.getElement().getIuns().get(0));
+        assertNotNull(response.getElement().getIuns());
+        assertFalse(response.getElement().getIuns().isEmpty());
         assertEquals(entity.getFileKey(), response.getElement().getFileKey());
         assertEquals(entity.getQrCode(), response.getElement().getQrCode());
         assertEquals(entity.getRecipientId(), response.getElement().getRecipientTaxId());

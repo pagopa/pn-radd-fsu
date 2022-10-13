@@ -6,6 +6,7 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
+import it.pagopa.pn.radd.middleware.db.entities.RaddOperationIun;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -44,6 +45,8 @@ class RaddTransactionDAOTest extends BaseTest {
     @Mock
     DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
     @Mock
+    DynamoDbAsyncTable<RaddOperationIun> raddOperationIunTable;
+    @Mock
     AwsConfigs awsConfigs;
     @Mock
     Map<String, AttributeValue> expressionValues;
@@ -74,13 +77,13 @@ class RaddTransactionDAOTest extends BaseTest {
         Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
                 .thenReturn(CompletableFuture.completedFuture(queryResponse));
 
-        PutItemEnhancedRequest<RaddTransactionEntity> putRequest = PutItemEnhancedRequest.builder(RaddTransactionEntity.class)
-                .item(baseEntity)
-                .build();
 
-        Mockito.when(raddTable.putItem(putRequest)).thenReturn(CompletableFuture.completedFuture(null));
+        Mockito.when(dynamoDbEnhancedAsyncClient.transactWriteItems((TransactWriteItemsEnhancedRequest) Mockito.any()))
+                .thenReturn(CompletableFuture.allOf());
 
-        RaddTransactionEntity response = raddTransactionDAO.createRaddTransaction(baseEntity).block(d);
+
+
+        RaddTransactionEntity response = raddTransactionDAO.createRaddTransaction(baseEntity, null).block(d);
         assertEquals(response, baseEntity);
     }
 
@@ -91,7 +94,7 @@ class RaddTransactionDAOTest extends BaseTest {
         Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
                 .thenReturn(CompletableFuture.completedFuture(queryResponse));
 
-        StepVerifier.create(raddTransactionDAO.createRaddTransaction( baseEntity))
+        StepVerifier.create(raddTransactionDAO.createRaddTransaction( baseEntity, null))
                 .expectError(RaddGenericException.class).verify();
     }
 

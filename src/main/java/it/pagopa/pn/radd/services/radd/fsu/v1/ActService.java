@@ -65,7 +65,7 @@ public class ActService extends BaseService {
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
-                    return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction));
+                    return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
                 }, (transaction, entity) -> transaction )
                 .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, t2) -> transaction)

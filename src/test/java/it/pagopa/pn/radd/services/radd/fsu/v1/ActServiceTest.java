@@ -302,7 +302,7 @@ class ActServiceTest extends BaseTest {
                 .expectError(PnInvalidInputException.class).verify();
     }
 
-    //@Test
+    @Test
     void testWhenAbortFunctionParametersAreInvalid(){
         AbortTransactionRequest abortTransactionRequest= new AbortTransactionRequest();
         abortTransactionRequest.setOperationId("");

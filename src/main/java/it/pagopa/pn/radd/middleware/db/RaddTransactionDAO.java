@@ -11,7 +11,6 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -64,8 +63,12 @@ public class RaddTransactionDAO extends BaseDao {
                             if (total == 0) {
                                 log.info("no current transaction for delegator-delegate pair, can proceed to create transaction");
                                 try {
-                                    return dynamoDbEnhancedAsyncClient.transactWriteItems(createTransaction(entity, entityIuns))
-                                            .thenApply(item -> entity);
+                                    TransactWriteItemsEnhancedRequest transactRequest = createTransaction(entity, entityIuns);
+                                    return dynamoDbEnhancedAsyncClient.transactWriteItems(transactRequest)
+                                                .thenApply(item -> {
+                                                    log.info("Created");
+                                                    return entity;
+                                                });
                                 } catch (TransactionCanceledException ex) {
                                     throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_SAVED);
                                 }
@@ -84,10 +87,6 @@ public class RaddTransactionDAO extends BaseDao {
 
             return item;
         });
-    }
-
-    public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity){
-        return this.createRaddTransaction(entity, null);
     }
 
     public Mono<RaddTransactionEntity> getTransaction(String operationId, OperationTypeEnum operationType) {
@@ -135,18 +134,17 @@ public class RaddTransactionDAO extends BaseDao {
     }
 
     public CompletableFuture<Integer> countFromIunAndOperationIdAndStatus(String operationId,String iun){
-        StringBuilder query = new StringBuilder();
         Map<String, AttributeValue> expressionValues = new HashMap<>();
 
-        query.append("(").append(RaddTransactionEntity.COL_STATUS).append(" = :completed" + " OR ");
-        query.append(RaddTransactionEntity.COL_STATUS).append(" = :aborted )");
-        query.append(" AND ( ").append(RaddTransactionEntity.COL_IUN).append(" = :iun)");
+        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " +
+                RaddTransactionEntity.COL_STATUS + " = :aborted )" +
+                " AND ( " + RaddTransactionEntity.COL_IUN + " = :iun)";
 
         expressionValues.put(":iun", AttributeValue.builder().s(iun).build());
         expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
         expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
-        return this.getCounterQuery(expressionValues, query.toString());
+        return this.getCounterQuery(expressionValues, query);
     }
 
     private CompletableFuture<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression){

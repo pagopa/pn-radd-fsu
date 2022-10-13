@@ -129,7 +129,7 @@ class ActServiceStartTransactionTest extends BaseTest {
     }
 
 
-    //@Test
+    @Test
     void testStartTransactionWithEntity() {
         ActStartTransactionRequest request = createActStartTransactionRequest();
         RaddTransactionEntity raddTransactionEntity = createRaddTransactionEntity();
@@ -161,7 +161,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         assertEquals(Const.OK, startTransactionResponse.getStatus().getMessage());
     }
 
-    //@Test
+    @Test
     void testStartWhenLegalFactHasRetryAfterReturnNumber2() {
         ActStartTransactionRequest request = createActStartTransactionRequest();
         RaddTransactionEntity raddTransactionEntity = createRaddTransactionEntity();

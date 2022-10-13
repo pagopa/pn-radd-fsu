@@ -2,11 +2,17 @@ package it.pagopa.pn.radd.mapper;
 
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.StringUtil;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
+@Slf4j
 public class OperationAorResponseMapper {
 
     private OperationAorResponseMapper () {
@@ -38,6 +44,9 @@ public class OperationAorResponseMapper {
     private static OperationAorDetailResponse getDetail(RaddTransactionEntity source){
         OperationAorDetailResponse dto = new OperationAorDetailResponse();
         dto.setOperationId(source.getOperationId());
+        String array = source.getIun().substring(1, source.getIun().length()-1);
+        List<String> iuns = List.of(StringUtils.split(array, ","));
+        dto.setIuns(iuns);
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());
         dto.setDelegateTaxId(source.getDelegateId());

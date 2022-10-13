@@ -3,8 +3,6 @@ package it.pagopa.pn.radd.middleware.db.entities;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
-import java.util.List;
-
 @DynamoDbBean
 @Getter
 @Setter
@@ -12,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 public class RaddTransactionEntity {
 
-    public static final String COL_IUNS = "iuns";
+    public static final String COL_IUN = "iun";
     public static final String COL_OPERATION_ID = "operationId";
     public static final String COL_STATUS = "operation_status";
     public static final String COL_FILE_KEY = "fileKey";
@@ -67,7 +65,7 @@ public class RaddTransactionEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_ERROR_REASON)}))
     private String errorReason;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_IUNS)}))
-    private List<String> iuns;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_IUN)}))
+    private String iun;
 
 }

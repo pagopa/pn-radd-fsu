@@ -14,6 +14,7 @@ import java.util.List;
 @ToString
 public class TransactionData {
     private String uid;
+    private String iun;
     private String qrCode;
     private String operationId;
     private String fileKey;
@@ -29,10 +30,6 @@ public class TransactionData {
     private List<String> iuns = new ArrayList<>();
     private List<String> urls = new ArrayList<>();
 
-    public String getSingleIun(){
-        if (this.iuns.isEmpty()) return null;
-        return this.iuns.get(0);
-    }
 
 
 }

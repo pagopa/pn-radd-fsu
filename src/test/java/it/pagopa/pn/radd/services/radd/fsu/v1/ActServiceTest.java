@@ -28,7 +28,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Date;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,7 +63,7 @@ class ActServiceTest extends BaseTest {
         completeRequest.setOperationDate(new Date());
 
         baseEntity = new RaddTransactionEntity();
-        baseEntity.setIuns(List.of("iun"));
+        baseEntity.setIun("iun");
         baseEntity.setOperationId("operationIdTest");
         baseEntity.setOperationType(OperationTypeEnum.ACT.name());
         baseEntity.setStatus(Const.STARTED);

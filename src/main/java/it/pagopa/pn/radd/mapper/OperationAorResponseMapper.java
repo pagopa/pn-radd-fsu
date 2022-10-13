@@ -37,7 +37,6 @@ public class OperationAorResponseMapper {
 
     private static OperationAorDetailResponse getDetail(RaddTransactionEntity source){
         OperationAorDetailResponse dto = new OperationAorDetailResponse();
-        dto.setIuns(source.getIuns());
         dto.setOperationId(source.getOperationId());
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());

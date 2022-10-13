@@ -20,7 +20,7 @@ public class RaddTransactionEntityNotificationResponse implements BaseMapperInte
     @Override
     public OperationActDetailResponse toDto(RaddTransactionEntity source) {
         OperationActDetailResponse dto = new OperationActDetailResponse();
-        dto.setIun((source.getIuns() != null && !source.getIuns().isEmpty()) ? source.getIuns().get(0) : null);
+        dto.setIun(source.getIun());
         dto.setOperationId(source.getOperationId());
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());

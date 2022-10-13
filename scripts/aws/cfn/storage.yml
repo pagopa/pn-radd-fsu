@@ -48,10 +48,47 @@ Resources:
       StreamSpecification: 
         StreamViewType: NEW_IMAGE
 
+  RaddOperationIdIunsDynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-radd-id-iuns'
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "operationId"
+          AttributeType: "S"
+        - AttributeName: "iun"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - IndexName: "iun-global-index"
+          KeySchema:
+            - AttributeName: "iun"
+              KeyType: "HASH"
+            - AttributeName: "operationId"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
 Outputs:
   RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction
     Value: !Ref RaddTransactionDynamoTable
+  RaddOperationIdIunsDynamoTableName:
+    Description: Name of dynamodb table containing association operation id and iun
+    Value: !Ref RaddOperationIdIunsDynamoTable
   RaddTransactionDynamoTableArn:
     Description: ARN of dynamodb table containing transaction
     Value: !Sub '${RaddTransactionDynamoTable.Arn}'
+  RaddOperationIdIunsDynamoTableArn:
+    Description: ARN of dynamodb table containing transaction
+    Value: !Sub '${RaddOperationIdIunsDynamoTable.Arn}'

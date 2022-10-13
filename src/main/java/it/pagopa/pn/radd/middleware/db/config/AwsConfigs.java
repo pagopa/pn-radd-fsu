@@ -21,5 +21,6 @@ public class AwsConfigs {
     private String secretAccessKey;
 
     private String dynamodbTable;
+    private String operationIunDynamodbTable;
     private String dynamodbTableHistory;
 }

@@ -6,6 +6,7 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddOperationIun;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
@@ -22,6 +23,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -82,7 +88,7 @@ public class AorService extends BaseService {
                                     transaction.getUrls().add(item.getAarUrl());
                                     return item;
                                 }).collectList().map(list -> transaction), (transaction, transactionWithIuns) -> transactionWithIuns)
-                .zipWhen(transactionData -> this.createTransaction(transactionData, uid), (transaction, entity) -> transaction)
+                .zipWhen(transaction -> this.createAorTransaction(uid, transaction), (transaction, entity) -> transaction)
                 .zipWhen(this::verifyCheckSum, (transaction, responseChecksum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
                 .map(transactionData -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))
@@ -90,6 +96,21 @@ public class AorService extends BaseService {
                         this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR)
                                 .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
                 );
+    }
+
+    private Mono<RaddTransactionEntity> createAorTransaction(String uid, TransactionData transaction){
+        List<RaddOperationIun> raddOperationIunList = new ArrayList<>();
+        if (transaction.getIuns() != null){
+            raddOperationIunList = transaction.getIuns().stream().map(iun -> {
+                RaddOperationIun operationIun = new RaddOperationIun();
+                operationIun.setOperationId(transaction.getOperationId());
+                operationIun.setIun(iun);
+                operationIun.setId(UUID.randomUUID().toString());
+                return operationIun;
+            }).collect(Collectors.toList());
+        }
+        RaddTransactionEntity entity = transactionDataMapper.toEntity(uid, transaction);
+        return this.raddTransactionDAO.createRaddTransaction(entity, raddOperationIunList);
     }
 
     private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){

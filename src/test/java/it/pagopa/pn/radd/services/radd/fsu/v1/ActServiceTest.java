@@ -391,7 +391,7 @@ class ActServiceTest extends BaseTest {
         AbortTransactionResponse response = actService.abortTransaction("test", request).block();
         assertNotNull(response);
         assertNotNull(response.getStatus());
-        assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
+        assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
 
 
     }

@@ -222,6 +222,26 @@
   },
   {
     "httpRequest": {
+      "path": "/delivery-private/check-aar-qr-code",
+      "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\"}",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
       "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
       "body" : {
         "recipientType" : "PF",

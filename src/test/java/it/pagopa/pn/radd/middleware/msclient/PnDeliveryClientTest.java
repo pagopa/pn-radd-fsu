@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.QR_CODE_VALIDATION;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PnDeliveryClientTest extends BaseTest {
@@ -30,11 +31,20 @@ class PnDeliveryClientTest extends BaseTest {
     }
 
     @Test
-    void testGetCheckAarCode400() {
+    void testGetCheckAarErrorCases() {
         String recipientType = "PF", recipientInternalId = "PG-4fc75df3-0913-407e-bdaa-e50329708b7d", qrCode = "UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw";
-        Mono<ResponseCheckAarDtoDto> monoResponse = pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
-        monoResponse.onErrorResume(RaddGenericException.class, exception -> {
+        Mono<ResponseCheckAarDtoDto> monoResponse1 = pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
+        monoResponse1.onErrorResume(RaddGenericException.class, exception -> {
             assertEquals(CF_OR_QRCODE_NOT_VALID, exception.getExceptionType());
+            return Mono.empty();
+        }).block();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        recipientInternalId = "PF-4fc75df3-0913-407e-bdaa-e50329708b7d";
+        qrCode = "";
+        Mono<ResponseCheckAarDtoDto> monoResponse2 = pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
+        monoResponse2.onErrorResume(RaddGenericException.class, exception -> {
+            assertEquals(QR_CODE_VALIDATION, exception.getExceptionType());
             return Mono.empty();
         }).block();
     }

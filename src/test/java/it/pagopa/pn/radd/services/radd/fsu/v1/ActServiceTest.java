@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -30,6 +32,7 @@ import reactor.test.StepVerifier;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 
 @Slf4j
@@ -178,8 +181,6 @@ class ActServiceTest extends BaseTest {
         }).block();
     }
 
-
-    // ACT COMPLETE //
     @Test
     void testCompleteTransactionReturnOk() {
         baseEntity.setStatus(Const.STARTED);
@@ -280,6 +281,10 @@ class ActServiceTest extends BaseTest {
                 }).block();
     }
 
+
+
+
+
     @Test
     void testCompleteWhenGetTransactionThrowExceptionThenReturnError1() {
         completeRequest.setOperationId("OperationIdTestNotExist");
@@ -340,5 +345,74 @@ class ActServiceTest extends BaseTest {
                 return Mono.empty();}
             ).block();
     }
+
+
+    @Test
+    void testAbortTransactionReqNull (){
+        actService.abortTransaction("test", null)
+                .onErrorResume(PnInvalidInputException.class, exception ->{
+                    assertNotNull(exception);
+                    return Mono.empty();
+                }).block();
+
+        AbortTransactionRequest request = new AbortTransactionRequest();
+        request.setOperationId(null);
+        actService.abortTransaction("test", request)
+                .onErrorResume(PnInvalidInputException.class, exception ->{
+                    assertNotNull(exception);
+                    return Mono.empty();
+                }).block();
+
+        request.setOperationId("Id");
+        request.setReason(null);
+        actService.abortTransaction("test", request)
+                .onErrorResume(PnInvalidInputException.class, exception ->{
+                    assertNotNull(exception);
+                    return Mono.empty();
+                }).block();
+
+
+    }
+
+
+
+    @Test
+    void testAbortTransactionOk (){
+        AbortTransactionRequest request = new AbortTransactionRequest();
+        request.setOperationId("Id");
+        request.setReason("reason");
+        request.setOperationDate(new Date());
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setStatus(Const.STARTED);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when( raddTransactionDAO.updateStatus(Mockito.any())).thenReturn(Mono.just(entity));
+
+        AbortTransactionResponse response = actService.abortTransaction("test", request).block();
+        assertNotNull(response);
+        assertNotNull(response.getStatus());
+        assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+
+
+    }
+
+    @Test
+    void abortTransactionReturnsRaddGenericException(){
+        AbortTransactionRequest request = new AbortTransactionRequest();
+        request.setOperationId("Id");
+        request.setReason("reason");
+        request.setOperationDate(new Date());
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setStatus(Const.STARTED);
+        Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when( raddTransactionDAO.updateStatus(Mockito.any())).thenThrow(RaddGenericException.class);
+        actService.abortTransaction("test", request)
+                .onErrorResume(RaddGenericException.class, exception ->{
+                    assertNotNull(exception);
+                    return Mono.empty();
+                }).block();
+
+    }
+
+
 
 }

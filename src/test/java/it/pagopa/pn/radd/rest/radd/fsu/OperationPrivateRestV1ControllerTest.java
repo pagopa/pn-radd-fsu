@@ -72,7 +72,7 @@ class OperationPrivateRestV1ControllerTest {
         String path = "/radd-private/api/v1/aor/operations/by-iun/{iun}"
                 .replace("{iun}", "iun-123");
         Mockito.when(operationService
-                        .getTransactionActByIun(Mockito.any()))
+                        .getTransactAorByIun(Mockito.any()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)

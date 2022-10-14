@@ -28,6 +28,7 @@ public enum ExceptionTypeEnum {
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
 
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
+    ERROR_WITH_QUERY_OR_DB("ERROR_WITH_QUERY_OR_DB", "Si è verificato un errore durante l'esecuzione della query"),
     ;
     private final String title;
     private final String message;

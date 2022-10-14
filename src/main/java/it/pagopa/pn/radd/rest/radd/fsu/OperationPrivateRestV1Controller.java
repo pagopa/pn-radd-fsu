@@ -35,7 +35,7 @@ public class OperationPrivateRestV1Controller implements NotificationInquiryApi 
     @Override
     public Mono<ResponseEntity<OperationsResponse>> getAorPracticesByIun(String iun, ServerWebExchange exchange) {
         //TODO cambiare con quello di AOR
-        return operationService.getTransactionActByIun(iun)
+        return operationService.getTransactAorByIun(iun)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 

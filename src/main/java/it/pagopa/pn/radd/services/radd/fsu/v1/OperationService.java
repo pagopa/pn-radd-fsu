@@ -4,7 +4,9 @@ import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.OperationActResponseMapper;
 import it.pagopa.pn.radd.mapper.OperationAorResponseMapper;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
+import it.pagopa.pn.radd.middleware.db.RaddOperationIunDAO;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddOperationIun;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
@@ -18,11 +20,13 @@ import reactor.core.publisher.Mono;
 public class OperationService {
 
     private final RaddTransactionDAO transactionDAO;
+    private final RaddOperationIunDAO operationIunDAO;
     private final RaddTransactionEntityNotificationResponse mapperToNotificationResponse;
 
 
-    public OperationService(RaddTransactionDAO transactionDAO, RaddTransactionEntityNotificationResponse mapperToNotificationResponse) {
+    public OperationService(RaddTransactionDAO transactionDAO, RaddOperationIunDAO operationIunDAO, RaddTransactionEntityNotificationResponse mapperToNotificationResponse) {
         this.transactionDAO = transactionDAO;
+        this.operationIunDAO = operationIunDAO;
         this.mapperToNotificationResponse = mapperToNotificationResponse;
     }
 
@@ -64,6 +68,36 @@ public class OperationService {
                     }
                     notificationPracticesResponse.setStatus(status);
                     return notificationPracticesResponse;
+                });
+    }
+
+    public Mono<OperationsResponse> getTransactAorByIun(String iun){
+        return operationIunDAO.getTransactionsFromIun(iun)
+                .map(RaddOperationIun::getOperationId)
+                .collectList()
+                .map(operationsId -> {
+                    OperationsResponse notificationPracticesResponse = new OperationsResponse();
+                    OperationResponseStatus status = new OperationResponseStatus();
+                    if (operationsId.isEmpty()){
+                        status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
+                        status.setMessage("Non ci sono operation id");
+                        notificationPracticesResponse.setResult(false);
+                    } else {
+                        status.setCode(OperationResponseStatus.CodeEnum.NUMBER_0);
+                        notificationPracticesResponse.setOperationIds(operationsId);
+                        status.setMessage(Const.OK);
+                        notificationPracticesResponse.setResult(true);
+                    }
+                    notificationPracticesResponse.setStatus(status);
+                    return notificationPracticesResponse;
+                })
+                .onErrorResume(RaddGenericException.class, ex -> {
+                    OperationsResponse notificationPracticesResponse = new OperationsResponse();
+                    OperationResponseStatus status = new OperationResponseStatus();
+                    status.code(OperationResponseStatus.CodeEnum.NUMBER_99);
+                    status.setMessage(ex.getMessage());
+                    notificationPracticesResponse.setStatus(status);
+                    return Mono.just(notificationPracticesResponse);
                 });
     }
 

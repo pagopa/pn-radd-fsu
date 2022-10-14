@@ -82,6 +82,14 @@ Parameters:
   RaddTransactionDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing radd transaction'
+
+  RaddOperationIdIunsDynamoTable:
+    Type: String
+    Description: 'Name of dynamodb table containing radd transaction'
+
+  RaddOperationIdIunsDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing radd transaction'
   
   LogsKinesisSourceStreamArn:
     Type: String
@@ -107,13 +115,14 @@ Resources:
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
         ContainerEnvEntry3: !Sub 'AWS_DYNAMODB_TABLE=${RaddTransactionDynamoTableName}'
-        ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
-        ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_INTERNAL_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
-        ContainerEnvEntry8: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
-        ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
-        ContainerEnvEntry10: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
+        ContainerEnvEntry4: !Sub 'AWS_OPERATIONIUNDYBANODB_TABLE=${RaddOperationIdIunsDynamoTable}'
+        ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
+        ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry8: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_INTERNAL_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry9: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
+        ContainerEnvEntry10: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
+        ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -148,3 +157,4 @@ Resources:
               - dynamodb:UpdateItem
             Resource:
               - !Sub "${RaddTransactionDynamoTableArn}"
+              - !Sub "${RaddOperationIdIunsDynamoTableArn}"

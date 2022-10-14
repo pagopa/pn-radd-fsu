@@ -67,6 +67,10 @@ Parameters:
     Type: String
     Description: 'SafeStorage cx-id'
 
+  SafeStorageDocType:
+    Type: String
+    Description: 'SafeStorage document-type'
+
   NetworkLoadBalancerLink:
     Type: String
     Description: 'network load balancer link for API-GW'
@@ -109,6 +113,7 @@ Resources:
         ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_INTERNAL_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry8: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
+        ContainerEnvEntry10: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

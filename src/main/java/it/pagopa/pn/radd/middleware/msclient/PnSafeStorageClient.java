@@ -51,7 +51,7 @@ public class PnSafeStorageClient extends BaseClient {
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
-        request.setDocumentType(Const.DOCUMENT_TYPE);
+        request.setDocumentType(this.pnRaddFsuConfig.getSafeStorageDocType());
         return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))

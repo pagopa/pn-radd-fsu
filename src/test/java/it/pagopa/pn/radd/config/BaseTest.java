@@ -13,7 +13,19 @@ import org.springframework.test.context.ActiveProfiles;
 @AutoConfigureMockMvc
 public abstract class BaseTest {
 
-    @Autowired
-    private MockServerBean mockServer;
+
+
+    @Slf4j
+    @SpringBootTest
+    @ActiveProfiles("test")
+    @AutoConfigureMockMvc
+    public static abstract class WithMockServer{
+        @Autowired
+        private MockServerBean mockServer;
+
+        public WithMockServer(){
+            log.info(this.getClass().getSimpleName());
+        }
+    }
 
 }

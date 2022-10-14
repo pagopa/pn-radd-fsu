@@ -40,6 +40,13 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "operationType"
           KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: "iun-transaction-index"
+          KeySchema:
+            - AttributeName: "iun"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"

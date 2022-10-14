@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class PnDataVaultClientTest extends BaseTest {
+class PnDataVaultClientTest extends BaseTest.WithMockServer {
 
     @Autowired
     private PnDataVaultClient pnDataVaultClient;

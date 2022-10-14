@@ -24,6 +24,8 @@ public class RaddTransactionEntity {
     public static final String COL_OPERATION_TYPE = "operationType";
     public static final String COL_VERSION_TOKEN = "versionToken";
     public static final String COL_ERROR_REASON = "errorReason";
+    public static final String INDEX_SECONDARY_NAME = "iun-transaction-index";
+
 
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_OPERATION_ID)}))
@@ -65,7 +67,7 @@ public class RaddTransactionEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_ERROR_REASON)}))
     private String errorReason;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_IUN)}))
+    @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = INDEX_SECONDARY_NAME), @DynamoDbAttribute(COL_IUN)}))
     private String iun;
 
 }

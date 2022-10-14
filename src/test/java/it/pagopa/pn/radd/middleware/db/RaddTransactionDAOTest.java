@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -50,6 +51,8 @@ class RaddTransactionDAOTest extends BaseTest {
     AwsConfigs awsConfigs;
     @Mock
     Map<String, AttributeValue> expressionValues;
+    @Mock
+    TransactWriterInitializer transactWriterInitializer;
     RaddTransactionEntity baseEntity;
 
 
@@ -70,13 +73,17 @@ class RaddTransactionDAOTest extends BaseTest {
         baseEntity.setStatus(Const.STARTED);
     }
 
-    //@Test
+    @Test
     void testCreateRaddTransaction() {
 
         QueryResponse queryResponse = QueryResponse.builder().count(0).build();
         Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
                 .thenReturn(CompletableFuture.completedFuture(queryResponse));
 
+        Mockito.doNothing().when(transactWriterInitializer).init();
+        Mockito.doNothing().when(transactWriterInitializer).addRequestTransaction(Mockito.any(), Mockito.any());
+        Mockito.doNothing().when(transactWriterInitializer).addRequestOperationAndIun(Mockito.any(), Mockito.any());
+        Mockito.when(transactWriterInitializer.build()).thenReturn(null);
 
         Mockito.when(dynamoDbEnhancedAsyncClient.transactWriteItems((TransactWriteItemsEnhancedRequest) Mockito.any()))
                 .thenReturn(CompletableFuture.allOf());

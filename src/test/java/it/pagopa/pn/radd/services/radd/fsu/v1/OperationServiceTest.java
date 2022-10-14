@@ -105,9 +105,9 @@ class OperationServiceTest extends BaseTest {
     // ACT TRANSACTION FOR IUN //
     @Test
     void testGetActTransactionWithIunWhenDaoListIsEmpty(){
-        Mockito.when(dao.getTransactionsFromIun(Mockito.any(), Mockito.any())).thenReturn(Flux.empty());
+        Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.empty());
 
-        OperationsResponse response = operationService.getTransactionByIun("IunTestEmpty", OperationTypeEnum.ACT).block(d);
+        OperationsResponse response = operationService.getTransactionActByIun("IunTestEmpty").block(d);
 
         assertNotNull(response);
         assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
@@ -124,9 +124,9 @@ class OperationServiceTest extends BaseTest {
         entity2.setIun("Iun 1");
         entity2.setOperationId("Operation id 2");
         entity2.setOperationType(OperationTypeEnum.ACT.name());
-        Mockito.when(dao.getTransactionsFromIun(Mockito.any(), Mockito.any())).thenReturn(Flux.just(entity1, entity2));
+        Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.just(entity1, entity2));
 
-        OperationsResponse response = operationService.getTransactionByIun("Iun 1", OperationTypeEnum.ACT).block(d);
+        OperationsResponse response = operationService.getTransactionActByIun("Iun 1").block(d);
 
         assertNotNull(response);
         assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());

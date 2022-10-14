@@ -45,8 +45,8 @@ public class OperationService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(OperationAorResponseMapper.fromException(ex)));
     }
 
-    public Mono<OperationsResponse> getTransactionByIun(String iun, OperationTypeEnum type){
-        return transactionDAO.getTransactionsFromIun(iun, type)
+    public Mono<OperationsResponse> getTransactionActByIun(String iun){
+        return transactionDAO.getTransactionsFromIun(iun)
                 .map(RaddTransactionEntity::getOperationId)
                 .collectList()
                 .map(operationsId -> {

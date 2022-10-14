@@ -37,17 +37,19 @@ public class RaddTransactionDAO extends BaseDao {
     DynamoDbAsyncTable<RaddOperationIun> raddOperationIunTable;
     String table;
 
+    TransactWriterInitializer transactWriterInitializer;
 
     public RaddTransactionDAO(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                               DynamoDbAsyncClient dynamoDbAsyncClient,
                               AwsConfigs awsConfigs,
-                              PnAuditLogBuilder pnAuditLogBuilder) {
+                              PnAuditLogBuilder pnAuditLogBuilder, TransactWriterInitializer transactWriterInitializer) {
         this.raddTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbTable(), TableSchema.fromBean(RaddTransactionEntity.class));
         this.raddOperationIunTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getOperationIunDynamodbTable(), TableSchema.fromBean(RaddOperationIun.class));
         this.table = awsConfigs.getDynamodbTable();
         this.dynamoDbAsyncClient = dynamoDbAsyncClient;
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
         this.auditLogBuilder = pnAuditLogBuilder;
+        this.transactWriterInitializer = transactWriterInitializer;
     }
 
     public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity, List<RaddOperationIun> entityIuns){
@@ -160,42 +162,32 @@ public class RaddTransactionDAO extends BaseDao {
         return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);
     }
 
-    public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun, OperationTypeEnum operationType){
-
-        AttributeValue at1 = AttributeValue.builder()
-                .s(iun)
-                .build();
-        AttributeValue at2 = AttributeValue.builder()
-                .s(operationType.name())
-                .build();
-
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":value", at1);
-        expressionValues.put(":operationTypeValue", at2);
-
-        Expression expression = Expression.builder()
-                .expression("contains(iuns, :value) AND " +
-                        RaddTransactionEntity.COL_OPERATION_TYPE + " = :operationTypeValue")
-                .expressionValues(expressionValues)
+    public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun) {
+        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
+                .builder()
+                .queryConditional(QueryConditional.keyEqualTo(
+                                Key.builder()
+                                        .partitionValue(iun)
+                                        .build()
+                        )
+                )
+                .scanIndexForward(true)
                 .build();
 
-        ScanEnhancedRequest scanEnhancedRequest = ScanEnhancedRequest.builder()
-                .filterExpression(expression)
-                .build();
 
-        return Flux.from(raddTable.scan(scanEnhancedRequest)).flatMapIterable(Page::items);
+        return Flux.from(raddTable.index(RaddTransactionEntity.INDEX_SECONDARY_NAME).query(qeRequest).flatMapIterable(Page::items));
     }
 
     private TransactWriteItemsEnhancedRequest createTransaction(RaddTransactionEntity raddTransactionEntity,
                                                                 List<RaddOperationIun> operationIuns) {
 
-        TransactWriteItemsEnhancedRequest.Builder requestBuilder = TransactWriteItemsEnhancedRequest.builder();
 
+        this.transactWriterInitializer.init();
         TransactPutItemEnhancedRequest<RaddTransactionEntity> requestEntity =
                 TransactPutItemEnhancedRequest.builder(RaddTransactionEntity.class)
                         .item(raddTransactionEntity)
                         .build();
-        requestBuilder.addPutItem(raddTable, requestEntity);
+        this.transactWriterInitializer.addRequestTransaction(raddTable, requestEntity);
 
         if (operationIuns != null && !operationIuns.isEmpty()) {
             for (RaddOperationIun item : operationIuns  ) {
@@ -203,11 +195,11 @@ public class RaddTransactionDAO extends BaseDao {
                         TransactPutItemEnhancedRequest.builder(RaddOperationIun.class)
                                 .item(item)
                                 .build();
-                requestBuilder.addPutItem(raddOperationIunTable, itemEnhancedRequest);
+                this.transactWriterInitializer.addRequestOperationAndIun(raddOperationIunTable, itemEnhancedRequest);
             }
         }
 
-        return requestBuilder.build();
+        return this.transactWriterInitializer.build();
     }
 
 }

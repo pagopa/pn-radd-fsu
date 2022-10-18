@@ -59,7 +59,7 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: "5"
             WriteCapacityUnits: "5"
-        - IndexName: "recipient-id-index"
+        - IndexName: "recipient-transaction-index"
           KeySchema:
             - AttributeName: "recipientId"
               KeyType: "HASH"
@@ -68,7 +68,7 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: "5"
             WriteCapacityUnits: "5"
-        - IndexName: "delegate-id-index"
+        - IndexName: "delegate-transaction-index"
           KeySchema:
             - AttributeName: "delegateId"
               KeyType: "HASH"

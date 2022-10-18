@@ -39,8 +39,6 @@ Resources:
           AttributeType: "S"
         - AttributeName: "recipientId"
           AttributeType: "S"
-        - AttributeName: "delegateId"
-          AttributeType: "S"
       KeySchema:
         - AttributeName: "operationId"
           KeyType: "HASH"
@@ -62,15 +60,6 @@ Resources:
         - IndexName: "recipient-transaction-index"
           KeySchema:
             - AttributeName: "recipientId"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
-        - IndexName: "delegate-transaction-index"
-          KeySchema:
-            - AttributeName: "delegateId"
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"

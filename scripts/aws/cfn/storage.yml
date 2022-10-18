@@ -37,6 +37,10 @@ Resources:
           AttributeType: "S"
         - AttributeName: "iun"
           AttributeType: "S"
+        - AttributeName: "recipientId"
+          AttributeType: "S"
+        - AttributeName: "delegateId"
+          AttributeType: "S"
       KeySchema:
         - AttributeName: "operationId"
           KeyType: "HASH"
@@ -49,6 +53,24 @@ Resources:
         - IndexName: "iun-transaction-index"
           KeySchema:
             - AttributeName: "iun"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+        - IndexName: "recipient-id-index"
+          KeySchema:
+            - AttributeName: "recipientId"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+        - IndexName: "delegate-id-index"
+          KeySchema:
+            - AttributeName: "delegateId"
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"

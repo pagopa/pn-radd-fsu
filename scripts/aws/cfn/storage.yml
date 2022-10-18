@@ -35,11 +35,20 @@ Resources:
           AttributeType: "S"
         - AttributeName: "operationType"
           AttributeType: "S"
+        - AttributeName: "iun"
+          AttributeType: "S"
       KeySchema:
         - AttributeName: "operationId"
           KeyType: "HASH"
         - AttributeName: "operationType"
           KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: "iun-transaction-index"
+          KeySchema:
+            - AttributeName: "iun"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
       ProvisionedThroughput:
         ReadCapacityUnits: "5"
         WriteCapacityUnits: "5"
@@ -48,10 +57,47 @@ Resources:
       StreamSpecification: 
         StreamViewType: NEW_IMAGE
 
+  OperationsAndIunsDynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-operations-iuns'
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "operationId"
+          AttributeType: "S"
+        - AttributeName: "iun"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - IndexName: "iun-and-operation-index"
+          KeySchema:
+            - AttributeName: "iun"
+              KeyType: "HASH"
+            - AttributeName: "operationId"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
 Outputs:
   RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction
     Value: !Ref RaddTransactionDynamoTable
+  OperationsAndIunsDynamoTableName:
+    Description: Name of dynamodb table containing iuns and operations
+    Value: !Ref OperationsAndIunsDynamoTable
   RaddTransactionDynamoTableArn:
     Description: ARN of dynamodb table containing transaction
     Value: !Sub '${RaddTransactionDynamoTable.Arn}'
+  OperationsAndIunsDynamoTableArn:
+    Description: ARN of dynamodb table containing iuns and operations
+    Value: !Sub '${OperationsAndIunsDynamoTable.Arn}'

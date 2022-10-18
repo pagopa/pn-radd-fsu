@@ -82,6 +82,14 @@ Parameters:
   RaddTransactionDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing radd transaction'
+
+  OperationsAndIunsDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing iuns and operations'
+
+  OperationsAndIunsDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing iuns and operations'
   
   LogsKinesisSourceStreamArn:
     Type: String
@@ -114,6 +122,7 @@ Resources:
         ContainerEnvEntry8: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
         ContainerEnvEntry10: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
+        ContainerEnvEntry11: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -148,3 +157,5 @@ Resources:
               - dynamodb:UpdateItem
             Resource:
               - !Sub "${RaddTransactionDynamoTableArn}"
+              - !Sub "${RaddTransactionDynamoTableArn}/*"
+              - !Sub "${OperationsAndIunsDynamoTableArn}"

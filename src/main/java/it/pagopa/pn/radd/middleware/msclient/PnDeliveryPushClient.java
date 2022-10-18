@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.EventComunicationApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.PaperNotificationFailedApi;
@@ -13,6 +14,7 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
@@ -23,6 +25,8 @@ import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
+
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF;
 
 @Slf4j
 @Component
@@ -66,7 +70,12 @@ public class PnDeliveryPushClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                ).onErrorResume(WebClientResponseException.class, ex -> {
+                    if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
+                        return Mono.error(new RaddGenericException(NO_NOTIFICATIONS_FAILED_FOR_CF));
+                    }
+                    return Mono.error(new PnRaddException(ex));
+                });
     }
 
 }

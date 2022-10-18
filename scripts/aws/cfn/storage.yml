@@ -42,6 +42,9 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "operationType"
           KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
       GlobalSecondaryIndexes:
         - IndexName: "iun-transaction-index"
           KeySchema:
@@ -49,9 +52,9 @@ Resources:
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
       KinesisStreamSpecification:
         StreamArn: !Ref CdcKinesisSourceStreamArn
       StreamSpecification: 
@@ -71,6 +74,9 @@ Resources:
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
       GlobalSecondaryIndexes:
         - IndexName: "iun-and-operation-index"
           KeySchema:
@@ -80,9 +86,9 @@ Resources:
               KeyType: "RANGE"
           Projection:
             ProjectionType: "ALL"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
       KinesisStreamSpecification:
         StreamArn: !Ref CdcKinesisSourceStreamArn
       StreamSpecification:
@@ -92,12 +98,15 @@ Outputs:
   RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction
     Value: !Ref RaddTransactionDynamoTable
+
   OperationsAndIunsDynamoTableName:
     Description: Name of dynamodb table containing iuns and operations
     Value: !Ref OperationsAndIunsDynamoTable
+
   RaddTransactionDynamoTableArn:
     Description: ARN of dynamodb table containing transaction
     Value: !Sub '${RaddTransactionDynamoTable.Arn}'
+
   OperationsAndIunsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations
     Value: !Sub '${OperationsAndIunsDynamoTable.Arn}'

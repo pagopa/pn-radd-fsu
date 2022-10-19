@@ -53,7 +53,7 @@ class OperationPrivateRestV1ControllerTest {
         String path = "/radd-private/api/v1/act/operations/by-iun/{iun}"
                 .replace("{iun}", "pppwww233");
         Mockito.when(operationService
-                        .getTransactionByIun(Mockito.anyString(), Mockito.any()))
+                        .getOperationsActByIun(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)
@@ -72,7 +72,7 @@ class OperationPrivateRestV1ControllerTest {
         String path = "/radd-private/api/v1/aor/operations/by-iun/{iun}"
                 .replace("{iun}", "iun-123");
         Mockito.when(operationService
-                        .getTransactionByIun(Mockito.any(), Mockito.any()))
+                        .getOperationsAorByIun(Mockito.any()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)

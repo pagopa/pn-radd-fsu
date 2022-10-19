@@ -58,14 +58,14 @@ public class ActService extends BaseService {
         return validateAndSettingsData(uid, request)
                 .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getRecipientId(), tmp.getQrCode())
                         .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
-                                                                transaction.getIuns().add(iun);
+                                                                transaction.setIun(iun);
                                                                 return transaction;
                 })
-                .zipWhen( transaction -> getCounterTransactions(transaction.getSingleIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
+                .zipWhen( transaction -> getCounterTransactions(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
                 .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
-                    return this.createTransaction(transaction, uid);
+                    return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
                 }, (transaction, entity) -> transaction )
                 .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, t2) -> transaction)
@@ -139,9 +139,9 @@ public class ActService extends BaseService {
     }
 
     private Flux<String> legalFact(TransactionData transaction){
-        return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getSingleIun())
+        return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .flatMap(item ->pnDeliveryPushInternalClient
-                            .getLegalFact(transaction.getEnsureRecipientId(), transaction.getSingleIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
+                            .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                             .mapNotNull(legalFact -> {
                                 if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
                                     log.info("Finded legal fact with retry after {}", legalFact.getRetryAfter());
@@ -153,7 +153,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<TransactionData> notification(TransactionData transaction) {
-        return this.pnDeliveryClient.getNotifications(transaction.getSingleIun())
+        return this.pnDeliveryClient.getNotifications(transaction.getIun())
                 .zipWhen(response -> docIdAndAttachments(transaction, response),
                         (response, tupleUrl) -> tupleUrl)
                 .map(urls -> {
@@ -180,7 +180,7 @@ public class ActService extends BaseService {
                         if (!listDTO.isEmpty()){
                             NotificationRecipientDto recipient = listDTO.get(0);
                             if (recipient.getPayment() != null && recipient.getPayment().getPagoPaForm() != null){
-                                return pnDeliveryClient.getPresignedUrlPaymentDocument(transaction.getSingleIun(), "PAGOPA", transaction.getEnsureRecipientId())
+                                return pnDeliveryClient.getPresignedUrlPaymentDocument(transaction.getIun(), "PAGOPA", transaction.getEnsureRecipientId())
                                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
                             }
                         }
@@ -197,12 +197,12 @@ public class ActService extends BaseService {
 
         return Flux.fromStream(documents.getDocuments().stream())
                 .flatMap(document ->
-                        pnDeliveryClient.getPresignedUrlDocument(transaction.getSingleIun(), document.getDocIdx(), transaction.getEnsureRecipientId())
+                        pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), document.getDocIdx(), transaction.getEnsureRecipientId())
                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
     }
 
     private Mono<Integer> getCounterTransactions(String iun, String operationId){
-        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(iun, operationId)
+        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(operationId, iun)
                 .thenApply(response -> {
                     if (response > 0){
                         throw new RaddGenericException(TRANSACTION_ALREADY_EXIST);

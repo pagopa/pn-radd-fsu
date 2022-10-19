@@ -6,6 +6,7 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
+import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -20,6 +21,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -32,41 +34,48 @@ public class RaddTransactionDAO extends BaseDao {
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     DynamoDbAsyncClient dynamoDbAsyncClient;
     DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
+    DynamoDbAsyncTable<OperationsIunsEntity> raddOperationIunTable;
     String table;
 
+    TransactWriterInitializer transactWriterInitializer;
 
     public RaddTransactionDAO(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                               DynamoDbAsyncClient dynamoDbAsyncClient,
                               AwsConfigs awsConfigs,
-                              PnAuditLogBuilder pnAuditLogBuilder) {
+                              PnAuditLogBuilder pnAuditLogBuilder, TransactWriterInitializer transactWriterInitializer) {
         this.raddTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbTable(), TableSchema.fromBean(RaddTransactionEntity.class));
+        this.raddOperationIunTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbIunsoperationsTable(), TableSchema.fromBean(OperationsIunsEntity.class));
         this.table = awsConfigs.getDynamodbTable();
         this.dynamoDbAsyncClient = dynamoDbAsyncClient;
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
         this.auditLogBuilder = pnAuditLogBuilder;
+        this.transactWriterInitializer = transactWriterInitializer;
     }
 
 
-    public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity){
+    public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity, List<OperationsIunsEntity> entityIuns){
         String logMessage = String.format("create Radd Transaction=%s", entity);
         PnAuditLogEvent logEvent = auditLogBuilder
                 .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
-                .uid(entity.getIuns().get(0))
+                .uid(entity.getUid())
                 .build();
         logEvent.log();
 
         return Mono.fromFuture(
-                countFromIunAndOperationIdAndStatus(entity.getIuns().get(0), entity.getOperationId())
+                countFromIunAndOperationIdAndStatus(entity.getOperationId(), entity.getIun())
                         .thenCompose(total -> {
                             if (total == 0) {
                                 log.info("no current transaction for delegator-delegate pair, can proceed to create transaction");
-                                PutItemEnhancedRequest<RaddTransactionEntity> putRequest = PutItemEnhancedRequest.builder(RaddTransactionEntity.class)
-                                        .item(entity)
-                                        .build();
-                                return raddTable.putItem(putRequest).thenApply(x -> {
-                                    log.info("saved Radd transaction object {}", entity);
-                                    return entity;
-                                });
+                                try {
+                                    TransactWriteItemsEnhancedRequest transactRequest = createTransaction(entity, entityIuns);
+                                    return dynamoDbEnhancedAsyncClient.transactWriteItems(transactRequest)
+                                                .thenApply(item -> {
+                                                    log.info("Created");
+                                                    return entity;
+                                                });
+                                } catch (TransactionCanceledException ex) {
+                                    throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_SAVED);
+                                }
                             }
                             else {
                                 throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST);
@@ -102,7 +111,7 @@ public class RaddTransactionDAO extends BaseDao {
         // TODO check audit log event type
         PnAuditLogEvent logEvent = auditLogBuilder
                 .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
-                .uid(entity.getIuns().get(0))
+                .uid(entity.getUid())
                 .build();
 
         logEvent.log();
@@ -128,12 +137,14 @@ public class RaddTransactionDAO extends BaseDao {
                 });
     }
 
-    public CompletableFuture<Integer> countFromIunAndOperationIdAndStatus(String iun, String operationId){
-        String query = "contains(iuns, :iuns) AND (" +
-                RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " + RaddTransactionEntity.COL_STATUS + " = :aborted" +
-                ")";
+    public CompletableFuture<Integer> countFromIunAndOperationIdAndStatus(String operationId, String iun){
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":iuns",  AttributeValue.builder().s(iun).build());
+
+        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " +
+                RaddTransactionEntity.COL_STATUS + " = :aborted )" +
+                " AND ( " + RaddTransactionEntity.COL_IUN + " = :iun)";
+
+        expressionValues.put(":iun", AttributeValue.builder().s(iun).build());
         expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
         expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
@@ -153,30 +164,44 @@ public class RaddTransactionDAO extends BaseDao {
         return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);
     }
 
-    public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun, OperationTypeEnum operationType){
-
-        AttributeValue at1 = AttributeValue.builder()
-                .s(iun)
-                .build();
-        AttributeValue at2 = AttributeValue.builder()
-                .s(operationType.name())
-                .build();
-
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":value", at1);
-        expressionValues.put(":operationTypeValue", at2);
-
-        Expression expression = Expression.builder()
-                .expression("contains(iuns, :value) AND " +
-                        RaddTransactionEntity.COL_OPERATION_TYPE + " = :operationTypeValue")
-                .expressionValues(expressionValues)
+    public Flux<RaddTransactionEntity> getTransactionsFromIun(String iun) {
+        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
+                .builder()
+                .queryConditional(QueryConditional.keyEqualTo(
+                                Key.builder()
+                                        .partitionValue(iun)
+                                        .build()
+                        )
+                )
+                .scanIndexForward(true)
                 .build();
 
-        ScanEnhancedRequest scanEnhancedRequest = ScanEnhancedRequest.builder()
-                .filterExpression(expression)
-                .build();
 
-        return Flux.from(raddTable.scan(scanEnhancedRequest)).flatMapIterable(Page::items);
+        return Flux.from(raddTable.index(RaddTransactionEntity.IUN_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items));
+    }
+
+    private TransactWriteItemsEnhancedRequest createTransaction(RaddTransactionEntity raddTransactionEntity,
+                                                                List<OperationsIunsEntity> operationIuns) {
+
+
+        this.transactWriterInitializer.init();
+        TransactPutItemEnhancedRequest<RaddTransactionEntity> requestEntity =
+                TransactPutItemEnhancedRequest.builder(RaddTransactionEntity.class)
+                        .item(raddTransactionEntity)
+                        .build();
+        this.transactWriterInitializer.addRequestTransaction(raddTable, requestEntity);
+
+        if (operationIuns != null && !operationIuns.isEmpty()) {
+            for (OperationsIunsEntity item : operationIuns  ) {
+                TransactPutItemEnhancedRequest<OperationsIunsEntity> itemEnhancedRequest =
+                        TransactPutItemEnhancedRequest.builder(OperationsIunsEntity.class)
+                                .item(item)
+                                .build();
+                this.transactWriterInitializer.addRequestOperationAndIun(raddOperationIunTable, itemEnhancedRequest);
+            }
+        }
+
+        return this.transactWriterInitializer.build();
     }
 
 }

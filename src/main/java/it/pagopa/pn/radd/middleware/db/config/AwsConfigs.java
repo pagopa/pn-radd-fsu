@@ -22,4 +22,5 @@ public class AwsConfigs {
 
     private String dynamodbTable;
     private String dynamodbTableHistory;
+    private String dynamodbIunsoperationsTable;
 }

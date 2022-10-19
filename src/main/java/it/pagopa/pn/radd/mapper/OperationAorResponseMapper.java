@@ -6,6 +6,9 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 public class OperationAorResponseMapper {
 
@@ -37,8 +40,10 @@ public class OperationAorResponseMapper {
 
     private static OperationAorDetailResponse getDetail(RaddTransactionEntity source){
         OperationAorDetailResponse dto = new OperationAorDetailResponse();
-        dto.setIuns(source.getIuns());
         dto.setOperationId(source.getOperationId());
+        String array = source.getIun().substring(1, source.getIun().length()-1);
+        List<String> iuns = List.of(StringUtils.split(array, ","));
+        dto.setIuns(iuns);
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());
         dto.setDelegateTaxId(source.getDelegateId());

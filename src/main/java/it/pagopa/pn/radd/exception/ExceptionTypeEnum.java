@@ -5,11 +5,12 @@ import lombok.Getter;
 @Getter
 public enum ExceptionTypeEnum {
     IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params"),
+    TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata"),
     TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente"),
     TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted"),
-    TRANSACTION_ALREADY_COMPLETED("Stato Transazione incoerente", "La trasazione risulta già completa"),
-    TRANSACTION_ALREADY_ABORTED("Stato Transazione incoerente", "La trasazione risulta annullata"),
-    TRANSACTION_ERROR_STATUS("Stato Transazione incoerente", "La trasazione risulta in errore"),
+    TRANSACTION_ALREADY_COMPLETED("TRANSACTION_ALREADY_COMPLETED", "La trasazione risulta già completa"),
+    TRANSACTION_ALREADY_ABORTED("TRANSACTION_ALREADY_ABORTED", "La trasazione risulta annullata"),
+    TRANSACTION_ERROR_STATUS("TRANSACTION_ERROR_STATUS", "La trasazione risulta in errore"),
     TRANSACTION_NOT_UPDATE_STATUS("TRANSACTION_NOT_UPDATE_STATUS", "Lo stato della transazione non è stato aggiornato"),
     CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde"),
     DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto"),

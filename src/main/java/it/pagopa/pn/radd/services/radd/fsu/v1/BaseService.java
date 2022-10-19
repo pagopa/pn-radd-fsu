@@ -10,7 +10,6 @@ import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.utils.Const;
-import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -70,23 +69,6 @@ public class BaseService {
 
     protected Mono<TransactionData> updateFileMetadata(TransactionData transactionData){
         return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey()).map(resp -> transactionData);
-    }
-
-    protected Mono<RaddTransactionEntity> createTransaction(TransactionData transaction, String uid){
-        RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setIuns(transaction.getIuns());
-        entity.setOperationId(transaction.getOperationId());
-        entity.setDelegateId(transaction.getEnsureDelegateId());
-        entity.setRecipientId(transaction.getEnsureRecipientId());
-        entity.setRecipientType(transaction.getRecipientType());
-        entity.setFileKey(transaction.getFileKey());
-        entity.setUid(uid);
-        entity.setOperationType(transaction.getOperationType().name());
-        entity.setQrCode(transaction.getQrCode());
-        entity.setStatus(Const.STARTED);
-        entity.setErrorReason("");
-        entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
-        return this.raddTransactionDAO.createRaddTransaction(entity);
     }
 
     protected Mono<String> getEnsureFiscalCode(String fiscalCode, String type){

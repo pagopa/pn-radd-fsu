@@ -244,6 +244,8 @@ paths:
         contenuto del file. Il tempo massimo che può intercorrere tra le due invocazioni è ```pst```.
       parameters:
         - $ref: '#/components/parameters/clientIdHeader'
+        - $ref: '#/components/parameters/clientChecksumHeader'
+        - $ref: '#/components/parameters/clientChecksumValueHeader'
       requestBody:
         content:
           application/json:
@@ -469,6 +471,22 @@ components:
       schema:
         type: string
       example: pn-delivery-push
+    clientChecksumHeader:
+      name: x-checksum
+      description: Tipo algoritmo utilizzato per crittografia hash
+      in: header
+      required: true
+      schema:
+        type: string
+      example: "SHA-256"
+    clientChecksumValueHeader:
+        name: x-checksum-value
+        description: Codice per verifica integrità del file
+        in: header
+        required: true
+        schema:
+          type: string
+        example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
     fileKey: 
       name: fileKey
       description: La chiave definita per il file al momento della richiesta di prenotazione di un upload

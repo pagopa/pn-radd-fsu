@@ -38,7 +38,7 @@ public class DocumentUploadService {
                     }
                     return m;
                 })
-                .flatMap(value -> pnSafeStorageClient.createFile(value.getContentType(), value.getBundleId()))
+                .flatMap(value -> pnSafeStorageClient.createFile(value.getContentType(), value.getBundleId(), value.getChecksum()))
                 .map(item -> {
                     log.info("Response presigned url : {}", item.getUploadUrl());
                     return DocumentUploadResponseMapper.fromResult(item);

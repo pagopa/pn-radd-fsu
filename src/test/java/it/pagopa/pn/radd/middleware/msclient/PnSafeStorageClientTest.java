@@ -22,8 +22,8 @@ class PnSafeStorageClientTest extends BaseTest {
 
     @Test
     void testCreateFile() {
-        String contentType = "application/pdf", operationId = "operationId";
-        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, operationId);
+        String contentType = "application/pdf", operationId = "operationId", checksumValue = "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560";
+        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, operationId, checksumValue);
         monoResponse.map(response -> {
             assertEquals("http://localhost:1080/safe-storage/storage/unFile", response.getUploadUrl());
             assertEquals("AZ23RF12", response.getSecret());
@@ -35,8 +35,8 @@ class PnSafeStorageClientTest extends BaseTest {
 
     @Test
     void testCreateFileCode404() {
-        String contentType = "application/json", operationId = "operationId";
-        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, operationId);
+        String contentType = "application/json", operationId = "operationId", checksumValue = "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560";
+        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, operationId, checksumValue);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof RaddGenericException){
                 assertNotNull(((RaddGenericException) exception).getExceptionType());

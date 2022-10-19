@@ -180,6 +180,23 @@ public class RaddTransactionDAO extends BaseDao {
         return Flux.from(raddTable.index(RaddTransactionEntity.IUN_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items));
     }
 
+    public Flux<RaddTransactionEntity> getTransactionsFromFiscalCode(String ensureFiscalCode) {
+        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
+                .builder()
+                .queryConditional(QueryConditional.keyEqualTo(
+                                Key.builder()
+                                        .partitionValue(ensureFiscalCode)
+                                        .build()
+                        )
+                )
+                .scanIndexForward(true)
+                .build();
+
+
+        return Flux.from(raddTable.index(RaddTransactionEntity.RECIPIENT_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items))
+                .concatWith(raddTable.index(RaddTransactionEntity.DELEGATE_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items));
+    }
+
     private TransactWriteItemsEnhancedRequest createTransaction(RaddTransactionEntity raddTransactionEntity,
                                                                 List<OperationsIunsEntity> operationIuns) {
 

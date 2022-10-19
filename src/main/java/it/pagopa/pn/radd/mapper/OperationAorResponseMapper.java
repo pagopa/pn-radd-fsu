@@ -38,7 +38,7 @@ public class OperationAorResponseMapper {
         return r;
     }
 
-    private static OperationAorDetailResponse getDetail(RaddTransactionEntity source){
+    public static OperationAorDetailResponse getDetail(RaddTransactionEntity source){
         OperationAorDetailResponse dto = new OperationAorDetailResponse();
         dto.setOperationId(source.getOperationId());
         String array = source.getIun().substring(1, source.getIun().length()-1);

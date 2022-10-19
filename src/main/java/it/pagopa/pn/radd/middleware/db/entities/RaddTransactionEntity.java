@@ -39,10 +39,10 @@ public class RaddTransactionEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_QR_CODE)}))
     private String qrCode;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_RECIPIENT_ID)}))
+    @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = RECIPIENT_SECONDARY_INDEX), @DynamoDbAttribute(COL_RECIPIENT_ID)}))
     private String recipientId;
 
-    @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = RECIPIENT_SECONDARY_INDEX), @DynamoDbAttribute(COL_RECIPIENT_TYPE)}))
+    @Getter(onMethod=@__({ @DynamoDbAttribute(COL_RECIPIENT_TYPE)}))
     private String recipientType;
 
     @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = DELEGATE_SECONDARY_INDEX), @DynamoDbAttribute(COL_DELEGATE_ID)}))

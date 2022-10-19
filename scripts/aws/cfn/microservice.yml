@@ -157,4 +157,6 @@ Resources:
               - dynamodb:UpdateItem
             Resource:
               - !Sub "${RaddTransactionDynamoTableArn}"
+              - !Sub "${RaddTransactionDynamoTableArn}/*"
               - !Sub "${OperationsAndIunsDynamoTableArn}"
+              - !Sub "${OperationsAndIunsDynamoTableArn}/*"

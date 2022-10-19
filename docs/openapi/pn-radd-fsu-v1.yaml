@@ -671,6 +671,10 @@ components:
         contentType:
           type: string
           example: "application/gzip"
+        checksum:
+          type: string
+          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
+
     DocumentUploadResponse:
       description: Response della Richiesta di upload
       type: object
@@ -684,9 +688,6 @@ components:
         secret:
           type: string
           example: "alow22ddw"
-        checksum:
-          type: string
-          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
         status:
           $ref: '#/components/schemas/ResponseStatus'
 

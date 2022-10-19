@@ -39,7 +39,7 @@ class DocumentUploadServiceTest extends BaseTest {
         bundleId.setContentType("test");
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setContentType(bundleId.getContentType());
-        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId())
+        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId(), bundleId.getChecksum())
         ).thenReturn(Mono.error(new PnException("Errore", "99")));
         Mono<DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
         response.onErrorResume( ex ->{
@@ -60,7 +60,7 @@ class DocumentUploadServiceTest extends BaseTest {
         bundleId.setContentType("test");
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setContentType(bundleId.getContentType());
-        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId())
+        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId(), bundleId.getChecksum())
         ).thenReturn(Mono.error( new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
         Mono<DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
         response.onErrorResume(ex ->{
@@ -87,7 +87,7 @@ class DocumentUploadServiceTest extends BaseTest {
         request.setContentType(bundleId.getContentType());
         FileCreationResponseDto fileCreationResponseDto = mock(FileCreationResponseDto.class);
         fileCreationResponseDto.setUploadUrl("testUrl");
-        Mockito.when(pnSafeStorageClient.createFile(Mockito.any(), Mockito.any())
+        Mockito.when(pnSafeStorageClient.createFile(Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn( Mono.just(fileCreationResponseDto) );
         DocumentUploadResponse response = documentUploadService.createFile(id, Mono.just(bundleId) ).block();
         assertNotNull(response);

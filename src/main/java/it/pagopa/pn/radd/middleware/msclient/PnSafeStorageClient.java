@@ -44,7 +44,7 @@ public class PnSafeStorageClient extends BaseClient {
         this.fileMetadataUpdateApi = new FileMetadataUpdateApi(newApiClient);
     }
 
-    public Mono<FileCreationResponseDto> createFile(String contentType, String bundleId){
+    public Mono<FileCreationResponseDto> createFile(String contentType, String bundleId, String checksum){
         log.debug(String.format("Req params: %s %s", contentType, bundleId));
         log.debug(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
         log.debug(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
@@ -52,7 +52,7 @@ public class PnSafeStorageClient extends BaseClient {
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
         request.setDocumentType(this.pnRaddFsuConfig.getSafeStorageDocType());
-        return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), request)
+        return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), Const.X_CHECKSUM, checksum, request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

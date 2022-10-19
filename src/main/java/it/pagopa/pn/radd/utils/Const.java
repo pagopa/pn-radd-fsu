@@ -33,4 +33,8 @@ public class Const {
     public static final String ALREADY_COMPLETE_OPERATION = "Transazione già completata";
     public static final String ABORT_OPERATION = "Transazione in stato annullata";
 
+    /* Checksum value */
+
+    public static final String X_CHECKSUM = "SHA-256";
+
 }

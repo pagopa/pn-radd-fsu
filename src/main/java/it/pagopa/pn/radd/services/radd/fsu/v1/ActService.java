@@ -68,16 +68,18 @@ public class ActService extends BaseService {
                     return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
                 }, (transaction, entity) -> transaction )
                 .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
-                .zipWhen(this::updateFileMetadata, (transaction, t2) -> transaction)
                 .zipWhen(this::notification, (transaction, transactionWithUlrs) -> transactionWithUlrs)
-
                 .zipWhen(transaction ->
                     legalFact(transaction)
                             .collectList().map(listUrl -> {
                                 listUrl.addAll(transaction.getUrls());
                                 return StartTransactionResponseMapper.fromResult(listUrl);
-                            }), (transaction, response) -> response
+                            })
                 )
+                .zipWhen(transactionAndResponse -> {
+                    TransactionData transaction = transactionAndResponse.getT1();
+                    return this.updateFileMetadata(transaction);
+                }, (in, out) -> in.getT2())
                 .onErrorResume(PnRaddException.class, ex ->
                         this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                                 .flatMap(entity -> Mono.error(ex))

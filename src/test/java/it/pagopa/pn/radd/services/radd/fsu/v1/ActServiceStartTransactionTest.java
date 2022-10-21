@@ -204,6 +204,8 @@ class ActServiceStartTransactionTest extends BaseTest {
     void testStartWhenIunNotFoundThenReturnNumber99(){
         ActStartTransactionRequest request = createActStartTransactionRequest();
         ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())).thenReturn(Mono.just("recipientTaxIdResult"));
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAO.updateStatus(Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
@@ -219,6 +221,8 @@ class ActServiceStartTransactionTest extends BaseTest {
     void testStartWhenGetCheckAarThrow500ThenReturnNumber99(){
         ActStartTransactionRequest request = createActStartTransactionRequest();
         WebClientResponseException exMock = new WebClientResponseException("Internal server Error", 500, "header", null, null, null);
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())).thenReturn(Mono.just("recipientTaxIdResult"));
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.error(new PnRaddException(exMock)));
         Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
@@ -235,6 +239,8 @@ class ActServiceStartTransactionTest extends BaseTest {
         ActStartTransactionRequest request = createActStartTransactionRequest();
         ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();
         responseCheckAarDtoDto.setIun("testIun");
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())).thenReturn(Mono.just("recipientTaxIdResult"));
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAO.countFromIunAndOperationIdAndStatus(Mockito.any(), Mockito.any()))

@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PnSafeStorageClientTest extends BaseTest.WithMockServer {
@@ -67,8 +68,9 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
         String fileKey = "ABC";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
-            if (exception instanceof PnSafeStorageException){
-                assertEquals(404, ((PnSafeStorageException) exception).getWebClientEx().getStatusCode().value());
+            if (exception instanceof RaddGenericException){
+                assertNotNull(((RaddGenericException) exception).getExceptionType());
+                assertEquals(RETRY_AFTER, ((RaddGenericException) exception).getExceptionType());
                 return Mono.empty();
             }
             fail("Badly type exception");
@@ -98,8 +100,9 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
         String fileKey = "XYZ";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
-            if (exception instanceof PnSafeStorageException){
-                assertEquals(404, ((PnSafeStorageException) exception).getWebClientEx().getStatusCode().value());
+            if (exception instanceof RaddGenericException){
+                assertNotNull(((RaddGenericException) exception).getExceptionType());
+                assertEquals(RETRY_AFTER, ((RaddGenericException) exception).getExceptionType());
                 return Mono.empty();
             }
             fail("Badly type exception");

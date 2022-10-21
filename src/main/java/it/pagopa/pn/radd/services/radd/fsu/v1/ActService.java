@@ -56,13 +56,13 @@ public class ActService extends BaseService {
 
     public Mono<StartTransactionResponse> startTransaction(String uid, ActStartTransactionRequest request){
         return validateAndSettingsData(uid, request)
-                .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getRecipientId(), tmp.getQrCode())
+                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
+                .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getEnsureRecipientId(), tmp.getQrCode())
                         .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
                                                                 transaction.setIun(iun);
                                                                 return transaction;
                 })
                 .zipWhen( transaction -> getCounterTransactions(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
-                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
                 .zipWhen( transaction -> {
                     log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
                     return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);

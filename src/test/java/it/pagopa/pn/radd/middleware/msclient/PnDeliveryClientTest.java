@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
 import static org.junit.jupiter.api.Assertions.*;
 
-class PnDeliveryClientTest extends BaseTest {
+class PnDeliveryClientTest extends BaseTest.WithMockServer {
 
     @Autowired
     private PnDeliveryClient pnDeliveryClient;

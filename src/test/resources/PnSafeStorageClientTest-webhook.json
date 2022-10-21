@@ -1,0 +1,126 @@
+[
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files",
+      "method": "POST",
+      "body": "{\"contentType\":\"application/pdf\",\"documentType\":\"PN_RADD_FSU_ATTACHMENT\",\"status\":\"PRELOADED\"}"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"uploadMethod\":\"PUT\",\"uploadUrl\":\"http://localhost:1080/safe-storage/storage/unFile\",\"secret\":\"AZ23RF12\",\"key\":\"8F7E/9A3B/1234/AB87\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files",
+      "method": "POST",
+      "body": "{\"contentType\":\"application/json\",\"documentType\":\"PN_RADD_FSU_ATTACHMENT\",\"status\":\"PRELOADED\"}"
+    },
+    "httpResponse": {
+      "statusCode": 404,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"resultDescription\":\"Il file non è stato trovato.\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/AB87",
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"key\": \"random/path/of/the/file\", \"versionId\": \"3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"status\": \"PRELOADED\", \"download\" : {\"url\":\"http://localhost:1080/safe-storage/storage/unFile\"}}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/ABC",
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 404,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"resultDescription\":\"Il file non è stato trovato.\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/AB49",
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"key\": \"random/path/of/the/file\", \"versionId\": \"3Z9SdhZ50PBeIj617KEMrztNKDMJj8FZ\", \"contentType\": \"application/pdf\", \"contentLength\": \"3028\", \"checksum\": \"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\", \"retentionUntil\": \"2032-04-12T12:32:04.000Z\", \"documentType\": \"PN_LEGALFACT\", \"status\": \"PRELOADED\", \"download\" : {\"url\":\"https://presignedurldemo.s3.eu-west-2.amazonaws.com/\"}}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/XYZ",
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 404,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"resultDescription\":\"Il file non è stato trovato.\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/8F7E/9A3B",
+      "method": "POST",
+      "body": "{\"status\":\"ATTACHED\",\"retentionUntil\":\"2022-09-30T07:44:15.626Z\"}"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"resultCode\":\"200.00\",\"resultDescription\":\"Non trovato.\",\"errorList\":\"[\"retentionDate cannot be anticipated\"]\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/safe-storage/v1/files/8F7E",
+      "method": "POST",
+      "body": "{\"status\":\"ATTACHED\",\"retentionUntil\":\"2022-09-30T07:44:15.626Z\"}"
+    },
+    "httpResponse": {
+      "statusCode": 404,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"resultDescription\":\"Il file non è stato trovato.\"}"
+    }
+  }
+]

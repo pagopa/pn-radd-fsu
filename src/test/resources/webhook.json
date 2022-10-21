@@ -144,48 +144,6 @@
   },
   {
     "httpRequest": {
-      "path": "/delivery/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/.*",
-      "method": "GET"
-    },
-    "httpResponse": {
-      "headers": {
-        "content-type": [
-          "application/json"
-        ]
-      },
-      "body": "{\"filename\":\"un_attachement.pdf\",\"contentType\":\"application/pdf\",\"contentLength\":3028,\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\",\"url\":\"https://localhost:1080/safe-storage/storage/ilfile.pdf\"}"
-    }
-  },
-  {
-    "httpRequest": {
-      "path" : "/datavault-private/v1/recipients/external/PF",
-      "method": "POST"
-    },
-    "httpResponse": {
-      "body": "\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\""
-    }
-  },
-  {
-    "httpRequest": {
-      "path": "/datavault-private/v1/recipients/external/PG",
-      "method": "POST"
-    },
-    "httpResponse": {
-      "statusCode": 400,
-      "body": {
-        "status": 400,
-        "title": "Codice fiscale non valido",
-        "detail": "Il formato del codice fiscale non è valido",
-        "traceId": "123987653p",
-        "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
-        ]
-      }
-    }
-  },
-  {
-    "httpRequest": {
       "path": "/delivery-private/check-aar-qr-code",
       "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\",\"aarQrCodeValue\":\"UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw\"}",
       "method": "POST"
@@ -213,6 +171,54 @@
         "status": 400,
         "title": "Service Unavailable",
         "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/check-aar-qr-code",
+      "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\"}",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path" : "/datavault-private/v1/recipients/external/PF",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "body": "\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\""
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/datavault-private/v1/recipients/external/PG",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "status": 400,
+        "title": "Codice fiscale non valido",
+        "detail": "Il formato del codice fiscale non è valido",
+        "traceId": "123987653p",
         "errors": [
           {"code": "123-4567"},
           {"detail": "Parameter not valid"}
@@ -478,45 +484,6 @@
   },
   {
     "httpRequest": {
-      "path": "/delivery-push/LJLH-GNTJ-DVXR-202209-J-1/legal-facts",
-      "method": "GET"
-    },
-    "httpResponse": {
-      "headers": {
-        "content-type": ["application/json"]
-      },
-      "body": [
-        {
-          "taxId": "string",
-          "iun": "string",
-          "legalFactsId": {
-            "key": "string",
-            "category": "SENDER_ACK"
-          }
-        }
-      ]
-    }
-  },
-  {
-    "httpRequest": {
-      "path": "/delivery-push/LJLH-GNTJ-DVXR-202209-J-1/legal-facts/SENDER_ACK/string",
-      "method": "GET"
-    },
-    "httpResponse": {
-      "headers": {
-        "content-type": ["application/json"]
-      },
-      "body":
-      {
-        "filename": "string",
-        "contentLength": 54092,
-        "url": "uploadUrl/LJLH-GNTJ-DVXR-202209-J-1",
-        "retryAfter": 0
-      }
-    }
-  },
-  {
-    "httpRequest": {
       "path": "/delivery-push-private/854Bgs31a/paper-notification-failed",
       "queryStringParameters" : {
         "getAAR" : [ "true" ]
@@ -528,13 +495,13 @@
         "content-type": ["application/json"]
       },
       "body":
-        [
-          {
-            "iun": "LJLH-GNTJ-DVXR-202209-J-1",
-            "recipientInternalId": "854Bgs31a",
-            "aarUrl": "http://aarUrl"
-          }
-        ]
+      [
+        {
+          "iun": "LJLH-GNTJ-DVXR-202209-J-1",
+          "recipientInternalId": "854Bgs31a",
+          "aarUrl": "http://aarUrl"
+        }
+      ]
 
     }
   },

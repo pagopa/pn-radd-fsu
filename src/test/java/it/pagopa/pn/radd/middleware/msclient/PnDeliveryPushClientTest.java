@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PnDeliveryPushClientTest extends BaseTest {
+class PnDeliveryPushClientTest extends BaseTest.WithMockServer {
     @Autowired
     PnDeliveryPushClient pnDeliveryPushClient;
 

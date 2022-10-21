@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Configuration;
 public class InitConfig {
     @Value("${mockserver.bean.port}")
     private int port;
-
-
     @Bean
     public MockServerBean getMockServer(){
         log.info("Port :  {}", port);

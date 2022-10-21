@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
 import static org.junit.jupiter.api.Assertions.*;
 
-class PnSafeStorageClientTest extends BaseTest {
+class PnSafeStorageClientTest extends BaseTest.WithMockServer {
 
     @Autowired
     private PnSafeStorageClient pnSafeStorageClient;

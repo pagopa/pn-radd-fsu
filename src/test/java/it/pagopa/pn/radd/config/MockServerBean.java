@@ -15,19 +15,22 @@ public class MockServerBean {
     private final int port;
 
     public MockServerBean(int port){
-        this.initializationExpection();
         this.port = port;
-        this.mockServer = ClientAndServer.startClientAndServer(port);
         log.info("Mock server started on : {}", port);
     }
 
-    private void initializationExpection(){
+    public void stop(){
+        this.mockServer.stop();
+    }
+
+    public void initializationExpection(String file){
         log.info("- Initialize Mock Server Expection");
-        Resource resource = new ClassPathResource("webhook.json");
+        Resource resource = new ClassPathResource(file);
         try {
             String path = resource.getFile().getAbsolutePath();
             log.info(" - Path : {} ", path);
             ConfigurationProperties.initializationJsonPath(path);
+            this.mockServer = ClientAndServer.startClientAndServer(port);
         } catch (IOException e) {
             log.warn(" - File webhook not found");
         }

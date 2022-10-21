@@ -11,17 +11,20 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.*;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
 
 @Slf4j
 @Component
@@ -65,7 +68,12 @@ public class PnSafeStorageClient extends BaseClient {
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnSafeStorageException(ex)));
+                ).onErrorResume(WebClientResponseException.class, ex -> {
+                    if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
+                        return Mono.error(new RaddGenericException(RETRY_AFTER, new BigDecimal(670)));
+                    }
+                    return Mono.error(new PnSafeStorageException(ex));
+                });
     }
 
     public Mono<OperationResultCodeResponseDto> updateFileMetadata(String fileKey){

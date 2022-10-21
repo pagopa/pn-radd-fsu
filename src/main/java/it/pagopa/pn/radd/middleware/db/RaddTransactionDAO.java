@@ -69,10 +69,7 @@ public class RaddTransactionDAO extends BaseDao {
                                 try {
                                     TransactWriteItemsEnhancedRequest transactRequest = createTransaction(entity, entityIuns);
                                     return dynamoDbEnhancedAsyncClient.transactWriteItems(transactRequest)
-                                                .thenApply(item -> {
-                                                    log.info("Created");
-                                                    return entity;
-                                                });
+                                                .thenApply(item -> entity);
                                 } catch (TransactionCanceledException ex) {
                                     throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_SAVED);
                                 }

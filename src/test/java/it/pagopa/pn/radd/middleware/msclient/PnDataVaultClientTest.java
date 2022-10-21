@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
+
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndatavault.v1.dto.RecipientTypeDto;
@@ -9,8 +10,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class PnDataVaultClientTest extends BaseTest {
-
+class PnDataVaultClientTest extends BaseTest.WithMockServer {
     @Autowired
     private PnDataVaultClient pnDataVaultClient;
 

@@ -10,12 +10,19 @@ import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import software.amazon.awssdk.core.async.SdkPublisher;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
@@ -27,10 +34,14 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Flow;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
+@Slf4j
 class RaddTransactionDAOTest extends BaseTest {
 
     private final Duration d = Duration.ofMillis(3000);
@@ -168,5 +179,30 @@ class RaddTransactionDAOTest extends BaseTest {
         Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any()))
                 .thenReturn(CompletableFuture.completedFuture(queryResponse));
         assertEquals(10, raddTransactionDAO.countFromIunAndOperationIdAndStatus("iun", "operationId").get().intValue());
+    }
+
+    @Test
+    void testGetTransactionsFromIun() {
+        String iun = "LJLH-GNTJ-DVXR-202209-J-1";
+
+        DynamoDbAsyncIndex<RaddTransactionEntity> index = mock(DynamoDbAsyncIndex.class);
+        Mockito.when(raddTable.index(RaddTransactionEntity.IUN_SECONDARY_INDEX)).thenReturn(index);
+
+        PagePublisher<RaddTransactionEntity> pagePublisher = PagePublisher.create(Subscriber::onComplete);
+        Mockito.when(index.query((QueryEnhancedRequest) Mockito.any())).thenReturn(pagePublisher);
+        this.raddTransactionDAO.getTransactionsFromIun(iun).log().blockFirst();
+    }
+
+    @Test
+    void testGetTransactionsFromFiscalCode() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        DynamoDbAsyncIndex<RaddTransactionEntity> index = mock(DynamoDbAsyncIndex.class);
+        Mockito.when(raddTable.index(RaddTransactionEntity.RECIPIENT_SECONDARY_INDEX)).thenReturn(index);
+        Mockito.when(raddTable.index(RaddTransactionEntity.DELEGATE_SECONDARY_INDEX)).thenReturn(index);
+
+        PagePublisher<RaddTransactionEntity> pagePublisher = PagePublisher.create(Subscriber::onComplete);
+        Mockito.when(index.query((QueryEnhancedRequest) Mockito.any())).thenReturn(pagePublisher);
+        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode).log().blockFirst();
     }
 }

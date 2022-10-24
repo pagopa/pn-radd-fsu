@@ -159,3 +159,4 @@ Resources:
               - !Sub "${RaddTransactionDynamoTableArn}"
               - !Sub "${RaddTransactionDynamoTableArn}/*"
               - !Sub "${OperationsAndIunsDynamoTableArn}"
+              - !Sub "${OperationsAndIunsDynamoTableArn}/*"

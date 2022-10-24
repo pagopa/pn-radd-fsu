@@ -25,7 +25,7 @@ public abstract class BaseTest {
         public void init(){
             log.info(this.getClass().getSimpleName());
             //TODO set name file with name class + ".json";
-            setExpection("webhook.json");
+            setExpection(this.getClass().getSimpleName() + "-webhook.json");
         }
 
         @AfterEach

@@ -3,14 +3,13 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationAorResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +22,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Stream;
 
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTIONS_NOT_FOUND_FOR_CF;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -36,7 +41,7 @@ class OperationServiceTest extends BaseTest {
     @InjectMocks
     private OperationService operationService;
     @Mock
-    private RaddTransactionDAO dao;
+    private RaddTransactionDAO transactionDAO;
     @Autowired
     @Spy
     private RaddTransactionEntityNotificationResponse mapperToNotificationResponse;
@@ -50,14 +55,14 @@ class OperationServiceTest extends BaseTest {
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(dao.getTransaction("TestNoActTransaction", OperationTypeEnum.ACT)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        Mockito.when(transactionDAO.getTransaction("TestNoActTransaction", OperationTypeEnum.ACT)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
         StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestNoActTransaction"))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
     void testWhenNoActTransactionDaoThrowOtherException(){
-        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
         StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestThrow"))
                 .expectError(NullPointerException.class).verify();
     }
@@ -79,7 +84,7 @@ class OperationServiceTest extends BaseTest {
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReadon");
 
-        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
 
         OperationActResponse response = operationService.getTransactionActByOperationIdAndType("err").block(d);
 
@@ -105,7 +110,7 @@ class OperationServiceTest extends BaseTest {
     // ACT TRANSACTION FOR IUN //
     @Test
     void testGetActTransactionWithIunWhenDaoListIsEmpty(){
-        Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.empty());
+        Mockito.when(transactionDAO.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.empty());
 
         OperationsResponse response = operationService.getOperationsActByIun("IunTestEmpty").block(d);
 
@@ -124,7 +129,7 @@ class OperationServiceTest extends BaseTest {
         entity2.setIun("Iun 1");
         entity2.setOperationId("Operation id 2");
         entity2.setOperationType(OperationTypeEnum.ACT.name());
-        Mockito.when(dao.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.just(entity1, entity2));
+        Mockito.when(transactionDAO.getTransactionsFromIun(Mockito.any())).thenReturn(Flux.just(entity1, entity2));
 
         OperationsResponse response = operationService.getOperationsActByIun("Iun 1").block(d);
 
@@ -152,14 +157,14 @@ class OperationServiceTest extends BaseTest {
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(dao.getTransaction("TestNoAorTransaction", OperationTypeEnum.AOR)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        Mockito.when(transactionDAO.getTransaction("TestNoAorTransaction", OperationTypeEnum.AOR)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
         StepVerifier.create(operationService.getTransactionAorByOperationIdAndType("TestNoAorTransaction"))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
     void testWhenNoAorTransactionDaoThrowOtherException(){
-        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
         StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestThrow"))
                 .expectError(NullPointerException.class).verify();
     }
@@ -182,7 +187,7 @@ class OperationServiceTest extends BaseTest {
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReadon");
 
-        Mockito.when(dao.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
 
         OperationAorResponse response = operationService.getTransactionAorByOperationIdAndType("err").block(d);
 
@@ -202,6 +207,117 @@ class OperationServiceTest extends BaseTest {
         assertEquals(entity.getOperationStartDate(), DateUtils.formatDate(response.getElement().getOperationStartDate()));
         assertEquals(entity.getOperationEndDate(), DateUtils.formatDate(response.getElement().getOperationEndDate()));
         assertEquals(entity.getErrorReason(), response.getElement().getErrorReason());
+    }
+
+    @Test
+    void testGetAllActTransactionFromFiscalCodeWithOperationListNotEmpty() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        RaddTransactionEntity entity1 = new RaddTransactionEntity();
+        entity1.setOperationType(OperationTypeEnum.ACT.name());
+        RaddTransactionEntity entity2 = new RaddTransactionEntity();
+        entity2.setOperationType(OperationTypeEnum.ACT.name());
+
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+                .thenReturn(Flux.fromStream(List.of(entity1, entity2).stream()));
+        operationService.getAllActTransactionFromFiscalCode(fiscalCode)
+                .map(response -> {
+                    assertEquals(true, response.getResult());
+                    assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+                    assertEquals(Const.OK, response.getStatus().getMessage());
+                    return Mono.empty();
+                })
+                .block();
+    }
+
+    @Test
+    void testGetAllActTransactionFromFiscalCodeWithOperationListEmpty() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+                .thenReturn(Flux.empty());
+
+        operationService.getAllActTransactionFromFiscalCode(fiscalCode)
+                .map(response -> {
+                    assertEquals(false, response.getResult());
+                    assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
+                    assertEquals(TRANSACTIONS_NOT_FOUND_FOR_CF.getMessage(), response.getStatus().getMessage());
+                    return Mono.empty();
+                })
+                .block();
+    }
+
+    @Test
+    void testGetAllActTransactionFromFiscalCodeErrorCase() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+                .thenReturn(Flux.error(new NullPointerException()));
+
+        operationService.getAllActTransactionFromFiscalCode(fiscalCode)
+                .map(operation -> {
+                    assertEquals(false, operation.getResult());
+                    assertEquals(OperationResponseStatus.CodeEnum.NUMBER_99, operation.getStatus().getCode());
+                    return Mono.empty();
+                })
+                .block();
+    }
+
+    @Test
+    void testGetAllAorTransactionFromFiscalCodeWithOperationListNotEmpty() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        RaddTransactionEntity entity1 = new RaddTransactionEntity();
+        entity1.setOperationType(OperationTypeEnum.AOR.name());
+        entity1.setIun("LJLH-GNTJ-DVXR-202209-J-1");
+        RaddTransactionEntity entity2 = new RaddTransactionEntity();
+        entity2.setOperationType(OperationTypeEnum.AOR.name());
+        entity2.setIun("LJLH-GNTJ-DVXR-202210-J-2");
+
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+                .thenReturn(Flux.fromStream(List.of(entity1, entity2).stream()));
+
+        operationService.getAllAorTransactionFromFiscalCode(fiscalCode)
+                .map(response -> {
+                    assertEquals(true, response.getResult());
+                    assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+                    assertEquals(Const.OK, response.getStatus().getMessage());
+                    return Mono.empty();
+                })
+                .block();
+    }
+
+    @Test
+    void testGetAllAorTransactionFromFiscalCodeWithOperationListEmpty() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+                .thenReturn(Flux.empty());
+
+        operationService.getAllAorTransactionFromFiscalCode(fiscalCode)
+                .map(response -> {
+                    assertEquals(false, response.getResult());
+                    assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
+                    assertEquals(TRANSACTIONS_NOT_FOUND_FOR_CF.getMessage(), response.getStatus().getMessage());
+                    return Mono.empty();
+                })
+                .block();
+    }
+
+    @Test
+    void testGetAllAorTransactionFromFiscalCodeErrorCase() {
+        String fiscalCode = "ABCDEF12G34H567I";
+
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+                .thenReturn(Flux.error(new NullPointerException()));
+
+        operationService.getAllAorTransactionFromFiscalCode(fiscalCode)
+                .map(operation -> {
+                    assertEquals(false, operation.getResult());
+                    assertEquals(OperationResponseStatus.CodeEnum.NUMBER_99, operation.getStatus().getCode());
+                    return Mono.empty();
+                })
+                .block();
     }
 
     // ------------------------------ //

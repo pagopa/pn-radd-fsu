@@ -1,0 +1,98 @@
+[
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/854Bgs31a/paper-notification-failed",
+      "queryStringParameters" : {
+        "getAAR" : [ "true" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "headers": {
+        "content-type": ["application/json"]
+      },
+      "body":
+      [
+        {
+          "iun": "LJLH-GNTJ-DVXR-202209-J-1",
+          "recipientInternalId": "854Bgs31a",
+          "aarUrl": "http://aarUrl"
+        }
+      ]
+
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/854/paper-notification-failed",
+      "queryStringParameters" : {
+        "getAAR" : [ "true" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "headers": {
+        "content-type": ["application/json"]
+      },
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Invalid input",
+        "detail": "Iun parameter is absent.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
+      "body" : {
+        "recipientType" : "PF",
+        "recipientInternalId" : "1924814",
+        "raddType" : "__FSU__",
+        "raddBusinessTransactionId" : null,
+        "raddBusinessTransactionDate" : "2022-09-30T13:57:00Z"
+      },
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
+      "body" : {
+        "recipientType" : "PF",
+        "recipientInternalId" : "",
+        "raddType" : "__FSU__",
+        "raddBusinessTransactionId" : null,
+        "raddBusinessTransactionDate" : "2022-09-30T13:57:00Z"
+      },
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Invalid input",
+        "detail": "Iun parameter is absent.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  }
+]

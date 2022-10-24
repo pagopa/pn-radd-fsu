@@ -1,0 +1,30 @@
+[
+  {
+    "httpRequest": {
+      "path" : "/datavault-private/v1/recipients/external/PF",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "body": "\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\""
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/datavault-private/v1/recipients/external/PG",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "status": 400,
+        "title": "Codice fiscale non valido",
+        "detail": "Il formato del codice fiscale non è valido",
+        "traceId": "123987653p",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  }
+]

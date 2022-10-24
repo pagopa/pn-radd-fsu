@@ -1,0 +1,201 @@
+[
+  {
+    "httpRequest": {
+      "path": "/delivery-private/notifications/LJLH-GNTJ-DVXR-202209-J-1",
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"abstract\":\"Abstract della notifica\",\"idempotenceToken\":\"\",\"paProtocolNumber\":\"1662580087324\",\"subject\":\"invio notifica con cucumber 07-09-2022 19:48:07\",\"recipients\":[{\"recipientType\":\"PF\",\"taxId\":\"FRMTTR76M06B715E\",\"internalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\",\"denomination\":\"Mario Cucumber denomination\",\"digitalDomicile\":{\"type\":\"PEC\",\"address\":\"FRMTTR76M06B715E@pnpagopa.postecert.local\"},\"physicalAddress\":{\"address\":\"Via senza nome\",\"zip\":\"40100\",\"municipality\":\"Milano\",\"province\":\"MI\",\"foreignState\":\"ITALIA\"},\"payment\":{\"noticeCode\":\"302011662580087324\",\"creditorTaxId\":\"77777777777\",\"pagoPaForm\":{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-YXGY-RXJX-ZK5Z-41TQ\",\"versionToken\":\"v1\"}},\"f24flatRate\":{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-VUAR-SGM7-X550-ICD6\",\"versionToken\":\"v1\"}},\"f24standard\":{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-42DD-5KED-WHWY-CHTE\",\"versionToken\":\"v1\"}}}}],\"documents\":[{\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-Y1GA-XO08-1Y67-CI3Q\",\"versionToken\":\"v1\"},\"docIdx\":\"0\"}, {\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-Y1GA-XO08-1Y67-CI3Q\",\"versionToken\":\"v1\"},\"docIdx\":\"0\"}, {\"digests\":{\"sha256\":\"jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE=\"},\"contentType\":\"application/pdf\",\"ref\":{\"key\":\"PN_NOTIFICATION_ATTACHMENTS-0001-Y1GA-XO08-1Y67-CI3Q\",\"versionToken\":\"v1\"},\"docIdx\":\"0\"}],\"notificationFeePolicy\":\"FLAT_RATE\",\"cancelledIun\":\"\",\"physicalCommunicationType\":\"REGISTERED_LETTER_890\",\"senderDenomination\":\"comune di milano\",\"senderTaxId\":\"CFComuneMilano\",\"group\":\"\",\"senderPaId\":\"026e8c72-7944-4dcd-8668-f596447fec6d\",\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\",\"sentAt\":\"2022-09-07T19:48:07.766026Z\",\"documentsAvailable\":true}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/notifications/LJLH-GNTJ",
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "status": 400,
+        "title": "Iun",
+        "detail": "Format code error, iun is incorrect",
+        "traceId": "123987653p",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/documents/12984594",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "65df2qm7y" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "filename": "doc.pdf",
+        "contentType": "application/pdf",
+        "contentLength": 54092,
+        "sha256": "D73JG1340FJ3GBFI04NT0B73JV9W7331V",
+        "url": "http://downdocuments",
+        "retryAfter": 8035
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/documents/12984594",
+      "method": "GET",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "" ]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "status": 400,
+        "title": "Download",
+        "detail": "Format code error, docIdx is incorrect",
+        "traceId": "123987653p",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/payment/paymentDoc",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "12df2qm7y" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "filename": "paymentDoc.pdf",
+        "contentType": "application/pdf",
+        "contentLength": 54092,
+        "sha256": "D73JG1340FJ3GBFI04NT0B73JV9W7331V",
+        "url": "http://dowpayment",
+        "retryAfter": 3580
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/payment/paymentDoc",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "status": 400,
+        "title": "Download",
+        "detail": "Format name error, name is incorrect",
+        "traceId": "123987653p",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/check-aar-qr-code",
+      "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\",\"aarQrCodeValue\":\"UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw\"}",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/check-aar-qr-code",
+      "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PG-4fc75df3-0913-407e-bdaa-e50329708b7d\",\"aarQrCodeValue\":\"UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw\"}",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/delivery-private/check-aar-qr-code",
+      "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PF-4fc75df3-0913-407e-bdaa-e50329708b7d\"}",
+      "method": "POST"
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  }
+]

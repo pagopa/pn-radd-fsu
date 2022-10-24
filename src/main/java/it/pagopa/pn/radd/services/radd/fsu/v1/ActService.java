@@ -142,15 +142,19 @@ public class ActService extends BaseService {
 
     private Flux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
-                .flatMap(item ->pnDeliveryPushInternalClient
+                .flatMap(item -> {
+                    log.info("Legal Fact : {}", item.getTaxId());
+                    return pnDeliveryPushInternalClient
                             .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                             .mapNotNull(legalFact -> {
                                 if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
                                     log.info("Finded legal fact with retry after {}", legalFact.getRetryAfter());
-                                   throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
+                                    throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
                                 }
+                                log.info("URL : {}", legalFact.getUrl());
                                 return legalFact.getUrl();
-                            })
+                              });
+                    }, 5
                 );
     }
 

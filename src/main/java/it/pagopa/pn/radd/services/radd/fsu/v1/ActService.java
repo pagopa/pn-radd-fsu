@@ -5,7 +5,6 @@ import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
@@ -23,10 +22,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import reactor.util.function.Tuples;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 
@@ -68,14 +64,12 @@ public class ActService extends BaseService {
                     return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
                 }, (transaction, entity) -> transaction )
                 .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
-                .zipWhen(this::notification, (transaction, transactionWithUlrs) -> transactionWithUlrs)
-                .zipWhen(transaction ->
-                    legalFact(transaction)
-                            .collectList().map(listUrl -> {
-                                listUrl.addAll(transaction.getUrls());
-                                return StartTransactionResponseMapper.fromResult(listUrl);
-                            })
-                )
+                .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
+                .zipWhen(transactionAndSentNotification ->
+                        urlDocAndAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2())
+                                .concatWith(legalFact(transactionAndSentNotification.getT1()))
+                                .collectList()
+                                .map(StartTransactionResponseMapper::fromResult), (tupla, response) -> Tuples.of(tupla.getT1(), response))
                 .zipWhen(transactionAndResponse -> {
                     TransactionData transaction = transactionAndResponse.getT1();
                     return this.updateFileMetadata(transaction);
@@ -142,9 +136,7 @@ public class ActService extends BaseService {
 
     private Flux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
-                .flatMap(item -> {
-                    log.info("Legal Fact : {}", item.getTaxId());
-                    return pnDeliveryPushInternalClient
+                .flatMap(item -> pnDeliveryPushInternalClient
                             .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                             .mapNotNull(legalFact -> {
                                 if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
@@ -153,58 +145,24 @@ public class ActService extends BaseService {
                                 }
                                 log.info("URL : {}", legalFact.getUrl());
                                 return legalFact.getUrl();
-                              });
-                    }, 5
-                );
+                            })
+                    , 5);
     }
 
-    private Mono<TransactionData> notification(TransactionData transaction) {
-        return this.pnDeliveryClient.getNotifications(transaction.getIun())
-                .zipWhen(response -> docIdAndAttachments(transaction, response),
-                        (response, tupleUrl) -> tupleUrl)
-                .map(urls -> {
-                    transaction.getUrls().addAll(urls);
-                    return transaction;
-                });
+    private Flux<String> urlDocAndAttachments(TransactionData transaction, SentNotificationDto sentDTO){
+        return Flux.fromStream(sentDTO.getDocuments().stream())
+                    .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId()))
+                    .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl)
+                    .concatWith(getUrlsAttachments(transaction, sentDTO));
     }
 
-    private Mono<List<String>> docIdAndAttachments(TransactionData transaction, SentNotificationDto sentDTO){
-        return Mono.just(sentDTO)
-                .zipWhen(notification -> {
-                    if (notification.getDocuments().isEmpty()){
-                        return Mono.just(new ArrayList<String>());
-                    }
-                    return retrieveUrlsDocuments(transaction, sentDTO).collectList();
-                })
-                .zipWhen(notAndUrls -> {
-                    SentNotificationDto dto = notAndUrls.getT1();
-                    if (!dto.getRecipients().isEmpty()){
-                        List<NotificationRecipientDto> listDTO =
-                                dto.getRecipients().stream()
-                                        .filter(i -> i.getTaxId().equals(transaction.getRecipientId())).collect(Collectors.toList());
-
-                        if (!listDTO.isEmpty()){
-                            NotificationRecipientDto recipient = listDTO.get(0);
-                            if (recipient.getPayment() != null && recipient.getPayment().getPagoPaForm() != null){
-                                return pnDeliveryClient.getPresignedUrlPaymentDocument(transaction.getIun(), "PAGOPA", transaction.getEnsureRecipientId())
-                                        .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
-                            }
-                        }
-                    }
-                    return Mono.just("");
-                }, (notAndTransaction, urlAttachment) ->  {
-                    List<String> urls = notAndTransaction.getT2();
-                    urls.add(urlAttachment);
-                    return urls;
-                });
-    }
-
-    private Flux<String> retrieveUrlsDocuments(TransactionData transaction, SentNotificationDto documents){
-
-        return Flux.fromStream(documents.getDocuments().stream())
-                .flatMap(document ->
-                        pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), document.getDocIdx(), transaction.getEnsureRecipientId())
-                        .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
+    private Flux<String> getUrlsAttachments(TransactionData transactionData, SentNotificationDto sentDTO){
+        if (sentDTO.getRecipients().isEmpty())
+            return Flux.empty();
+        return Flux.fromStream(sentDTO.getRecipients().stream())
+                .filter(item -> item.getTaxId().equalsIgnoreCase(transactionData.getRecipientId()) && item.getPayment() != null && item.getPayment().getPagoPaForm() != null)
+                .flatMap(item -> pnDeliveryClient.getPresignedUrlPaymentDocument(transactionData.getIun(), "PAGOPA", transactionData.getEnsureRecipientId()))
+                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
     }
 
     private Mono<Integer> getCounterTransactions(String iun, String operationId){

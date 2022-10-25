@@ -52,7 +52,12 @@ public class OperationsIunsDAO extends BaseDao {
                 .scanIndexForward(true)
                 .build();
 
-        return Flux.from(operationsIunsTable.index(OperationsIunsEntity.SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items));
+        return Flux.from(
+                operationsIunsTable
+                        .index(OperationsIunsEntity.SECONDARY_INDEX)
+                        .query(qeRequest)
+                        .flatMapIterable(Page::items)
+        );
     }
 
 

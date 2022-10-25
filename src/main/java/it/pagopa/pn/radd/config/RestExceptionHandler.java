@@ -98,11 +98,10 @@ public class RestExceptionHandler {
     private HttpStatus extractStatus(String value){
         if (value != null && !Strings.isBlank(value)){
             String maybeNumber = value.substring(0, 3);
-            log.info("Status string : {}", maybeNumber);
             try {
                 return HttpStatus.valueOf(Integer.parseInt(maybeNumber));
             }catch (NumberFormatException ex){
-                log.info("Not number");
+                log.debug("Not number");
             }
         }
         return HttpStatus.INTERNAL_SERVER_ERROR;

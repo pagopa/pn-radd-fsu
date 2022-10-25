@@ -65,7 +65,7 @@ public class RaddTransactionDAO extends BaseDao {
                 countFromIunAndOperationIdAndStatus(entity.getOperationId(), entity.getIun())
                         .thenCompose(total -> {
                             if (total == 0) {
-                                log.info("no current transaction for delegator-delegate pair, can proceed to create transaction");
+                                log.debug("no current transaction for delegator-delegate pair, can proceed to create transaction");
                                 try {
                                     TransactWriteItemsEnhancedRequest transactRequest = createTransaction(entity, entityIuns);
                                     return dynamoDbEnhancedAsyncClient.transactWriteItems(transactRequest)
@@ -83,7 +83,7 @@ public class RaddTransactionDAO extends BaseDao {
                     return Mono.error(throwable);
                 })
                 .map(item -> {
-                    log.info("Radd transaction object={}", item);
+                    log.debug("Radd transaction object={}", item);
                     logEvent.generateSuccess(String.format("created Radd transaction object=%s", item)).log();
 
                     return item;
@@ -95,7 +95,7 @@ public class RaddTransactionDAO extends BaseDao {
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
 
         return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
-            log.info("Item finded : {}", item);
+            log.debug("Item finded : {}", item);
             if (item == null) {
                 throw new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST);
             }
@@ -105,7 +105,6 @@ public class RaddTransactionDAO extends BaseDao {
 
     public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity){
         String logMessage = String.format("Update Radd Transaction=%s", entity);
-        // TODO check audit log event type
         PnAuditLogEvent logEvent = auditLogBuilder
                 .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
                 .uid(entity.getUid())
@@ -127,7 +126,7 @@ public class RaddTransactionDAO extends BaseDao {
                     return Mono.error(throwable);
                 })
                 .map(item -> {
-                    log.info("Radd transaction object={}", item);
+                    log.debug("Radd transaction object={}", item);
                     logEvent.generateSuccess(String.format("Updated Radd transaction object=%s", item)).log();
 
                     return item;

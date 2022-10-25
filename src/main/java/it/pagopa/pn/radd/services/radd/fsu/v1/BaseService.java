@@ -50,15 +50,15 @@ public class BaseService {
 
     protected Mono<FileDownloadResponseDto> verifyCheckSum(TransactionData transaction){
         return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-            log.info("Document status is : {}", response.getStatus());
+            log.debug("Document status is : {}", response.getStatus());
             if (!StringUtils.equals(response.getStatus(), Const.PRELOADED)){
                 throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             }
-            log.info("Document version is : {}", response.getVersionId());
+            log.debug("Document version is : {}", response.getVersionId());
             if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())){
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
-            log.info("Document checksum is : {}", response.getChecksum());
+            log.debug("Document checksum is : {}", response.getChecksum());
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
                 throw new RaddGenericException(CHECKSUM_VALIDATION);
@@ -93,7 +93,7 @@ public class BaseService {
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException){
                         entity.setErrorReason(((RaddGenericException) ex).getExceptionType().getMessage());
-                        log.info("Error message {}", ex.getMessage());
+                        log.debug("Error message {}", ex.getMessage());
                     } else if (ex instanceof PnRaddException){
                         entity.setErrorReason(((PnRaddException) ex).getWebClientEx().getMessage());
                     }

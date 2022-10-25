@@ -7,6 +7,7 @@ import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
@@ -60,7 +61,7 @@ public class ActService extends BaseService {
                 })
                 .zipWhen( transaction -> getCounterTransactions(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
                 .zipWhen( transaction -> {
-                    log.info("Ensure recipient : {}", transaction.getEnsureRecipientId());
+                    log.debug("Ensure recipient : {}", transaction.getEnsureRecipientId());
                     return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
                 }, (transaction, entity) -> transaction )
                 .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
@@ -136,14 +137,15 @@ public class ActService extends BaseService {
 
     private Flux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
+                .filter(legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT)
                 .flatMap(item -> pnDeliveryPushInternalClient
                             .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
-                            .mapNotNull(legalFact -> {
+                                .mapNotNull(legalFact -> {
                                 if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
-                                    log.info("Finded legal fact with retry after {}", legalFact.getRetryAfter());
+                                    log.debug("Finded legal fact with retry after {}", legalFact.getRetryAfter());
                                     throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
                                 }
-                                log.info("URL : {}", legalFact.getUrl());
+                                log.debug("URL : {}", legalFact.getUrl());
                                 return legalFact.getUrl();
                             })
                     , 5);

@@ -44,13 +44,16 @@ public class ActService extends BaseService {
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
+
         // check if iun exists
-        return Mono.fromFuture(this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
-                    .thenApply(response -> {
-                        if (response > 0) throw new RaddGenericException(ALREADY_COMPLETE_PRINT);
-                        return response;
-                    })
-                )
+        return validateInputActInquiry(recipientTaxId, recipientType, qrCode)
+                .flatMap( isValid ->
+                    Mono.fromFuture(this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
+                        .thenApply(response -> {
+                            if (response > 0) throw new RaddGenericException(ALREADY_COMPLETE_PRINT);
+                            return response;
+                        })
+                ))
                 .flatMap(counter -> getEnsureFiscalCode(recipientTaxId, recipientType))
                 .flatMap(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
                 .map(item -> ActInquiryResponseMapper.fromResult())
@@ -185,10 +188,6 @@ public class ActService extends BaseService {
     }
 
     private Mono<ResponseCheckAarDtoDto> controlAndCheckAar(String recipientType, String recipientTaxId, String qrCode){
-        if (StringUtils.isBlank(recipientTaxId) || !Utils.checkPersonType(recipientType) || StringUtils.isBlank(qrCode)) {
-            log.error("Missing input parameters");
-            throw new PnInvalidInputException("Codice fiscale, tipo utente o codice fiscale non valorizzato");
-        }
         return this.pnDeliveryClient.getCheckAar(recipientType, recipientTaxId, qrCode)
                 .map(response -> {
                     if (response == null || Strings.isBlank(response.getIun())){
@@ -219,6 +218,14 @@ public class ActService extends BaseService {
             return Mono.error(new PnInvalidInputException("Operation id non valorizzato"));
         }
         return Mono.just(req);
+    }
+
+    private Mono<Boolean> validateInputActInquiry(String recipientTaxId, String recipientType, String qrCode){
+        if (StringUtils.isBlank(recipientTaxId) || !Utils.checkPersonType(recipientType) || StringUtils.isBlank(qrCode)) {
+            log.error("Missing input parameters");
+            return Mono.error(new PnInvalidInputException("Codice fiscale, tipo utente o codice fiscale non valorizzato"));
+        }
+        return Mono.just(true);
     }
 
 }

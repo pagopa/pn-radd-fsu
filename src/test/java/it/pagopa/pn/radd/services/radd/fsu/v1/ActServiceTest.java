@@ -30,6 +30,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -117,7 +118,7 @@ class ActServiceTest extends BaseTest {
                 .thenThrow(PnInvalidInputException.class);
         Mono<ActInquiryResponse> response = actService.actInquiry("test","","test","test");
         response.onErrorResume( PnInvalidInputException.class, exception ->{
-            assertEquals("recipientTaxId o recipientType non valorizzato correttamente", exception.getMessage());
+            assertEquals("Codice fiscale, tipo utente o codice fiscale non valorizzato", exception.getMessage());
             return Mono.empty();
         }).block();
 
@@ -329,6 +330,7 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testActInquiryWhenControlCheckArrResponseError() {
+        Mockito.when(this.raddTransactionDAO.countFromQrCodeCompleted(Mockito.any())).thenReturn(CompletableFuture.completedFuture(0));
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new ResponseCheckAarDtoDto()));
         ActInquiryResponse monoResponse = actService.actInquiry("test", "test",Const.PF,"test").block();

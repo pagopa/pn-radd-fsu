@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
+
 @Slf4j
 @Service
 public class AorService extends BaseService {
@@ -91,11 +93,31 @@ public class AorService extends BaseService {
                 .zipWhen(transaction -> this.createAorTransaction(uid, transaction), (transaction, entity) -> transaction)
                 .zipWhen(this::verifyCheckSum, (transaction, responseChecksum) -> transaction)
                 .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
-                .map(transactionData -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))
+                .flatMap(transactionData ->
+                    this.getPresignedUrls(transactionData.getUrls())
+                            .collectList()
+                            .map(StartTransactionResponseMapper::fromResult)
+                )
                 .onErrorResume(RaddGenericException.class, ex ->
                         this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR)
                                 .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
                 );
+    }
+
+    public Flux<String> getPresignedUrls(List<String> listFileKey){
+        return Flux.fromStream(listFileKey.stream())
+                .flatMap(this.safeStorageClient::getFile)
+                .map(file -> {
+                    if (file.getDownload() != null && file.getDownload().getRetryAfter() != null && file.getDownload().getRetryAfter().intValue() != 0) {
+                        log.info("Finded legal fact with retry after {}", file.getDownload().getRetryAfter());
+                        throw new RaddGenericException(RETRY_AFTER, file.getDownload().getRetryAfter());
+                    }
+                    if (file.getDownload() != null) {
+                        log.info("URL : {}", file.getDownload().getUrl());
+                        return file.getDownload().getUrl();
+                    }
+                    return "";
+                });
     }
 
     private Mono<RaddTransactionEntity> createAorTransaction(String uid, TransactionData transaction){

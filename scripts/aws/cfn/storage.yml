@@ -41,6 +41,8 @@ Resources:
           AttributeType: "S"
         - AttributeName: "delegateId"
           AttributeType: "S"
+        - AttributeName: "qrCode"
+          AttributeType: "S"
       KeySchema:
         - AttributeName: "operationId"
           KeyType: "HASH"
@@ -71,6 +73,15 @@ Resources:
         - IndexName: "delegate-transaction-index"
           KeySchema:
             - AttributeName: "delegateId"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: "5"
+            WriteCapacityUnits: "5"
+        - IndexName: "qrcode-transaction-index"
+          KeySchema:
+            - AttributeName: "qrCode"
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"

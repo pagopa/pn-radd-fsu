@@ -28,6 +28,7 @@ public class RaddTransactionEntity {
     public static final String IUN_SECONDARY_INDEX = "iun-transaction-index";
     public static final String RECIPIENT_SECONDARY_INDEX = "recipient-transaction-index";
     public static final String DELEGATE_SECONDARY_INDEX = "delegate-transaction-index";
+    public static final String QRCODE_SECONDARY_INDEX = "qrcode-transaction-index";
 
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_OPERATION_ID)}))
@@ -36,7 +37,7 @@ public class RaddTransactionEntity {
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_FILE_KEY)}))
     private String fileKey;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_QR_CODE)}))
+    @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = QRCODE_SECONDARY_INDEX), @DynamoDbAttribute(COL_QR_CODE)}))
     private String qrCode;
 
     @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = RECIPIENT_SECONDARY_INDEX), @DynamoDbAttribute(COL_RECIPIENT_ID)}))

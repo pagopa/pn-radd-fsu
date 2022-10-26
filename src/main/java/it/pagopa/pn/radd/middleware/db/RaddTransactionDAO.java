@@ -93,7 +93,6 @@ public class RaddTransactionDAO extends BaseDao {
     public Mono<RaddTransactionEntity> getTransaction(String operationId, OperationTypeEnum operationType) {
         Key key = Key.builder().partitionValue(operationId).sortValue(operationType.name()).build();
         GetItemEnhancedRequest request = GetItemEnhancedRequest.builder().key(key).build();
-
         return Mono.fromFuture(raddTable.getItem(request).thenApply(item -> {
             log.debug("Item finded : {}", item);
             if (item == null) {
@@ -145,6 +144,26 @@ public class RaddTransactionDAO extends BaseDao {
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
         expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
         return this.getCounterQuery(expressionValues, query);
+    }
+
+    public CompletableFuture<Integer> countFromQrCodeCompleted(String qrCode){
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+
+        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed AND " + RaddTransactionEntity.COL_OPERATION_TYPE +  " = :type)";
+        expressionValues.put(":completed", AttributeValue.builder().s(Const.COMPLETED).build());
+        expressionValues.put(":type", AttributeValue.builder().s(OperationTypeEnum.ACT.name()).build());
+        expressionValues.put(":qrcodevalue",  AttributeValue.builder().s(qrCode).build());
+
+        QueryRequest qeRequest = QueryRequest
+                .builder()
+                .select(Select.COUNT)
+                .tableName(table)
+                .indexName(RaddTransactionEntity.QRCODE_SECONDARY_INDEX)
+                .keyConditionExpression(RaddTransactionEntity.COL_QR_CODE + " = :qrcodevalue")
+                .filterExpression(query)
+                .expressionAttributeValues(expressionValues)
+                .build();
+        return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);
     }
 
     private CompletableFuture<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression){

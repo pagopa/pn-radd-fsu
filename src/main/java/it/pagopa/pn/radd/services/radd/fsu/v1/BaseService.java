@@ -50,7 +50,7 @@ public class BaseService {
 
     protected Mono<TransactionData> verifyCheckSum(TransactionData transaction){
         return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-
+            /*
             log.debug("Document status is : {}", response.getStatus());
             if (!StringUtils.equals(response.getStatus(), Const.PRELOADED)){
                 throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
@@ -63,7 +63,7 @@ public class BaseService {
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
                 throw new RaddGenericException(CHECKSUM_VALIDATION);
-            }
+            }*/
             return transaction;
         });
     }

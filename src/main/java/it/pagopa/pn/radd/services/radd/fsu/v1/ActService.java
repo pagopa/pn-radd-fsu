@@ -45,8 +45,14 @@ public class ActService extends BaseService {
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
         // check if iun exists
-        return getEnsureFiscalCode(recipientTaxId, recipientType)
-                .zipWhen(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
+        return Mono.fromFuture(this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
+                    .thenApply(response -> {
+                        if (response > 0) throw new RaddGenericException(ALREADY_COMPLETE_PRINT);
+                        return response;
+                    })
+                )
+                .flatMap(counter -> getEnsureFiscalCode(recipientTaxId, recipientType))
+                .flatMap(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
                 .map(item -> ActInquiryResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(ActInquiryResponseMapper.fromException(ex)));
     }

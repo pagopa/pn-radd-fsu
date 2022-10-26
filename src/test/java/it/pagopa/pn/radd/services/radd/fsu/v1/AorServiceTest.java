@@ -4,11 +4,16 @@ import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadInfoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
+import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -37,9 +44,15 @@ class AorServiceTest extends BaseTest {
     private PnDataVaultClient pnDataVaultClient;
     @Mock
     private RaddTransactionDAO raddTransactionDAO;
+    @Mock
+    private PnSafeStorageClient pnSafeStorageClient;
+    @Autowired
+    @Spy
+    private TransactionDataMapper transactionDataMapper;
     private AbortTransactionRequest abortTransactionRequest;
     private CompleteTransactionRequest completeTransactionRequest;
     private RaddTransactionEntity entityComplete;
+    private AorStartTransactionRequest startTransactionRequest;
 
     @BeforeEach
     public void setUp(){
@@ -52,6 +65,14 @@ class AorServiceTest extends BaseTest {
         completeTransactionRequest = new CompleteTransactionRequest();
         completeTransactionRequest.setOperationId("1234AOR");
         completeTransactionRequest.setOperationDate(new Date());
+
+        startTransactionRequest = new AorStartTransactionRequest();
+        startTransactionRequest.setRecipientType(AorStartTransactionRequest.RecipientTypeEnum.PF);
+        startTransactionRequest.setRecipientTaxId("FRMTTR76M06B715E");
+        startTransactionRequest.setOperationId("12345");
+        startTransactionRequest.setChecksum("checksum-test");
+        startTransactionRequest.setFileKey("file-key-test");
+        startTransactionRequest.setVersionToken("version-token");
 
         entityComplete = new RaddTransactionEntity();
         entityComplete.setOperationType("1234AOR");
@@ -68,6 +89,47 @@ class AorServiceTest extends BaseTest {
         request.setOperationId("1234AOR");
         StepVerifier.create(aorService.startTransaction("uid", request))
                 .expectError(PnInvalidInputException.class).verify();
+    }
+
+    @Test
+    void testStartOK(){
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(startTransactionRequest.getRecipientTaxId(), startTransactionRequest.getRecipientType().getValue()))
+                .thenReturn(Mono.just("PF-4fc75df3-0913-407e-bdaa-e50329708b7d"));
+
+        ResponsePaperNotificationFailedDtoDto paperFailed = new ResponsePaperNotificationFailedDtoDto();
+        paperFailed.setRecipientInternalId("PF-4fc75df3-0913-407e-bdaa-e50329708b7d");
+        paperFailed.setIun("ABC-123-IUN");
+        paperFailed.setAarUrl("//url:safestorage");
+        Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any()))
+                .thenReturn(Flux.just(paperFailed));
+
+        Mockito.when(raddTransactionDAO.createRaddTransaction(Mockito.any(), Mockito.any()))
+                .thenReturn(Mono.just(new RaddTransactionEntity()));
+
+        FileDownloadResponseDto fileDownloadResponseDto = new FileDownloadResponseDto();
+        fileDownloadResponseDto.setStatus(Const.PRELOADED);
+        fileDownloadResponseDto.setChecksum(startTransactionRequest.getChecksum());
+        fileDownloadResponseDto.setVersionId(startTransactionRequest.getVersionToken());
+        Mockito.when(pnSafeStorageClient.getFile(startTransactionRequest.getFileKey()))
+                .thenReturn(Mono.just(fileDownloadResponseDto));
+
+        Mockito.when(pnSafeStorageClient.updateFileMetadata(startTransactionRequest.getFileKey()))
+                .thenReturn(Mono.just(new OperationResultCodeResponseDto()));
+
+        FileDownloadResponseDto file1 = new FileDownloadResponseDto();
+        FileDownloadInfoDto infoDto = new FileDownloadInfoDto();
+        infoDto.setUrl("https://aws.com");
+        file1.setDownload(infoDto);
+        Mockito.when(pnSafeStorageClient.getFile("//url:safestorage"))
+                .thenReturn(Mono.just(file1));
+
+        StartTransactionResponse response = this.aorService.startTransaction("uid", startTransactionRequest).block();
+
+        assertNotNull(response);
+        assertNotNull(response.getUrlList());
+        assertFalse(response.getUrlList().isEmpty());
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0,response.getStatus().getCode());
+
     }
 
 

@@ -63,7 +63,7 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
-        log.debug("Req params : {}", fileKey);
+        log.info("Req params : {}", fileKey);
         return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), true)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))

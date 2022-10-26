@@ -64,7 +64,7 @@ public class ActService extends BaseService {
                     log.debug("Ensure recipient : {}", transaction.getEnsureRecipientId());
                     return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
                 }, (transaction, entity) -> transaction )
-                .zipWhen(this::verifyCheckSum, (transaction, responseCheckSum) -> transaction)
+                .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification ->
                         urlDocAndAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2())

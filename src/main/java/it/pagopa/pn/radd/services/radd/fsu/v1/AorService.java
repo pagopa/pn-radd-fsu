@@ -23,6 +23,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.ParallelFlux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,11 +91,12 @@ public class AorService extends BaseService {
                                     transaction.getUrls().add(item.getAarUrl());
                                     return item;
                                 }).collectList().map(list -> transaction), (transaction, transactionWithIuns) -> transactionWithIuns)
-                .zipWhen(transaction -> this.createAorTransaction(uid, transaction), (transaction, entity) -> transaction)
-                .zipWhen(this::verifyCheckSum, (transaction, responseChecksum) -> transaction)
-                .zipWhen(this::updateFileMetadata, (transaction, transactionUpdate) -> transactionUpdate)
+                .flatMap(transaction -> this.createAorTransaction(uid, transaction))
+                .flatMap(this::verifyCheckSum)
+                .flatMap(this::updateFileMetadata)
                 .flatMap(transactionData ->
                     this.getPresignedUrls(transactionData.getUrls())
+                            .sequential()
                             .collectList()
                             .map(StartTransactionResponseMapper::fromResult)
                 )
@@ -104,15 +106,17 @@ public class AorService extends BaseService {
                 );
     }
 
-    public Flux<String> getPresignedUrls(List<String> listFileKey){
+    public ParallelFlux<String> getPresignedUrls(List<String> listFileKey){
         return Flux.fromStream(listFileKey.stream())
                 .flatMap(this.safeStorageClient::getFile)
+                .parallel()
                 .map(file -> {
                     if (file.getDownload() != null && file.getDownload().getRetryAfter() != null && file.getDownload().getRetryAfter().intValue() != 0) {
                         log.info("Finded legal fact with retry after {}", file.getDownload().getRetryAfter());
                         throw new RaddGenericException(RETRY_AFTER, file.getDownload().getRetryAfter());
                     }
                     if (file.getDownload() != null) {
+                        log.info("FIle : {}", file.getVersionId());
                         log.info("URL : {}", file.getDownload().getUrl());
                         return file.getDownload().getUrl();
                     }
@@ -120,7 +124,7 @@ public class AorService extends BaseService {
                 });
     }
 
-    private Mono<RaddTransactionEntity> createAorTransaction(String uid, TransactionData transaction){
+    private Mono<TransactionData> createAorTransaction(String uid, TransactionData transaction){
         List<OperationsIunsEntity> raddOperationIunList = new ArrayList<>();
         if (transaction.getIuns() != null){
             raddOperationIunList = transaction.getIuns().stream().map(iun -> {
@@ -132,7 +136,7 @@ public class AorService extends BaseService {
             }).collect(Collectors.toList());
         }
         RaddTransactionEntity entity = transactionDataMapper.toEntity(uid, transaction);
-        return this.raddTransactionDAO.createRaddTransaction(entity, raddOperationIunList);
+        return this.raddTransactionDAO.createRaddTransaction(entity, raddOperationIunList).map(ent -> transaction);
     }
 
     private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){

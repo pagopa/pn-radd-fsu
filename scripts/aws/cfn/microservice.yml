@@ -160,3 +160,19 @@ Resources:
               - !Sub "${RaddTransactionDynamoTableArn}/*"
               - !Sub "${OperationsAndIunsDynamoTableArn}"
               - !Sub "${OperationsAndIunsDynamoTableArn}/*"
+            
+  # Dashboard
+  RaddFsuMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-radd-fsu"
+        DynamoDBTableNames: !Join
+          - ','
+          - - !Ref RaddTransactionDynamoTableName
+            - !Ref OperationsAndIunsDynamoTableName
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt RaddMicroservice.Outputs.AutoScalingAlarmArn 
+            - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

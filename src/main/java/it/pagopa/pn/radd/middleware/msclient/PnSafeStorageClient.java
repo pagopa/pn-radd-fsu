@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.time.Duration;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
@@ -64,11 +65,15 @@ public class PnSafeStorageClient extends BaseClient {
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
         log.info("Req params : {}", fileKey);
+        log.info("GET FILE TICK {}", new Date().getTime());
         return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), true)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> {
+                ).map(item -> {
+                        log.info("GET FILE TOCK {}", new Date().getTime());
+                        return item;
+                }).onErrorResume(WebClientResponseException.class, ex -> {
                     if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
                         return Mono.error(new RaddGenericException(RETRY_AFTER, new BigDecimal(670)));
                     }
@@ -78,13 +83,18 @@ public class PnSafeStorageClient extends BaseClient {
 
     public Mono<OperationResultCodeResponseDto> updateFileMetadata(String fileKey){
         log.info("Req params : {}", fileKey);
+        log.info("UPDATE FILE METADATA TICK {}", new Date().getTime());
+
         UpdateFileMetadataRequestDto request = new UpdateFileMetadataRequestDto();
         request.setStatus(Const.ATTACHED);
         return fileMetadataUpdateApi.updateFileMetadata(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnSafeStorageException(ex)));
+                ).map(item -> {
+                    log.info("UPDATE FILE METADATA TOCK {}", new Date().getTime());
+                    return item;
+                }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnSafeStorageException(ex)));
     }
 
 

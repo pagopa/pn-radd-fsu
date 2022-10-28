@@ -24,6 +24,7 @@ import reactor.util.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF;
@@ -56,11 +57,15 @@ public class PnDeliveryPushClient extends BaseClient {
         request.setRaddBusinessTransactionDate(DateUtils.getOffsetDateTime(entity.getOperationStartDate()));
         request.setRaddBusinessTransactionId(entity.getOperationId());
         request.setRaddType(RADD_TYPE);
+        log.info("NOTIFICATION VIEWED TICK {}", new Date().getTime());
         return this.eventComunicationApi.notifyNotificationViewed(entity.getIun(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                )
+                ).map(item -> {
+                    log.info("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
+                    return item;
+                })
                 .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 

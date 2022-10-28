@@ -20,6 +20,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .uid(entity.getUid())
                 .build();
         logEvent.log();
-
+        log.info("CREATE TRANSACTION DAO TICK {}", new Date().getTime());
         return Mono.fromFuture(
                 countFromIunAndOperationIdAndStatus(entity.getOperationId(), entity.getIun())
                         .thenCompose(total -> {
@@ -83,7 +84,8 @@ public class RaddTransactionDAO extends BaseDao {
                     return Mono.error(throwable);
                 })
                 .map(item -> {
-                    log.debug("Radd transaction object={}", item);
+
+                    log.info("CREATE TRANSACTION DAO TOCK {}", new Date().getTime());
                     logEvent.generateSuccess(String.format("created Radd transaction object=%s", item)).log();
 
                     return item;
@@ -143,6 +145,7 @@ public class RaddTransactionDAO extends BaseDao {
         expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
         expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
+        log.info("COUNT DAO TICK {}", new Date().getTime());
         return this.getCounterQuery(expressionValues, query);
     }
 
@@ -163,6 +166,7 @@ public class RaddTransactionDAO extends BaseDao {
                 .filterExpression(query)
                 .expressionAttributeValues(expressionValues)
                 .build();
+        log.info("COUNT QUERY DAO TICK {}", new Date().getTime());
         return dynamoDbAsyncClient.query(qeRequest).thenApply(QueryResponse::count);
     }
 

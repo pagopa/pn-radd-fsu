@@ -8,6 +8,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
@@ -17,8 +18,10 @@ import reactor.util.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
+@Slf4j
 @Component
 public class PnDeliveryPushInternalClient extends BaseClient {
 
@@ -45,10 +48,14 @@ public class PnDeliveryPushInternalClient extends BaseClient {
     }
 
     public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {
+        log.info("GET LEGAL FACT TICK {}", new Date().getTime());
         return this.legalFactsApi.getLegalFactPrivate(recipientInternalId,iun, categoryDto, legalFactId, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(250))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                ).map(item ->{
+                    log.info("GET LEGAL FACT TOCK {}", new Date().getTime());
+                    return item;
+                }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 }

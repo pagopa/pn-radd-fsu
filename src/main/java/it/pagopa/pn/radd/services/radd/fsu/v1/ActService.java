@@ -25,6 +25,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
+import java.util.Date;
+
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 
 @Service
@@ -44,19 +46,26 @@ public class ActService extends BaseService {
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
-
         // check if iun exists
         return validateInputActInquiry(recipientTaxId, recipientType, qrCode)
+                .map(item -> {
+                    log.info("ACT INQUIRY TICK {}", new Date().getTime());
+                    return item;
+                })
                 .flatMap( isValid ->
                     Mono.fromFuture(this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
                         .thenApply(response -> {
+                            log.info("COUNT QUERY TOCK {}", new Date().getTime());
                             if (response > 0) throw new RaddGenericException(ALREADY_COMPLETE_PRINT);
                             return response;
                         })
                 ))
                 .flatMap(counter -> getEnsureFiscalCode(recipientTaxId, recipientType))
                 .flatMap(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
-                .map(item -> ActInquiryResponseMapper.fromResult())
+                .map(item -> {
+                    log.info("ACT INQUIRY TOCK {}", new Date().getTime());
+                    return ActInquiryResponseMapper.fromResult();
+                })
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(ActInquiryResponseMapper.fromException(ex)));
     }
 
@@ -179,6 +188,7 @@ public class ActService extends BaseService {
     private Mono<Integer> getCounterTransactions(String iun, String operationId){
         return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(operationId, iun)
                 .thenApply(response -> {
+                    log.info("COUNT DAO TOCK {}", new Date().getTime());
                     if (response > 0){
                         throw new RaddGenericException(TRANSACTION_ALREADY_EXIST);
                     }

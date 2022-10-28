@@ -1,7 +1,7 @@
 {
   "Parameters" : {
-    "SafeStorageCxId": "pn-delivery",
-    "SafeStorageDocType": "pn-radd-fsu",
+    "SafeStorageCxId": "pn-radd-fsu",
+    "SafeStorageDocType": "PN_NOTIFICATION_ATTACHMENTS",
     "SandboxSafeStorageBaseUrl": "https://eo6pdvms24.execute-api.eu-south-1.amazonaws.com/coll",
     "NotificationCheckAddress": "true"
   }

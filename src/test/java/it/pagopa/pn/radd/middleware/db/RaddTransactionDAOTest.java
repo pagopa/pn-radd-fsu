@@ -16,12 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -34,8 +30,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Flow;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -203,6 +197,6 @@ class RaddTransactionDAOTest extends BaseTest {
 
         PagePublisher<RaddTransactionEntity> pagePublisher = PagePublisher.create(Subscriber::onComplete);
         Mockito.when(index.query((QueryEnhancedRequest) Mockito.any())).thenReturn(pagePublisher);
-        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode).log().blockFirst();
+        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode, new Date(), new Date()).log().blockFirst();
     }
 }

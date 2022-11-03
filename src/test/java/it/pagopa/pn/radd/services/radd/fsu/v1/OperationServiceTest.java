@@ -218,9 +218,9 @@ class OperationServiceTest extends BaseTest {
         RaddTransactionEntity entity2 = new RaddTransactionEntity();
         entity2.setOperationType(OperationTypeEnum.ACT.name());
 
-        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.fromStream(List.of(entity1, entity2).stream()));
-        operationService.getAllActTransactionFromFiscalCode(fiscalCode)
+        operationService.getAllActTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(response -> {
                     assertEquals(true, response.getResult());
                     assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
@@ -234,10 +234,10 @@ class OperationServiceTest extends BaseTest {
     void testGetAllActTransactionFromFiscalCodeWithOperationListEmpty() {
         String fiscalCode = "ABCDEF12G34H567I";
 
-        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.empty());
 
-        operationService.getAllActTransactionFromFiscalCode(fiscalCode)
+        operationService.getAllActTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(response -> {
                     assertEquals(false, response.getResult());
                     assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
@@ -251,10 +251,10 @@ class OperationServiceTest extends BaseTest {
     void testGetAllActTransactionFromFiscalCodeErrorCase() {
         String fiscalCode = "ABCDEF12G34H567I";
 
-        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.error(new NullPointerException()));
 
-        operationService.getAllActTransactionFromFiscalCode(fiscalCode)
+        operationService.getAllActTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(operation -> {
                     assertEquals(false, operation.getResult());
                     assertEquals(OperationResponseStatus.CodeEnum.NUMBER_99, operation.getStatus().getCode());
@@ -274,10 +274,10 @@ class OperationServiceTest extends BaseTest {
         entity2.setOperationType(OperationTypeEnum.AOR.name());
         entity2.setIun("LJLH-GNTJ-DVXR-202210-J-2");
 
-        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.fromStream(List.of(entity1, entity2).stream()));
 
-        operationService.getAllAorTransactionFromFiscalCode(fiscalCode)
+        operationService.getAllAorTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(response -> {
                     assertEquals(true, response.getResult());
                     assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
@@ -291,10 +291,10 @@ class OperationServiceTest extends BaseTest {
     void testGetAllAorTransactionFromFiscalCodeWithOperationListEmpty() {
         String fiscalCode = "ABCDEF12G34H567I";
 
-        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.empty());
 
-        operationService.getAllAorTransactionFromFiscalCode(fiscalCode)
+        operationService.getAllAorTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(response -> {
                     assertEquals(false, response.getResult());
                     assertEquals(OperationResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
@@ -308,10 +308,10 @@ class OperationServiceTest extends BaseTest {
     void testGetAllAorTransactionFromFiscalCodeErrorCase() {
         String fiscalCode = "ABCDEF12G34H567I";
 
-        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(fiscalCode))
+        Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.error(new NullPointerException()));
 
-        operationService.getAllAorTransactionFromFiscalCode(fiscalCode)
+        operationService.getAllAorTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(operation -> {
                     assertEquals(false, operation.getResult());
                     assertEquals(OperationResponseStatus.CodeEnum.NUMBER_99, operation.getStatus().getCode());

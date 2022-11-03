@@ -29,6 +29,7 @@ public enum ExceptionTypeEnum {
 
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
     TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci transazioni per questo codice fiscale"),
+    DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili"),
     ;
     private final String title;
     private final String message;

@@ -106,7 +106,7 @@ public class AorService extends BaseService {
                 );
     }
 
-    public ParallelFlux<String> getPresignedUrls(List<String> listFileKey){
+    public ParallelFlux<String> getPresignedUrls(List<String> listFileKey) {
         return Flux.fromStream(listFileKey.stream())
                 .flatMap(this.safeStorageClient::getFile)
                 .parallel()

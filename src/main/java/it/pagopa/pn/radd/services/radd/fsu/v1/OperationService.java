@@ -15,6 +15,8 @@ import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.util.Date;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTIONS_NOT_FOUND_FOR_CF;
 
 @Slf4j
@@ -65,8 +67,8 @@ public class OperationService {
                 .map(OperationsResponseMapper::fromResult);
     }
 
-    public Mono<OperationsActDetailsResponse> getAllActTransactionFromFiscalCode(String ensureFiscalCode){
-        return this.transactionDAO.getTransactionsFromFiscalCode(ensureFiscalCode)
+    public Mono<OperationsActDetailsResponse> getAllActTransactionFromFiscalCode(String ensureFiscalCode, Date from, Date to){
+        return this.transactionDAO.getTransactionsFromFiscalCode(ensureFiscalCode, from, to)
                 .filter(transactionEntity -> transactionEntity.getOperationType().equals(OperationTypeEnum.ACT.name()))
                 .map(OperationActResponseMapper::getDetail)
                 .collectList()
@@ -86,19 +88,22 @@ public class OperationService {
                     }
                     return response;
                 })
-                .onErrorResume(e ->{
+                .onErrorResume(e -> {
                     OperationsActDetailsResponse response = new OperationsActDetailsResponse();
                     OperationResponseStatus status = new OperationResponseStatus();
                     response.setStatus(status);
                     response.setResult(false);
                     status.setCode(OperationResponseStatus.CodeEnum.NUMBER_99);
                     status.setMessage(e.getMessage());
+                    if (e instanceof RaddGenericException){
+                        status.setMessage(((RaddGenericException) e).getExceptionType().getMessage());
+                    }
                     return Mono.just(response);
                 });
     }
 
-    public Mono<OperationsAorDetailsResponse> getAllAorTransactionFromFiscalCode(String ensureFiscalCode){
-        return this.transactionDAO.getTransactionsFromFiscalCode(ensureFiscalCode)
+    public Mono<OperationsAorDetailsResponse> getAllAorTransactionFromFiscalCode(String ensureFiscalCode, Date from, Date to){
+        return this.transactionDAO.getTransactionsFromFiscalCode(ensureFiscalCode, from, to)
                 .filter(transactionEntity -> transactionEntity.getOperationType().equals(OperationTypeEnum.AOR.name()))
                 .map(OperationAorResponseMapper::getDetail)
                 .collectList()
@@ -124,6 +129,9 @@ public class OperationService {
                     response.setResult(false);
                     status.setCode(OperationResponseStatus.CodeEnum.NUMBER_99);
                     status.setMessage(e.getMessage());
+                    if (e instanceof RaddGenericException){
+                        status.setMessage(((RaddGenericException) e).getExceptionType().getMessage());
+                    }
                     return Mono.just(response);
                 });
     }

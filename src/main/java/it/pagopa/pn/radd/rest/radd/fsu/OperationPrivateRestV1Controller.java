@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Date;
+
 @RestController
 public class OperationPrivateRestV1Controller implements NotificationInquiryApi {
     private final OperationService operationService;
@@ -43,15 +45,16 @@ public class OperationPrivateRestV1Controller implements NotificationInquiryApi 
 
 
     @Override
-    public Mono<ResponseEntity<OperationsAorDetailsResponse>> getAorPracticesByInternalId(String internalId, ServerWebExchange exchange) {
-        return operationService.getAllAorTransactionFromFiscalCode(internalId)
+    public Mono<ResponseEntity<OperationsActDetailsResponse>> getActPracticesByInternalId(String internalId, Mono<FilterRequest> filterRequest, ServerWebExchange exchange) {
+        return filterRequest
+                .flatMap(filter -> operationService.getAllActTransactionFromFiscalCode(internalId, filter.getFrom(), filter.getTo()))
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
-
     @Override
-    public Mono<ResponseEntity<OperationsActDetailsResponse>> getActPracticesByInternalId(String internalId, ServerWebExchange exchange) {
-        return operationService.getAllActTransactionFromFiscalCode(internalId)
+    public Mono<ResponseEntity<OperationsAorDetailsResponse>> getAorPracticesByInternalId(String internalId, Mono<FilterRequest> filterRequest, ServerWebExchange exchange) {
+        return filterRequest
+                .flatMap(item -> operationService.getAllAorTransactionFromFiscalCode(internalId, item.getFrom(), item.getTo()))
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

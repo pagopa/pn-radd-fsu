@@ -433,11 +433,16 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/internalId'
-    get:
+    post:
       tags:
         - notificationInquiry
       operationId: getActPracticesByInternalId
       description: API utilizzata per il recupero di tutte le pratiche legate ad atti opponibili ai terzi ed associate ad uno specifico internal id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequest'
       responses:
         200:
           description: OK
@@ -461,11 +466,16 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/internalId'
-    get:
+    post:
       tags:
         - notificationInquiry
       operationId: getAorPracticesByInternalId
       description: API utilizzata per il recupero di tutte le pratiche legate ad AAR ed associate ad uno specifico internal id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequest'
       responses:
         200:
           description: OK
@@ -487,6 +497,18 @@ paths:
           $ref: '#/components/responses/InternalError'
 components:
   schemas:
+    FilterRequest:
+      description: Campi per poter applicare filtri sui dati a DB
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+          description: Data/ora in formato RFC3339.
+        to:
+          type: string
+          format: date-time
+          description: Data/ora in formato RFC3339.
     ActInquiryResponse:
       description: Response di verifica presenza atto ed eventuali attestazione opponibili a terzi
       type: object

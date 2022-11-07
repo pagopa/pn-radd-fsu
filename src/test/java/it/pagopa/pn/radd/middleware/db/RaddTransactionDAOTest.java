@@ -4,7 +4,10 @@ import it.pagopa.pn.commons.log.PnAuditLogBuilder;
 import it.pagopa.pn.commons.log.PnAuditLogEvent;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -16,12 +19,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import software.amazon.awssdk.core.async.SdkPublisher;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -30,15 +31,15 @@ import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Flow;
-import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @Slf4j
@@ -190,19 +191,148 @@ class RaddTransactionDAOTest extends BaseTest {
 
         PagePublisher<RaddTransactionEntity> pagePublisher = PagePublisher.create(Subscriber::onComplete);
         Mockito.when(index.query((QueryEnhancedRequest) Mockito.any())).thenReturn(pagePublisher);
-        this.raddTransactionDAO.getTransactionsFromIun(iun).log().blockFirst();
+        this.raddTransactionDAO.getTransactionsFromIun(iun)
+                .map(transaction -> {
+                    assertNotNull(transaction);
+                    return Mono.empty();
+                })
+                .blockFirst();
     }
 
     @Test
     void testGetTransactionsFromFiscalCode() {
         String fiscalCode = "ABCDEF12G34H567I";
-
         DynamoDbAsyncIndex<RaddTransactionEntity> index = mock(DynamoDbAsyncIndex.class);
         Mockito.when(raddTable.index(RaddTransactionEntity.RECIPIENT_SECONDARY_INDEX)).thenReturn(index);
         Mockito.when(raddTable.index(RaddTransactionEntity.DELEGATE_SECONDARY_INDEX)).thenReturn(index);
-
         PagePublisher<RaddTransactionEntity> pagePublisher = PagePublisher.create(Subscriber::onComplete);
         Mockito.when(index.query((QueryEnhancedRequest) Mockito.any())).thenReturn(pagePublisher);
-        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode).log().blockFirst();
+        Date dateFrom = new Date();
+        Date dateTo = new Date();
+        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode, dateFrom, dateTo)
+                .map(transaction -> {
+                    assertNotNull(transaction);
+                    return Mono.empty();
+                })
+                .blockFirst();
+
+        dateFrom = null;
+        dateTo = null;
+        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode, dateFrom, dateTo)
+                .map(transaction -> {
+                    assertNotNull(transaction);
+                    return Mono.empty();
+                })
+                .blockFirst();
+
+        dateFrom = null;
+        dateTo = new Date();
+        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode, dateFrom, dateTo)
+                .map(transaction -> {
+                    assertNotNull(transaction);
+                    return Mono.empty();
+                })
+                .blockFirst();
+
+        dateFrom = new Date();
+        dateTo = null;
+        this.raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode, dateFrom, dateTo)
+                .map(transaction -> {
+                    assertNotNull(transaction);
+                    return Mono.empty();
+                })
+                .blockFirst();
+    }
+
+    @Test
+    void testGetTransactionsFromFiscalCodeError() throws ParseException {
+        String fiscalCode = "ABCDEF12G34H567I";
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", Locale.ITALIAN);
+        String from = "03/11/2022";
+        String to = "02/11/2022";
+        Date dateFrom = formatter.parse(from);
+        Date dateTo = formatter.parse(to);
+        Flux<RaddTransactionEntity> response = raddTransactionDAO.getTransactionsFromFiscalCode(fiscalCode, dateFrom, dateTo);
+        response.onErrorResume(exception -> {
+            if (exception instanceof RaddGenericException){
+                assertEquals(DATE_VALIDATION_ERROR.getMessage(), ((RaddGenericException) exception).getExceptionType().getMessage());
+                return Mono.empty();
+            }
+            fail("Badly type exception");
+            return Mono.empty();
+        }).blockFirst();
+    }
+
+    @Test
+    void testCountFromQrCodeCompleted() throws ExecutionException, InterruptedException {
+        CompletableFuture<QueryResponse> queryResponseCompletableFuture = CompletableFuture.completedFuture(QueryResponse.builder().count(1).build());
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any())).thenReturn(queryResponseCompletableFuture);
+        CompletableFuture<Integer> completableFuture = raddTransactionDAO.countFromQrCodeCompleted(Mockito.any());
+        assertNotNull(completableFuture);
+        assertEquals(1, completableFuture.get().intValue());
+    }
+
+    @Test
+    void testCreateTransactionWithOperationIunsNotEmpty() {
+        String uid = "uid";
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setUid(uid);
+        List<OperationsIunsEntity> entityIuns = new ArrayList<>();
+        entityIuns.add(new OperationsIunsEntity());
+        CompletableFuture<QueryResponse> queryResponseCompletableFuture = CompletableFuture.completedFuture(QueryResponse.builder().count(0).build());
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any())).thenReturn(queryResponseCompletableFuture);
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        Mockito.when(dynamoDbEnhancedAsyncClient.transactWriteItems((TransactWriteItemsEnhancedRequest) Mockito.any())).thenReturn(completableFuture);
+        Mono<RaddTransactionEntity> entityMono = raddTransactionDAO.createRaddTransaction(raddTransactionEntity, entityIuns);
+        entityMono.map(entity -> {
+            assertEquals(uid, entity.getUid());
+            return Mono.empty();
+        });
+    }
+
+    @Test
+    void testCreateTransactionWithOperationIunsEmptyAndNull() {
+        String uid = "uid";
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setUid(uid);
+        List<OperationsIunsEntity> entityIuns = null;
+        CompletableFuture<QueryResponse> queryResponseCompletableFuture = CompletableFuture.completedFuture(QueryResponse.builder().count(0).build());
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any())).thenReturn(queryResponseCompletableFuture);
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        Mockito.when(dynamoDbEnhancedAsyncClient.transactWriteItems((TransactWriteItemsEnhancedRequest) Mockito.any())).thenReturn(completableFuture);
+        Mono<RaddTransactionEntity> entityMono = raddTransactionDAO.createRaddTransaction(raddTransactionEntity, entityIuns);
+        entityMono.map(entity -> {
+            assertEquals(uid, entity.getUid());
+            return Mono.empty();
+        });
+
+        entityIuns = new ArrayList<>();
+        entityMono = raddTransactionDAO.createRaddTransaction(raddTransactionEntity, entityIuns);
+        entityMono.map(entity -> {
+            assertEquals(uid, entity.getUid());
+            return Mono.empty();
+        });
+    }
+
+    @Test
+    void testCreateRaddTransactionThrowErrorWhenTransactWriteItemsFail() {
+        String uid = "uid";
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setUid(uid);
+        List<OperationsIunsEntity> entityIuns = new ArrayList<>();
+        entityIuns.add(new OperationsIunsEntity());
+        CompletableFuture<QueryResponse> queryResponseCompletableFuture = CompletableFuture.completedFuture(QueryResponse.builder().count(0).build());
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any())).thenReturn(queryResponseCompletableFuture);
+        CompletableFuture<Void> completableFuture = new CompletableFuture<>();
+        Mockito.when(dynamoDbEnhancedAsyncClient.transactWriteItems((TransactWriteItemsEnhancedRequest) Mockito.any())).thenThrow(TransactionCanceledException.builder().build());
+        Mono<RaddTransactionEntity> entityMono = raddTransactionDAO.createRaddTransaction(raddTransactionEntity, entityIuns);
+        entityMono.onErrorResume(exception -> {
+            if (exception instanceof RaddGenericException){
+                assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_SAVED.getMessage(), ((RaddGenericException) exception).getExceptionType().getMessage());
+                return Mono.empty();
+            }
+            fail("Badly type exception");
+            return Mono.empty();
+        }).block();
     }
 }

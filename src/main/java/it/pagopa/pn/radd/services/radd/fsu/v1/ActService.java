@@ -23,6 +23,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.ParallelFlux;
 import reactor.util.function.Tuples;
 
 import java.util.Date;
@@ -71,28 +72,35 @@ public class ActService extends BaseService {
 
     public Mono<StartTransactionResponse> startTransaction(String uid, ActStartTransactionRequest request){
         return validateAndSettingsData(uid, request)
-                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transationReq) -> transationReq)
-                .zipWhen(tmp -> controlAndCheckAar(tmp.getRecipientType(), tmp.getEnsureRecipientId(), tmp.getQrCode())
-                        .map(ResponseCheckAarDtoDto::getIun), (transaction, iun) -> {
-                                                                transaction.setIun(iun);
-                                                                return transaction;
-                })
-                .zipWhen( transaction -> getCounterTransactions(transaction.getIun(), transaction.getOperationId()), (transaction, counter)-> transaction)
-                .zipWhen( transaction -> {
-                    log.debug("Ensure recipient : {}", transaction.getEnsureRecipientId());
-                    return this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null);
-                }, (transaction, entity) -> transaction )
+                .flatMap(this::getEnsureRecipientAndDelegate)
+                .flatMap(tmp ->
+                        controlAndCheckAar(tmp.getRecipientType(), tmp.getEnsureRecipientId(), tmp.getQrCode())
+                            .map(ResponseCheckAarDtoDto::getIun)
+                            .map(iun -> {
+                                tmp.setIun(iun);
+                                return tmp;
+                            })
+                )
+                .flatMap(transaction -> this.raddTransactionDAO.createRaddTransaction(transactionDataMapper.toEntity(uid, transaction), null).map(entity-> transaction))
                 .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
-                .zipWhen(transactionAndSentNotification ->
-                        urlDocAndAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2())
-                                .concatWith(legalFact(transactionAndSentNotification.getT1()))
-                                .collectList()
-                                .map(StartTransactionResponseMapper::fromResult), (tupla, response) -> Tuples.of(tupla.getT1(), response))
+                .zipWhen(transactionAndSentNotification -> {
+                    Flux<String> urlDocuments = urlDocAndAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
+                    Flux<String> urlAttachments = getUrlsAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
+                    ParallelFlux<String> urlLegalFacts = legalFact(transactionAndSentNotification.getT1());
+                    return ParallelFlux.from(urlDocuments, urlAttachments, urlLegalFacts)
+                            .sequential()
+                            .collectList()
+                            .map(StartTransactionResponseMapper::fromResult);
+                }, (tupla, response) -> Tuples.of(tupla.getT1(), response))
                 .zipWhen(transactionAndResponse -> {
                     TransactionData transaction = transactionAndResponse.getT1();
                     return this.updateFileMetadata(transaction);
                 }, (in, out) -> in.getT2())
+                .map(response -> {
+                    log.info("START ACT TRANSACTION TOCK {}", new Date().getTime());
+                    return response;
+                })
                 .onErrorResume(PnRaddException.class, ex ->
                         this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                                 .flatMap(entity -> Mono.error(ex))
@@ -153,27 +161,27 @@ public class ActService extends BaseService {
                 );
     }
 
-    private Flux<String> legalFact(TransactionData transaction){
+    private ParallelFlux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
+                .parallel()
                 .filter(legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT)
-                .flatMap(item -> pnDeliveryPushInternalClient
-                            .getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
+                .flatMap(item ->
+                        pnDeliveryPushInternalClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                                 .mapNotNull(legalFact -> {
-                                if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
-                                    log.debug("Finded legal fact with retry after {}", legalFact.getRetryAfter());
-                                    throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
-                                }
-                                log.debug("URL : {}", legalFact.getUrl());
-                                return legalFact.getUrl();
-                            })
-                    , 5);
+                                    if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
+                                        log.debug("Finded legal fact with retry after {}", legalFact.getRetryAfter());
+                                        throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
+                                    }
+                                    log.debug("URL : {}", legalFact.getUrl());
+                                    return legalFact.getUrl();
+                                })
+                );
     }
 
     private Flux<String> urlDocAndAttachments(TransactionData transaction, SentNotificationDto sentDTO){
         return Flux.fromStream(sentDTO.getDocuments().stream())
-                    .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId()))
-                    .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl)
-                    .concatWith(getUrlsAttachments(transaction, sentDTO));
+                    .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
+                            .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
     }
 
     private Flux<String> getUrlsAttachments(TransactionData transactionData, SentNotificationDto sentDTO){
@@ -183,18 +191,6 @@ public class ActService extends BaseService {
                 .filter(item -> item.getTaxId().equalsIgnoreCase(transactionData.getRecipientId()) && item.getPayment() != null && item.getPayment().getPagoPaForm() != null)
                 .flatMap(item -> pnDeliveryClient.getPresignedUrlPaymentDocument(transactionData.getIun(), "PAGOPA", transactionData.getEnsureRecipientId()))
                 .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl);
-    }
-
-    private Mono<Integer> getCounterTransactions(String iun, String operationId){
-        return Mono.fromFuture(this.raddTransactionDAO.countFromIunAndOperationIdAndStatus(operationId, iun)
-                .thenApply(response -> {
-                    log.info("COUNT DAO TOCK {}", new Date().getTime());
-                    if (response > 0){
-                        throw new RaddGenericException(TRANSACTION_ALREADY_EXIST);
-                    }
-                    return response;
-                })
-        );
     }
 
     private Mono<ResponseCheckAarDtoDto> controlAndCheckAar(String recipientType, String recipientTaxId, String qrCode){
@@ -220,6 +216,7 @@ public class ActService extends BaseService {
         if (request.getRecipientType() == null || !Utils.checkPersonType(request.getRecipientType().getValue())){
             return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
+        log.info("START ACT TRANSACTION TICK {}", new Date().getTime());
         return Mono.just(this.transactionDataMapper.toTransaction(uid, request));
     }
 

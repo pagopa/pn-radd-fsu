@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.utils.Const;
+import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Import;
@@ -25,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
 
 @Repository
 @Slf4j
@@ -199,21 +202,43 @@ public class RaddTransactionDAO extends BaseDao {
         return Flux.from(raddTable.index(RaddTransactionEntity.IUN_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items));
     }
 
-    public Flux<RaddTransactionEntity> getTransactionsFromFiscalCode(String ensureFiscalCode) {
-        QueryEnhancedRequest qeRequest = QueryEnhancedRequest
+    public Flux<RaddTransactionEntity> getTransactionsFromFiscalCode(String ensureFiscalCode, Date from, Date to) {
+        if (from != null && to != null && from.after(to)){
+            return Flux.error(new RaddGenericException(DATE_VALIDATION_ERROR));
+        }
+        Map<String, AttributeValue> map = new HashMap<>();
+        String query = "";
+        QueryEnhancedRequest.Builder qeRequest = QueryEnhancedRequest
                 .builder()
                 .queryConditional(QueryConditional.keyEqualTo(
                                 Key.builder()
                                         .partitionValue(ensureFiscalCode)
                                         .build()
                         )
-                )
-                .scanIndexForward(true)
-                .build();
+                ).scanIndexForward(true);
+
+        if (from != null) {
+            map.put(":fromDate", AttributeValue.builder().s(DateUtils.formatDate(from)).build());
+            query = RaddTransactionEntity.COL_OPERATION_START_DATE + " >= :fromDate";
+        }
+        if (from != null && to != null) {
+            map.put(":toDate", AttributeValue.builder().s(DateUtils.formatDate(to)).build());
+            query += " AND " + RaddTransactionEntity.COL_OPERATION_START_DATE + " <= :toDate";
+        }
+
+        if (!query.isEmpty()){
+            qeRequest.filterExpression(Expression.builder()
+                            .expression("(" + query + ")")
+                            .expressionValues(map)
+                            .build());
+
+        }
 
 
-        return Flux.from(raddTable.index(RaddTransactionEntity.RECIPIENT_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items))
-                .concatWith(raddTable.index(RaddTransactionEntity.DELEGATE_SECONDARY_INDEX).query(qeRequest).flatMapIterable(Page::items));
+
+        return Flux.from(raddTable.index(RaddTransactionEntity.RECIPIENT_SECONDARY_INDEX).query(qeRequest.build()).flatMapIterable(Page::items))
+                .concatWith(raddTable.index(RaddTransactionEntity.DELEGATE_SECONDARY_INDEX).query(qeRequest.build()).flatMapIterable(Page::items))
+                .distinct(RaddTransactionEntity::getOperationId);
     }
 
     private TransactWriteItemsEnhancedRequest createTransaction(RaddTransactionEntity raddTransactionEntity,

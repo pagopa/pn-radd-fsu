@@ -181,7 +181,7 @@ public class AorService extends BaseService {
         if (Strings.isBlank(req.getRecipientTaxId())){
             return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
         }
-        if (!Utils.checkPersonType(req.getRecipientType().getValue())){
+        if (req.getRecipientType() == null || !Utils.checkPersonType(req.getRecipientType().getValue())){
             return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
         return Mono.just(this.transactionDataMapper.toTransaction(uid, req));

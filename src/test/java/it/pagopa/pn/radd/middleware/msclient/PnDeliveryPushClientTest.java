@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +27,7 @@ class PnDeliveryPushClientTest extends BaseTest.WithMockServer {
         entity.setRecipientType(RecipientTypeDto.PF.getValue());
         entity.setOperationStartDate("2022-09-30T13:57:00.000");
         entity.setRecipientId("1924814");
-        Mono<ResponseNotificationViewedDtoDto> monoResponse = pnDeliveryPushClient.notifyNotificationViewed(entity);
+        Mono<ResponseNotificationViewedDtoDto> monoResponse = pnDeliveryPushClient.notifyNotificationViewed(entity, new Date());
         monoResponse.map(response -> {
             assertNotNull(entity);
             assertEquals(entity.getIun(), response.getIun());
@@ -41,7 +42,7 @@ class PnDeliveryPushClientTest extends BaseTest.WithMockServer {
         entity.setRecipientType(RecipientTypeDto.PF.getValue());
         entity.setOperationStartDate("2022-09-30T13:57:00.000");
         entity.setRecipientId("");
-        Mono<ResponseNotificationViewedDtoDto> response = pnDeliveryPushClient.notifyNotificationViewed(entity);
+        Mono<ResponseNotificationViewedDtoDto> response = pnDeliveryPushClient.notifyNotificationViewed(entity, new Date());
 
         response.onErrorResume(exception -> {
             if (exception instanceof PnRaddException){

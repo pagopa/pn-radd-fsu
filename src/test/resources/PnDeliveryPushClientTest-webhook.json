@@ -50,13 +50,7 @@
   {
     "httpRequest": {
       "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
-      "body" : {
-        "recipientType" : "PF",
-        "recipientInternalId" : "1924814",
-        "raddType" : "__FSU__",
-        "raddBusinessTransactionId" : null,
-        "raddBusinessTransactionDate" : "2022-09-30T13:57:00Z"
-      },
+
       "method": "POST"
     },
     "httpResponse": {

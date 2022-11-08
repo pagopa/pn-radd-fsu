@@ -119,7 +119,7 @@ public class ActService extends BaseService {
                                     checkTransactionStatus(entity);
                                     return entity;
                                 }))
-                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2()), (reqAndEntity, response) -> reqAndEntity)
+                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
                 .zipWhen(reqAndEntity -> {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
                     entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
@@ -138,13 +138,11 @@ public class ActService extends BaseService {
     }
 
     public Mono<AbortTransactionResponse> abortTransaction(String uid, AbortTransactionRequest req) {
-
         if (req == null || StringUtils.isBlank(req.getOperationId())
                 || StringUtils.isBlank(req.getReason())) {
             log.error("Missing input parameters");
             return Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate"));
         }
-
 
         return raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
                 .map(raddEntity -> {

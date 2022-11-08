@@ -50,11 +50,11 @@ public class PnDeliveryPushClient extends BaseClient {
     }
 
 
-    public Mono<ResponseNotificationViewedDtoDto> notifyNotificationViewed(RaddTransactionEntity entity){
+    public Mono<ResponseNotificationViewedDtoDto> notifyNotificationViewed(RaddTransactionEntity entity, Date operationDate){
         RequestNotificationViewedDtoDto request = new RequestNotificationViewedDtoDto();
         request.setRecipientType(RecipientTypeDto.fromValue(entity.getRecipientType()));
         request.setRecipientInternalId(entity.getRecipientId());
-        request.setRaddBusinessTransactionDate(DateUtils.getOffsetDateTime(entity.getOperationStartDate()));
+        request.setRaddBusinessTransactionDate(DateUtils.getOffsetDateTimeFromDate(operationDate));
         request.setRaddBusinessTransactionId(entity.getOperationId());
         request.setRaddType(RADD_TYPE);
         log.info("NOTIFICATION VIEWED TICK {}", new Date().getTime());
@@ -66,7 +66,11 @@ public class PnDeliveryPushClient extends BaseClient {
                     log.info("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
                     return item;
                 })
-                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                .onErrorResume(WebClientResponseException.class, ex -> {
+                    log.info("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
+                    log.error(ex.getResponseBodyAsString());
+                    return Mono.error(new PnRaddException(ex));
+                });
     }
 
 

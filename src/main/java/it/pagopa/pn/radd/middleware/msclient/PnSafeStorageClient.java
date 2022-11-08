@@ -52,15 +52,24 @@ public class PnSafeStorageClient extends BaseClient {
         log.debug(String.format("Req params: %s %s", contentType, bundleId));
         log.debug(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
         log.debug(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
+        log.info("CREATE FILE TICK {}", new Date().getTime());
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
         request.setDocumentType(this.pnRaddFsuConfig.getSafeStorageDocType());
         return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), Const.X_CHECKSUM, checksum, request)
+                .map(item -> {
+                    log.info("CREATE FILE TOCK {}", new Date().getTime());
+                    return item;
+                })
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
+                ).onErrorResume(WebClientResponseException.class, ex -> {
+                    log.info("CREATE FILE TOCK {}", new Date().getTime());
+                    log.error(ex.getResponseBodyAsString());
+                    return Mono.error(new RaddGenericException(DOCUMENT_UPLOAD_ERROR));
+                });
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
@@ -74,6 +83,8 @@ public class PnSafeStorageClient extends BaseClient {
                         log.info("GET FILE TOCK {}", new Date().getTime());
                         return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> {
+                    log.info("GET FILE TOCK {}", new Date().getTime());
+                    log.error(ex.getResponseBodyAsString());
                     if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
                         return Mono.error(new RaddGenericException(RETRY_AFTER, new BigDecimal(670)));
                     }
@@ -94,7 +105,11 @@ public class PnSafeStorageClient extends BaseClient {
                 ).map(item -> {
                     log.info("UPDATE FILE METADATA TOCK {}", new Date().getTime());
                     return item;
-                }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnSafeStorageException(ex)));
+                }).onErrorResume(WebClientResponseException.class, ex -> {
+                    log.info("UPDATE FILE METADATA TOCK {}", new Date().getTime());
+                    log.error(ex.getResponseBodyAsString());
+                    return Mono.error(new PnSafeStorageException(ex));
+                });
     }
 
 

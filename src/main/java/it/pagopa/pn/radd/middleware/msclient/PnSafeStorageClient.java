@@ -73,9 +73,15 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey){
+        boolean metadataOnly = true;
+        String BASE_URL = "safestorage://";
+        if (fileKey.contains(BASE_URL)){
+            fileKey = fileKey.replace(BASE_URL, "");
+            metadataOnly = false;
+        }
         log.info("Req params : {}", fileKey);
         log.info("GET FILE TICK {}", new Date().getTime());
-        return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), true)
+        return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), metadataOnly)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

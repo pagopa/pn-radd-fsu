@@ -93,12 +93,16 @@ public class AorService extends BaseService {
                                 }).collectList().map(list -> transaction), (transaction, transactionWithIuns) -> transactionWithIuns)
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
                 .flatMap(this::verifyCheckSum)
-                .flatMap(this::updateFileMetadata)
                 .flatMap(transactionData ->
-                    this.getPresignedUrls(transactionData.getUrls())
-                            .sequential()
-                            .collectList()
-                            .map(StartTransactionResponseMapper::fromResult)
+                    this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
+                            .map(urls -> {
+                                transactionData.setUrls(urls);
+                                return transactionData;
+                            })
+                )
+                .flatMap(transactionData ->
+                    updateFileMetadata(transactionData)
+                            .map(data -> StartTransactionResponseMapper.fromResult(transactionData.getUrls()))
                 )
                 .onErrorResume(RaddGenericException.class, ex ->
                         this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR)

@@ -44,7 +44,8 @@ public class PnDeliveryPushInternalClient extends BaseClient {
                 .retryWhen(
                     Retry.backoff(2, Duration.ofMillis(250))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
-                ).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                )
+        .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
     public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {

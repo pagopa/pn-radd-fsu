@@ -36,6 +36,11 @@ public class DateUtils {
         return LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME).atOffset(ZoneOffset.UTC);
     }
 
+    public static OffsetDateTime getOffsetDateTimeFromDate(Date date) {
+        //return OffsetDateTime.ofInstant(date.toInstant(), italianZoneId);
+        return OffsetDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC);
+    }
+
     /*
 
     public static String formatTime(ZonedDateTime datetime) {

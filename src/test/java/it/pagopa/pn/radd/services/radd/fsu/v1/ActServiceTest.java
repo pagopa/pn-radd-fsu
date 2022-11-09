@@ -23,8 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -33,7 +31,6 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 
 @Slf4j
@@ -75,7 +72,7 @@ class ActServiceTest extends BaseTest {
 
         ResponseNotificationViewedDtoDto responseNotificationViewedDtoDto = new ResponseNotificationViewedDtoDto();
         Mono<ResponseNotificationViewedDtoDto> monoNotificationViewedDtoDto = Mono.just(responseNotificationViewedDtoDto);
-        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any())).thenReturn(monoNotificationViewedDtoDto);
+        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any(), Mockito.any())).thenReturn(monoNotificationViewedDtoDto);
     }
 
 
@@ -249,7 +246,7 @@ class ActServiceTest extends BaseTest {
         Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
 
         WebClientResponseException ex = new WebClientResponseException("Internal server Error", 500, "header", null, null, null);
-        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any()))
+        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.error(new PnRaddException(ex)));
 
         Mockito.when(raddTransactionDAO.updateStatus(Mockito.any()))
@@ -269,7 +266,7 @@ class ActServiceTest extends BaseTest {
         Mockito.when(raddTransactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
 
         WebClientResponseException ex = new WebClientResponseException("Internal server Error", 500, "header", null, null, null);
-        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any()))
+        Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.error(new PnRaddException(ex)));
 
         Mockito.when(raddTransactionDAO.updateStatus(Mockito.any()))

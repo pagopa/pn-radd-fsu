@@ -8,6 +8,7 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.Notif
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.NotificationStatusDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
@@ -63,6 +64,8 @@ public class ActService extends BaseService {
                 ))
                 .flatMap(counter -> getEnsureFiscalCode(recipientTaxId, recipientType))
                 .flatMap(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
+                .flatMap(responseAar -> hasDocumentsAvailable(responseAar.getIun()))
+                .flatMap(this::hasNotificationsCancelled)
                 .map(item -> {
                     log.info("ACT INQUIRY TOCK {}", new Date().getTime());
                     return ActInquiryResponseMapper.fromResult();
@@ -85,7 +88,7 @@ public class ActService extends BaseService {
                 .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> {
-                    Flux<String> urlDocuments = urlDocAndAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
+                    Flux<String> urlDocuments = getUrlDoc(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
                     Flux<String> urlAttachments = getUrlsAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
                     ParallelFlux<String> urlLegalFacts = legalFact(transactionAndSentNotification.getT1());
                     return ParallelFlux.from(urlDocuments, urlAttachments, urlLegalFacts)
@@ -176,7 +179,7 @@ public class ActService extends BaseService {
                 );
     }
 
-    private Flux<String> urlDocAndAttachments(TransactionData transaction, SentNotificationDto sentDTO){
+    private Flux<String> getUrlDoc(TransactionData transaction, SentNotificationDto sentDTO){
         return Flux.fromStream(sentDTO.getDocuments().stream())
                     .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
                             .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl));
@@ -231,6 +234,26 @@ public class ActService extends BaseService {
             return Mono.error(new PnInvalidInputException("Codice fiscale, tipo utente o codice fiscale non valorizzato"));
         }
         return Mono.just(true);
+    }
+
+    private Mono<String> hasDocumentsAvailable(String iun){
+        return this.pnDeliveryClient.getNotifications(iun)
+                .flatMap(response -> {
+                    if (response.getDocumentsAvailable() != null && !response.getDocumentsAvailable()){
+                        return Mono.error(new RaddGenericException(DOCUMENT_UNAVAILABLE));
+                    }
+                    return Mono.just(iun);
+                });
+    }
+
+    private Mono<String> hasNotificationsCancelled(String iun){
+        return this.pnDeliveryPushClient.getNotificationHistory(iun)
+                .flatMap(response -> {
+                    if (response.getNotificationStatus() == NotificationStatusDto.CANCELLED){
+                        return Mono.error(new RaddGenericException(NOTIFICATION_CANCELLED));
+                    }
+                    return Mono.just(iun);
+                });
     }
 
 }

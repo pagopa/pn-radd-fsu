@@ -15,6 +15,7 @@ public enum ExceptionTypeEnum {
     CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde"),
     DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto"),
     DOCUMENT_UPLOAD_ERROR("DOCUMENT_UPLOAD_ERROR", "si è verificato un errore durante il caricamento"),
+    DOCUMENT_UNAVAILABLE("DOCUMENT_UNAVAILABLE", "Documenti non disponibili"),
     VERSION_ID_VALIDATION("VERSION_ID_VALIDATION", "Version id non corrispondono"),
     QR_CODE_VALIDATION("QR_CODE_VALIDATION", "QrCode non valido"),
     DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Documenti non più disponibili"),
@@ -24,7 +25,7 @@ public enum ExceptionTypeEnum {
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
 
     RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download"),
-
+    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "Notifica annullata"),
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
 
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),

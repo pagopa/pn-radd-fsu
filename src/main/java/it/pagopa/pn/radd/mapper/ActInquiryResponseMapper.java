@@ -30,9 +30,11 @@ public class ActInquiryResponseMapper {
         status.setMessage((ex.getExceptionType() == null) ? ex.getMessage() : ex.getExceptionType().getMessage());
 
         if (ex.getExceptionType() == ExceptionTypeEnum.QR_CODE_VALIDATION
-                || ex.getExceptionType() == ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID) {
+                || ex.getExceptionType() == ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID
+                || ex.getExceptionType() ==ExceptionTypeEnum.NOTIFICATION_CANCELLED) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
-        } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_NOT_FOUND) {
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_NOT_FOUND
+                || ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_UNAVAILABLE) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_2);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);

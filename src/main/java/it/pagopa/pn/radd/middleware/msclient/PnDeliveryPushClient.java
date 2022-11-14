@@ -6,10 +6,8 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.EventComunicationApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.PaperNotificationFailedApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.RecipientTypeDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.RequestNotificationViewedDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponseNotificationViewedDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.TimelineAndStatusApi;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.*;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.DateUtils;
@@ -24,6 +22,7 @@ import reactor.util.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
@@ -34,6 +33,7 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.NO_NOTIFICATIONS_FAI
 public class PnDeliveryPushClient extends BaseClient {
     private static final String RADD_TYPE = "__FSU__";
     private EventComunicationApi eventComunicationApi;
+    private TimelineAndStatusApi timelineAndStatusApi;
     private PaperNotificationFailedApi paperNotificationFailedApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
@@ -46,9 +46,28 @@ public class PnDeliveryPushClient extends BaseClient {
         ApiClient newApiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()));
         newApiClient.setBasePath(pnRaddFsuConfig.getClientDeliveryPushBasepath());
         this.eventComunicationApi = new EventComunicationApi(newApiClient);
+        this.timelineAndStatusApi = new TimelineAndStatusApi(newApiClient);
         this.paperNotificationFailedApi = new PaperNotificationFailedApi(newApiClient);
     }
 
+    public Mono<NotificationHistoryResponseDto> getNotificationHistory(String iun){
+        log.info("IUN : {}", iun);
+        log.info("NOTIFICATION HISTORY TICK {}", new Date().getTime());
+        return this.timelineAndStatusApi.getNotificationHistory(iun, 1, DateUtils.getOffsetDateTimeFromDate(new Date()))
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(500))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                ).map(item -> {
+                    log.info("NOTIFICATION HISTORY TOCK {}", new Date().getTime());
+                    return item;
+                })
+                .onErrorResume(WebClientResponseException.class, ex -> {
+                    log.info("NOTIFICATION HISTORY TOCK {}", new Date().getTime());
+                    ex.getStackTrace();
+                    log.error(ex.getResponseBodyAsString());
+                    return Mono.error(new PnRaddException(ex));
+                });
+    }
 
     public Mono<ResponseNotificationViewedDtoDto> notifyNotificationViewed(RaddTransactionEntity entity, Date operationDate){
         RequestNotificationViewedDtoDto request = new RequestNotificationViewedDtoDto();

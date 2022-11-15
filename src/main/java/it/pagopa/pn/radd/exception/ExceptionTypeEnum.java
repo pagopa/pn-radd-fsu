@@ -25,7 +25,7 @@ public enum ExceptionTypeEnum {
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
 
     RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download"),
-    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "Notifica annullata"),
+    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "QrCode/CF non valido/i"),
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
 
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),

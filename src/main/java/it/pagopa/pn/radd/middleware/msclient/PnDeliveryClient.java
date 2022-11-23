@@ -48,7 +48,6 @@ public class PnDeliveryClient extends BaseClient {
         if (qrCode.contains("aar=")) {
             request.setAarQrCodeValue(qrCode.substring(qrCode.lastIndexOf("aar=")+4));
         }
-        request.setAarQrCodeValue(qrCode);
         request.setRecipientType(recipientType);
         request.setRecipientInternalId(recipientInternalId);
         log.trace("CHECK AAR QRCODE TICK {}", new Date().getTime());

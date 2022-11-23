@@ -172,7 +172,7 @@ public class AorService extends BaseService {
                     return raddTransactionDAO.updateStatus(raddEntity);
                 })
                 .map(result -> {
-                    log.info("Return result of abort transaction");
+                    log.debug("Return result of abort transaction");
                     return AbortTransactionResponseMapper.fromResult();
                 })
                 .onErrorResume(RaddGenericException.class,

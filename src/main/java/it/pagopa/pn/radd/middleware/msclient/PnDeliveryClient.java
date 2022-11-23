@@ -20,7 +20,6 @@ import reactor.util.retry.Retry;
 
 import javax.annotation.PostConstruct;
 import java.net.ConnectException;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
@@ -45,6 +44,10 @@ public class PnDeliveryClient extends BaseClient {
 
     public Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode) {
         RequestCheckAarDtoDto request = new RequestCheckAarDtoDto();
+        request.setAarQrCodeValue(qrCode);
+        if (qrCode.contains("aar=")) {
+            request.setAarQrCodeValue(qrCode.substring(qrCode.lastIndexOf("aar=")+4));
+        }
         request.setAarQrCodeValue(qrCode);
         request.setRecipientType(recipientType);
         request.setRecipientInternalId(recipientInternalId);

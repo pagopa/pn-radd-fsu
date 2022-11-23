@@ -217,7 +217,7 @@ public class ActService extends BaseService {
         if (request.getRecipientType() == null || !Utils.checkPersonType(request.getRecipientType().getValue())){
             return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
-        log.info("START ACT TRANSACTION TICK {}", new Date().getTime());
+        log.trace("START ACT TRANSACTION TICK {}", new Date().getTime());
         return Mono.just(this.transactionDataMapper.toTransaction(uid, request));
     }
 

@@ -48,12 +48,12 @@ public class PnDeliveryClient extends BaseClient {
         request.setAarQrCodeValue(qrCode);
         request.setRecipientType(recipientType);
         request.setRecipientInternalId(recipientInternalId);
-        log.info("CHECK AAR QRCODE TICK {}", new Date().getTime());
+        log.trace("CHECK AAR QRCODE TICK {}", new Date().getTime());
         return this.deliveryApi.checkAarQrCode(request)
                 .retryWhen(Retry.backoff(2, Duration.ofMillis(25))
                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
         ).map(item -> {
-            log.info("AAR TOCK : {}", new Date().getTime());
+            log.trace("AAR TOCK : {}", new Date().getTime());
             return item;
         }).onErrorResume(WebClientResponseException.class, ex -> {
             log.error("Error : {}", ex.getResponseBodyAsString());
@@ -74,14 +74,14 @@ public class PnDeliveryClient extends BaseClient {
     }
 
     public Mono<SentNotificationDto> getNotifications(String iun){
-        log.info("GET NOTIFICATIONS TICK {}", new Date().getTime());
+        log.trace("GET NOTIFICATIONS TICK {}", new Date().getTime());
         return this.deliveryApi.getSentNotificationPrivate(iun)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 )
                 .map(item -> {
-                    log.info("GET NOTIFICATIONS TOCK : {}", new Date().getTime());
+                    log.trace("GET NOTIFICATIONS TOCK : {}", new Date().getTime());
                     return item;
                 })
                 .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
@@ -89,25 +89,25 @@ public class PnDeliveryClient extends BaseClient {
 
 
     public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlDocument(String iun, String docXid, String recipientTaxId){
-        log.info("SINGLE PRESIGNED DOCUMENT TICK {}", new Date().getTime());
+        log.trace("SINGLE PRESIGNED DOCUMENT TICK {}", new Date().getTime());
         return this.deliveryApi.getReceivedNotificationDocumentPrivate(iun, Integer.valueOf(docXid), recipientTaxId, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                    log.info("SINGLE PRESIGNED DOCUMENT URL TOCK : {}", new Date().getTime());
+                    log.trace("SINGLE PRESIGNED DOCUMENT URL TOCK : {}", new Date().getTime());
                     return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
     public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlPaymentDocument(String iun, String attchamentName, String recipientTaxId){
-        log.info("SINGLE PRESIGNED ATTACHEMENT TICK {}", new Date().getTime());
+        log.trace("SINGLE PRESIGNED ATTACHEMENT TICK {}", new Date().getTime());
         return this.deliveryApi.getReceivedNotificationAttachmentPrivate(iun, attchamentName, recipientTaxId,null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                    log.info("SINGLE PRESIGNED ATTACHEMENT TOCK {}", new Date().getTime());
+                    log.trace("SINGLE PRESIGNED ATTACHEMENT TOCK {}", new Date().getTime());
                     return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }

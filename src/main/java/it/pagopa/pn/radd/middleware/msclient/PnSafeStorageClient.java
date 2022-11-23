@@ -52,21 +52,21 @@ public class PnSafeStorageClient extends BaseClient {
         log.debug(String.format("Req params: %s %s", contentType, bundleId));
         log.debug(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
         log.debug(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
-        log.info("CREATE FILE TICK {}", new Date().getTime());
+        log.trace("CREATE FILE TICK {}", new Date().getTime());
         FileCreationRequestDto request = new FileCreationRequestDto();
         request.setStatus(Const.PRELOADED);
         request.setContentType(contentType);
         request.setDocumentType(this.pnRaddFsuConfig.getSafeStorageDocType());
         return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), Const.X_CHECKSUM, checksum, request)
                 .map(item -> {
-                    log.info("CREATE FILE TOCK {}", new Date().getTime());
+                    log.trace("CREATE FILE TOCK {}", new Date().getTime());
                     return item;
                 })
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).onErrorResume(WebClientResponseException.class, ex -> {
-                    log.info("CREATE FILE TOCK {}", new Date().getTime());
+                    log.trace("CREATE FILE TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
                     return Mono.error(new RaddGenericException(DOCUMENT_UPLOAD_ERROR));
                 });
@@ -79,17 +79,17 @@ public class PnSafeStorageClient extends BaseClient {
             fileKey = fileKey.replace(BASE_URL, "");
             metadataOnly = false;
         }
-        log.info("Req params : {}", fileKey);
-        log.info("GET FILE TICK {}", new Date().getTime());
+        log.debug("Req params : {}", fileKey);
+        log.trace("GET FILE TICK {}", new Date().getTime());
         return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), metadataOnly)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                        log.info("GET FILE TOCK {}", new Date().getTime());
+                        log.trace("GET FILE TOCK {}", new Date().getTime());
                         return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> {
-                    log.info("GET FILE TOCK {}", new Date().getTime());
+                    log.trace("GET FILE TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
                     if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
                         return Mono.error(new RaddGenericException(RETRY_AFTER, new BigDecimal(670)));
@@ -99,8 +99,8 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<OperationResultCodeResponseDto> updateFileMetadata(String fileKey){
-        log.info("Req params : {}", fileKey);
-        log.info("UPDATE FILE METADATA TICK {}", new Date().getTime());
+        log.debug("Req params : {}", fileKey);
+        log.trace("UPDATE FILE METADATA TICK {}", new Date().getTime());
 
         UpdateFileMetadataRequestDto request = new UpdateFileMetadataRequestDto();
         request.setStatus(Const.ATTACHED);
@@ -109,10 +109,10 @@ public class PnSafeStorageClient extends BaseClient {
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                    log.info("UPDATE FILE METADATA TOCK {}", new Date().getTime());
+                    log.trace("UPDATE FILE METADATA TOCK {}", new Date().getTime());
                     return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> {
-                    log.info("UPDATE FILE METADATA TOCK {}", new Date().getTime());
+                    log.trace("UPDATE FILE METADATA TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
                     return Mono.error(new PnSafeStorageException(ex));
                 });

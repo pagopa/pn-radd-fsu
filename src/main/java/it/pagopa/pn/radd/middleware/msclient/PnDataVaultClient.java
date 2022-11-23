@@ -39,14 +39,14 @@ public class PnDataVaultClient extends BaseClient {
     }
 
     public Mono<String> getEnsureFiscalCode(String fiscalCode, String type) {
-        log.info("ENSURE FISCAL CODE TICK {}", new Date().getTime());
+        log.trace("ENSURE FISCAL CODE TICK {}", new Date().getTime());
         return this.recipientsApi.ensureRecipientByExternalId(
                 (StringUtils.equalsIgnoreCase(type, RecipientTypeDto.PF.getValue()) ? RecipientTypeDto.PF: RecipientTypeDto.PG), fiscalCode)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(25))
                                 .filter(throwable ->throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                    log.info("ENSURE FISCAL CODE TOCK {}", new Date().getTime());
+                    log.trace("ENSURE FISCAL CODE TOCK {}", new Date().getTime());
                     return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }

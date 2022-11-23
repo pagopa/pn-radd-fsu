@@ -51,18 +51,18 @@ public class PnDeliveryPushClient extends BaseClient {
     }
 
     public Mono<NotificationHistoryResponseDto> getNotificationHistory(String iun){
-        log.info("IUN : {}", iun);
-        log.info("NOTIFICATION HISTORY TICK {}", new Date().getTime());
+        log.debug("IUN : {}", iun);
+        log.trace("NOTIFICATION HISTORY TICK {}", new Date().getTime());
         return this.timelineAndStatusApi.getNotificationHistory(iun, 1, DateUtils.getOffsetDateTimeFromDate(new Date()))
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                    log.info("NOTIFICATION HISTORY TOCK {}", new Date().getTime());
+                    log.trace("NOTIFICATION HISTORY TOCK {}", new Date().getTime());
                     return item;
                 })
                 .onErrorResume(WebClientResponseException.class, ex -> {
-                    log.info("NOTIFICATION HISTORY TOCK {}", new Date().getTime());
+                    log.trace("NOTIFICATION HISTORY TOCK {}", new Date().getTime());
                     ex.getStackTrace();
                     log.error(ex.getResponseBodyAsString());
                     return Mono.error(new PnRaddException(ex));
@@ -76,17 +76,17 @@ public class PnDeliveryPushClient extends BaseClient {
         request.setRaddBusinessTransactionDate(DateUtils.getOffsetDateTimeFromDate(operationDate));
         request.setRaddBusinessTransactionId(entity.getOperationId());
         request.setRaddType(RADD_TYPE);
-        log.info("NOTIFICATION VIEWED TICK {}", new Date().getTime());
+        log.trace("NOTIFICATION VIEWED TICK {}", new Date().getTime());
         return this.eventComunicationApi.notifyNotificationViewed(entity.getIun(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
-                    log.info("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
+                    log.trace("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
                     return item;
                 })
                 .onErrorResume(WebClientResponseException.class, ex -> {
-                    log.info("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
+                    log.trace("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
                     return Mono.error(new PnRaddException(ex));
                 });

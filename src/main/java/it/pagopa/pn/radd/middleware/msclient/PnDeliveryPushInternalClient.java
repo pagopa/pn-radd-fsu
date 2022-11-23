@@ -49,13 +49,13 @@ public class PnDeliveryPushInternalClient extends BaseClient {
     }
 
     public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {
-        log.info("GET LEGAL FACT TICK {}", new Date().getTime());
+        log.trace("GET LEGAL FACT TICK {}", new Date().getTime());
         return this.legalFactsApi.getLegalFactPrivate(recipientInternalId,iun, categoryDto, legalFactId, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(250))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item ->{
-                    log.info("GET LEGAL FACT TOCK {}", new Date().getTime());
+                    log.trace("GET LEGAL FACT TOCK {}", new Date().getTime());
                     return item;
                 }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }

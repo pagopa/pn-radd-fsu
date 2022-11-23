@@ -51,13 +51,13 @@ public class ActService extends BaseService {
         // check if iun exists
         return validateInputActInquiry(recipientTaxId, recipientType, qrCode)
                 .map(item -> {
-                    log.info("ACT INQUIRY TICK {}", new Date().getTime());
+                    log.trace("ACT INQUIRY TICK {}", new Date().getTime());
                     return item;
                 })
                 .flatMap( isValid ->
                     Mono.fromFuture(this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
                         .thenApply(response -> {
-                            log.info("COUNT QUERY TOCK {}", new Date().getTime());
+                            log.trace("COUNT QUERY TOCK {}", new Date().getTime());
                             if (response > 0) throw new RaddGenericException(ALREADY_COMPLETE_PRINT);
                             return response;
                         })
@@ -67,7 +67,7 @@ public class ActService extends BaseService {
                 .flatMap(responseAar -> hasDocumentsAvailable(responseAar.getIun()))
                 .flatMap(this::hasNotificationsCancelled)
                 .map(item -> {
-                    log.info("ACT INQUIRY TOCK {}", new Date().getTime());
+                    log.trace("ACT INQUIRY TOCK {}", new Date().getTime());
                     return ActInquiryResponseMapper.fromResult();
                 })
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(ActInquiryResponseMapper.fromException(ex)));
@@ -101,7 +101,7 @@ public class ActService extends BaseService {
                     return this.updateFileMetadata(transaction);
                 }, (in, out) -> in.getT2())
                 .map(response -> {
-                    log.info("START ACT TRANSACTION TOCK {}", new Date().getTime());
+                    log.trace("START ACT TRANSACTION TOCK {}", new Date().getTime());
                     return response;
                 })
                 .onErrorResume(PnRaddException.class, ex ->

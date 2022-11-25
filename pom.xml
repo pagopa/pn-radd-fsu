@@ -8,14 +8,15 @@
 		<relativePath />
 	</parent>
 	<artifactId>pn-radd-fsu</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name>pn-radd-fsu</name>
 	<description>RAAD Fsu microservice</description>
 	<scm>
 		<connection>${git.conn}</connection>
 		<developerConnection>${git.devConn}</developerConnection>
 		<url>${git.url}</url>
-	</scm>
+	  <tag>HEAD</tag>
+  </scm>
 	<properties>
 		<java.version>11</java.version>
     	<jacoco.min.line.cover.ratio>0.01</jacoco.min.line.cover.ratio>

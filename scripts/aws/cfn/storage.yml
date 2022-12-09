@@ -92,6 +92,8 @@ Resources:
         StreamArn: !Ref CdcKinesisSourceStreamArn
       StreamSpecification: 
         StreamViewType: NEW_IMAGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
 
   OperationsAndIunsDynamoTable:
     Type: AWS::DynamoDB::Table
@@ -126,7 +128,9 @@ Resources:
         StreamArn: !Ref CdcKinesisSourceStreamArn
       StreamSpecification:
         StreamViewType: NEW_IMAGE
-
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+        
 Outputs:
   RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction

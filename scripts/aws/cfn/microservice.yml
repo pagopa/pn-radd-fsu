@@ -99,6 +99,10 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  AlbSecurityGroup:
+    Type: String
+    Description: 'Application load balancer security group'
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -131,6 +135,7 @@ Resources:
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        AlbSecurityGroup: !Ref AlbSecurityGroup
         TaskRoleManagedPolicyArn: !Ref RaddMicroserviceTaskManagedPolicy
 
   # Grant operational rights to PN-RADD microservice

@@ -136,15 +136,12 @@ Resources:
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         AlbSecurityGroup: !Ref AlbSecurityGroup
-
+        TaskRoleManagedPolicyArn: !Ref RaddMicroserviceTaskManagedPolicy
 
   # Grant operational rights to PN-RADD microservice
-  RaddMicroserviceTaskPolicy:
-    Type: AWS::IAM::Policy
+  RaddMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Sub '${ProjectName}-radd-fsu-CustomTaskPolicy'
-      Roles:
-        - !GetAtt RaddMicroservice.Outputs.TaskRoleName
       PolicyDocument:
         Version: 2012-10-17
         Statement:

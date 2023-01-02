@@ -176,5 +176,4 @@ Resources:
             - !Ref OperationsAndIunsDynamoTableName
         AlarmArns: !Join
           - ','
-          - - !GetAtt RaddMicroservice.Outputs.AutoScalingAlarmArn 
-            - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn
+          - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

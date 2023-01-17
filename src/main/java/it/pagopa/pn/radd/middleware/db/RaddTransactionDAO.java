@@ -1,8 +1,5 @@
 package it.pagopa.pn.radd.middleware.db;
 
-import it.pagopa.pn.commons.log.PnAuditLogBuilder;
-import it.pagopa.pn.commons.log.PnAuditLogEvent;
-import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
@@ -12,7 +9,6 @@ import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,10 +27,8 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERRO
 
 @Repository
 @Slf4j
-@Import(PnAuditLogBuilder.class)
 public class RaddTransactionDAO extends BaseDao {
 
-    private final PnAuditLogBuilder auditLogBuilder;
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     DynamoDbAsyncClient dynamoDbAsyncClient;
     DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
@@ -45,25 +39,18 @@ public class RaddTransactionDAO extends BaseDao {
 
     public RaddTransactionDAO(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                               DynamoDbAsyncClient dynamoDbAsyncClient,
-                              AwsConfigs awsConfigs,
-                              PnAuditLogBuilder pnAuditLogBuilder, TransactWriterInitializer transactWriterInitializer) {
+                              AwsConfigs awsConfigs, TransactWriterInitializer transactWriterInitializer) {
         this.raddTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbTable(), TableSchema.fromBean(RaddTransactionEntity.class));
         this.raddOperationIunTable = dynamoDbEnhancedAsyncClient.table(awsConfigs.getDynamodbIunsoperationsTable(), TableSchema.fromBean(OperationsIunsEntity.class));
         this.table = awsConfigs.getDynamodbTable();
         this.dynamoDbAsyncClient = dynamoDbAsyncClient;
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
-        this.auditLogBuilder = pnAuditLogBuilder;
         this.transactWriterInitializer = transactWriterInitializer;
     }
 
 
     public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity, List<OperationsIunsEntity> entityIuns){
         String logMessage = String.format("create Radd Transaction=%s", entity);
-        PnAuditLogEvent logEvent = auditLogBuilder
-                .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
-                .uid(entity.getUid())
-                .build();
-        logEvent.log();
         log.trace("CREATE TRANSACTION DAO TICK {}", new Date().getTime());
         return Mono.fromFuture(
                 countFromIunAndOperationIdAndStatus(entity.getOperationId(), entity.getIun())
@@ -83,14 +70,10 @@ public class RaddTransactionDAO extends BaseDao {
                             }
                         }))
                 .onErrorResume(throwable -> {
-                    logEvent.generateFailure(throwable.getMessage()).log();
                     return Mono.error(throwable);
                 })
                 .map(item -> {
-
                     log.trace("CREATE TRANSACTION DAO TOCK {}", new Date().getTime());
-                    logEvent.generateSuccess(String.format("created Radd transaction object=%s", item)).log();
-
                     return item;
                 });
     }
@@ -109,12 +92,6 @@ public class RaddTransactionDAO extends BaseDao {
 
     public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity){
         String logMessage = String.format("Update Radd Transaction=%s", entity);
-        PnAuditLogEvent logEvent = auditLogBuilder
-                .before(PnAuditLogEventType.AUD_DL_CREATE, logMessage)
-                .uid(entity.getUid())
-                .build();
-
-        logEvent.log();
         UpdateItemEnhancedRequest<RaddTransactionEntity> updateRequest = UpdateItemEnhancedRequest
                 .builder(RaddTransactionEntity.class).item(entity).build();
         return Mono.fromFuture(
@@ -126,13 +103,10 @@ public class RaddTransactionDAO extends BaseDao {
                 })
         )
                 .onErrorResume(throwable -> {
-                    logEvent.generateFailure(throwable.getMessage()).log();
                     return Mono.error(throwable);
                 })
                 .map(item -> {
                     log.debug("Radd transaction object={}", item);
-                    logEvent.generateSuccess(String.format("Updated Radd transaction object=%s", item)).log();
-
                     return item;
                 });
     }

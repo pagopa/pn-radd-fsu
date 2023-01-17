@@ -1,13 +1,8 @@
 package it.pagopa.pn.radd.middleware.db;
 
-import it.pagopa.pn.commons.log.PnAuditLogBuilder;
-import it.pagopa.pn.commons.log.PnAuditLogEvent;
-import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
-import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -29,7 +24,10 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
+import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,8 +47,6 @@ class RaddTransactionDAOTest extends BaseTest {
     @InjectMocks
     private RaddTransactionDAO raddTransactionDAO;
     @Mock
-    PnAuditLogBuilder auditLogBuilder;
-    @Mock
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     @Mock
     DynamoDbAsyncClient dynamoDbAsyncClient;
@@ -69,14 +65,6 @@ class RaddTransactionDAOTest extends BaseTest {
 
     @BeforeEach
     public void setUp() {
-        Mockito.when(auditLogBuilder.build())
-                .thenReturn(new PnAuditLogEvent(PnAuditLogEventType.AUD_DL_CREATE, new HashMap<>(), "", new Object()));
-
-        Mockito.when(auditLogBuilder.uid(Mockito.any()))
-                .thenReturn(auditLogBuilder);
-
-        Mockito.when(auditLogBuilder.before(Mockito.any(), Mockito.any()))
-                .thenReturn(auditLogBuilder);
         baseEntity = new RaddTransactionEntity();
         baseEntity.setIun("iun");
         baseEntity.setUid("uid");

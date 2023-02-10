@@ -94,6 +94,11 @@ Resources:
         StreamViewType: NEW_IMAGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: pnInfraFeature
+          Value: pnStorage
+        - Key: pnMicroservice
+          Value: !Sub '${ProjectName}-radd-transaction'
 
   OperationsAndIunsDynamoTable:
     Type: AWS::DynamoDB::Table
@@ -130,6 +135,11 @@ Resources:
         StreamViewType: NEW_IMAGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: pnInfraFeature
+          Value: pnStorage
+        - Key: pnMicroservice
+          Value: !Sub '${ProjectName}-operations-iuns'
         
 Outputs:
   RaddTransactionDynamoTableName:

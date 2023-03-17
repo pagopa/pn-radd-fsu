@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.LegalFactsPrivateApi;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.CxTypeAuthFleetDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
@@ -40,7 +41,8 @@ public class PnDeliveryPushInternalClient extends BaseClient {
     }
 
     public Flux<LegalFactListElementDto> getNotificationLegalFacts(String recipientInternalId, String iun) {
-        return this.legalFactsApi.getNotificationLegalFactsPrivate(recipientInternalId, iun, null)
+        CxTypeAuthFleetDto cxType = null;
+        return this.legalFactsApi.getNotificationLegalFactsPrivate( recipientInternalId, iun, null, cxType, null)
                 .retryWhen(
                     Retry.backoff(2, Duration.ofMillis(250))
                         .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
@@ -50,7 +52,8 @@ public class PnDeliveryPushInternalClient extends BaseClient {
 
     public Mono<LegalFactDownloadMetadataResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {
         log.trace("GET LEGAL FACT TICK {}", new Date().getTime());
-        return this.legalFactsApi.getLegalFactPrivate(recipientInternalId,iun, categoryDto, legalFactId, null)
+        CxTypeAuthFleetDto cxType = null;
+        return this.legalFactsApi.getLegalFactPrivate(recipientInternalId,iun, categoryDto, legalFactId, null, cxType, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(250))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

@@ -24,10 +24,16 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send Logs'
+
 Resources:
 
   RaddTransactionDynamoTable:
     Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
     Properties:
       TableName: !Sub '${ProjectName}-radd-transaction'
       AttributeDefinitions:
@@ -97,6 +103,8 @@ Resources:
 
   OperationsAndIunsDynamoTable:
     Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
     Properties:
       TableName: !Sub '${ProjectName}-operations-iuns'
       AttributeDefinitions:
@@ -131,6 +139,16 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
         
+  RaddLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub '${ProjectName}-radd-fsu'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+
 Outputs:
   RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction
@@ -147,3 +165,7 @@ Outputs:
   OperationsAndIunsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations
     Value: !Sub '${OperationsAndIunsDynamoTable.Arn}'
+
+  # Log group exports
+  EcsLogGroup:
+    Value: !GetAtt RaddLogGroup.Outputs.LogGroupName

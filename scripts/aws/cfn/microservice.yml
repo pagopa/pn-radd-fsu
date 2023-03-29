@@ -91,10 +91,6 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing iuns and operations'
   
-  LogsKinesisSourceStreamArn:
-    Type: String
-    Description: 'Kinesis stream that receive logs'
-  
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -102,6 +98,11 @@ Parameters:
   AlbSecurityGroup:
     Type: String
     Description: 'Application load balancer security group'
+
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
 
   # Heath Check parameters
   HealthCheckInterval:
@@ -220,9 +221,9 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         AlbSecurityGroup: !Ref AlbSecurityGroup
         TaskRoleManagedPolicyArn: !Ref RaddMicroserviceTaskManagedPolicy
+        EcsLogGroup: !Ref EcsLogGroup
 
   # Grant operational rights to PN-RADD microservice
   RaddMicroserviceTaskManagedPolicy:

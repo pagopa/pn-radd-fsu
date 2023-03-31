@@ -2,7 +2,6 @@
   "Parameters" : {
     "SafeStorageCxId": "pn-radd-fsu",
     "SafeStorageDocType": "PN_RADD_FSU_ATTACHMENT",
-    "SandboxSafeStorageBaseUrl": "https://14ej9p2krd.execute-api.eu-south-1.amazonaws.com/dev",
     "MaxTasksNumber": "1"
   }
 }

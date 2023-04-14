@@ -82,11 +82,13 @@ public class PnDeliveryPushClient extends BaseClient {
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).map(item -> {
+                    log.debug("response of notification viewed : {}", item.getIun());
                     log.trace("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
                     return item;
                 })
                 .onErrorResume(WebClientResponseException.class, ex -> {
                     log.trace("NOTIFICATION VIEWED TOCK {}", new Date().getTime());
+                    log.error("Notification viewed in error");
                     log.error(ex.getResponseBodyAsString());
                     return Mono.error(new PnRaddException(ex));
                 });

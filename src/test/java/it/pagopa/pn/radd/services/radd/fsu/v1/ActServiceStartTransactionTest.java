@@ -93,7 +93,7 @@ class ActServiceStartTransactionTest extends BaseTest {
 
     private FileDownloadResponseDto createFileDownloadResponseDto (){
         FileDownloadResponseDto fileDownloadResponseDto = new FileDownloadResponseDto();
-        fileDownloadResponseDto.setStatus(Const.PRELOADED);
+        fileDownloadResponseDto.setDocumentStatus(Const.PRELOADED);
         fileDownloadResponseDto.setVersionId("VersionTokenX");
         fileDownloadResponseDto.setChecksum("Checksum");
         return fileDownloadResponseDto ;

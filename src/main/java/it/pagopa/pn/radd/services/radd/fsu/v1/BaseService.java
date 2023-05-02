@@ -49,8 +49,8 @@ public class BaseService {
 
     protected Mono<TransactionData> verifyCheckSum(TransactionData transaction){
         return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-            log.debug("Document status is : {}", response.getStatus());
-            if (!StringUtils.equals(response.getStatus(), Const.PRELOADED)){
+            log.debug("Document status is : {}", response.getDocumentStatus());
+            if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
                 throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             }
             log.debug("Document version is : {}", response.getVersionId());

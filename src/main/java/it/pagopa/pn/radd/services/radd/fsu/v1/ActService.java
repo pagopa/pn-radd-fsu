@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 import reactor.util.function.Tuples;
 
+import javax.print.DocFlavor;
 import java.util.Date;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
@@ -186,7 +187,7 @@ public class ActService extends BaseService {
     private ParallelFlux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .parallel()
-                .filter(legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT)
+                .filter(legalFact ->( (StringUtils.isEmpty(legalFact.getTaxId())  || (StringUtils.isNotEmpty(legalFact.getTaxId()) && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId()) ) )&&  legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT) )
                 .flatMap(item ->
                         pnDeliveryPushInternalClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                                 .mapNotNull(legalFact -> {

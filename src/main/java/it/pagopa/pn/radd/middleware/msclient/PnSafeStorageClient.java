@@ -91,9 +91,9 @@ public class PnSafeStorageClient extends BaseClient {
                 }).onErrorResume(WebClientResponseException.class, ex -> {
                     log.trace("GET FILE TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
-                    if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
+                    /*if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
                         return Mono.error(new RaddGenericException(RETRY_AFTER, new BigDecimal(670)));
-                    }
+                    }*/
                     return Mono.error(new PnSafeStorageException(ex));
                 });
     }

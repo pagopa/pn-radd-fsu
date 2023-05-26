@@ -107,7 +107,8 @@ class AorServiceTest extends BaseTest {
                 .thenReturn(Mono.just(new RaddTransactionEntity()));
 
         FileDownloadResponseDto fileDownloadResponseDto = new FileDownloadResponseDto();
-        fileDownloadResponseDto.setDocumentStatus(Const.PRELOADED);
+        //Da decommentare dopo l'aggiornamento dell'interfaccia ss
+        //fileDownloadResponseDto.setDocumentStatus(Const.PRELOADED);
         fileDownloadResponseDto.setChecksum(startTransactionRequest.getChecksum());
         fileDownloadResponseDto.setVersionId(startTransactionRequest.getVersionToken());
         Mockito.when(pnSafeStorageClient.getFile(startTransactionRequest.getFileKey()))

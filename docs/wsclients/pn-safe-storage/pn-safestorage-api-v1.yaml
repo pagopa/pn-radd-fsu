@@ -596,6 +596,10 @@ components:
           type: string
           description: Lo stato del documento
           example: ATTACHED
+        status:
+          type: string
+          description: Lo stato del documento
+          example: ATTACHED
         contentType:
           type: string
           example: 'application/pdf'

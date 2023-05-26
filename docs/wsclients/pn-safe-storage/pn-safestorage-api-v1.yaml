@@ -577,7 +577,6 @@ components:
         - contentLength
         - checksum
         - documentType
-        - documentStatus
         - retentionUntil
       properties:
         key:

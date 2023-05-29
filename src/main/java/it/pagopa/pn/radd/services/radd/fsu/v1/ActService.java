@@ -27,7 +27,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 import reactor.util.function.Tuples;
 
-import javax.print.DocFlavor;
 import java.util.Date;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;

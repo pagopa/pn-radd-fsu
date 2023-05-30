@@ -68,8 +68,8 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
         String fileKey = "ABC";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
-            if (exception instanceof PnSafeStorageException){
-                assertNull(((PnSafeStorageException) exception).getMessage());
+            if (exception instanceof RaddGenericException){
+                assertNull(((RaddGenericException) exception).getMessage());
                 return Mono.empty();
             }
             fail("Badly type exception");
@@ -99,8 +99,8 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
         String fileKey = "XYZ";
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
-            if (exception instanceof PnSafeStorageException){
-                assertNull(((PnSafeStorageException) exception).getMessage());
+            if (exception instanceof RaddGenericException){
+                assertNull(((RaddGenericException) exception).getMessage());
                 return Mono.empty();
             }
             fail("Badly type exception");

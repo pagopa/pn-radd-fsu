@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnSafeStorageException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
@@ -91,9 +92,9 @@ public class PnSafeStorageClient extends BaseClient {
                 }).onErrorResume(WebClientResponseException.class, ex -> {
                     log.trace("GET FILE TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
-                    /*if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
-                        return Mono.error(new RaddGenericException(RETRY_AFTER, new BigDecimal(670)));
-                    }*/
+                    if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
+                        return Mono.error(new RaddGenericException(ExceptionTypeEnum.DOCUMENT_UNAVAILABLE, (ExceptionTypeEnum.DOCUMENT_UNAVAILABLE).getMessage()));
+                    }
                     return Mono.error(new PnSafeStorageException(ex));
                 });
     }

@@ -179,6 +179,15 @@ Parameters:
     Default: 6
     Type: Number
     Description: maximum autoscaling number of tasks
+
+  ApplicationLoadBalancerMetricsDimensionName:
+    Type: String
+    Description: 'ALB name (used by alarm metrics)'
+    Default: ''
+
+Conditions:
+  HasAlbDimensionName: !Not [ !Equals [ !Ref ApplicationLoadBalancerMetricsDimensionName, '' ] ]
+     
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -250,6 +259,64 @@ Resources:
               - !Sub "${OperationsAndIunsDynamoTableArn}"
               - !Sub "${OperationsAndIunsDynamoTableArn}/*"
             
+
+  ApplicationLoadBalancerOnCallAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasAlbDimensionName
+    Properties:
+      AlarmName: !Sub "oncall-${ProjectName}-radd-fsu-alb-alarm"
+      AlarmDescription: "CloudWatch alarm when an application load balancer respond with a HTTP status 500."
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      DatapointsToAlarm: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 5
+      Threshold: 1
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: LoadBalancer
+                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
+                - Name: TargetGroup
+                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
+              MetricName: HTTPCode_Target_4XX_Count
+              Namespace: AWS/ApplicationELB
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: LoadBalancer
+                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
+                - Name: TargetGroup
+                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
+              MetricName: HTTPCode_Target_5XX_Count
+              Namespace: AWS/ApplicationELB
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m3
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: TargetGroup
+                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
+              MetricName: RequestCountPerTarget
+              Namespace: AWS/ApplicationELB
+            Period: 60
+            Stat: Sum
+          ReturnData: False          
+        - Id: e1
+          Expression: IF(m3>=10 AND (m1/m3>=0.9 OR m2/m3>=0.1), 1, 0)
+          Label: !Sub "${ProjectName}-radd-fsu-ALBAlarm-oncall-metric"
+
   # Dashboard
   RaddFsuMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
@@ -264,3 +331,4 @@ Resources:
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !If [ HasAlbDimensionName, !GetAtt ApplicationLoadBalancerOnCallAlarm.Arn, '' ]

@@ -91,14 +91,103 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing iuns and operations'
   
-  LogsKinesisSourceStreamArn:
-    Type: String
-    Description: 'Kinesis stream that receive logs'
-  
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  AlbSecurityGroup:
+    Type: String
+    Description: 'Application load balancer security group'
+
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
+
+  # Heath Check parameters
+  HealthCheckInterval:
+    Description: Seconds between two health check
+    Type: Number
+    Default: 60
+
+  HealthCheckTimeout:
+    Description: health check timeout seconds
+    Type: Number
+    Default: 5
+  
+  HealthyThresholdCount:
+    Description: |
+      The number of consecutive health checks successes required before considering 
+      an unhealthy target healthy. 
+    Type: Number
+    Default: 5
+  
+  UnhealthyThresholdCount:
+    Description: |
+      The number of consecutive health check failures required before considering a target unhealthy. 
+    Type: Number
+    Default: 2
+
+  # Instance parameters
+  # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+  # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+  # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+  # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+  # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+  CpuValue:
+    Type: Number
+    Default: 1024
+    Description: Fargate virtual CPU quantity 1024 equals one vCPU
+
+  # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+  # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+  # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+  # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+  # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+  MemoryAmount:
+    Type: String
+    Default: 2GB
+    Description: memory amount reserved to the task pod.
+    AllowedValues: [ 2GB, 4GB, 6GB, 8GB ]
+
+  # Autoscaling parameters
+  AutoscalingCheckPeriod:
+    Default: 60
+    Type: Number
+    Description: minimum autoscaling number of tasks\
+
+  AutoscalingDataPointN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingDataPointM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingThreshold:
+    Default: 70
+    Type: String
+  
+  MinTasksNumber:
+    Default: 1
+    Type: Number
+    Description: minimum autoscaling number of tasks
+
+  MaxTasksNumber:
+    Default: 6
+    Type: Number
+    Description: maximum autoscaling number of tasks
+
+  ApplicationLoadBalancerMetricsDimensionName:
+    Type: String
+    Description: 'ALB name (used by alarm metrics)'
+    Default: ''
+
+Conditions:
+  HasAlbDimensionName: !Not [ !Equals [ !Ref ApplicationLoadBalancerMetricsDimensionName, '' ] ]
+     
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -108,14 +197,25 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
         MicroServiceUniqueName: !Sub '${ProjectName}-radd-fsu'
-        CpuValue: 1024
-        MemoryAmount: 2GB
+        CpuValue: !Ref CpuValue
+        MemoryAmount: !Ref MemoryAmount
+        HealthCheckTimeout: !Ref HealthCheckTimeout
+        HealthCheckInterval: !Ref HealthCheckInterval
+        HealthyThresholdCount: !Ref HealthyThresholdCount
+        UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+        AutoscalingStrategy: REST-API
+        AutoscalingThreshold: !Ref AutoscalingThreshold
+        AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
+        MinTasksNumber: !Ref MinTasksNumber
+        MaxTasksNumber: !Ref MaxTasksNumber
+        AutoscalingDataPointN: !Ref AutoscalingDataPointN
+        AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
         ContainerEnvEntry3: !Sub 'AWS_DYNAMODB_TABLE=${RaddTransactionDynamoTableName}'
-        ContainerEnvEntry4: !Sub 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
+        ContainerEnvEntry4: 'PN_RADD_CLIENT_DATAVAULT_BASEPATH=http://alb.confidential.pn.internal:8080'
         ContainerEnvEntry5: !Sub 'PN_RADD_CLIENT_DELIVERY_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry6: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_INTERNAL_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
@@ -130,16 +230,14 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
-
+        AlbSecurityGroup: !Ref AlbSecurityGroup
+        TaskRoleManagedPolicyArn: !Ref RaddMicroserviceTaskManagedPolicy
+        EcsLogGroup: !Ref EcsLogGroup
 
   # Grant operational rights to PN-RADD microservice
-  RaddMicroserviceTaskPolicy:
-    Type: AWS::IAM::Policy
+  RaddMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Sub '${ProjectName}-radd-fsu-CustomTaskPolicy'
-      Roles:
-        - !GetAtt RaddMicroservice.Outputs.TaskRoleName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -161,6 +259,64 @@ Resources:
               - !Sub "${OperationsAndIunsDynamoTableArn}"
               - !Sub "${OperationsAndIunsDynamoTableArn}/*"
             
+
+  ApplicationLoadBalancerOnCallAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasAlbDimensionName
+    Properties:
+      AlarmName: !Sub "oncall-${ProjectName}-radd-fsu-alb-alarm"
+      AlarmDescription: "CloudWatch alarm when an application load balancer respond with a HTTP status 500."
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      DatapointsToAlarm: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 5
+      Threshold: 1
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: LoadBalancer
+                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
+                - Name: TargetGroup
+                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
+              MetricName: HTTPCode_Target_4XX_Count
+              Namespace: AWS/ApplicationELB
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: LoadBalancer
+                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
+                - Name: TargetGroup
+                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
+              MetricName: HTTPCode_Target_5XX_Count
+              Namespace: AWS/ApplicationELB
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m3
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: TargetGroup
+                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
+              MetricName: RequestCountPerTarget
+              Namespace: AWS/ApplicationELB
+            Period: 60
+            Stat: Sum
+          ReturnData: False          
+        - Id: e1
+          Expression: IF(m3>=10 AND (m1/m3>=0.9 OR m2/m3>=0.1), 1, 0)
+          Label: !Sub "${ProjectName}-radd-fsu-ALBAlarm-oncall-metric"
+
   # Dashboard
   RaddFsuMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
@@ -174,5 +330,5 @@ Resources:
             - !Ref OperationsAndIunsDynamoTableName
         AlarmArns: !Join
           - ','
-          - - !GetAtt RaddMicroservice.Outputs.AutoScalingAlarmArn 
-            - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn
+          - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !If [ HasAlbDimensionName, !GetAtt ApplicationLoadBalancerOnCallAlarm.Arn, '' ]

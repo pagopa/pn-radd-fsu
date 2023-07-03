@@ -48,6 +48,8 @@ public class ActService extends BaseService {
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode) {
+        log.info("Start act inquiry - uid={} ", uid);
+
         // check if iun exists
         return validateInputActInquiry(recipientTaxId, recipientType, qrCode)
                 .map(item -> {
@@ -74,12 +76,14 @@ public class ActService extends BaseService {
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, ActStartTransactionRequest request){
+        log.info("Start ACT startTransaction - uid={} - operationId={}", uid, request.getOperationId());
         return validateAndSettingsData(uid, request)
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .flatMap(tmp ->
                         controlAndCheckAar(tmp.getRecipientType(), tmp.getEnsureRecipientId(), tmp.getQrCode())
                             .map(ResponseCheckAarDtoDto::getIun)
                             .map(iun -> {
+                                log.info("Iun finded - {}", iun);
                                 tmp.setIun(iun);
                                 return tmp;
                             })
@@ -88,6 +92,7 @@ public class ActService extends BaseService {
                 .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> {
+                    log.debug("Retrieving document and attachments");
                     Flux<String> urlDocuments = getUrlDoc(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
                     Flux<String> urlAttachments = getUrlsAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
                     ParallelFlux<String> urlLegalFacts = legalFact(transactionAndSentNotification.getT1());
@@ -97,44 +102,56 @@ public class ActService extends BaseService {
                             .map(StartTransactionResponseMapper::fromResult);
                 }, (tupla, response) -> Tuples.of(tupla.getT1(), response))
                 .zipWhen(transactionAndResponse -> {
+                    log.debug("Update file metadata");
                     TransactionData transaction = transactionAndResponse.getT1();
                     return this.updateFileMetadata(transaction);
                 }, (in, out) -> in.getT2())
                 .map(response -> {
                     log.trace("START ACT TRANSACTION TOCK {}", new Date().getTime());
+                    log.debug("Ended startTransaction");
                     return response;
                 })
-                .onErrorResume(PnRaddException.class, ex ->
-                        this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
-                                .flatMap(entity -> Mono.error(ex))
-                )
-                .onErrorResume(RaddGenericException.class, ex ->
-                    this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
-                            .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)))
-                );
+                .onErrorResume(PnRaddException.class, ex -> {
+                    log.debug("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
+                            .flatMap(entity -> Mono.error(ex));
+                })
+                .onErrorResume(RaddGenericException.class, ex -> {
+                    log.debug("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
+                            .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
+                });
 
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, CompleteTransactionRequest completeTransactionRequest) {
+        log.info("Start ACT CompleteTransaction - uid={} - operationId={}", uid, completeTransactionRequest.getOperationId());
         return this.validateCompleteRequest(completeTransactionRequest)
                 .zipWhen(req -> this.raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
                                 .map(entity -> {
+                                    log.debug("Check status entity : {}", entity.getStatus());
                                     checkTransactionStatus(entity);
                                     return entity;
                                 }))
                 .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
-                .zipWhen(reqAndEntity -> {
+                .flatMap(reqAndEntity -> {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
                     entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
                     entity.setUid(uid);
                     entity.setStatus(Const.COMPLETED);
+                    log.debug("updating transaction entity with status {}", entity.getStatus());
                     return this.raddTransactionDAO.updateStatus(entity);
                 })
-                .map(entity -> CompleteTransactionResponseMapper.fromResult())
-                .onErrorResume(PnRaddException.class, ex ->
-                    this.settingErrorReason(ex, completeTransactionRequest.getOperationId(), OperationTypeEnum.ACT)
-                            .flatMap(entity -> Mono.error(ex))
-                )
+                .map(entity -> {
+                    log.debug("New status of transaction entity is {}", entity.getStatus());
+                    log.debug("End ACT Complete transaction");
+                    return CompleteTransactionResponseMapper.fromResult();
+                })
+                .onErrorResume(PnRaddException.class, ex -> {
+                    log.debug("End ACT Complete transaction with error {}", ex.getMessage(), ex);
+                    return this.settingErrorReason(ex, completeTransactionRequest.getOperationId(), OperationTypeEnum.ACT)
+                            .flatMap(entity -> Mono.error(ex));
+                })
                 .onErrorResume(RaddGenericException.class, ex ->
                         Mono.just(CompleteTransactionResponseMapper.fromException(ex))
                 );
@@ -146,9 +163,9 @@ public class ActService extends BaseService {
             log.error("Missing input parameters");
             return Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate"));
         }
-
+        log.info("Start ACT abort transaction - uid={} - operationId={}", uid, req.getOperationId());
         return raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
-                .map(raddEntity -> {
+                .flatMap(raddEntity -> {
                     checkTransactionStatus(raddEntity);
                     raddEntity.setUid(uid);
                     raddEntity.setErrorReason(req.getReason());
@@ -156,16 +173,20 @@ public class ActService extends BaseService {
                     raddEntity.setStatus(Const.ABORTED);
                     return raddTransactionDAO.updateStatus(raddEntity);
                 })
-                .map(result -> AbortTransactionResponseMapper.fromResult())
-                .onErrorResume(RaddGenericException.class, ex ->
-                        Mono.just(AbortTransactionResponseMapper.fromException(ex))
-                );
+                .map(result -> {
+                    log.debug("End ACT abortTransaction with entity status {}", result.getStatus());
+                    return AbortTransactionResponseMapper.fromResult();
+                })
+                .onErrorResume(RaddGenericException.class, ex -> {
+                    log.error("End ACT abort transaction with error : {}", ex.getMessage(), ex);
+                    return Mono.just(AbortTransactionResponseMapper.fromException(ex));
+                });
     }
 
     private ParallelFlux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .parallel()
-                .filter(legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT)
+                .filter(legalFact ->( (StringUtils.isEmpty(legalFact.getTaxId())  || (StringUtils.isNotEmpty(legalFact.getTaxId()) && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId()) ) )&&  legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT) )
                 .flatMap(item ->
                         pnDeliveryPushInternalClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                                 .mapNotNull(legalFact -> {

@@ -270,9 +270,9 @@ Resources:
         - !Ref AlarmSNSTopicArn
       OKActions:
         - !Ref AlarmSNSTopicArn
-      DatapointsToAlarm: 1
+      DatapointsToAlarm: 2
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 5
+      EvaluationPeriods: 6
       Threshold: 1
       TreatMissingData: notBreaching
       Metrics:
@@ -286,7 +286,7 @@ Resources:
                   Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
               MetricName: HTTPCode_Target_4XX_Count
               Namespace: AWS/ApplicationELB
-            Period: 60
+            Period: 300
             Stat: Sum
           ReturnData: False
         - Id: m2
@@ -299,7 +299,7 @@ Resources:
                   Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
               MetricName: HTTPCode_Target_5XX_Count
               Namespace: AWS/ApplicationELB
-            Period: 60
+            Period: 300
             Stat: Sum
           ReturnData: False
         - Id: m3
@@ -310,7 +310,7 @@ Resources:
                   Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
               MetricName: RequestCountPerTarget
               Namespace: AWS/ApplicationELB
-            Period: 60
+            Period: 300
             Stat: Sum
           ReturnData: False          
         - Id: e1

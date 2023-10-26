@@ -88,7 +88,7 @@ public class BaseService {
 
     protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType){
         return this.raddTransactionDAO.getTransaction(operationId, operationType)
-                .flatMap(entity -> {
+                .map(entity -> {
                     entity.setStatus(Const.ERROR);
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException){
@@ -97,8 +97,9 @@ public class BaseService {
                     } else if (ex instanceof PnRaddException){
                         entity.setErrorReason(((PnRaddException) ex).getWebClientEx().getMessage());
                     }
-                    return this.raddTransactionDAO.updateStatus(entity);
+                    return entity;
                 })
+                .flatMap(raddTransactionDAO::updateStatus)
                 .onErrorResume(exception -> {
                     log.error("Exception into settings Reason {}", exception.getMessage());
                     return Mono.just(new RaddTransactionEntity());
@@ -114,5 +115,6 @@ public class BaseService {
             throw new RaddGenericException(TRANSACTION_ERROR_STATUS);
         }
     }
+
 
 }

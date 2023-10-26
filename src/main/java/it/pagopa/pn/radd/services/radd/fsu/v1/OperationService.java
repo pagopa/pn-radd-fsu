@@ -5,8 +5,8 @@ import it.pagopa.pn.radd.mapper.OperationActResponseMapper;
 import it.pagopa.pn.radd.mapper.OperationAorResponseMapper;
 import it.pagopa.pn.radd.mapper.OperationsResponseMapper;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
-import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
-import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
+import it.pagopa.pn.radd.middleware.db.impl.OperationsIunsDAOImpl;
+import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
@@ -23,14 +23,14 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTIONS_NOT_FOU
 @Service
 public class OperationService {
 
-    private final RaddTransactionDAO transactionDAO;
-    private final OperationsIunsDAO operationsIunsDAO;
+    private final RaddTransactionDAOImpl transactionDAO;
+    private final OperationsIunsDAOImpl operationsIunsDAOImpl;
     private final RaddTransactionEntityNotificationResponse mapperToNotificationResponse;
 
 
-    public OperationService(RaddTransactionDAO transactionDAO, OperationsIunsDAO operationsIunsDAO, RaddTransactionEntityNotificationResponse mapperToNotificationResponse) {
+    public OperationService(RaddTransactionDAOImpl transactionDAO, OperationsIunsDAOImpl operationsIunsDAOImpl, RaddTransactionEntityNotificationResponse mapperToNotificationResponse) {
         this.transactionDAO = transactionDAO;
-        this.operationsIunsDAO = operationsIunsDAO;
+        this.operationsIunsDAOImpl = operationsIunsDAOImpl;
         this.mapperToNotificationResponse = mapperToNotificationResponse;
     }
 
@@ -61,7 +61,7 @@ public class OperationService {
     }
 
     public Mono<OperationsResponse> getOperationsAorByIun(String iun){
-        return operationsIunsDAO.getAllOperationFromIun(iun)
+        return operationsIunsDAOImpl.getAllOperationFromIun(iun)
                 .map(OperationsIunsEntity::getOperationId)
                 .collectList()
                 .map(OperationsResponseMapper::fromResult);

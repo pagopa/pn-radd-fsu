@@ -5,7 +5,7 @@ import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
-import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
+import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
@@ -39,8 +39,8 @@ public class AorService extends BaseService {
     private final TransactionDataMapper transactionDataMapper;
 
     public AorService(PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient pnSafeStorageClient,
-                      TransactionDataMapper transactionDataMapper, RaddTransactionDAOImpl raddTransactionDAOImpl) {
-        super(pnDataVaultClient, raddTransactionDAOImpl, pnSafeStorageClient);
+                      TransactionDataMapper transactionDataMapper, RaddTransactionDAO raddTransactionDAO) {
+        super(pnDataVaultClient, raddTransactionDAO, pnSafeStorageClient);
         this.pnDeliveryPushClient = pnDeliveryPushClient;
         this.transactionDataMapper = transactionDataMapper;
     }

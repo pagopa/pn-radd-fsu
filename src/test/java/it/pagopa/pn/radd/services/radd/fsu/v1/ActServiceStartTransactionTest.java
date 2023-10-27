@@ -193,7 +193,7 @@ class ActServiceStartTransactionTest extends BaseTest {
                 .thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
 
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();
         assertNotNull(startTransactionResponse);
@@ -209,7 +209,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
 
 
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();
@@ -227,7 +227,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.error(new PnRaddException(exMock)));
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
 
 
         StepVerifier.create(actService.startTransaction("test", request))
@@ -248,7 +248,7 @@ class ActServiceStartTransactionTest extends BaseTest {
 
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
 
 
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();

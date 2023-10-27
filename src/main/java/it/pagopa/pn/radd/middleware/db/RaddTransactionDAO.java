@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,7 +17,7 @@ public interface RaddTransactionDAO {
     Mono<RaddTransactionEntity> getTransaction(String operationId, OperationTypeEnum operationType);
 
 
-    Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity);
+    Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity, RaddTransactionStatusEnum status);
 
 
     Mono<Integer> countFromIunAndOperationIdAndStatus(String operationId, String iun);

@@ -7,6 +7,7 @@ import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
+import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -89,7 +90,6 @@ public class BaseService {
     protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType){
         return this.raddTransactionDAO.getTransaction(operationId, operationType)
                 .map(entity -> {
-                    entity.setStatus(Const.ERROR);
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException){
                         entity.setErrorReason(((RaddGenericException) ex).getExceptionType().getMessage());
@@ -99,7 +99,7 @@ public class BaseService {
                     }
                     return entity;
                 })
-                .flatMap(raddTransactionDAO::updateStatus)
+                .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ERROR))
                 .onErrorResume(exception -> {
                     log.error("Exception into settings Reason {}", exception.getMessage());
                     return Mono.just(new RaddTransactionEntity());
@@ -107,11 +107,11 @@ public class BaseService {
     }
 
     protected void checkTransactionStatus(RaddTransactionEntity entity) {
-        if (StringUtils.equals(entity.getStatus(), Const.COMPLETED)) {
+        if (StringUtils.equals(entity.getStatus(), RaddTransactionStatusEnum.COMPLETED.name())) {
             throw new RaddGenericException(TRANSACTION_ALREADY_COMPLETED);
-        } else if (StringUtils.equals(entity.getStatus(), Const.ABORTED)){
+        } else if (StringUtils.equals(entity.getStatus(), RaddTransactionStatusEnum.ABORTED.name())){
             throw new RaddGenericException(TRANSACTION_ALREADY_ABORTED);
-        } else if (StringUtils.equals(entity.getStatus(), Const.ERROR)){
+        } else if (StringUtils.equals(entity.getStatus(), RaddTransactionStatusEnum.ERROR.name())){
             throw new RaddGenericException(TRANSACTION_ERROR_STATUS);
         }
     }

@@ -8,6 +8,7 @@ import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -45,14 +46,10 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     @Override
     public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity, List<OperationsIunsEntity> iunsEntities){
-        entity.setStatus(Const.DRAFT);
         return putTransaction(entity)
-                .flatMap(raddTransaction -> operationsIunsDAO.putWithBatch(iunsEntities))
-                .then(Mono.fromCallable(() -> {
-                    entity.setStatus(Const.STARTED);
-                    return entity;
-                }))
-                .flatMap(this::updateStatus);
+                .flatMap(raddTransaction -> operationsIunsDAO.putWithBatch(iunsEntities)
+                        .thenReturn(entity))
+                .flatMap(raddTransaction -> updateStatus(raddTransaction, RaddTransactionStatusEnum.STARTED));
     }
 
 
@@ -82,7 +79,8 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     }
 
     @Override
-    public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity) {
+    public Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity, RaddTransactionStatusEnum status) {
+        entity.setStatus(status.name());
         return this.updateItem(entity)
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)))
                 .filter(updated -> updated.getStatus().equals(entity.getStatus()))

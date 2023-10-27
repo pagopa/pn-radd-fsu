@@ -185,7 +185,7 @@ class ActServiceTest extends BaseTest {
         Mono<RaddTransactionEntity> monoEntity = Mono.just(baseEntity);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
 
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(monoEntity);
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(monoEntity);
 
         CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test", completeRequest).block();
         assertNotNull(completeTransactionResponse);
@@ -248,7 +248,7 @@ class ActServiceTest extends BaseTest {
         Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.error(new PnRaddException(ex)));
 
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any()))
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.just(baseEntity));
 
         actService.completeTransaction("test", completeRequest)
@@ -268,7 +268,7 @@ class ActServiceTest extends BaseTest {
         Mockito.when(pnDeliveryPushClient.notifyNotificationViewed(Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.error(new PnRaddException(ex)));
 
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any()))
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any()))
                 .thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
 
         actService.completeTransaction("test", completeRequest)
@@ -384,7 +384,7 @@ class ActServiceTest extends BaseTest {
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
-        Mockito.when( raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when( raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
 
         AbortTransactionResponse response = actService.abortTransaction("test", request).block();
         assertNotNull(response);
@@ -403,7 +403,7 @@ class ActServiceTest extends BaseTest {
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
-        Mockito.when( raddTransactionDAOImpl.updateStatus(Mockito.any())).thenThrow(RaddGenericException.class);
+        Mockito.when( raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenThrow(RaddGenericException.class);
         actService.abortTransaction("test", request)
                 .onErrorResume(RaddGenericException.class, exception ->{
                     assertNotNull(exception);

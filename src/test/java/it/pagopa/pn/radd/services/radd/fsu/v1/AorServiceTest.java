@@ -197,7 +197,7 @@ class AorServiceTest extends BaseTest {
     void testCompleteWhenUpdateStatusThenReturnKO(){
         entityComplete.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
 
         CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
 
@@ -211,7 +211,7 @@ class AorServiceTest extends BaseTest {
     void testCompleteAllOKThenReturnOK(){
         entityComplete.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(entityComplete));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
 
         CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
 
@@ -289,7 +289,7 @@ class AorServiceTest extends BaseTest {
     void testAbortWhenUpdateStatusThenReturnKO(){
         entityComplete.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
 
         AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
 
@@ -303,7 +303,7 @@ class AorServiceTest extends BaseTest {
     void testAbortAllOKThenReturnOK(){
         entityComplete.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any())).thenReturn(Mono.just(entityComplete));
+        Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
 
         AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
 

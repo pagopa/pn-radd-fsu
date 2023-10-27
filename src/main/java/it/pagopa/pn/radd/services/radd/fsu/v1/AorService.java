@@ -11,9 +11,9 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
+import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
-import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
@@ -75,11 +75,10 @@ public class AorService extends BaseService {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
                     entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
                     entity.setUid(uid);
-                    entity.setStatus(Const.COMPLETED);
                     return entity;
                 })
                 .doOnNext(entity -> log.debug("[uid={} - operationId={}] Updating transaction entity with status {}", entity.getUid(), entity.getOperationId(), entity.getStatus()))
-                .flatMap(raddTransactionDAO::updateStatus)
+                .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.COMPLETED))
                 .doOnNext(entity -> log.debug("[uid={} - operationId={}] New status of transaction entity is {}", entity.getUid(), entity.getOperationId(), entity.getStatus()))
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
@@ -173,10 +172,9 @@ public class AorService extends BaseService {
                     raddEntity.setUid(uid);
                     raddEntity.setErrorReason(entity.getT1().getReason());
                     raddEntity.setOperationEndDate(DateUtils.formatDate(entity.getT1().getOperationDate()));
-                    raddEntity.setStatus(Const.ABORTED);
                     return raddEntity;
                 })
-                .flatMap(raddTransactionDAO::updateStatus)
+                .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ABORTED))
                 .doOnNext(raddTransaction -> log.debug("End AOR abortTransaction with entity status {}", raddTransaction.getStatus()))
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> {

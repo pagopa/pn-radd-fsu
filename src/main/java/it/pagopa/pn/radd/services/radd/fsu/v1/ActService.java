@@ -12,9 +12,9 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
+import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
-import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
@@ -126,11 +126,10 @@ public class ActService extends BaseService {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
                     entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
                     entity.setUid(uid);
-                    entity.setStatus(Const.COMPLETED);
                     return entity;
                 })
                 .doOnNext(raddTransaction -> log.debug("[uid={} - operationId={}] updating transaction entity with status {}", raddTransaction.getUid(), raddTransaction.getOperationId(), raddTransaction.getStatus()))
-                .flatMap(this.raddTransactionDAO::updateStatus)
+                .flatMap(entity -> this.raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.COMPLETED))
                 .doOnNext(entity -> log.debug("[uid={} - operationId={}]  New status of transaction entity is {}", entity.getUid(), entity.getOperationId(), entity.getStatus()))
                 .doOnNext(entity -> log.debug("[uid={} - operationId={}] End ACT Complete transaction", entity.getUid(), entity.getOperationId()))
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
@@ -157,10 +156,9 @@ public class ActService extends BaseService {
                     raddEntity.setUid(uid);
                     raddEntity.setErrorReason(req.getReason());
                     raddEntity.setOperationEndDate(DateUtils.formatDate(req.getOperationDate()));
-                    raddEntity.setStatus(Const.ABORTED);
                     return raddEntity;
                 })
-                .flatMap(raddTransactionDAO::updateStatus)
+                .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ABORTED))
                 .doOnNext(raddTransaction -> log.debug("[uid={} - operationId={}] End ACT abortTransaction with entity status {}", raddTransaction.getUid(), raddTransaction.getOperationId(), raddTransaction.getStatus()))
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .doOnError(RaddGenericException.class, ex -> log.error("End ACT abort transaction with error : {}", ex.getMessage(), ex))

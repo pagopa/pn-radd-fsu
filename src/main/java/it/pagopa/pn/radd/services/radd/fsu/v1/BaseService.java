@@ -62,6 +62,8 @@ public class BaseService {
             log.debug("Document checksum is : {}", response.getChecksum());
             if (Strings.isBlank(response.getChecksum()) ||
                     !response.getChecksum().equals(transaction.getChecksum())){
+                log.error("Request contains Document checksum : {}", transaction.getChecksum());
+                log.error("Response contains Document version: {} checksum: {}", response.getVersionId(), response.getChecksum());
                 throw new RaddGenericException(CHECKSUM_VALIDATION);
             }
             return transaction;

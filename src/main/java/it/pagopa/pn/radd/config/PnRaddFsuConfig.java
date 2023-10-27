@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
 @ConfigurationProperties(prefix = "pn.radd")
 @Import(SharedAutoConfiguration.class)
 public class PnRaddFsuConfig {
-
+    private Integer attemptBatchWriter;
     private String clientDeliveryBasepath;
     private String clientDeliveryPushBasepath;
     private String clientDeliveryPushInternalBasepath;

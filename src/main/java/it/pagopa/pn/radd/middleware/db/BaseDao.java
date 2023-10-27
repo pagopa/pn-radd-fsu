@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.db;
 
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -15,24 +16,26 @@ import java.util.Map;
 
 
 @Slf4j
-
 public abstract class BaseDao<T> {
     private final DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     private final DynamoDbAsyncClient dynamoDbAsyncClient;
     private final DynamoDbAsyncTable<T> tableAsync;
     private final String tableName;
     private final Class<T> tClass;
+    private final PnRaddFsuConfig raddFsuConfig;
 
     protected BaseDao(
             DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
             DynamoDbAsyncClient dynamoDbAsyncClient,
             String tableName,
+            PnRaddFsuConfig raddFsuConfig,
             Class<T> tClass
     ){
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
         this.tableAsync = dynamoDbEnhancedAsyncClient.table(tableName, TableSchema.fromBean(tClass));
         this.dynamoDbAsyncClient = dynamoDbAsyncClient;
         this.tableName = tableName;
+        this.raddFsuConfig = raddFsuConfig;
         this.tClass = tClass;
 
     }
@@ -51,7 +54,9 @@ public abstract class BaseDao<T> {
         return Mono.fromFuture(tableAsync.getItem(request));
     }
 
-    protected Mono<Void> batchWriter(List<T> entities){
+    protected Mono<Void> batchWriter(List<T> entities, int attempt){
+        if (attempt >= raddFsuConfig.getAttemptBatchWriter()) return Mono.error(new RaddGenericException("Ended attempt for batch writer"));
+        if (entities == null || entities.isEmpty()) return Mono.just("").then();
         if (entities.size() > 25) {
             return Mono.error(new RaddGenericException("Limit overflow for Batch Write operation"));
         }
@@ -64,8 +69,12 @@ public abstract class BaseDao<T> {
         BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder()
                 .writeBatches(writerBuilder.build()).build();
 
-        return Mono.fromFuture(this.dynamoDbEnhancedAsyncClient.batchWriteItem(batchWriteItemEnhancedRequest)
-                .thenApply(response -> null));
+        return Mono.fromFuture(this.dynamoDbEnhancedAsyncClient.batchWriteItem(batchWriteItemEnhancedRequest))
+                .flatMap(result -> {
+                    List<T> unprocesseds = result.unprocessedPutItemsForTable(tableAsync);
+                    if (unprocesseds.isEmpty()) return Mono.just("").then();
+                    return this.batchWriter(entities, attempt+1);
+                });
     }
 
     protected Mono<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression, String keyConditionExpression){

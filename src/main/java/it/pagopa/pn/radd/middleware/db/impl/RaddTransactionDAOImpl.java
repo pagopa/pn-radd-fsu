@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
@@ -36,10 +37,12 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     public RaddTransactionDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                   DynamoDbAsyncClient dynamoDbAsyncClient,
                                   OperationsIunsDAO operationsIunsDAO,
+                                  PnRaddFsuConfig pnRaddFsuConfig,
                                   AwsConfigs awsConfigs) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
                 awsConfigs.getDynamodbTable(),
+                pnRaddFsuConfig,
                 RaddTransactionEntity.class);
         this.operationsIunsDAO = operationsIunsDAO;
     }

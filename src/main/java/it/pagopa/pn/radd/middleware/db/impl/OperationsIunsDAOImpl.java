@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
 import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
@@ -22,10 +23,14 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
 
     public OperationsIunsDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                  DynamoDbAsyncClient dynamoDbAsyncClient,
+                                 PnRaddFsuConfig raddFsuConfig,
                                  AwsConfigs awsConfigs) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
-                awsConfigs.getDynamodbIunsoperationsTable(), OperationsIunsEntity.class);
+                awsConfigs.getDynamodbIunsoperationsTable(),
+                raddFsuConfig,
+                OperationsIunsEntity.class
+        );
     }
 
 
@@ -33,7 +38,7 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
     public Mono<Void> putWithBatch(List<OperationsIunsEntity> operations) {
         Flux<OperationsIunsEntity> fluxIuns = Flux.fromStream(operations.stream());
         return fluxIuns.buffer(24)
-                .flatMap(this::batchWriter)
+                .flatMap(list -> batchWriter(list, 0))
                 .then();
     }
 

@@ -67,6 +67,10 @@ Parameters:
     Type: String
     Description: 'SafeStorage cx-id'
 
+  AttemptBatchWriter:
+    Type: String
+    Description: 'Number of attempt for unprocessed item writer'
+
   SafeStorageDocType:
     Type: String
     Description: 'SafeStorage document-type'
@@ -221,8 +225,9 @@ Resources:
         ContainerEnvEntry7: !Sub 'PN_RADD_CLIENT_DELIVERY_PUSH_INTERNAL_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry8: !Sub 'PN_RADD_CLIENT_SAFE_STORAGE_BASEPATH=${SandboxSafeStorageBaseUrl}'
         ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
-        ContainerEnvEntry10: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
-        ContainerEnvEntry11: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
+        ContainerEnvEntry10: !Sub 'PN_RADD_ATTEMPTBATCHWRITER=${AttemptBatchWriter}'
+        ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
+        ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

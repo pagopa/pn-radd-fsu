@@ -1,6 +1,7 @@
 {
   "Parameters" : {
     "SafeStorageCxId": "pn-radd-fsu",
-    "SafeStorageDocType": "PN_RADD_FSU_ATTACHMENT"
+    "SafeStorageDocType": "PN_RADD_FSU_ATTACHMENT",
+    "AttemptBatchWriter": "3"
   }
 }

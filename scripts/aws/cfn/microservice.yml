@@ -70,6 +70,7 @@ Parameters:
   AttemptBatchWriter:
     Type: String
     Description: 'Number of attempt for unprocessed item writer'
+    Default: 3
 
   SafeStorageDocType:
     Type: String

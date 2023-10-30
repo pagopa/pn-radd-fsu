@@ -36,6 +36,8 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
 
     @Override
     public Mono<Void> putWithBatch(List<OperationsIunsEntity> operations) {
+        if (operations == null) return Mono.just("").then();
+
         Flux<OperationsIunsEntity> fluxIuns = Flux.fromStream(operations.stream());
         return fluxIuns.buffer(24)
                 .flatMap(list -> batchWriter(list, 0))

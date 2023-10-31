@@ -239,6 +239,7 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         TaskRoleManagedPolicyArn: !Ref RaddMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: FATAL
 
   # Grant operational rights to PN-RADD microservice
   RaddMicroserviceTaskManagedPolicy:

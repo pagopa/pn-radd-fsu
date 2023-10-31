@@ -110,7 +110,7 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     void testCountFromIunAndOperationIdAndStatus() {
         baseEntity.setIun("iun");
         baseEntity.setOperationId("operationId");
-        raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED);
+        raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED).block();
         StepVerifier.create( raddTransactionDAO.countFromIunAndOperationIdAndStatus(baseEntity.getOperationId(), baseEntity.getIun()))
                     .expectNext(1)
                     .verifyComplete();

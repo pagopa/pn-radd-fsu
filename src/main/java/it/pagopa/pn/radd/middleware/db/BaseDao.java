@@ -77,7 +77,7 @@ public abstract class BaseDao<T> {
                 });
     }
 
-    protected Mono<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression, String keyConditionExpression){
+    protected Mono<Integer> getCounterQuery(Map<String, AttributeValue> values, String filterExpression, String keyConditionExpression, String index){
         QueryRequest.Builder qeRequest = QueryRequest
                 .builder()
                 .select(Select.COUNT)
@@ -87,6 +87,10 @@ public abstract class BaseDao<T> {
 
         if (!StringUtils.isBlank(filterExpression)){
             qeRequest.filterExpression(filterExpression);
+        }
+
+        if (!StringUtils.isBlank(index)){
+           qeRequest.indexName(index);
         }
 
         return Mono.fromFuture(dynamoDbAsyncClient.query(qeRequest.build()).thenApply(QueryResponse::count));

@@ -112,6 +112,12 @@ Resources:
               KeyType: "RANGE"
           Projection:
             ProjectionType: "ALL"
+        - IndexName: "operation-index"
+          KeySchema:
+            - AttributeName: "operationId"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
       BillingMode: "PAY_PER_REQUEST"      
       KinesisStreamSpecification:
         StreamArn: !Ref CdcKinesisSourceStreamArn

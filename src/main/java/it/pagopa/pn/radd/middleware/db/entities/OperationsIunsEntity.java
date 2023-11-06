@@ -18,6 +18,7 @@ public class OperationsIunsEntity {
     public static final String COL_IUN = "iun";
     public static final String COL_OPERATION_ID = "operationId";
     public static final String SECONDARY_INDEX = "iun-and-operation-index";
+    public static final String OPERATION_INDEX = "operation-index";
 
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_ID)}))
@@ -26,7 +27,7 @@ public class OperationsIunsEntity {
     @Getter(onMethod=@__({@DynamoDbSecondaryPartitionKey(indexNames = SECONDARY_INDEX), @DynamoDbAttribute(COL_IUN)}))
     private String iun;
 
-    @Getter(onMethod=@__({@DynamoDbSecondarySortKey(indexNames = SECONDARY_INDEX), @DynamoDbAttribute(COL_OPERATION_ID)}))
+    @Getter(onMethod=@__({@DynamoDbSecondarySortKey(indexNames = SECONDARY_INDEX), @DynamoDbSecondaryPartitionKey(indexNames = OPERATION_INDEX), @DynamoDbAttribute(COL_OPERATION_ID)}))
     private String operationId;
 
 }

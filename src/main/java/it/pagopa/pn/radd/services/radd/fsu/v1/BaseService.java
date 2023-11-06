@@ -37,10 +37,10 @@ public class BaseService {
                 .flatMap(ensureRecipient -> {
                     if (!Strings.isBlank(transaction.getDelegateId())){
                         return getEnsureFiscalCode(transaction.getDelegateId(), Const.PF)
-                                .flatMap(delegateEnsure -> {
+                                .map(delegateEnsure -> {
                                     transaction.setEnsureRecipientId(ensureRecipient);
                                     transaction.setEnsureDelegateId(delegateEnsure);
-                                    return Mono.just(transaction);
+                                    return transaction;
                                 });
                     }
                     transaction.setEnsureRecipientId(ensureRecipient);

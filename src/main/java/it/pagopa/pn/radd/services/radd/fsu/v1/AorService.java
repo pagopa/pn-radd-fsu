@@ -57,7 +57,7 @@ public class AorService extends BaseService {
                                 .map(list -> AorInquiryResponseMapper.fromResult())
                 )
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.debug("End of AORInquiry with error {}", ex.getMessage(), ex);
+                    log.error("End of AORInquiry with error {}", ex.getMessage(), ex);
                     return Mono.just(AorInquiryResponseMapper.fromException(ex));
                 });
     }

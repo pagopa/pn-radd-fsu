@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
@@ -11,7 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 @Component
 public class TransactionDataMapper {
@@ -23,7 +25,7 @@ public class TransactionDataMapper {
     public RaddTransactionEntity toEntity(String uid, TransactionData transaction){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         if (transaction.getIun() == null || StringUtils.isBlank(transaction.getIun())){
-            entity.setIun(Arrays.toString(transaction.getIuns().toArray()));
+            entity.setIun("[AOR-".concat(transaction.getOperationId()).concat("]"));
         } else {
             entity.setIun(transaction.getIun());
         }
@@ -72,6 +74,19 @@ public class TransactionDataMapper {
         transactionData.setVersionId(request.getVersionToken());
         transactionData.setIuns(new ArrayList<>());
         return transactionData;
+    }
+
+    public List<OperationsIunsEntity> toOperationsIuns(TransactionData transactionData){
+        if (transactionData == null || transactionData.getIuns() == null) return new ArrayList<>();
+        return  transactionData.getIuns().parallelStream()
+                .map(iun -> {
+                    OperationsIunsEntity operationIun = new OperationsIunsEntity();
+                    operationIun.setOperationId(transactionData.getOperationId());
+                    operationIun.setIun(iun);
+                    operationIun.setId(UUID.randomUUID().toString());
+                    return operationIun;
+                })
+                .toList();
     }
 
 }

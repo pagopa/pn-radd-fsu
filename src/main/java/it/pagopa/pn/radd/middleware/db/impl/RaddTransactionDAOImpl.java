@@ -105,7 +105,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
         log.trace("COUNT DAO TICK {}", new Date().getTime());
 
-        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_OPERATION_ID + " = :operationId")
+        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_OPERATION_ID + " = :operationId", null)
                 .doOnNext(response -> log.trace("COUNT DAO TOCK {}", new Date().getTime()));
     }
 
@@ -120,7 +120,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
         log.trace("COUNT QUERY DAO TICK {}", new Date().getTime());
 
-        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_QR_CODE + " = :qrcodevalue")
+        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_QR_CODE + " = :qrcodevalue", RaddTransactionEntity.QRCODE_SECONDARY_INDEX)
                 .doOnNext(result ->  log.trace("COUNT QUERY DAO TOCK {}", new Date().getTime()))
                 .doOnError(ex ->  log.trace("COUNT QUERY DAO TOCK {}", new Date().getTime()));
     }

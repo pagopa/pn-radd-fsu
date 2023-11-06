@@ -36,6 +36,8 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
 
     @Override
     public Mono<Void> putWithBatch(List<OperationsIunsEntity> operations) {
+        if (operations == null) return Mono.just("").then();
+
         Flux<OperationsIunsEntity> fluxIuns = Flux.fromStream(operations.stream());
         return fluxIuns.buffer(24)
                 .flatMap(list -> batchWriter(list, 0))
@@ -47,6 +49,13 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
         Key key = Key.builder().partitionValue(iun).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
         return this.getByFilter(conditional, OperationsIunsEntity.SECONDARY_INDEX, null, null, null);
+    }
+
+    @Override
+    public Flux<OperationsIunsEntity> getAllIunsFromOperation(String operationId) {
+        Key key = Key.builder().partitionValue(operationId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+        return this.getByFilter(conditional, OperationsIunsEntity.OPERATION_INDEX, null, null, null);
     }
 
 

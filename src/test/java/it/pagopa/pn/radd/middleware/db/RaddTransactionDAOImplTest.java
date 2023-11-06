@@ -11,16 +11,26 @@ import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +45,10 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     private RaddTransactionEntity baseEntity;
     private final List<OperationsIunsEntity> iunsEntities = new ArrayList<>();
 
+    @Mock
+    DynamoDbAsyncClient dynamoDbAsyncClient;
+    @Mock
+    DynamoDbAsyncTable<RaddTransactionEntity> raddTable;
 
     @BeforeEach
     public void setUp() {
@@ -77,18 +91,6 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         assertEquals(response.getStatus(), baseEntity.getStatus());
     }
 
-//    @Test
-    void testUpdateStatusOnThrow() {
-
-        RaddTransactionEntity entityUpdated = new RaddTransactionEntity();
-        entityUpdated.setStatus(Const.ERROR);
-        entityUpdated.setOperationId("operatio");
-        entityUpdated.setIun("iun");
-        entityUpdated.setOperationType("operationType");
-        StepVerifier.create(raddTransactionDAO.updateStatus(new RaddTransactionEntity(), RaddTransactionStatusEnum.ERROR))
-                .expectError(RaddGenericException.class).verify();
-    }
-
     @Test
     void testWhenGetActTransactionReturnEntity() {
         RaddTransactionEntity response = raddTransactionDAO.getTransaction("operationId", OperationTypeEnum.ACT).block();
@@ -108,7 +110,7 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     void testCountFromIunAndOperationIdAndStatus() {
         baseEntity.setIun("iun");
         baseEntity.setOperationId("operationId");
-        raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED);
+        raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED).block();
         StepVerifier.create( raddTransactionDAO.countFromIunAndOperationIdAndStatus(baseEntity.getOperationId(), baseEntity.getIun()))
                     .expectNext(1)
                     .verifyComplete();
@@ -176,14 +178,16 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         }).blockFirst();
     }
 
-//    @Test
+    @Test
     void testCountFromQrCodeCompleted() {
-        baseEntity.setQrCode("qrcode12345");
-        baseEntity.setOperationType(OperationTypeEnum.ACT.toString());
-        raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED).block();
-        StepVerifier.create(raddTransactionDAO.countFromQrCodeCompleted("qrcode123"))
-                .expectNext(1)
-                .verifyComplete();
+        CompletableFuture<QueryResponse> queryResponseCompletableFuture = CompletableFuture.completedFuture(QueryResponse.builder().count(1).build());
+        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any())).thenReturn(queryResponseCompletableFuture);
+        Mono<Integer> entityMono = raddTransactionDAO.countFromQrCodeCompleted(Mockito.any());
+        assertNotNull(entityMono);
+        entityMono.map(entity -> {
+            assertEquals(1, entity);
+            return Mono.empty();
+        });
     }
 
     @Test

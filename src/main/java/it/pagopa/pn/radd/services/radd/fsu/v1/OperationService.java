@@ -14,6 +14,7 @@ import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Date;
@@ -49,6 +50,14 @@ public class OperationService {
     public Mono<OperationAorResponse> getTransactionAorByOperationIdAndType(String operationId){
         log.info("Find transaction with {} operation id", operationId);
         return transactionDAO.getTransaction(operationId, OperationTypeEnum.AOR)
+                .flatMap(transaction -> operationsIunsDAO.getAllIunsFromOperation(operationId)
+                        .map(OperationsIunsEntity::getIun)
+                        .collectList()
+                        .map(iuns -> {
+                            transaction.setIun(iuns.toString());
+                            return transaction;
+                        })
+                )
                 .map(OperationAorResponseMapper::fromResult)
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(OperationAorResponseMapper.fromException(ex)));
     }
@@ -103,7 +112,7 @@ public class OperationService {
     }
 
     public Mono<OperationsAorDetailsResponse> getAllAorTransactionFromFiscalCode(String ensureFiscalCode, Date from, Date to){
-        return this.transactionDAO.getTransactionsFromFiscalCode(ensureFiscalCode, from, to)
+        return getTransactionsFromInternalId(ensureFiscalCode, from, to)
                 .filter(transactionEntity -> transactionEntity.getOperationType().equals(OperationTypeEnum.AOR.name()))
                 .map(OperationAorResponseMapper::getDetail)
                 .collectList()
@@ -134,6 +143,18 @@ public class OperationService {
                     }
                     return Mono.just(response);
                 });
+    }
+
+    private Flux<RaddTransactionEntity> getTransactionsFromInternalId(String internalId, Date from, Date to){
+        return this.transactionDAO.getTransactionsFromFiscalCode(internalId, from, to)
+                .flatMap(transaction -> operationsIunsDAO.getAllIunsFromOperation(transaction.getOperationId())
+                        .map(OperationsIunsEntity::getIun)
+                        .collectList()
+                        .map(iuns -> {
+                            transaction.setIun(iuns.toString());
+                            return transaction;
+                        })
+                );
     }
 
 

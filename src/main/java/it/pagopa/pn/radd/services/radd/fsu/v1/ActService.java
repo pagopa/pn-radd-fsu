@@ -105,12 +105,12 @@ public class ActService extends BaseService {
                     return response;
                 })
                 .onErrorResume(PnRaddException.class, ex -> {
-                    log.debug("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.error(ex));
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.debug("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });

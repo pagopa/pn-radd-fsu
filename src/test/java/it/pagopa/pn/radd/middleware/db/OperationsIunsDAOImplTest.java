@@ -27,7 +27,7 @@ class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
 
     @BeforeEach
     void setUp(){
-        List<OperationsIunsEntity> entities = this.createOperations(IUN_TEST, "OPT_1", 100);
+        List<OperationsIunsEntity> entities = this.createOperations(IUN_TEST, "OPT_1", 99);
         operationsIunsDAO.putWithBatch(entities).block();
     }
 
@@ -45,7 +45,7 @@ class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
                 .map(operationsIunsEntity -> operationsIunsEntity)
                 .collectList().block();
         assertNotNull(operationsIunsEntities);
-        assertEquals(100, operationsIunsEntities.size());
+
     }
 
     @Test

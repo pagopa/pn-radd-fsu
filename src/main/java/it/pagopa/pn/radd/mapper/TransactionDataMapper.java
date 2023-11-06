@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +25,7 @@ public class TransactionDataMapper {
     public RaddTransactionEntity toEntity(String uid, TransactionData transaction){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         if (transaction.getIun() == null || StringUtils.isBlank(transaction.getIun())){
-            entity.setIun(List.of(transaction.getIuns().get(0)).toString());
+            entity.setIun("[AOR-".concat(transaction.getOperationId()).concat("]"));
         } else {
             entity.setIun(transaction.getIun());
         }

@@ -25,9 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
@@ -55,13 +53,11 @@ public class AorService extends BaseService {
                         this.getIunFromPaperNotificationFailed(ensureFiscalCode)
                                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF)))
                                 .collectList()
-                                .map(list -> {
-                                    log.info("End of AORInquiry with documents list size {}", list.size());
-                                    return AorInquiryResponseMapper.fromResult();
-                                })
+                                .doOnNext(list ->  log.info("End of AORInquiry with documents list size {}", list.size()))
+                                .map(list -> AorInquiryResponseMapper.fromResult())
                 )
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.debug("End of AORInquiry with error {}", ex.getMessage(), ex);
+                    log.error("End of AORInquiry with error {}", ex.getMessage(), ex);
                     return Mono.just(AorInquiryResponseMapper.fromException(ex));
                 });
     }
@@ -87,17 +83,10 @@ public class AorService extends BaseService {
     public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request){
         log.info("Start AOR startTransaction - uid={} - operationId={}", uid, request.getOperationId());
         return validationAorStartTransaction(uid, request)
-                .zipWhen(this::getEnsureRecipientAndDelegate, (transaction, transactionReq) -> transactionReq)
-                .zipWhen(transaction -> this.getIunFromPaperNotificationFailed(transaction.getEnsureRecipientId())
-                                .map(item -> {
-                                    log.debug("Retrieved IUN : {}", item.getIun());
-                                    transaction.getIuns().add(item.getIun());
-                                    transaction.getUrls().add(item.getAarUrl());
-                                    return item;
-                                })
-                            .collectList().map(list -> transaction), (transaction, transactionWithIuns) -> transactionWithIuns)
+                .flatMap(this::getEnsureRecipientAndDelegate)
+                .flatMap(this::setIunsOfNotificationFailed)
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
-                .flatMap(this::verifyCheckSum)
+                //.flatMap(this::verifyCheckSum)
                 .flatMap(transactionData ->
                     this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
                             .map(urls -> {
@@ -135,19 +124,10 @@ public class AorService extends BaseService {
     }
 
     private Mono<TransactionData> createAorTransaction(String uid, TransactionData transaction){
-        List<OperationsIunsEntity> raddOperationIunList = new ArrayList<>();
-        if (transaction.getIuns() != null){
-            raddOperationIunList = transaction.getIuns().parallelStream().map(iun -> {
-                OperationsIunsEntity operationIun = new OperationsIunsEntity();
-                operationIun.setOperationId(transaction.getOperationId());
-                operationIun.setIun(iun);
-                operationIun.setId(UUID.randomUUID().toString());
-                return operationIun;
-            }).toList();
-        }
         RaddTransactionEntity entity = transactionDataMapper.toEntity(uid, transaction);
+        List<OperationsIunsEntity> operations = transactionDataMapper.toOperationsIuns(transaction);
         log.debug("Create new Transaction entity iun={}, status={}", entity.getIun(), entity.getStatus());
-        return this.raddTransactionDAO.createRaddTransaction(entity, raddOperationIunList).map(ent -> transaction);
+        return this.raddTransactionDAO.createRaddTransaction(entity, operations).map(ent -> transaction);
     }
 
     private CompleteTransactionRequest validateCompleteRequest(CompleteTransactionRequest req){
@@ -212,5 +192,15 @@ public class AorService extends BaseService {
             m != null && !StringUtils.isEmpty(m.getOperationId()) && !StringUtils.isEmpty(m.getReason())
                     && m.getOperationDate() != null
     );
+
+    private Mono<TransactionData> setIunsOfNotificationFailed(TransactionData transaction){
+        return this.getIunFromPaperNotificationFailed(transaction.getEnsureRecipientId())
+                .doOnNext(item -> {
+                    log.debug("Retrieved IUN : {}", item.getIun());
+                    transaction.getUrls().add(item.getAarUrl());
+                    transaction.getIuns().add(item.getIun());
+                }).collectList()
+                .map(item -> transaction);
+    }
 
 }

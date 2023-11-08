@@ -5,6 +5,8 @@ import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
+import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
+import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
@@ -37,6 +39,8 @@ class OperationServiceTest extends BaseTest {
     private OperationService operationService;
     @Mock
     private RaddTransactionDAOImpl transactionDAO;
+    @Mock
+    private OperationsIunsDAO operationsIunsDAO;
     @Autowired
     @Spy
     private RaddTransactionEntityNotificationResponse mapperToNotificationResponse;
@@ -183,6 +187,9 @@ class OperationServiceTest extends BaseTest {
         entity.setErrorReason("errorReadon");
 
         Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
+        operationsIunsEntity.setIun("[iunTest, testIun]");
+        Mockito.when(operationsIunsDAO.getAllIunsFromOperation(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
 
         OperationAorResponse response = operationService.getTransactionAorByOperationIdAndType("err").block(d);
 
@@ -271,6 +278,9 @@ class OperationServiceTest extends BaseTest {
 
         Mockito.when(transactionDAO.getTransactionsFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Flux.fromStream(List.of(entity1, entity2).stream()));
+        OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
+        operationsIunsEntity.setIun("[iunTest, testIun]");
+        Mockito.when(operationsIunsDAO.getAllIunsFromOperation(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
 
         operationService.getAllAorTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(response -> {

@@ -51,5 +51,12 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
         return this.getByFilter(conditional, OperationsIunsEntity.SECONDARY_INDEX, null, null, null);
     }
 
+    @Override
+    public Flux<OperationsIunsEntity> getAllIunsFromOperation(String operationId) {
+        Key key = Key.builder().partitionValue(operationId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+        return this.getByFilter(conditional, OperationsIunsEntity.OPERATION_INDEX, null, null, null);
+    }
+
 
 }

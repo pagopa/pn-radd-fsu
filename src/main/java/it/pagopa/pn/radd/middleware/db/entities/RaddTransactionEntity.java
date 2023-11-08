@@ -3,7 +3,11 @@ package it.pagopa.pn.radd.middleware.db.entities;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
-
+/**
+ * Questa entità mappa la tabella pn-radd-transaction. È utilizzata sia nel caso AOR che ACT.
+ * Per le operazioni di tipo AOR, il campo iun non viene valorizzato con la lista degli iun dell'operazione,
+ * ma con l'operationId + un prefisso di default.
+ */
 @DynamoDbBean
 @Getter
 @Setter

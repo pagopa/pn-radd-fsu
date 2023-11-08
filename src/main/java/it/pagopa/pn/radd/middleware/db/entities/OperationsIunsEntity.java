@@ -6,7 +6,9 @@ import lombok.Setter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
-
+/**
+ * Questa entità mappa la tabella pn-operations-iuns. Viene utilizzata solo dal caso d'uso AOR.
+ */
 @DynamoDbBean
 @Getter
 @Setter

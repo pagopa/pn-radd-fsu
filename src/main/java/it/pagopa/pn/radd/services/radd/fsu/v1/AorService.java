@@ -86,7 +86,7 @@ public class AorService extends BaseService {
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .flatMap(this::setIunsOfNotificationFailed)
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
-                //.flatMap(this::verifyCheckSum)
+                .flatMap(this::verifyCheckSum)
                 .flatMap(transactionData ->
                     this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
                             .map(urls -> {

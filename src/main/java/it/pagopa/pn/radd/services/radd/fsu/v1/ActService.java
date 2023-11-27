@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.QrCodeAlreadyExistsException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
@@ -108,6 +109,10 @@ public class ActService extends BaseService {
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.error(ex));
                 })
+                .onErrorResume(QrCodeAlreadyExistsException.class, ex -> {
+                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    return Mono.just(StartTransactionResponseMapper.fromException(ex));
+                })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
@@ -119,7 +124,7 @@ public class ActService extends BaseService {
     private Mono<Integer> checkQrCodeIsAlreadyExistsInCompleted(String qrCode) {
         return this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
                 .filter(counter -> counter == 0)
-                .switchIfEmpty(Mono.error(new RaddGenericException(ALREADY_COMPLETE_PRINT)));
+                .switchIfEmpty(Mono.error(new QrCodeAlreadyExistsException()));
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, CompleteTransactionRequest completeTransactionRequest) {

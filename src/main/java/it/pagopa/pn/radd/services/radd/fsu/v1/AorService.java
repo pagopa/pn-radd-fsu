@@ -1,8 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
@@ -98,6 +96,10 @@ public class AorService extends BaseService {
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
                 .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls()))
+                .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
+                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    return Mono.just(StartTransactionResponseMapper.fromException(ex));
+                })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error("End AOR start transaction with error {}", ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR)

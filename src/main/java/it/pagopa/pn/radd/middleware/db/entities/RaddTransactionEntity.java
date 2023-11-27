@@ -13,6 +13,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 @Setter
 @ToString
 @NoArgsConstructor
+@EqualsAndHashCode
 public class RaddTransactionEntity {
 
     public static final String COL_IUN = "iun";

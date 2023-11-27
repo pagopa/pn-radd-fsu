@@ -49,25 +49,50 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     @Override
     public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity, List<OperationsIunsEntity> iunsEntities){
-        return putTransaction(entity)
-                .flatMap(raddTransaction -> operationsIunsDAO.putWithBatch(iunsEntities)
-                        .thenReturn(entity))
+        return putTransactionWithConditions(entity)
+                .doOnNext(raddTransaction -> log.debug("[{} - {}] radd transaction created", raddTransaction.getOperationId(), raddTransaction.getIun()))
+                .flatMap(raddTransaction -> operationsIunsDAO.putWithBatch(iunsEntities).thenReturn(entity))
                 .flatMap(raddTransaction -> updateStatus(raddTransaction, RaddTransactionStatusEnum.STARTED));
     }
 
+    public Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity) {
+        Expression expression = createExpression(entity);
+        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class);
+    }
 
-    private Mono<RaddTransactionEntity> putTransaction(RaddTransactionEntity entity) {
-        return this.countFromIunAndOperationIdAndStatus(entity.getOperationId(), entity.getIun())
-                .filter(item -> item == 0)
-                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST)))
-                .doOnNext(item -> log.trace("PUT RADD TRANSACTION TICK {}", new Date().getTime()))
-                .flatMap(counter -> this.putItem(entity) //putItem con conditions
-                        .doOnError(ex -> log.debug("[{} - {}] Error during creation radd transaction", entity.getOperationId(), entity.getIun()))
-                        .doOnError(ex -> log.trace("PUT RADD TRANSACTION TOCK {}", new Date().getTime()))
-                        .onErrorResume(ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_SAVED)))
-                )
-                .doOnNext(raddTransaction -> log.debug("[{} - {}] radd transaction created", raddTransaction.getOperationId(), raddTransaction.getIun()))
-                .doOnNext(raddTransaction -> log.trace("PUT RADD TRANSACTION TOCK {}", new Date().getTime()));
+    private Expression createExpression(RaddTransactionEntity entity) {
+        if(OperationTypeEnum.ACT.name().equals(entity.getOperationType())) {
+            return createExpressionForAct(entity);
+        }
+        else { //AOR case
+            return createExpressionForAor(entity);
+        }
+    }
+
+    private Expression createExpressionForAct(RaddTransactionEntity entity) {
+        Expression.Builder expressionBuilder = Expression.builder()
+                .expression("attribute_not_exists(operationId) OR " +
+                        "(iun = :expectedIun AND qrCode = :expectedQrCode AND fileKey = :expectedFileKey AND " +
+                        "recipientId = :expectedRecipientId)");
+
+        return putCommonConditionsAORAndACT(entity, expressionBuilder)
+                .putExpressionValue(":expectedIun", AttributeValue.builder().s(entity.getIun()).build())
+                .putExpressionValue(":expectedQrCode", AttributeValue.builder().s(entity.getQrCode()).build())
+                .build();
+    }
+
+    private Expression createExpressionForAor(RaddTransactionEntity entity) {
+        Expression.Builder expressionBuilder = Expression.builder()
+                .expression("attribute_not_exists(operationId) OR " +
+                        "(fileKey = :expectedFileKey AND recipientId = :expectedRecipientId)");
+
+        return putCommonConditionsAORAndACT(entity, expressionBuilder).build();
+    }
+
+    private Expression.Builder putCommonConditionsAORAndACT(RaddTransactionEntity entity, Expression.Builder builder) {
+        return builder
+                .putExpressionValue(":expectedFileKey", AttributeValue.builder().s(entity.getFileKey()).build())
+                .putExpressionValue(":expectedRecipientId", AttributeValue.builder().s(entity.getRecipientId()).build());
     }
 
 

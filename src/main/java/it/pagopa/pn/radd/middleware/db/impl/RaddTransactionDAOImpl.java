@@ -61,7 +61,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
                 .filter(item -> item == 0)
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST)))
                 .doOnNext(item -> log.trace("PUT RADD TRANSACTION TICK {}", new Date().getTime()))
-                .flatMap(counter -> this.putItem(entity)
+                .flatMap(counter -> this.putItem(entity) //putItem con conditions
                         .doOnError(ex -> log.debug("[{} - {}] Error during creation radd transaction", entity.getOperationId(), entity.getIun()))
                         .doOnError(ex -> log.trace("PUT RADD TRANSACTION TOCK {}", new Date().getTime()))
                         .onErrorResume(ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_SAVED)))

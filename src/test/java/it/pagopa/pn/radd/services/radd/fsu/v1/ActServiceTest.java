@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.mapper.StartTransactionResponseMapper;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponseNotificationViewedDtoDto;
@@ -29,6 +30,7 @@ import reactor.test.StepVerifier;
 
 import java.util.Date;
 
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ALREADY_COMPLETE_PRINT;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -410,6 +412,25 @@ class ActServiceTest extends BaseTest {
                     return Mono.empty();
                 }).block();
 
+    }
+
+    @Test
+    void testStartTransactionReturnErrorBecauseAlreadyExistsQrCodeInCompleted() {
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode(startTransactionRequest.getQrCode());
+
+        Mockito.when(transactionDataMapper.toTransaction("id", startTransactionRequest)).thenReturn(transactionData);
+        Mockito.when(raddTransactionDAOImpl.getTransaction("id", OperationTypeEnum.ACT)).thenReturn(Mono.empty());
+        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted("qrcode")).thenReturn(Mono.just(1));
+
+        StepVerifier.create(actService.startTransaction("id", startTransactionRequest))
+                .verifyComplete();
     }
 
 

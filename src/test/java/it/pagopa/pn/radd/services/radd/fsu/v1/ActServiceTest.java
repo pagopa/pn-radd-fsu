@@ -29,6 +29,8 @@ import reactor.test.StepVerifier;
 
 import java.util.Date;
 
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ALREADY_COMPLETE_PRINT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -137,7 +139,10 @@ class ActServiceTest extends BaseTest {
         startTransactionRequest.setOperationId("id");
         startTransactionRequest.setRecipientTaxId("taxId");
         startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
-        Mockito.when (transactionDataMapper.toTransaction("id", startTransactionRequest)).thenReturn(new TransactionData());
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        Mockito.when (transactionDataMapper.toTransaction("id", startTransactionRequest)).thenReturn(transactionData);
+        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted("qrcode")).thenReturn(Mono.just(0));
         StepVerifier.create(actService.startTransaction("id", startTransactionRequest) )
                 .expectError(PnInvalidInputException.class).verify();
     }
@@ -176,6 +181,32 @@ class ActServiceTest extends BaseTest {
             assertEquals("Recipient Type non valorizzato correttamente", exception.getReason());
             return Mono.empty();
         }).block();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorBecauseAlreadyExistsQrCodeInCompleted() {
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode(startTransactionRequest.getQrCode());
+
+        Mockito.when(transactionDataMapper.toTransaction("id", startTransactionRequest)).thenReturn(transactionData);
+
+        // si presuppone che in questo caso non esista già l'operazione RADD
+        Mockito.when(raddTransactionDAOImpl.getTransaction("id", OperationTypeEnum.ACT))
+                .thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+
+        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted("qrcode")).thenReturn(Mono.just(1));
+
+        StartTransactionResponse response = actService.startTransaction("id", startTransactionRequest).block();
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isNotNull();
+        assertThat(response.getStatus().getCode()).isEqualTo(StartTransactionResponseStatus.CodeEnum.NUMBER_99);
+        assertThat(response.getStatus().getMessage()).isEqualTo(new RaddGenericException(ALREADY_COMPLETE_PRINT).getExceptionType().getMessage());
     }
 
     @Test

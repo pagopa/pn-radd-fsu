@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entity.setFileKey("fileKey1");
         entity.setRecipientId("rec1");
         entity.setOperationType(OperationTypeEnum.ACT.name());
+        entity.setStatus(Const.STARTED);
 
         StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT))
                 .expectErrorMatches(ex ->
@@ -65,6 +67,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entity.setFileKey("fileKey1");
         entity.setRecipientId("rec1");
         entity.setOperationType(OperationTypeEnum.AOR.name());
+        entity.setStatus(Const.STARTED);
 
         StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR))
                 .expectErrorMatches(ex ->
@@ -102,6 +105,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entityAOR.setFileKey("fileKey1");
         entityAOR.setRecipientId("rec1");
         entityAOR.setOperationType(OperationTypeEnum.AOR.name());
+        entityAOR.setStatus(Const.STARTED);
 
 
         StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR))
@@ -123,6 +127,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entityACT.setIun("iun1");
         entityACT.setQrCode("qrCode1");
         entityACT.setOperationType(OperationTypeEnum.ACT.name());
+        entityACT.setStatus(Const.STARTED);
 
         StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT))
                 .expectErrorMatches(ex ->
@@ -137,5 +142,71 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         returnEntityAOR = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR).block();
         assertThat(returnEntityAOR).isEqualTo(entityAOR);
+    }
+
+    @Test
+    void putTransactionWithConditionsForAorWithStatusCompletedInDB() {
+        String operationId = "operationIdAOR" + Math.random();
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setOperationId(operationId);
+        entity.setFileKey("fileKey1");
+        entity.setRecipientId("rec1");
+        entity.setOperationType(OperationTypeEnum.AOR.name());
+        entity.setStatus(Const.COMPLETED);
+
+        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR))
+                .expectErrorMatches(ex ->
+                        ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
+                )
+                .verify();
+
+        raddTransactionDAO.putTransactionWithConditions(entity).block();
+
+        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR).block();
+
+        assertThat(returnEntity).isEqualTo(entity);
+
+        entity.setStatus(Const.STARTED);
+
+        StepVerifier.create(raddTransactionDAO.putTransactionWithConditions(entity))
+                .expectErrorMatches(ex ->
+                        ex instanceof TransactionAlreadyExistsException
+                )
+                .verify();
+
+    }
+
+    @Test
+    void putTransactionWithConditionsForActWithStatusAbortedInDB() {
+        String operationId = "operationId1ACT" + Math.random();
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setOperationId(operationId);
+        entity.setIun("iun1");
+        entity.setQrCode("qrCode1");
+        entity.setFileKey("fileKey1");
+        entity.setRecipientId("rec1");
+        entity.setOperationType(OperationTypeEnum.ACT.name());
+        entity.setStatus(Const.ABORTED);
+
+        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT))
+                .expectErrorMatches(ex ->
+                        ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
+                )
+                .verify();
+
+        raddTransactionDAO.putTransactionWithConditions(entity).block();
+
+        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT).block();
+
+        assertThat(returnEntity).isEqualTo(entity);
+
+        entity.setStatus(Const.STARTED);
+
+        StepVerifier.create(raddTransactionDAO.putTransactionWithConditions(entity))
+                .expectErrorMatches(ex ->
+                        ex instanceof TransactionAlreadyExistsException
+                )
+                .verify();
+
     }
 }

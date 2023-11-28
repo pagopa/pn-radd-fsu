@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.OPERATION_TYPE_UNKNOWN;
 
 @Repository
 @Slf4j
@@ -64,8 +65,11 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
         if(OperationTypeEnum.ACT.name().equals(entity.getOperationType())) {
             return buildExpressionForAct(entity);
         }
-        else { //AOR case
+        else if(OperationTypeEnum.AOR.name().equals(entity.getOperationType())) {
             return buildExpressionForAor(entity);
+        }
+        else {
+            throw new RaddGenericException(OPERATION_TYPE_UNKNOWN);
         }
     }
 

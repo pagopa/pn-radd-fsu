@@ -26,4 +26,6 @@ public interface RaddTransactionDAO {
 
     Flux<RaddTransactionEntity> getTransactionsFromIun(String iun);
     Flux<RaddTransactionEntity> getTransactionsFromFiscalCode(String ensureFiscalCode, Date from, Date to);
+
+    Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity);
 }

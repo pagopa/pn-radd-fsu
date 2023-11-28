@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.OPERATION_TYPE_UNKNOWN;
 
 @Repository
 @Slf4j
@@ -49,25 +50,113 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     @Override
     public Mono<RaddTransactionEntity> createRaddTransaction(RaddTransactionEntity entity, List<OperationsIunsEntity> iunsEntities){
-        return putTransaction(entity)
-                .flatMap(raddTransaction -> operationsIunsDAO.putWithBatch(iunsEntities)
-                        .thenReturn(entity))
+        return putTransactionWithConditions(entity)
+                .doOnNext(raddTransaction -> log.debug("[{} - {}] radd transaction created", raddTransaction.getOperationId(), raddTransaction.getIun()))
+                .flatMap(raddTransaction -> operationsIunsDAO.putWithBatch(iunsEntities).thenReturn(entity))
                 .flatMap(raddTransaction -> updateStatus(raddTransaction, RaddTransactionStatusEnum.STARTED));
     }
 
+    public Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity) {
+        Expression expression = createExpression(entity);
+        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class);
+    }
 
-    private Mono<RaddTransactionEntity> putTransaction(RaddTransactionEntity entity) {
-        return this.countFromIunAndOperationIdAndStatus(entity.getOperationId(), entity.getIun())
-                .filter(item -> item == 0)
-                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST)))
-                .doOnNext(item -> log.trace("PUT RADD TRANSACTION TICK {}", new Date().getTime()))
-                .flatMap(counter -> this.putItem(entity) //putItem con conditions
-                        .doOnError(ex -> log.debug("[{} - {}] Error during creation radd transaction", entity.getOperationId(), entity.getIun()))
-                        .doOnError(ex -> log.trace("PUT RADD TRANSACTION TOCK {}", new Date().getTime()))
-                        .onErrorResume(ex -> Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_SAVED)))
-                )
-                .doOnNext(raddTransaction -> log.debug("[{} - {}] radd transaction created", raddTransaction.getOperationId(), raddTransaction.getIun()))
-                .doOnNext(raddTransaction -> log.trace("PUT RADD TRANSACTION TOCK {}", new Date().getTime()));
+    private Expression createExpression(RaddTransactionEntity entity) {
+        if(OperationTypeEnum.ACT.name().equals(entity.getOperationType())) {
+            return buildExpressionForAct(entity);
+        }
+        else if(OperationTypeEnum.AOR.name().equals(entity.getOperationType())) {
+            return buildExpressionForAor(entity);
+        }
+        else {
+            throw new RaddGenericException(OPERATION_TYPE_UNKNOWN);
+        }
+    }
+
+    /**
+     * Condizione utile per la PUT condizionata di una operazione di tipo ACT.
+     * Siccome le operazioni di tipo ACT hanno, rispetto a quelle AOR, i campi iun e qrCode valorizzati,
+     * viene ri-utilizzato il metodo {@link #buildExpressionForAor(RaddTransactionEntity)} aggiungendo in AND
+     * la condizione dei due campi iun e qrCode (a loro volta legati in AND)
+     * @param entity
+     *
+     * @return una espressione per la PUT condizionale per una operazione ACT
+     */
+    private Expression buildExpressionForAct(RaddTransactionEntity entity) {
+
+        Expression expressionPK = buildExpressionForPK();
+
+        String expressionIunAndQrCode = "iun = :expectedIun AND qrCode = :expectedQrCode";
+
+        Expression expressionForAor = buildCommonConditionsAORAndACT(entity).build();
+
+        Expression expressionOnlyFieldsAct = Expression.builder()
+                .expression(expressionIunAndQrCode)
+                .putExpressionValue(":expectedIun", AttributeValue.builder().s(entity.getIun()).build())
+                .putExpressionValue(":expectedQrCode", AttributeValue.builder().s(entity.getQrCode()).build())
+                .build();
+
+        Expression finalExpressionACT = Expression.join(expressionForAor, expressionOnlyFieldsAct, "AND");
+
+        return Expression.join(expressionPK, finalExpressionACT, "OR");
+
+    }
+
+    /**
+     * Questa condizione simula il putIfAbsent
+     * @return una espressione che simula il putIfAbsent
+     */
+    private Expression buildExpressionForPK() {
+        return Expression.builder()
+                .expression("attribute_not_exists(operationId) AND attribute_not_exists(operationType)")
+                .build();
+    }
+
+    /**
+     * Condizione utile per la PUT condizionata di una operazione di tipo AOR.
+     * @param entity
+     *
+     * @return una espressione per la PUT condizionale per una operazione ACT
+     */
+    private Expression buildExpressionForAor(RaddTransactionEntity entity) {
+        Expression expressionPK = buildExpressionForPK();
+
+        Expression expressionCommonFields = buildCommonConditionsAORAndACT(entity).build();
+        return Expression.join(expressionPK, expressionCommonFields, "OR");
+    }
+
+    /**
+     * Crea una espressione coi campi comuni per le operazioni sia ACT che AOR (non è inclusa la PK)
+     * @param entity
+     *
+     * @return una espressione coi campi comuni per le operazioni sia ACT che AOR (non è inclusa la PK)
+     */
+    private Expression.Builder buildCommonConditionsAORAndACT(RaddTransactionEntity entity) {
+        StringBuilder expressionFieldsNotPK = new StringBuilder().append(
+                "fileKey = :expectedFileKey AND recipientId = :expectedRecipientId");
+
+        if(entity.getDelegateId() != null) {
+            expressionFieldsNotPK.append(" AND delegateId = :expectedDelegateId");
+        }
+
+        if(entity.getOperationStartDate() != null) {
+            expressionFieldsNotPK.append(" AND operationStartDate = :expectedOperationStartDate");
+        }
+
+        Expression.Builder builder = Expression.builder()
+                .expression(expressionFieldsNotPK.toString())
+                .putExpressionValue(":expectedFileKey", AttributeValue.builder().s(entity.getFileKey()).build())
+                .putExpressionValue(":expectedRecipientId", AttributeValue.builder().s(entity.getRecipientId()).build());
+
+        if(entity.getDelegateId() != null) {
+            builder.putExpressionValue(":expectedDelegateId", AttributeValue.builder().s(entity.getDelegateId()).build());
+        }
+
+        if(entity.getOperationStartDate() != null) {
+            builder.putExpressionValue(":expectedOperationStartDate", AttributeValue.builder().s(entity.getOperationStartDate()).build());
+        }
+
+        return builder;
     }
 
 

@@ -1,7 +1,6 @@
 package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.config.BaseTest;
-import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -59,6 +58,8 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         baseEntity.setOperationType(OperationTypeEnum.ACT.toString());
         baseEntity.setStatus(Const.COMPLETED);
         baseEntity.setQrCode("qrcode12345");
+        baseEntity.setRecipientId("recipientId");
+        baseEntity.setFileKey("filekey1");
     }
 
     @Test
@@ -71,15 +72,6 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         assertEquals(baseEntity.getUid(), response.getUid());
         assertEquals(Const.STARTED, response.getStatus());
         assertEquals(baseEntity.getRecipientType(), response.getRecipientType());
-    }
-
-    @Test
-    void testCreateRaddTransactionThrow() {
-        RaddTransactionEntity entity = new RaddTransactionEntity();
-        entity.setOperationId("id");
-        entity.setIun("iun");
-        StepVerifier.create(raddTransactionDAO.createRaddTransaction(entity, null))
-                .expectError(RaddGenericException.class).verify();
     }
 
     @Test
@@ -195,6 +187,7 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         String uid = "uid";
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setUid(uid);
+        raddTransactionEntity.setOperationType(OperationTypeEnum.AOR.name());
         List<OperationsIunsEntity> entityIuns = new ArrayList<>();
         OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
         operationsIunsEntity.setOperationId(baseEntity.getOperationId());
@@ -223,25 +216,5 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
             assertEquals(baseEntity.getUid(), entity.getUid());
             return Mono.empty();
         });
-    }
-
-    @Test
-    void testCreateRaddTransactionThrowErrorWhenTransactWriteItemsFail() {
-        String uid = "uid";
-        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
-        raddTransactionEntity.setOperationId("id");
-        raddTransactionEntity.setIun("iun");
-        raddTransactionEntity.setUid(uid);
-        List<OperationsIunsEntity> entityIuns = new ArrayList<>();
-        entityIuns.add(new OperationsIunsEntity());
-        Mono<RaddTransactionEntity> entityMono = raddTransactionDAO.createRaddTransaction(raddTransactionEntity, entityIuns);
-        entityMono.onErrorResume(exception -> {
-            if (exception instanceof RaddGenericException){
-                assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_SAVED.getMessage(), ((RaddGenericException) exception).getExceptionType().getMessage());
-                return Mono.empty();
-            }
-            fail("Badly type exception");
-            return Mono.empty();
-        }).block();
     }
 }

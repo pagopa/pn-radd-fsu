@@ -22,6 +22,7 @@ public enum ExceptionTypeEnum {
     ALREADY_COMPLETE_PRINT("ALREADY_COMPLETE_PRINT", "Stampa già eseguita"),
     CF_OR_QRCODE_NOT_VALID("CF_OR_QRCODE_NOT_VALID", "Input non valido"),
     ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato"),
+    OPERATION_TYPE_UNKNOWN("OPERATION TYPE UNKNOWN", "Il tipo di operazione è sconosciuto"),
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
 
     RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download"),

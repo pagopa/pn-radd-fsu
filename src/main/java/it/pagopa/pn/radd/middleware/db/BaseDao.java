@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
@@ -111,5 +112,20 @@ public abstract class BaseDao<T> {
         }
         return Flux.from(this.tableAsync.query(qeRequest.build()).flatMapIterable(Page::items));
     }
+
+    protected Mono<T> putItemWithConditions(T entity, Expression expression, Class<T> entityClass) {
+        PutItemEnhancedRequest<T> putItemEnhancedRequest = PutItemEnhancedRequest.builder(entityClass)
+                .item(entity)
+                .conditionExpression(expression)
+                .build();
+
+        return Mono.fromFuture(this.tableAsync.putItem(putItemEnhancedRequest)).thenReturn(entity)
+                .onErrorResume(ConditionalCheckFailedException.class, e -> {
+                            log.warn("ConditionalCheckFailed for putting entity: {}", entity);
+                            return Mono.error(new TransactionAlreadyExistsException());
+                        }
+                );
+    }
+
 
 }

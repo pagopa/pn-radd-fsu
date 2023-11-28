@@ -1,9 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.exception.QrCodeAlreadyExistsException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
@@ -110,6 +107,10 @@ public class ActService extends BaseService {
                             .flatMap(entity -> Mono.error(ex));
                 })
                 .onErrorResume(QrCodeAlreadyExistsException.class, ex -> {
+                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    return Mono.just(StartTransactionResponseMapper.fromException(ex));
+                })
+                .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })

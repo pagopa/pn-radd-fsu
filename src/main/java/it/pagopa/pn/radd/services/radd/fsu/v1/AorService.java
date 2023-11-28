@@ -97,7 +97,11 @@ public class AorService extends BaseService {
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
                 .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls()))
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
-                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
+                    return Mono.just(StartTransactionResponseMapper.fromException(ex));
+                })
+                .onErrorResume(PaperNotificationFailedEmptyException.class, ex -> {
+                    log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {

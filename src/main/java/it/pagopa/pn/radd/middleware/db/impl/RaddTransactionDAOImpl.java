@@ -71,7 +71,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     private Expression createExpressionForAct(RaddTransactionEntity entity) {
         Expression.Builder expressionBuilder = Expression.builder()
-                .expression("attribute_not_exists(operationId) OR " +
+                .expression("attribute_not_exists(operationId) AND attribute_not_exists(operationType) OR " +
                         "(iun = :expectedIun AND qrCode = :expectedQrCode AND fileKey = :expectedFileKey AND " +
                         "recipientId = :expectedRecipientId)");
 

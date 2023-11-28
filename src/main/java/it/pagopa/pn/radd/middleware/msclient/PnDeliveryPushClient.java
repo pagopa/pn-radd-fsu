@@ -2,7 +2,7 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.PaperNotificationFailedEmptyException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.ApiClient;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.EventComunicationApi;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.api.PaperNotificationFailedApi;
@@ -22,11 +22,8 @@ import reactor.util.retry.Retry;
 import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
-
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF;
 
 @Slf4j
 @Component
@@ -102,7 +99,7 @@ public class PnDeliveryPushClient extends BaseClient {
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 ).onErrorResume(WebClientResponseException.class, ex -> {
                     if (ex.getStatusCode() == HttpStatus.NOT_FOUND){
-                        return Mono.error(new RaddGenericException(NO_NOTIFICATIONS_FAILED_FOR_CF));
+                        return Mono.error(new PaperNotificationFailedEmptyException());
                     }
                     return Mono.error(new PnRaddException(ex));
                 });

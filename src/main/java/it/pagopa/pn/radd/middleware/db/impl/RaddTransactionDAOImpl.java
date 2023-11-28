@@ -62,37 +62,97 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     private Expression createExpression(RaddTransactionEntity entity) {
         if(OperationTypeEnum.ACT.name().equals(entity.getOperationType())) {
-            return createExpressionForAct(entity);
+            return buildExpressionForAct(entity);
         }
         else { //AOR case
-            return createExpressionForAor(entity);
+            return buildExpressionForAor(entity);
         }
     }
 
-    private Expression createExpressionForAct(RaddTransactionEntity entity) {
-        Expression.Builder expressionBuilder = Expression.builder()
-                .expression("attribute_not_exists(operationId) AND attribute_not_exists(operationType) OR " +
-                        "(iun = :expectedIun AND qrCode = :expectedQrCode AND fileKey = :expectedFileKey AND " +
-                        "recipientId = :expectedRecipientId)");
+    /**
+     * Condizione utile per la PUT condizionata di una operazione di tipo ACT.
+     * Siccome le operazioni di tipo ACT hanno, rispetto a quelle AOR, i campi iun e qrCode valorizzati,
+     * viene ri-utilizzato il metodo {@link #buildExpressionForAor(RaddTransactionEntity)} aggiungendo in AND
+     * la condizione dei due campi iun e qrCode (a loro volta legati in AND)
+     * @param entity
+     *
+     * @return una espressione per la PUT condizionale per una operazione ACT
+     */
+    private Expression buildExpressionForAct(RaddTransactionEntity entity) {
 
-        return putCommonConditionsAORAndACT(entity, expressionBuilder)
+        Expression expressionPK = buildExpressionForPK();
+
+        String expressionIunAndQrCode = "iun = :expectedIun AND qrCode = :expectedQrCode";
+
+        Expression expressionForAor = buildCommonConditionsAORAndACT(entity).build();
+
+        Expression expressionOnlyFieldsAct = Expression.builder()
+                .expression(expressionIunAndQrCode)
                 .putExpressionValue(":expectedIun", AttributeValue.builder().s(entity.getIun()).build())
                 .putExpressionValue(":expectedQrCode", AttributeValue.builder().s(entity.getQrCode()).build())
                 .build();
+
+        Expression finalExpressionACT = Expression.join(expressionForAor, expressionOnlyFieldsAct, "AND");
+
+        return Expression.join(expressionPK, finalExpressionACT, "OR");
+
     }
 
-    private Expression createExpressionForAor(RaddTransactionEntity entity) {
-        Expression.Builder expressionBuilder = Expression.builder()
-                .expression("attribute_not_exists(operationId) OR " +
-                        "(fileKey = :expectedFileKey AND recipientId = :expectedRecipientId)");
-
-        return putCommonConditionsAORAndACT(entity, expressionBuilder).build();
+    /**
+     * Questa condizione simula il putIfAbsent
+     * @return una espressione che simula il putIfAbsent
+     */
+    private Expression buildExpressionForPK() {
+        return Expression.builder()
+                .expression("attribute_not_exists(operationId) AND attribute_not_exists(operationType)")
+                .build();
     }
 
-    private Expression.Builder putCommonConditionsAORAndACT(RaddTransactionEntity entity, Expression.Builder builder) {
-        return builder
+    /**
+     * Condizione utile per la PUT condizionata di una operazione di tipo AOR.
+     * @param entity
+     *
+     * @return una espressione per la PUT condizionale per una operazione ACT
+     */
+    private Expression buildExpressionForAor(RaddTransactionEntity entity) {
+        Expression expressionPK = buildExpressionForPK();
+
+        Expression expressionCommonFields = buildCommonConditionsAORAndACT(entity).build();
+        return Expression.join(expressionPK, expressionCommonFields, "OR");
+    }
+
+    /**
+     * Crea una espressione coi campi comuni per le operazioni sia ACT che AOR (non è inclusa la PK)
+     * @param entity
+     *
+     * @return una espressione coi campi comuni per le operazioni sia ACT che AOR (non è inclusa la PK)
+     */
+    private Expression.Builder buildCommonConditionsAORAndACT(RaddTransactionEntity entity) {
+        StringBuilder expressionFieldsNotPK = new StringBuilder().append(
+                "fileKey = :expectedFileKey AND recipientId = :expectedRecipientId");
+
+        if(entity.getDelegateId() != null) {
+            expressionFieldsNotPK.append(" AND delegateId = :expectedDelegateId");
+        }
+
+        if(entity.getOperationStartDate() != null) {
+            expressionFieldsNotPK.append(" AND operationStartDate = :expectedOperationStartDate");
+        }
+
+        Expression.Builder builder = Expression.builder()
+                .expression(expressionFieldsNotPK.toString())
                 .putExpressionValue(":expectedFileKey", AttributeValue.builder().s(entity.getFileKey()).build())
                 .putExpressionValue(":expectedRecipientId", AttributeValue.builder().s(entity.getRecipientId()).build());
+
+        if(entity.getDelegateId() != null) {
+            builder.putExpressionValue(":expectedDelegateId", AttributeValue.builder().s(entity.getDelegateId()).build());
+        }
+
+        if(entity.getOperationStartDate() != null) {
+            builder.putExpressionValue(":expectedOperationStartDate", AttributeValue.builder().s(entity.getOperationStartDate()).build());
+        }
+
+        return builder;
     }
 
 

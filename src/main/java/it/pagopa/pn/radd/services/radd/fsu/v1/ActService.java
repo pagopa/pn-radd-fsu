@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
+import it.pagopa.pn.radd.exception.QrCodeAlreadyExistsException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
@@ -53,9 +54,7 @@ public class ActService extends BaseService {
         // check if iun exists
         return validateInputActInquiry(recipientTaxId, recipientType, qrCode)
                 .doOnNext(isValid -> log.trace("ACT INQUIRY TICK {}", new Date().getTime()))
-                .flatMap(isValid -> this.raddTransactionDAO.countFromQrCodeCompleted(qrCode))
-                .filter(counter -> counter == 0)
-                .switchIfEmpty(Mono.error(new RaddGenericException(ALREADY_COMPLETE_PRINT)))
+                .flatMap(isValid -> checkQrCodeIsAlreadyExistsInCompleted(qrCode))
                 .flatMap(counter -> getEnsureFiscalCode(recipientTaxId, recipientType))
                 .flatMap(recCode -> controlAndCheckAar(recipientType, recCode, qrCode))
                 .flatMap(responseAar -> hasDocumentsAvailable(responseAar.getIun()))
@@ -71,6 +70,7 @@ public class ActService extends BaseService {
     public Mono<StartTransactionResponse> startTransaction(String uid, ActStartTransactionRequest request){
         log.info("Start ACT startTransaction - uid={} - operationId={}", uid, request.getOperationId());
         return validateAndSettingsData(uid, request)
+                .flatMap(transactionData -> checkQrCodeIsAlreadyExistsInCompleted(transactionData.getQrCode()).thenReturn(transactionData))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .flatMap(tmp ->
                         controlAndCheckAar(tmp.getRecipientType(), tmp.getEnsureRecipientId(), tmp.getQrCode())
@@ -109,12 +109,22 @@ public class ActService extends BaseService {
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.error(ex));
                 })
+                .onErrorResume(QrCodeAlreadyExistsException.class, ex -> {
+                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    return Mono.just(StartTransactionResponseMapper.fromException(ex));
+                })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
 
+    }
+
+    private Mono<Integer> checkQrCodeIsAlreadyExistsInCompleted(String qrCode) {
+        return this.raddTransactionDAO.countFromQrCodeCompleted(qrCode)
+                .filter(counter -> counter == 0)
+                .switchIfEmpty(Mono.error(new QrCodeAlreadyExistsException()));
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, CompleteTransactionRequest completeTransactionRequest) {

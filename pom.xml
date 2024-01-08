@@ -8,7 +8,7 @@
 		<relativePath />
 	</parent>
 	<artifactId>pn-radd-fsu</artifactId>
-	<version>2.1.4</version>
+	<version>2.1.5-SNAPSHOT</version>
 	<name>pn-radd-fsu</name>
 	<description>RAAD Fsu microservice</description>
 	<scm>

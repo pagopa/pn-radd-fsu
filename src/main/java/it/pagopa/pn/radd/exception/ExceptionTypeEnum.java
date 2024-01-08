@@ -8,9 +8,9 @@ public enum ExceptionTypeEnum {
     TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata"),
     TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente"),
     TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted"),
-    TRANSACTION_ALREADY_COMPLETED("TRANSACTION_ALREADY_COMPLETED", "La trasazione risulta già completa"),
-    TRANSACTION_ALREADY_ABORTED("TRANSACTION_ALREADY_ABORTED", "La trasazione risulta annullata"),
-    TRANSACTION_ERROR_STATUS("TRANSACTION_ERROR_STATUS", "La trasazione risulta in errore"),
+    TRANSACTION_ALREADY_COMPLETED("TRANSACTION_ALREADY_COMPLETED", "La transazione risulta già completa"),
+    TRANSACTION_ALREADY_ABORTED("TRANSACTION_ALREADY_ABORTED", "La transazione risulta annullata"),
+    TRANSACTION_ERROR_STATUS("TRANSACTION_ERROR_STATUS", "La transazione risulta in errore"),
     TRANSACTION_NOT_UPDATE_STATUS("TRANSACTION_NOT_UPDATE_STATUS", "Lo stato della transazione non è stato aggiornato"),
     CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde"),
     DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto"),
@@ -30,7 +30,7 @@ public enum ExceptionTypeEnum {
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
 
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
-    TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci transazioni per questo codice fiscale"),
+    TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale"),
     DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili"),
     ;
     private final String title;

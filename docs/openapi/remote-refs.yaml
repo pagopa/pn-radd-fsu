@@ -12,3 +12,6 @@ components:
       $ref: 'https://raw.githubusercontent.com/pagopa/pn-auth-fleet/569553cff2ce3a33e95da1470ed768929e37cea5/docs/openapi/authenticationParameters-v1.yaml#/components/parameters/cxGroupsAuthFleet'
     uidAuthFleet:
       $ref: 'https://raw.githubusercontent.com/pagopa/pn-auth-fleet/569553cff2ce3a33e95da1470ed768929e37cea5/docs/openapi/authenticationParameters-v1.yaml#/components/parameters/uidAuthFleet'
+    # TODO TODO TODO TODO
+    cxJtiAuthFleet:
+      $ref: 'https://raw.githubusercontent.com/pagopa/pn-auth-fleet/569553cff2ce3a33e95da1470ed768929e37cea5/docs/openapi/authenticationParameters-v1.yaml#/components/parameters/cxIdAuthFleet'

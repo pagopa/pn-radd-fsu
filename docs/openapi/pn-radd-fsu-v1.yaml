@@ -30,10 +30,8 @@ paths:
   /radd/api/v1/act/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
       - $ref: '#/components/parameters/uid'
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
@@ -64,10 +62,8 @@ paths:
   /radd/api/v1/aor/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s"
     parameters:
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
       - $ref: '#/components/parameters/uid'
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
@@ -99,10 +95,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling (response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -136,10 +130,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s, Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -172,10 +164,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -208,10 +198,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling(response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -244,10 +232,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -281,10 +267,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/uidAuthFleet'          # NO EXTERNAL
       - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: '#/components/parameters/cxJtiAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -313,14 +297,14 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /radd-private/api/v1/act/operations/by-id/{operationId}:                                                                        # NO EXTERNAL
+  /radd-private/api/v1/act/operations/by-id/{transactionId}:                                                                        # NO EXTERNAL
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       # NO EXTERNAL
     parameters:                                                                                                                            # NO EXTERNAL
-      - $ref: '#/components/parameters/operationId'                                                                                        # NO EXTERNAL
+      - $ref: '#/components/parameters/transactionId'                                                                                        # NO EXTERNAL
     get:                                                                                                                                   # NO EXTERNAL
       tags:                                                                                                                                # NO EXTERNAL
         - notificationInquiry                                                                                                              # NO EXTERNAL
-      operationId: getActTransactionByOperationId                                                                                          # NO EXTERNAL
+      operationId: getActTransactionByTransactionId                                                                                          # NO EXTERNAL
       description: API utilizzata per il recupero di una transazione legata ad un atto opponibille ai terzi                               # NO EXTERNAL
       responses:                                                                                                                           # NO EXTERNAL
         200:                                                                                                                               # NO EXTERNAL
@@ -341,14 +325,14 @@ paths:
           $ref: '#/components/responses/NotAllowed'                                                                                        # NO EXTERNAL
         500:                                                                                                                               # NO EXTERNAL
           $ref: '#/components/responses/InternalError'                                                                                    # NO EXTERNAL
-  /radd-private/api/v1/aor/operations/by-id/{operationId}:                                                                                # NO EXTERNAL
+  /radd-private/api/v1/aor/operations/by-id/{transactionId}:                                                                                # NO EXTERNAL
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       # NO EXTERNAL
     parameters:                                                                                                                            # NO EXTERNAL
-      - $ref: '#/components/parameters/operationId'                                                                                        # NO EXTERNAL
+      - $ref: '#/components/parameters/transactionId'                                                                                        # NO EXTERNAL
     get:                                                                                                                                   # NO EXTERNAL
       tags:                                                                                                                                # NO EXTERNAL
         - notificationInquiry                                                                                                              # NO EXTERNAL
-      operationId: getAorTransactionByOperationId                                                                                          # NO EXTERNAL
+      operationId: getAorTransactionByTransactionId                                                                                          # NO EXTERNAL
       description: API utilizzata per il recupero di una transazione legata ad un AAR                                                     # NO EXTERNAL
       responses:                                                                                                                           # NO EXTERNAL
         200:                                                                                                                               # NO EXTERNAL
@@ -748,6 +732,9 @@ components:
         iun:                                                                                                                # NO EXTERNAL
           type: string                                                                                                      # NO EXTERNAL
           example: "LJLH-GNTJ-DVXR-202209-J-1"                                                                              # NO EXTERNAL
+        transactionId:                                                                                                      # NO EXTERNAL
+          type: string                                                                                                      # NO EXTERNAL
+          example: "asd1234"                                                                                                # NO EXTERNAL
         operationId:                                                                                                        # NO EXTERNAL
           type: string                                                                                                      # NO EXTERNAL
           example: "asd1234"                                                                                                # NO EXTERNAL
@@ -802,6 +789,9 @@ components:
           items:                                                                                                            # NO EXTERNAL
             type: string                                                                                                    # NO EXTERNAL
             example: "welcome"                                                                                              # NO EXTERNAL
+        transactionId:                                                                                                      # NO EXTERNAL
+          type: string                                                                                                      # NO EXTERNAL
+          example: "asd1234"                                                                                                # NO EXTERNAL
         operationId:                                                                                                        # NO EXTERNAL
           type: string                                                                                                      # NO EXTERNAL
           example: "asd1234"                                                                                                # NO EXTERNAL
@@ -888,6 +878,14 @@ components:
     operationId:
       name: operationId
       description: Id della pratica
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "asd123"
+    transactionId:
+      name: transactionId
+      description: Id della transazione della pratica
       in: path
       required: true
       schema:

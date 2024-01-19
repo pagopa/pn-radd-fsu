@@ -7,7 +7,9 @@
 	  "operationId",
 	  "docType",
 	  "docNumber",
-	  "issueDate"
+	  "docIssuer",
+	  "issueDate",
+	  "expireDate"
 	],
 	"properties": {
 	  "docType": {

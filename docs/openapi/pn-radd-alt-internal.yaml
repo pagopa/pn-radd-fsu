@@ -19,6 +19,8 @@ tags:
     description: API di interrogazione per la verifica presenza di  atti e attestazioni opponibili a terzi.
   - name: aorDocumentInquiry
     description: API di interrogazione per la verifica presenza di avvisi di avvenuta ricezione.
+  - name: documentUpload
+    description: API caricamento file.
   - name: actTransactionManagement
     description: API di gestione della transazione per atti e attestazioni opponibili a terzi.
   - name: aorTransactionManagement
@@ -27,6 +29,44 @@ tags:
     description: API di interrogazione delle pratiche.
 
 paths:
+  /radd/api/v1/documents/upload:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    post:
+      tags:
+        - documentUpload
+      description: >-
+        API utilizzata per la richiesta della presigned URL utilizzata per il caricamento della scansione
+        dei documenti e metadati presentati a sportello dal cliente. Il file deve essere in formato ZIP
+        e la struttura dello zip deve seguire quanto specificato.
+      operationId: documentUpload
+      parameters:
+        - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentUploadRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
   /radd/api/v1/act/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
@@ -300,6 +340,35 @@ paths:
 
 components:
   schemas:
+    DocumentUploadRequest:
+      description: Richiesta di upload di un file zip contenente i documenti/metadati verso PagoPA
+      type: object
+      required:
+        - bundleId
+        - checksum
+      properties:
+        operationId:
+          type: string
+        checksum:
+          type: string
+          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
+
+    DocumentUploadResponse:
+      description: Response della Richiesta di upload
+      type: object
+      properties:
+        url:
+          type: string
+          example: "https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host"
+        fileKey:
+          type: string
+          example: "PN_RADD_FSU"
+        secret:
+          type: string
+          example: "alow22ddw"
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+
     ActInquiryResponse:
       description: Response di verifica presenza atto ed eventuali attestazione opponibili a terzi
       type: object
@@ -345,6 +414,9 @@ components:
         - versionToken
         - operationId
         - recipientTaxId
+        - recipientType
+        - fileKey
+        - checksum
       properties:
         versionToken:
           type: string
@@ -360,11 +432,19 @@ components:
         delegateTaxId:
           type: string
           example: "RFRGRZ66E21H751B"
+        fileKey:
+          type: string
+          example: "XXXXX"
+        checksum:
+          type: string
+          example: "YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo="
+          description: Checksum SHA256 del file caricato nella chiamata di documetUpload, esepresso in base64
         operationDate:
           type: string
           format: date-time
           description: Data/ora di completamento della transazione,  espressa in formato RFC3339.
           example: "2022-06-21T11:44:28Z"
+
     CompleteTransactionRequest:
       description: Richiesta  di chiusura della transazione
       type: object

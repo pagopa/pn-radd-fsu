@@ -344,7 +344,7 @@ components:
       description: Richiesta di upload di un file zip contenente i documenti/metadati verso PagoPA
       type: object
       required:
-        - bundleId
+        - operationId
         - checksum
       properties:
         operationId:

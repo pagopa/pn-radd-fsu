@@ -517,10 +517,14 @@ components:
               description: |
                 Return code.
                 * 0 -> OK
+                * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche)
+                * 3 -> Stampa già eseguita
+                * 5 -> Codice operationId già presente
+                * 10 -> AAR non disponibili
+                * 80 -> Notifica annullata dalla PA
                 * 99 -> KO
-                * 2 -> NotReady
               type: number
-              enum: [0, 99, 2]
+              enum: [0, 99, 2,3,5,10,80]
             retryAfter:
               description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
               type: number
@@ -555,9 +559,12 @@ components:
                 * 1 -> QrCode/CF non valido/i
                 * 2 -> Documenti non più disponibili
                 * 3 -> Stampa già eseguita
-                * 99 -> KO
+                * 4 -> Documento non più disponibili
+                * 10 -> QrCode/CF non valido/i
+                * 80 -> Notifica annullata dalla PA
+                * 99 -> KO generico
               type: number
-              enum: [0,1,2,3,99]
+              enum: [0,1,2,3,4,10,80,99]
 
 
   parameters:

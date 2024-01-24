@@ -76,11 +76,12 @@ paths:
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
       - $ref: '#/components/parameters/qrCode'
+      - $ref: '#/components/parameters/iun'
     get:
       tags:
         - actDocumentInquiry
       operationId: actInquiry
-      description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni.
+      description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni tramite iun o qrCode.
       responses:
         200:
           description: OK
@@ -696,9 +697,17 @@ components:
       example: TNTGTR76E21H751S
     qrCode:
       name: qrCode
-      description: Qr Code presente sull'avviso di Avvenuta ricezione
+      description: Qr Code presente sull'avviso di Avvenuta ricezione. Da usare in alternativa a "iun".
       in: query
-      required: true
+      required: false
+      schema:
+        type: string
+      example: "TBD"
+    iun:
+      name: iun
+      description: IUN da ricercare per il destinatario. Da usare in alternativa a qrCode.
+      in: query
+      required: false
       schema:
         type: string
       example: "TBD"

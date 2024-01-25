@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class TransactionDataMapper {
@@ -22,9 +21,9 @@ public class TransactionDataMapper {
         // do nothing
     }
 
-    public RaddTransactionEntity toEntity(String uid, TransactionData transaction){
+    public RaddTransactionEntity toEntity(String uid, TransactionData transaction) {
         RaddTransactionEntity entity = new RaddTransactionEntity();
-        if (transaction.getIun() == null || StringUtils.isBlank(transaction.getIun())){
+        if (transaction.getIun() == null || StringUtils.isBlank(transaction.getIun())) {
             entity.setIun("[AOR-".concat(transaction.getOperationId()).concat("]"));
         } else {
             entity.setIun(transaction.getIun());
@@ -43,7 +42,7 @@ public class TransactionDataMapper {
         return entity;
     }
 
-    public TransactionData toTransaction(String uid, ActStartTransactionRequest request){
+    public TransactionData toTransaction(String uid, ActStartTransactionRequest request) {
         TransactionData transactionData = new TransactionData();
         transactionData.setUid(uid);
         transactionData.setRecipientType(request.getRecipientType().getValue());
@@ -60,7 +59,7 @@ public class TransactionDataMapper {
         return transactionData;
     }
 
-    public TransactionData toTransaction(String uid, AorStartTransactionRequest request){
+    public TransactionData toTransaction(String uid, AorStartTransactionRequest request) {
         TransactionData transactionData = new TransactionData();
         transactionData.setUid(uid);
         transactionData.setOperationType(OperationTypeEnum.AOR);
@@ -76,14 +75,13 @@ public class TransactionDataMapper {
         return transactionData;
     }
 
-    public List<OperationsIunsEntity> toOperationsIuns(TransactionData transactionData){
+    public List<OperationsIunsEntity> toOperationsIuns(TransactionData transactionData) {
         if (transactionData == null || transactionData.getIuns() == null) return new ArrayList<>();
-        return  transactionData.getIuns().parallelStream()
+        return transactionData.getIuns().parallelStream()
                 .map(iun -> {
                     OperationsIunsEntity operationIun = new OperationsIunsEntity();
-                    operationIun.setOperationId(transactionData.getOperationId());
+                    operationIun.setTransactionId(transactionData.getOperationId());
                     operationIun.setIun(iun);
-                    operationIun.setId(UUID.randomUUID().toString());
                     return operationIun;
                 })
                 .toList();

@@ -38,7 +38,7 @@ public class OperationService {
 
     public Mono<OperationActResponse> getTransactionActByOperationIdAndType(String operationId){
         log.info("Find transaction with {} operation id", operationId);
-        return transactionDAO.getTransaction(operationId, OperationTypeEnum.ACT)
+        return transactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT)
                 .map(entity ->
                         OperationActResponseMapper.fromResult(
                                 mapperToNotificationResponse.toDto(entity)
@@ -49,7 +49,7 @@ public class OperationService {
 
     public Mono<OperationAorResponse> getTransactionAorByOperationIdAndType(String operationId){
         log.info("Find transaction with {} operation id", operationId);
-        return transactionDAO.getTransaction(operationId, OperationTypeEnum.AOR)
+        return transactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR)
                 .flatMap(transaction -> operationsIunsDAO.getAllIunsFromOperation(operationId)
                         .map(OperationsIunsEntity::getIun)
                         .collectList()
@@ -71,7 +71,7 @@ public class OperationService {
 
     public Mono<OperationsResponse> getOperationsAorByIun(String iun){
         return operationsIunsDAO.getAllOperationFromIun(iun)
-                .map(OperationsIunsEntity::getOperationId)
+                .map(OperationsIunsEntity::getTransactionId)
                 .collectList()
                 .map(OperationsResponseMapper::fromResult);
     }

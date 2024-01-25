@@ -161,7 +161,7 @@ public class ActService extends BaseService {
             return Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate"));
         }
         log.info("Start ACT abort transaction - uid={} - operationId={}", uid, req.getOperationId());
-        return raddTransactionDAO.getTransaction(req.getOperationId(), OperationTypeEnum.ACT)
+        return raddTransactionDAO.getTransaction("", "", req.getOperationId(), OperationTypeEnum.ACT)
                 .doOnNext(this::checkTransactionStatus)
                 .map(raddEntity -> {
                     raddEntity.setUid(uid);
@@ -279,7 +279,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId){
-        return raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT)
+        return raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT)
                 .doOnNext(raddTransaction -> log.debug("[{}] Check status entity : {}", operationId, raddTransaction.getStatus()))
                 .doOnNext(this::checkTransactionStatus);
     }

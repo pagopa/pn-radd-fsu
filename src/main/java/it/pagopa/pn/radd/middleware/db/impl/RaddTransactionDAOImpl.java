@@ -163,7 +163,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
 
     @Override
-    public Mono<RaddTransactionEntity> getTransaction(String operationId, OperationTypeEnum operationType) {
+    public Mono<RaddTransactionEntity> getTransaction(String cxType, String cxId, String operationId, OperationTypeEnum operationType) {
         Key key = Key.builder()
                     .partitionValue(operationId)
                     .sortValue(operationType.name())

@@ -85,7 +85,7 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
 
     @Test
     void testWhenGetActTransactionReturnEntity() {
-        RaddTransactionEntity response = raddTransactionDAO.getTransaction("operationId", OperationTypeEnum.ACT).block();
+        RaddTransactionEntity response = raddTransactionDAO.getTransaction("", "", "operationId", OperationTypeEnum.ACT).block();
         assertNotNull(response);
         assertEquals(response.getOperationType(), baseEntity.getOperationType());
     }
@@ -94,7 +94,7 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     void testWhenGetActTransactionOnThrow() {
 
         StepVerifier.create(
-                raddTransactionDAO.getTransaction("oper", OperationTypeEnum.ACT)
+                raddTransactionDAO.getTransaction("", "", "oper", OperationTypeEnum.ACT)
                 ).expectError(RaddGenericException.class).verify();
     }
 
@@ -190,9 +190,8 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         raddTransactionEntity.setOperationType(OperationTypeEnum.AOR.name());
         List<OperationsIunsEntity> entityIuns = new ArrayList<>();
         OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
-        operationsIunsEntity.setOperationId(baseEntity.getOperationId());
+        operationsIunsEntity.setTransactionId(baseEntity.getOperationId());
         operationsIunsEntity.setIun(baseEntity.getIun());
-        operationsIunsEntity.setId("1");
         entityIuns.add(operationsIunsEntity);
         Mono<RaddTransactionEntity> entityMono = raddTransactionDAO.createRaddTransaction(raddTransactionEntity, entityIuns);
         entityMono.map(entity -> {

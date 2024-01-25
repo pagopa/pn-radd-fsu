@@ -90,7 +90,7 @@ public class BaseService {
     }
 
     protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType){
-        return this.raddTransactionDAO.getTransaction(operationId, operationType)
+        return this.raddTransactionDAO.getTransaction("", "", operationId, operationType)
                 .map(entity -> {
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException){

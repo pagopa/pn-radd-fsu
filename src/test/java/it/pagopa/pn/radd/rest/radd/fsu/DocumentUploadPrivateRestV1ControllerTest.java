@@ -33,8 +33,6 @@ class DocumentUploadPrivateRestV1ControllerTest {
         status.setMessage("OK");
         response.setStatus(status);
         DocumentUploadRequest req = new DocumentUploadRequest();
-        req.setBundleId("bundleId");
-        req.setContentType("application/json");
 
         String path = "/radd-private/api/v1/documents/upload";
         Mockito.when(documentUploadService.createFile( Mockito.anyString(), Mockito.any() ))

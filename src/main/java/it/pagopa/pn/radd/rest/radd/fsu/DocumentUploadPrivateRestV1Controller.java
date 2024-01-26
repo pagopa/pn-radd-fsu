@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.api.DocumentUploadApi;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.services.radd.fsu.v1.DocumentUploadService;
@@ -20,7 +21,7 @@ public class DocumentUploadPrivateRestV1Controller implements DocumentUploadApi 
     }
 
     @Override
-    public Mono<ResponseEntity<DocumentUploadResponse>> documentUpload(String uid, Mono<DocumentUploadRequest> documentUploadRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<DocumentUploadResponse>> documentUpload(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Mono<DocumentUploadRequest> documentUploadRequest, ServerWebExchange exchange) {
         return documentUploadService.createFile(uid, documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

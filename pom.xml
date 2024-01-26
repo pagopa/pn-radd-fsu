@@ -123,13 +123,13 @@
 				<version>5.4.0</version>
 				<executions>					
 					<execution>
-						<id>generate-radd-server</id>
+						<id>generate-radd-server-internal</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<inputSpec>${project.basedir}/docs/openapi/pn-radd-fsu-v1.yaml</inputSpec>
+							<inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-internal.yaml</inputSpec>
 							<generatorName>spring</generatorName>
               				<library>spring-boot</library>
 							<generateApiDocumentation>false</generateApiDocumentation>
@@ -150,6 +150,36 @@
 							<apiPackage>${project.groupId}.radd.rest.radd.v1.api</apiPackage>
 							<configPackage>${project.groupId}.radd.rest.radd.v1.config</configPackage>
 							</configOptions>				
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-radd-server-private</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<phase>process-resources</phase>
+						<configuration>
+							<inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-private.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<library>spring-boot</library>
+							<generateApiDocumentation>false</generateApiDocumentation>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+							<configOptions>
+								<dateLibrary>java11</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<interfaceOnly>true</interfaceOnly>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<openApiNullable>false</openApiNullable>
+								<reactive>true</reactive>
+								<skipDefaultInterface>false</skipDefaultInterface>
+								<useTags>true</useTags>
+								<basePackage>${project.groupId}.radd.rest.radd.v1</basePackage>
+								<modelPackage>${project.groupId}.radd.rest.radd.v1.dto</modelPackage>
+								<apiPackage>${project.groupId}.radd.rest.radd.v1.api</apiPackage>
+								<configPackage>${project.groupId}.radd.rest.radd.v1.config</configPackage>
+							</configOptions>
 						</configuration>
 					</execution>
 					<execution>

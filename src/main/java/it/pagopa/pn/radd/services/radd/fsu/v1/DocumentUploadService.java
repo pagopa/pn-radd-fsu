@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class DocumentUploadService {
 
-    private static final String CONTENT_TYPE = "zip";
+    private static final String CONTENT_TYPE = "application/zip";
     private final PnSafeStorageClient pnSafeStorageClient;
 
 
@@ -31,14 +31,6 @@ public class DocumentUploadService {
         }
         // retrieve presigned url
         return documentUploadRequest
-                /* .map(m -> {
-                     if ( StringUtils.isEmpty(m.getContentType())
-                            || StringUtils.isEmpty(m.getBundleId())) {
-                        log.error("Missing input parameters");
-                        throw new PnInvalidInputException("Alcuni valori non sono valorizzati");
-                    }
-                    return m;
-                }) */
                 .flatMap(value -> pnSafeStorageClient.createFile(CONTENT_TYPE, value.getChecksum()))
                 .map(item -> {
                     log.info("Response presigned url : {}", item.getUploadUrl());

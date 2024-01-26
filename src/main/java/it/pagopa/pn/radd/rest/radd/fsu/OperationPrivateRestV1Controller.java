@@ -19,6 +19,11 @@ public class OperationPrivateRestV1Controller implements NotificationInquiryApi 
     }
 
     @Override
+    public Mono<ResponseEntity<OperationActResponse>> getActTransactionByTransactionId(String idPractice, ServerWebExchange exchange) {
+        return operationService.getTransactionActByOperationIdAndType(idPractice).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    }
+
+    @Override
     public Mono<ResponseEntity<OperationsResponse>> getActPracticesByIun(String iun, ServerWebExchange exchange) {
         return operationService.getOperationsActByIun(iun)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
@@ -29,6 +34,13 @@ public class OperationPrivateRestV1Controller implements NotificationInquiryApi 
         return operationService.getOperationsAorByIun(iun)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
+
+    @Override
+    public Mono<ResponseEntity<OperationAorResponse>> getAorTransactionByTransactionId(String operationId, ServerWebExchange exchange) {
+        return operationService.getTransactionAorByOperationIdAndType(operationId)
+                .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+    }
+
 
     @Override
     public Mono<ResponseEntity<OperationsActDetailsResponse>> getActPracticesByInternalId(String internalId, Mono<FilterRequest> filterRequest, ServerWebExchange exchange) {

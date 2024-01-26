@@ -284,7 +284,10 @@ components:
           example: "LJLH-GNTJ-DVXR-202209-J-1"                                                                              
         transactionId:                                                                                                      
           type: string                                                                                                      
-          example: "asd1234"                                                                                                
+          example: "asd1234"
+        fileKey:
+          type: string
+          example: "FL-23-KKL"
         operationId:                                                                                                        
           type: string                                                                                                      
           example: "asd1234"                                                                                                
@@ -339,9 +342,12 @@ components:
           items:                                                                                                            
             type: string                                                                                                    
             example: "welcome"                                                                                              
-        transactionId:                                                                                                      
-          type: string                                                                                                      
-          example: "asd1234"                                                                                                
+        transactionId:
+          type: string
+          example: "asd1234"
+        fileKey:
+          type: string
+          example: "FL-23-KKL"
         operationId:                                                                                                        
           type: string                                                                                                      
           example: "asd1234"                                                                                                

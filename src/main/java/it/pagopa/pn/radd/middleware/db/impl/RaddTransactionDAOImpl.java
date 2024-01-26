@@ -29,6 +29,7 @@ import java.util.Map;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.OPERATION_TYPE_UNKNOWN;
+import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 
 @Repository
 @Slf4j
@@ -165,9 +166,19 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     @Override
     public Mono<RaddTransactionEntity> getTransaction(String cxType, String cxId, String operationId, OperationTypeEnum operationType) {
         Key key = Key.builder()
-                    .partitionValue(operationId)
+                    .partitionValue(cxType + ITEMS_SEPARATOR + cxId + ITEMS_SEPARATOR + operationId)
                     .sortValue(operationType.name())
                     .build();
+        return this.findFromKey(key)
+                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+    }
+
+    @Override
+    public Mono<RaddTransactionEntity> getTransaction(String transactionId, OperationTypeEnum operationType) {
+        Key key = Key.builder()
+                .partitionValue(transactionId)
+                .sortValue(operationType.name())
+                .build();
         return this.findFromKey(key)
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
     }

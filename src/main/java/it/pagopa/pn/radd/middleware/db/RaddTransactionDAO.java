@@ -16,6 +16,7 @@ public interface RaddTransactionDAO {
 
     Mono<RaddTransactionEntity> getTransaction(String cxType, String cxId, String operationId, OperationTypeEnum operationType);
 
+    Mono<RaddTransactionEntity> getTransaction(String transactionId, OperationTypeEnum operationType);
 
     Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity, RaddTransactionStatusEnum status);
 

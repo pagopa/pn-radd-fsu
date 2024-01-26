@@ -150,8 +150,8 @@ public class AorService extends BaseService {
                 .filter(isValidAbortTransactionRequest)
                 .switchIfEmpty(Mono.error( new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate")))
                 .doOnNext(m -> log.info("Start AOR abort transaction - uid={} - operationId={}", uid, m.getOperationId()))
-
-                .zipWhen(operation -> raddTransactionDAO.getTransaction(operation.getOperationId(), OperationTypeEnum.AOR))
+                // TODO passare cxType e cxId in seguito all'aggiornamento dell'open api
+                .zipWhen(operation -> raddTransactionDAO.getTransaction("", "", operation.getOperationId(), OperationTypeEnum.AOR))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
                     checkTransactionStatus(raddEntity);
@@ -189,7 +189,8 @@ public class AorService extends BaseService {
     }
 
     private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId){
-        return raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR)
+        // TODO passare cxType e cxId in seguito all'aggiornamento dell'open api
+        return raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR)
                 .doOnNext(raddTransaction -> log.debug("[{}] Check status entity : {}", operationId, raddTransaction.getStatus()))
                 .doOnNext(this::checkTransactionStatus);
     }

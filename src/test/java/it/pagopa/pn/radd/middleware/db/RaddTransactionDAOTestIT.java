@@ -31,7 +31,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entity.setOperationType(OperationTypeEnum.ACT.name());
         entity.setStatus(Const.STARTED);
 
-        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT))
+        StepVerifier.create(raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT))
                 .expectErrorMatches(ex ->
                         ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
                 )
@@ -39,7 +39,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         raddTransactionDAO.putTransactionWithConditions(entity).block();
 
-        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT).block();
+        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT).block();
 
         assertThat(returnEntity).isEqualTo(entity);
 
@@ -69,7 +69,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entity.setOperationType(OperationTypeEnum.AOR.name());
         entity.setStatus(Const.STARTED);
 
-        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR))
+        StepVerifier.create(raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR))
                 .expectErrorMatches(ex ->
                         ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
                 )
@@ -77,7 +77,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         raddTransactionDAO.putTransactionWithConditions(entity).block();
 
-        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR).block();
+        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR).block();
 
         assertThat(returnEntity).isEqualTo(entity);
 
@@ -108,7 +108,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entityAOR.setStatus(Const.STARTED);
 
 
-        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR))
+        StepVerifier.create(raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR))
                 .expectErrorMatches(ex ->
                         ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
                 )
@@ -116,7 +116,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         raddTransactionDAO.putTransactionWithConditions(entityAOR).block();
 
-        RaddTransactionEntity returnEntityAOR = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR).block();
+        RaddTransactionEntity returnEntityAOR = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR).block();
 
         assertThat(returnEntityAOR).isEqualTo(entityAOR);
 
@@ -129,7 +129,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entityACT.setOperationType(OperationTypeEnum.ACT.name());
         entityACT.setStatus(Const.STARTED);
 
-        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT))
+        StepVerifier.create(raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT))
                 .expectErrorMatches(ex ->
                         ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
                 )
@@ -137,10 +137,10 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         raddTransactionDAO.putTransactionWithConditions(entityACT).block();
 
-        RaddTransactionEntity returnEntityACT = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT).block();
+        RaddTransactionEntity returnEntityACT = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT).block();
         assertThat(returnEntityACT).isEqualTo(entityACT);
 
-        returnEntityAOR = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR).block();
+        returnEntityAOR = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR).block();
         assertThat(returnEntityAOR).isEqualTo(entityAOR);
     }
 
@@ -154,7 +154,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entity.setOperationType(OperationTypeEnum.AOR.name());
         entity.setStatus(Const.COMPLETED);
 
-        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR))
+        StepVerifier.create(raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR))
                 .expectErrorMatches(ex ->
                         ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
                 )
@@ -162,7 +162,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         raddTransactionDAO.putTransactionWithConditions(entity).block();
 
-        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.AOR).block();
+        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.AOR).block();
 
         assertThat(returnEntity).isEqualTo(entity);
 
@@ -188,7 +188,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
         entity.setOperationType(OperationTypeEnum.ACT.name());
         entity.setStatus(Const.ABORTED);
 
-        StepVerifier.create(raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT))
+        StepVerifier.create(raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT))
                 .expectErrorMatches(ex ->
                         ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.TRANSACTION_NOT_EXIST
                 )
@@ -196,7 +196,7 @@ class RaddTransactionDAOTestIT extends BaseTest.WithLocalStack {
 
         raddTransactionDAO.putTransactionWithConditions(entity).block();
 
-        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction(operationId, OperationTypeEnum.ACT).block();
+        RaddTransactionEntity returnEntity = raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT).block();
 
         assertThat(returnEntity).isEqualTo(entity);
 

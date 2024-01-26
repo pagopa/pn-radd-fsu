@@ -54,14 +54,14 @@ class OperationServiceTest extends BaseTest {
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(transactionDAO.getTransaction("TestNoActTransaction", OperationTypeEnum.ACT)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        Mockito.when(transactionDAO.getTransaction("", "","TestNoActTransaction", OperationTypeEnum.ACT)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
         StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestNoActTransaction"))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
     void testWhenNoActTransactionDaoThrowOtherException(){
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
         StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestThrow"))
                 .expectError(NullPointerException.class).verify();
     }
@@ -83,7 +83,7 @@ class OperationServiceTest extends BaseTest {
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReadon");
 
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
 
         OperationActResponse response = operationService.getTransactionActByOperationIdAndType("err").block(d);
 
@@ -156,14 +156,14 @@ class OperationServiceTest extends BaseTest {
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(transactionDAO.getTransaction("TestNoAorTransaction", OperationTypeEnum.AOR)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        Mockito.when(transactionDAO.getTransaction("", "", "TestNoAorTransaction", OperationTypeEnum.AOR)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
         StepVerifier.create(operationService.getTransactionAorByOperationIdAndType("TestNoAorTransaction"))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
     void testWhenNoAorTransactionDaoThrowOtherException(){
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
         StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestThrow"))
                 .expectError(NullPointerException.class).verify();
     }
@@ -186,7 +186,7 @@ class OperationServiceTest extends BaseTest {
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReadon");
 
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
         OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
         operationsIunsEntity.setIun("[iunTest, testIun]");
         Mockito.when(operationsIunsDAO.getAllIunsFromOperation(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));

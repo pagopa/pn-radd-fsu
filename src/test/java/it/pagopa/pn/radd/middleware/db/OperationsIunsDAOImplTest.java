@@ -59,9 +59,8 @@ class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
         List<OperationsIunsEntity> list = new ArrayList<>();
         for(int i=0; i<size; i++){
             OperationsIunsEntity op = new OperationsIunsEntity();
-            op.setOperationId(operation);
+            op.setTransactionId(operation);
             op.setIun(iun);
-            op.setId(UUID.randomUUID().toString());
             list.add(op);
         }
         return list;

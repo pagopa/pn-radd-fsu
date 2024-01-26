@@ -35,22 +35,24 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain    
     Properties:
-      TableName: !Sub '${ProjectName}-radd-transaction'
+      TableName: !Sub '${ProjectName}-radd-transaction-alt'
       AttributeDefinitions:
-        - AttributeName: "operationId"
+        - AttributeName: "transactionId"
           AttributeType: "S"
         - AttributeName: "operationType"
           AttributeType: "S"
         - AttributeName: "iun"
           AttributeType: "S"
+        - AttributeName: "qrCode"
+          AttributeType: "S"
         - AttributeName: "recipientId"
           AttributeType: "S"
         - AttributeName: "delegateId"
           AttributeType: "S"
-        - AttributeName: "qrCode"
+        - AttributeName: "coverFileKey"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "operationId"
+        - AttributeName: "transactionId"
           KeyType: "HASH"
         - AttributeName: "operationType"
           KeyType: "RANGE"
@@ -79,6 +81,12 @@ Resources:
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
+        - IndexName: "coverFileKey-transaction-index"
+          KeySchema:
+            - AttributeName: "coverFileKey"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
       BillingMode: "PAY_PER_REQUEST"      
       KinesisStreamSpecification:
         StreamArn: !Ref CdcKinesisSourceStreamArn
@@ -87,35 +95,27 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
-  OperationsAndIunsDynamoTable:
+  OperationsDynamoTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain    
     Properties:
-      TableName: !Sub '${ProjectName}-operations-iuns'
+      TableName: !Sub '${ProjectName}-operations-iuns-alt'
       AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
-        - AttributeName: "operationId"
+        - AttributeName: "transactionId"
           AttributeType: "S"
         - AttributeName: "iun"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "id"
+        - AttributeName: "transactionId"
           KeyType: "HASH"
       GlobalSecondaryIndexes:
-        - IndexName: "iun-and-operation-index"
+        - IndexName: "iun-transaction-index"
           KeySchema:
             - AttributeName: "iun"
               KeyType: "HASH"
-            - AttributeName: "operationId"
+            - AttributeName: "transactionId"
               KeyType: "RANGE"
-          Projection:
-            ProjectionType: "ALL"
-        - IndexName: "operation-index"
-          KeySchema:
-            - AttributeName: "operationId"
-              KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
       BillingMode: "PAY_PER_REQUEST"      
@@ -133,7 +133,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
       Parameters:
-        LogGroupName: !Sub '${ProjectName}-radd-fsu'
+        LogGroupName: !Sub '${ProjectName}-radd-alt'
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
 Outputs:

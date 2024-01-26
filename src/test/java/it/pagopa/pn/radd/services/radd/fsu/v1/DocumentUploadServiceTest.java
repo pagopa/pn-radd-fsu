@@ -19,6 +19,8 @@ import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 
 @Slf4j
@@ -35,11 +37,10 @@ class DocumentUploadServiceTest extends BaseTest {
     void testWhenIdAndBoundleIdERROR99(){
         String id="idTest";
         DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
-        bundleId.setBundleId("idTest");
-        bundleId.setContentType("test");
+
         FileCreationRequestDto request = new FileCreationRequestDto();
-        request.setContentType(bundleId.getContentType());
-        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId(), bundleId.getChecksum())
+        request.setContentType("zip");
+        Mockito.when(pnSafeStorageClient.createFile( any(), anyString())
         ).thenReturn(Mono.error(new PnException("Errore", "99")));
         Mono<DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
         response.onErrorResume( ex ->{
@@ -56,11 +57,7 @@ class DocumentUploadServiceTest extends BaseTest {
     void testWhenIdAndBoundleKO(){
         String id="idTest";
         DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
-        bundleId.setBundleId("idTest");
-        bundleId.setContentType("test");
-        FileCreationRequestDto request = new FileCreationRequestDto();
-        request.setContentType(bundleId.getContentType());
-        Mockito.when(pnSafeStorageClient.createFile( bundleId.getContentType(), bundleId.getBundleId(), bundleId.getChecksum())
+        Mockito.when(pnSafeStorageClient.createFile( any(), any())
         ).thenReturn(Mono.error( new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
         Mono<DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
         response.onErrorResume(ex ->{
@@ -81,13 +78,9 @@ class DocumentUploadServiceTest extends BaseTest {
     void testWhenIdAndBoundleId(){
         String id="idTest";
         DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
-        bundleId.setBundleId("idTest");
-        bundleId.setContentType("test");
-        FileCreationRequestDto request = new FileCreationRequestDto();
-        request.setContentType(bundleId.getContentType());
         FileCreationResponseDto fileCreationResponseDto = mock(FileCreationResponseDto.class);
         fileCreationResponseDto.setUploadUrl("testUrl");
-        Mockito.when(pnSafeStorageClient.createFile(Mockito.any(), Mockito.any(), Mockito.any())
+        Mockito.when(pnSafeStorageClient.createFile(Mockito.any(), Mockito.any())
         ).thenReturn( Mono.just(fileCreationResponseDto) );
         DocumentUploadResponse response = documentUploadService.createFile(id, Mono.just(bundleId) ).block();
         assertNotNull(response);
@@ -99,8 +92,6 @@ class DocumentUploadServiceTest extends BaseTest {
     void testWhenIdAndBoundleIdIsEmpty(){
         String id="";
         DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
-        bundleId.setBundleId("");
-        bundleId.setContentType("");
         Mono <DocumentUploadResponse> response = documentUploadService.createFile(id, Mono.just(bundleId) );
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni valori non sono valorizzati", exception.getMessage());
@@ -112,8 +103,6 @@ class DocumentUploadServiceTest extends BaseTest {
     @Test
     void testWhenContentTypeIsNull(){
         DocumentUploadRequest documentUploadRequest=new DocumentUploadRequest();
-        documentUploadRequest.setContentType(null);
-        documentUploadRequest.setBundleId("testid");
         Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", Mono.just(documentUploadRequest));
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni valori non sono valorizzati", exception.getMessage());
@@ -125,8 +114,6 @@ class DocumentUploadServiceTest extends BaseTest {
     @Test
     void testWhenBundleIdIsNull(){
         DocumentUploadRequest documentUploadRequest=new DocumentUploadRequest();
-        documentUploadRequest.setContentType("testid");
-        documentUploadRequest.setBundleId(null);
         Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", Mono.just(documentUploadRequest));
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni valori non sono valorizzati", exception.getMessage());
@@ -138,8 +125,6 @@ class DocumentUploadServiceTest extends BaseTest {
     @Test
     void testWhenContentTypeIsEmpty(){
         DocumentUploadRequest documentUploadRequest=new DocumentUploadRequest();
-        documentUploadRequest.setContentType("");
-        documentUploadRequest.setBundleId("testid");
         Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", Mono.just(documentUploadRequest));
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni valori non sono valorizzati", exception.getMessage());
@@ -151,8 +136,6 @@ class DocumentUploadServiceTest extends BaseTest {
     @Test
     void testWhenBundleIdIsEmpty(){
         DocumentUploadRequest documentUploadRequest=new DocumentUploadRequest();
-        documentUploadRequest.setContentType("testid");
-        documentUploadRequest.setBundleId("");
         Mono <DocumentUploadResponse> response = documentUploadService.createFile("test", Mono.just(documentUploadRequest));
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni valori non sono valorizzati", exception.getMessage());

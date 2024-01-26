@@ -40,8 +40,8 @@ paths:
         e la struttura dello zip deve seguire quanto specificato.
       operationId: documentUpload
       parameters:
-        - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-        - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -70,8 +70,8 @@ paths:
   /radd/api/v1/act/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
       - $ref: '#/components/parameters/uid'
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
@@ -103,8 +103,8 @@ paths:
   /radd/api/v1/aor/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s"
     parameters:
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
       - $ref: '#/components/parameters/uid'
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
@@ -136,8 +136,8 @@ paths:
     ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling (response.status.code = 0): 100s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -171,8 +171,8 @@ paths:
     ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling (response.status.code = 0): 100s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -206,8 +206,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s, Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -240,8 +240,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -274,8 +274,8 @@ paths:
     ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling(response.status.code = 0): 100s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -309,8 +309,8 @@ paths:
     ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling (response.status.code = 0): 100s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -345,8 +345,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -380,8 +380,8 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: '#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: '#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -719,6 +719,7 @@ components:
       schema:
         type: string
       example: "asd123"
+
 
   responses:
     Forbidden:

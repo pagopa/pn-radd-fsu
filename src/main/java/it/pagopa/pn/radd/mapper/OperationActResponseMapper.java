@@ -3,15 +3,11 @@ package it.pagopa.pn.radd.mapper;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActDetailResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationAorDetailResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
 
 public class OperationActResponseMapper {
 
@@ -48,7 +44,6 @@ public class OperationActResponseMapper {
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());
         dto.setDelegateTaxId(source.getDelegateId());
-        dto.setFileKey(source.getFileKey());
         dto.setUid(source.getUid());
         dto.setOperationEndDate(DateUtils.parseDateString(source.getOperationEndDate()));
         dto.setOperationStartDate(DateUtils.parseDateString(source.getOperationStartDate()));

@@ -25,7 +25,6 @@ public class RaddTransactionEntityNotificationResponse implements BaseMapperInte
         dto.setRecipientTaxId(source.getRecipientId());
         dto.setRecipientType(source.getRecipientType());
         dto.setDelegateTaxId(source.getDelegateId());
-        dto.setFileKey(source.getFileKey());
         dto.setUid(source.getUid());
         dto.setOperationEndDate(DateUtils.parseDateString(source.getOperationEndDate()));
         dto.setOperationStartDate(DateUtils.parseDateString(source.getOperationStartDate()));

@@ -11,14 +11,10 @@ Parameters:
     Type: String
     Description: ARN of alarm topic
 
-   #ApiDnsName:
-   #  Type: String
-   #  Description: 'The DNS name used for B2B rest API.'
-
-  WebApiDnsName:
+  ApiDnsName:
     Type: String
-    Description: 'The DNS name used for WEB rest API.'
-  
+    Description: 'The DNS name used for B2B rest API.'
+
   CorsAllowedDomains:
     Type: String
     Description: 'Comma separated list of domains allowed to make cross origin request'
@@ -104,10 +100,25 @@ Parameters:
     Type: String
     Description: 'Application load balancer security group'
 
+  # OpenApi Bucket params
+  MicroserviceBucketName:
+    Type: String
+    Default: ''
+    Description: 'Name of the bucket where the microservice files are copied during deploy'
+
+  MicroserviceBucketBaseKey:
+    Type: String
+    Default: ''
+    Description: 'Base key of the microservice in the s3 bucket'
+
   # Log group parameters
   EcsLogGroup:
     Type: String
     Description: 'Ecs log group name'
+
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
 
   # Heath Check parameters
   HealthCheckInterval:
@@ -229,7 +240,7 @@ Resources:
         ContainerEnvEntry10: !Sub 'PN_RADD_ATTEMPTBATCHWRITER=${AttemptBatchWriter}'
         ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
         ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
-        MappedPaths: '/radd/*,/radd-private/*'
+        MappedPaths: '/radd/*,/radd-alt-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -266,7 +277,24 @@ Resources:
               - !Sub "${OperationsAndIunsDynamoTableArn}"
               - !Sub "${OperationsAndIunsDynamoTableArn}/*"
             
-
+  # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
+  DeliveryMicroservicePublicAPI:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service-openapi.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-alt'
+        IntendedUsage: RADD
+        DnsName: !Ref ApiDnsName
+        ProjectName: !Ref ProjectName
+        ServiceApiPath: 'radd'
+        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        OpenApiBucketName: !Ref MicroserviceBucketName
+        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-delivery-B2B-aws.yaml
+        
   ApplicationLoadBalancerOnCallAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: HasAlbDimensionName

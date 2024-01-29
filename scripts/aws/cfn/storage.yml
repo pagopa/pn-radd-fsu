@@ -143,7 +143,7 @@ Outputs:
 
   OperationsAndIunsDynamoTableName:
     Description: Name of dynamodb table containing iuns and operations
-    Value: !Ref OperationsAndIunsDynamoTable
+    Value: !Ref OperationsDynamoTable
 
   RaddTransactionDynamoTableArn:
     Description: ARN of dynamodb table containing transaction
@@ -151,7 +151,7 @@ Outputs:
 
   OperationsAndIunsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations
-    Value: !Sub '${OperationsAndIunsDynamoTable.Arn}'
+    Value: !Sub '${OperationsDynamoTable.Arn}'
 
   # Log group exports
   EcsLogGroup:

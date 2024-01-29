@@ -1,0 +1,431 @@
+openapi: 3.0.1
+info:
+  title:  API Piattaforma Notifiche - private
+  description: |
+    # Interface definition for Piattaforma Notifiche
+  version: '1.0'
+servers:
+  - url: https://tbd/
+tags:
+  - name: notificationInquiry
+    description: API di interrogazione delle pratiche.
+
+paths:
+  /radd-private/api/v1/act/operations/by-id/{transactionId}:                                                                        
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       
+    parameters:                                                                                                                            
+      - $ref: '#/components/parameters/transactionId'                                                                                        
+    get:                                                                                                                                   
+      tags:                                                                                                                                
+        - notificationInquiry                                                                                                              
+      operationId: getActTransactionByTransactionId                                                                                          
+      description: API utilizzata per il recupero di una transazione legata ad un atto opponibille ai terzi                               
+      responses:                                                                                                                           
+        200:                                                                                                                               
+          description: OK                                                                                                                  
+          content:                                                                                                                         
+            application/json:                                                                                                              
+              schema:                                                                                                                      
+                $ref: '#/components/schemas/OperationActResponse'                                                                         
+        400:                                                                                                                               
+          $ref: '#/components/responses/Invalid'                                                                                           
+        401:                                                                                                                               
+          $ref: '#/components/responses/Unauthorized'                                                                                      
+        403:                                                                                                                               
+          $ref: '#/components/responses/Forbidden'                                                                                         
+        404:                                                                                                                               
+          $ref: '#/components/responses/NotFound'                                                                                          
+        405:                                                                                                                               
+          $ref: '#/components/responses/NotAllowed'                                                                                        
+        500:                                                                                                                               
+          $ref: '#/components/responses/InternalError'                                                                                    
+  /radd-private/api/v1/aor/operations/by-id/{transactionId}:                                                                                
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       
+    parameters:                                                                                                                            
+      - $ref: '#/components/parameters/transactionId'                                                                                        
+    get:                                                                                                                                   
+      tags:                                                                                                                                
+        - notificationInquiry                                                                                                              
+      operationId: getAorTransactionByTransactionId                                                                                          
+      description: API utilizzata per il recupero di una transazione legata ad un AAR                                                     
+      responses:                                                                                                                           
+        200:                                                                                                                               
+          description: OK                                                                                                                  
+          content:                                                                                                                         
+            application/json:                                                                                                              
+              schema:                                                                                                                      
+                $ref: '#/components/schemas/OperationAorResponse'                                                                         
+        400:                                                                                                                               
+          $ref: '#/components/responses/Invalid'                                                                                           
+        401:                                                                                                                               
+          $ref: '#/components/responses/Unauthorized'                                                                                      
+        403:                                                                                                                               
+          $ref: '#/components/responses/Forbidden'                                                                                         
+        404:                                                                                                                               
+          $ref: '#/components/responses/NotFound'                                                                                          
+        405:                                                                                                                               
+          $ref: '#/components/responses/NotAllowed'                                                                                        
+        500:                                                                                                                               
+          $ref: '#/components/responses/InternalError'                                                                                    
+                                                                                                                                           
+  /radd-private/api/v1/act/operations/by-iun/{iun}:                                                                                        
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       
+    parameters:                                                                                                                            
+      - $ref: '#/components/parameters/iun'                                                                                                
+    get:                                                                                                                                   
+      tags:                                                                                                                                
+        - notificationInquiry                                                                                                              
+      operationId: getActPracticesByIun                                                                                                    
+      description: API utilizzata per il recupero di tutte le pratiche legate ad atti opponibili ai terzi ed associate ad uno specifico iun  
+      responses:                                                                                                                           
+        200:                                                                                                                               
+          description: OK                                                                                                                  
+          content:                                                                                                                         
+            application/json:                                                                                                              
+              schema:                                                                                                                      
+                $ref: '#/components/schemas/OperationsResponse'                                                                           
+        400:                                                                                                                               
+          $ref: '#/components/responses/Invalid'                                                                                           
+        401:                                                                                                                               
+          $ref: '#/components/responses/Unauthorized'                                                                                      
+        403:                                                                                                                               
+          $ref: '#/components/responses/Forbidden'                                                                                         
+        404:                                                                                                                               
+          $ref: '#/components/responses/NotFound'                                                                                          
+        405:                                                                                                                               
+          $ref: '#/components/responses/NotAllowed'                                                                                        
+        500:                                                                                                                               
+          $ref: '#/components/responses/InternalError'                                                                                    
+  /radd-private/api/v1/aor/operations/by-iun/{iun}:                                                                                        
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       
+    parameters:                                                                                                                            
+      - $ref: '#/components/parameters/iun'                                                                                                
+    get:                                                                                                                                   
+      tags:                                                                                                                                
+        - notificationInquiry                                                                                                              
+      operationId: getAorPracticesByIun                                                                                                    
+      description: API utilizzata per il recupero di tutte le pratiche legate ad un AAR ed associate ad uno specifico iun                 
+      responses:                                                                                                                           
+        200:                                                                                                                               
+          description: OK                                                                                                                  
+          content:                                                                                                                         
+            application/json:                                                                                                              
+              schema:                                                                                                                      
+                $ref: '#/components/schemas/OperationsResponse'                                                                           
+        400:                                                                                                                               
+          $ref: '#/components/responses/Invalid'                                                                                           
+        401:                                                                                                                               
+          $ref: '#/components/responses/Unauthorized'                                                                                      
+        403:                                                                                                                               
+          $ref: '#/components/responses/Forbidden'                                                                                         
+        404:                                                                                                                               
+          $ref: '#/components/responses/NotFound'                                                                                          
+        405:                                                                                                                               
+          $ref: '#/components/responses/NotAllowed'                                                                                        
+        500:                                                                                                                               
+          $ref: '#/components/responses/InternalError'                                                                                    
+  /radd-private/api/v1/act/operations/by-internalId/{internalId}:                                                                         
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       
+    parameters:                                                                                                                            
+      - $ref: '#/components/parameters/internalId'                                                                                         
+    post:                                                                                                                                  
+      tags:                                                                                                                                
+        - notificationInquiry                                                                                                              
+      operationId: getActPracticesByInternalId                                                                                             
+      description: API utilizzata per il recupero di tutte le pratiche legate ad atti opponibili ai terzi ed associate ad uno specifico internal id          
+      requestBody:                                                                                                                         
+        content:                                                                                                                           
+          application/json:                                                                                                                
+            schema:                                                                                                                        
+              $ref: '#/components/schemas/FilterRequest'                                                                                  
+      responses:                                                                                                                           
+        200:                                                                                                                               
+          description: OK                                                                                                                  
+          content:                                                                                                                         
+            application/json:                                                                                                              
+              schema:                                                                                                                      
+                $ref: '#/components/schemas/OperationsActDetailsResponse'                                                                 
+        400:                                                                                                                               
+          $ref: '#/components/responses/Invalid'                                                                                           
+        401:                                                                                                                               
+          $ref: '#/components/responses/Unauthorized'                                                                                      
+        403:                                                                                                                               
+          $ref: '#/components/responses/Forbidden'                                                                                         
+        404:                                                                                                                               
+          $ref: '#/components/responses/NotFound'                                                                                          
+        405:                                                                                                                               
+          $ref: '#/components/responses/NotAllowed'                                                                                        
+        500:                                                                                                                               
+          $ref: '#/components/responses/InternalError'                                                                                    
+  /radd-private/api/v1/aor/operations/by-internalId/{internalId}:                                                                         
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s                                                                                       
+    parameters:                                                                                                                            
+      - $ref: '#/components/parameters/internalId'                                                                                         
+    post:                                                                                                                                  
+      tags:                                                                                                                                
+        - notificationInquiry                                                                                                                                  
+      operationId: getAorPracticesByInternalId                                                                                             
+      description: API utilizzata per il recupero di tutte le pratiche legate ad AAR ed associate ad uno specifico internal id            
+      requestBody:                                                                                                                         
+        content:                                                                                                                           
+          application/json:                                                                                                                               
+            schema:                                                                                                                        
+              $ref: '#/components/schemas/FilterRequest'                                                                                  
+      responses:                                                                                                                           
+        200:                                                                                                                               
+          description: OK                                                                                                                  
+          content:                                                                                                                         
+            application/json:                                                                                                              
+              schema:                                                                                                                      
+                $ref: '#/components/schemas/OperationsAorDetailsResponse'                                                                 
+        400:                                                                                                                               
+          $ref: '#/components/responses/Invalid'                                                                                           
+        401:                                                                                                                               
+          $ref: '#/components/responses/Unauthorized'                                                                                      
+        403:                                                                                                                               
+          $ref: '#/components/responses/Forbidden'                                                                                         
+        404:                                                                                                                               
+          $ref: '#/components/responses/NotFound'                                                                                          
+        405:                                                                                                                               
+          $ref: '#/components/responses/NotAllowed'                                                                                        
+        500:                                                                                                                               
+          $ref: '#/components/responses/InternalError'                                                                                    
+components:
+  schemas:
+    ResponseStatus:
+      description: Stato della response
+      type: object
+      properties:
+        code:
+          description: |
+            Return code.
+            * 0 -> OK
+            * 99 -> KO
+          type: number
+          enum: [0, 99]
+        message:
+          type: string
+          example: OK
+
+    OperationsResponse:                                                                                                     
+      description: Id pratiche recuperate                                                                                   
+      type: object                                                                                                          
+      properties:                                                                                                           
+        operationIds:                                                                                                       
+          type: array                                                                                                       
+          items:                                                                                                            
+            type: string                                                                                                    
+        result:                                                                                                             
+          type: boolean                                                                                                     
+        status:                                                                                                             
+          $ref: '#/components/schemas/OperationResponseStatus'                                                              
+    OperationsActDetailsResponse:                                                                                           
+      description: Id pratiche recuperate                                                                                   
+      type: object                                                                                                          
+      properties:                                                                                                           
+        elements:                                                                                                           
+          type: array                                                                                                       
+          items:                                                                                                            
+            $ref: '#/components/schemas/OperationActDetailResponse'                                                         
+        result:                                                                                                             
+          type: boolean                                                                                                     
+        status:                                                                                                             
+          $ref: '#/components/schemas/OperationResponseStatus'                                                              
+    OperationsAorDetailsResponse:                                                                                           
+      description: Id pratiche recuperate                                                                                   
+      type: object                                                                                                          
+      properties:                                                                                                           
+        elements:                                                                                                           
+          type: array                                                                                                       
+          items:                                                                                                            
+            $ref: '#/components/schemas/OperationAorDetailResponse'                                                         
+        result:                                                                                                             
+          type: boolean                                                                                                     
+        status:                                                                                                             
+          $ref: '#/components/schemas/OperationResponseStatus'                                                              
+                                                                                                                            
+    OperationResponseStatus:                                                                                                
+      description: Stato della response                                                                                     
+      allOf:                                                                                                                
+        - $ref: '#/components/schemas/ResponseStatus'                                                                       
+        - type: object                                                                                                      
+          properties:                                                                                                       
+            code:                                                                                                           
+              description: |                                                                                                
+                Return code.                                                                                                
+                * 0 -> OK                                                                                                   
+                * 1 -> Nessun elemento associato                                                                            
+                * 99 -> KO                                                                                                  
+              type: number                                                                                                  
+              enum: [0,1,99]                                                                                                
+                                                                                                                            
+    OperationActResponse:                                                                                                   
+      description: Risposta della notifica                                                                                  
+      type: object                                                                                                          
+      properties:                                                                                                           
+        element:                                                                                                            
+          $ref: '#/components/schemas/OperationActDetailResponse'                                                           
+        result:                                                                                                             
+          type: boolean                                                                                                     
+        status:                                                                                                             
+          $ref: '#/components/schemas/OperationResponseStatus'                                                              
+    OperationActDetailResponse:                                                                                             
+      description: Dettagli della response Act                                                                              
+      type: object                                                                                                          
+      properties:                                                                                                           
+        operationStatus:                                                                                                    
+          type: string                                                                                                      
+          example: "COMPLETED"                                                                                              
+        operationType:                                                                                                      
+          type: string                                                                                                      
+          example: "ACT"                                                                                                    
+        iun:                                                                                                                
+          type: string                                                                                                      
+          example: "LJLH-GNTJ-DVXR-202209-J-1"                                                                              
+        transactionId:                                                                                                      
+          type: string                                                                                                      
+          example: "asd1234"
+        fileKey:
+          type: string
+          example: "FL-23-KKL"
+        operationId:                                                                                                        
+          type: string                                                                                                      
+          example: "asd1234"                                                                                                
+        qrCode:                                                                                                             
+          type: string                                                                                                      
+          example: "FBD"                                                                                                    
+        recipientTaxId:                                                                                                     
+          type: string                                                                                                      
+          example: "TNTGTR76E21H751S"                                                                                       
+        recipientType:                                                                                                      
+          type: string                                                                                                      
+          example: "PF"                                                                                                     
+        delegateTaxId:                                                                                                      
+          type: string                                                                                                      
+          example: "RFRGRZ66E21H751B"                                                                                       
+        uid:                                                                                                                
+          type: string                                                                                                      
+          example: "uddHHHw123mk"                                                                                           
+        operationStartDate:                                                                                                 
+          type: string                                                                                                      
+          format: date-time                                                                                                 
+          example: 2017-07-21T17:32:28Z                                                                                     
+        operationEndDate:                                                                                                   
+          type: string                                                                                                      
+          format: date-time                                                                                                 
+          example: 2017-07-21T18:00:28Z                                                                                     
+        errorReason:                                                                                                        
+          type: string                                                                                                      
+          example: "Error"                                                                                                  
+    OperationAorResponse:                                                                                                   
+      description: Risposta della notifica                                                                                  
+      type: object                                                                                                          
+      properties:                                                                                                           
+        element:                                                                                                            
+          $ref: '#/components/schemas/OperationAorDetailResponse'                                                           
+        result:                                                                                                             
+          type: boolean                                                                                                     
+        status:                                                                                                             
+          $ref: '#/components/schemas/OperationResponseStatus'                                                              
+    OperationAorDetailResponse:                                                                                             
+      description: Dettagli della response Act                                                                              
+      type: object                                                                                                          
+      properties:                                                                                                           
+        operationStatus:                                                                                                    
+          type: string                                                                                                      
+          example: "COMPLETED"                                                                                              
+        operationType:                                                                                                      
+          type: string                                                                                                      
+          example: "ACT"                                                                                                    
+        iuns:                                                                                                               
+          type: array                                                                                                       
+          items:                                                                                                            
+            type: string                                                                                                    
+            example: "welcome"                                                                                              
+        transactionId:
+          type: string
+          example: "asd1234"
+        fileKey:
+          type: string
+          example: "FL-23-KKL"
+        operationId:                                                                                                        
+          type: string                                                                                                      
+          example: "asd1234"                                                                                                
+        qrCode:                                                                                                             
+          type: string                                                                                                      
+          example: "FBD"                                                                                                    
+        recipientTaxId:                                                                                                     
+          type: string                                                                                                      
+          example: "TNTGTR76E21H751S"                                                                                       
+        recipientType:                                                                                                      
+          type: string                                                                                                      
+          example: "PF"                                                                                                     
+        delegateTaxId:                                                                                                      
+          type: string                                                                                                      
+          example: "RFRGRZ66E21H751B"                                                                                       
+        uid:                                                                                                                
+          type: string                                                                                                      
+          example: "uddHHHw123mk"                                                                                           
+        operationStartDate:                                                                                                 
+          type: string                                                                                                      
+          format: date-time                                                                                                 
+          example: 2017-07-21T17:32:28Z                                                                                     
+        operationEndDate:                                                                                                   
+          type: string                                                                                                      
+          format: date-time                                                                                                 
+          example: 2017-07-21T18:00:28Z                                                                                     
+        errorReason:                                                                                                        
+          type: string                                                                                                      
+          example: "Error"                                                                                                  
+    FilterRequest:                                                                                                          
+      description: Campi per poter applicare filtri sui dati a DB                                                           
+      type: object                                                                                                          
+      properties:                                                                                                           
+        from:                                                                                                               
+          type: string                                                                                                      
+          format: date-time                                                                                                 
+          description: Data/ora in formato RFC3339.                                                                         
+        to:                                                                                                                 
+          type: string                                                                                                      
+          format: date-time                                                                                                 
+          description: Data/ora in formato RFC3339.                                                                         
+
+  parameters:
+    transactionId:
+      name: transactionId
+      description: Id della transazione della pratica
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "RADD#asd123#abcduuid123"
+    iun:
+      name: iun
+      description: Identification code
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "LJLH-GNTJ-DVXR-202209-J-1"
+    internalId:
+      name: internalId
+      description: Internal recipient or delegate tax id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "PF-4fc75df3-0913-407e-bdaa-e50329708b7d"
+
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized

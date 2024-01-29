@@ -22,26 +22,26 @@ public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTra
     }
 
     @Override
-    public Mono<ResponseEntity<ActInquiryResponse>> actInquiry(String uid, String recipientTaxId, String recipientType, String qrCode, final ServerWebExchange exchange) {
+    public Mono<ResponseEntity<ActInquiryResponse>> actInquiry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String recipientTaxId, String recipientType, String qrCode, String iun, final ServerWebExchange exchange) {
         return actService.actInquiry(uid, recipientTaxId, recipientType, qrCode).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId,  Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
         return actStartTransactionRequest
                 .zipWhen(request -> actService.startTransaction(uid, request), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<CompleteTransactionResponse>> completeActTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<CompleteTransactionResponse>> completeActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
         return completeTransactionRequest
                 .zipWhen(req -> actService.completeTransaction(uid, req), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
         return abortTransactionRequest
                 .zipWhen(req -> actService.abortTransaction(uid, req), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));

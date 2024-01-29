@@ -1,0 +1,48 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "Informazioni riguardanti un documento di identità del destinatario o di un suo delegato",
+	"additionalProperties": false,
+	"type": "object",
+	"required": [
+	  "operationId",
+	  "docType",
+	  "docNumber",
+	  "docIssuer",
+	  "issueDate",
+	  "expireDate"
+	],
+	"properties": {
+	  "docType": {
+		"description": "Tipologia del documento",
+		"type": "string",
+		"example": "2bb5c29e0cf411ed861d0242ac120002"
+	  },
+	  "docNumber": {
+		"description": "Numero identificativo del documento",
+		"type": "string",
+		"example": "345678"
+	  },
+	  "docIssuer": {
+		"description": "Autorità emittente del documento",
+		"type": "string",
+		"example": "Ministero dell'interno"
+	  },
+	  "issueDate": {
+		"type": "string",
+		"format": "date",
+		"description": "Data di rilascio del documento",
+		"example": "2022-06-21"
+	  },
+	  "expireDate": {
+		"type": "string",
+		"format": "date",
+		"description": "Data di scadenza del documento",
+		"example": "2022-06-21"
+	  },
+	  "operationId": {
+		"description": "operationId correlato a questi documenti",
+		"type": "string",
+		"example": "abcdfghi"
+	  }
+	}
+}

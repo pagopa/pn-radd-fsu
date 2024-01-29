@@ -20,24 +20,24 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
 
 
     @Override
-    public Mono<ResponseEntity<AORInquiryResponse>> aorInquiry(String uid, String recipientTaxId,
+    public Mono<ResponseEntity<AORInquiryResponse>> aorInquiry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String recipientTaxId,
                                                                String recipientType, ServerWebExchange exchange) {
         return aorService.aorInquiry(uid, recipientTaxId, recipientType).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<AbortTransactionResponse>> abortAorTransaction(String uid, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AbortTransactionResponse>> abortAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
         return aorService.abortTransaction(uid, abortTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
-    public Mono<ResponseEntity<CompleteTransactionResponse>> completeAorTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<CompleteTransactionResponse>> completeAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
         return aorService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
 
     }
 
     @Override
-    public Mono<ResponseEntity<StartTransactionResponse>> startAorTransaction(String uid, Mono<AorStartTransactionRequest> aorStartTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<StartTransactionResponse>> startAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AorStartTransactionRequest> aorStartTransactionRequest, ServerWebExchange exchange) {
         return aorStartTransactionRequest
                 .zipWhen(req -> aorService.startTransaction(uid, req), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));

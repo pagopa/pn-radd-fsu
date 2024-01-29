@@ -190,6 +190,14 @@ Parameters:
     Description: 'ALB name (used by alarm metrics)'
     Default: ''
 
+  SafeStorageToRaddAltQueueARN:
+    Type: String
+    Description: SafeStorage to RaddAlt Queue ARN
+
+  SafeStorageToRaddAltQueueURL:
+    Type: String
+    Description: SafeStorage to RaddAlt Queue URL
+
 Conditions:
   HasAlbDimensionName: !Not [ !Equals [ !Ref ApplicationLoadBalancerMetricsDimensionName, '' ] ]
      

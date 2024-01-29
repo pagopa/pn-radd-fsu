@@ -32,14 +32,13 @@ class AorPrivateRestV1ControllerTest {
     private AorService aorService;
 
     @Test
-    @Disabled
     void aorInquiryTest() {
         AORInquiryResponse response = new AORInquiryResponse();
         response.setResult(true);
 
         String path = "/radd-private/api/v1/aor/inquiry";
         Mockito.when(aorService
-                .aorInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
+                .aorInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), CxTypeAuthFleet.valueOf(Mockito.anyString()), Mockito.anyString())
         ).thenReturn(Mono.just(response));
 
         webTestClient.get()

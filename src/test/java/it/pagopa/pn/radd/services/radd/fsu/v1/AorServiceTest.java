@@ -318,7 +318,7 @@ class AorServiceTest extends BaseTest {
     @Test
     void testWhenSearchReturnEmptyThrowException(){
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(new ResponsePaperNotificationFailedDtoDto()));
-        aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF")
+        aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"),"cxId")
                 .onErrorResume(ex -> {
                     if (ex instanceof RaddGenericException){
                         assertNotNull(((RaddGenericException) ex).getExceptionType());
@@ -339,7 +339,7 @@ class AorServiceTest extends BaseTest {
 
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
 
-        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF").block();
+        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"),"cxId").block();
         assertNotNull(inquiryResponse);
         assertFalse(inquiryResponse.getResult());
         assertEquals(new BigDecimal(99), inquiryResponse.getStatus().getCode().getValue());
@@ -355,7 +355,7 @@ class AorServiceTest extends BaseTest {
         response2.setRecipientInternalId("testCF2");
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
 
-        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF").block();
+        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"),"cxId").block();
         log.info("Response {}", inquiryResponse);
         assertNotNull(inquiryResponse);
         assertTrue(inquiryResponse.getResult());
@@ -364,7 +364,7 @@ class AorServiceTest extends BaseTest {
     @Test
     void testWhenRecipientIdIsNullThrowPnInvalidInput(){
         try {
-            aorService.aorInquiry("uid", "", "type").block();
+            aorService.aorInquiry("uid", "", "type", CxTypeAuthFleet.valueOf("PF"),"cxId").block();
         } catch (PnInvalidInputException ex){
             assertNotNull(ex);
             assertEquals("Il campo codice fiscale non è valorizzato", ex.getReason());

@@ -22,7 +22,7 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
     @Override
     public Mono<ResponseEntity<AORInquiryResponse>> aorInquiry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String recipientTaxId,
                                                                String recipientType, ServerWebExchange exchange) {
-        return aorService.aorInquiry(uid, recipientTaxId, recipientType).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return aorService.aorInquiry(uid, recipientTaxId, recipientType, xPagopaPnCxType, xPagopaPnCxId).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override

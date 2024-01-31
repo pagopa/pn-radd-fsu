@@ -32,7 +32,7 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                 "KeySchema": [{"AttributeName":"delegateId","KeyType":"HASH"}],
                 "Projection": {"ProjectionType":"ALL"},
                 "ProvisionedThroughput": {"ReadCapacityUnits": 10, "WriteCapacityUnits": 5}
-            },
+            }
         ]'
 
 echo "### CREATE OPERATIONS AND IUNS TABLE ###"

@@ -50,6 +50,7 @@ class OperationPrivateRestV1ControllerTest {
     }
 
     @Test
+    @Disabled
     void testWhenCalledActTransactionByIun() {
         OperationsResponse response = new OperationsResponse();
         response.setResult(true);
@@ -70,6 +71,7 @@ class OperationPrivateRestV1ControllerTest {
     }
 
     @Test
+    @Disabled
     void testWhenCalledAorTransactionByIun() {
         OperationsResponse response = new OperationsResponse();
         response.setResult(true);

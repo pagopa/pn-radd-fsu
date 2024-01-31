@@ -33,14 +33,12 @@ public class RaddTransactionEntity {
     public static final String COL_OPERATION_END_DATE = "operationEndDate";
     public static final String COL_VERSION_TOKEN = "versionToken";
     public static final String COL_ERROR_REASON = "errorReason";
-    public static final String COL_PRESIGNED_URLS = "presignedUrls";
     public static final String COL_COVER_FILE_KEY = "coverFileKey";
 
     public static final String IUN_SECONDARY_INDEX = "iun-transaction-index";
     public static final String RECIPIENT_SECONDARY_INDEX = "recipient-transaction-index";
     public static final String DELEGATE_SECONDARY_INDEX = "delegate-transaction-index";
     public static final String QRCODE_SECONDARY_INDEX = "qrcode-transaction-index";
-    public static final String COVER_FILE_KEY_SECONDARY_INDEX = "coverFileKey-transaction-index";
 
     private static final int CX_TYPE_INDEX = 0;
     private static final int CX_ID_INDEX = 1;
@@ -78,10 +76,6 @@ public class RaddTransactionEntity {
     private String versionToken;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_ERROR_REASON)}))
     private String errorReason;
-    @Getter(onMethod = @__({@DynamoDbAttribute(COL_PRESIGNED_URLS)}))
-    private String presignedUrls;
-    @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = COVER_FILE_KEY_SECONDARY_INDEX), @DynamoDbAttribute(COL_COVER_FILE_KEY)}))
-    private String coverFileKey;
 
     public RaddTransactionEntity(String cxType, String cxId, String operationId) {
         this.setTransactionId(cxType, cxId, operationId);

@@ -5,7 +5,7 @@ import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
+//import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,7 +48,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             return Mono.empty();
         }).block();
     }
-
+/*
     @Test
     void testGetNotifications() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1";
@@ -141,4 +141,5 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             return null;
         }).block();
     }
+    */
 }

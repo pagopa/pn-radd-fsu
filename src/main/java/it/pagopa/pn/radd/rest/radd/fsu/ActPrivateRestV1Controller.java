@@ -23,7 +23,7 @@ public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTra
 
     @Override
     public Mono<ResponseEntity<ActInquiryResponse>> actInquiry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String recipientTaxId, String recipientType, String qrCode, String iun, final ServerWebExchange exchange) {
-        return actService.actInquiry(uid, recipientTaxId, recipientType, qrCode).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return actService.actInquiry(uid, xPagopaPnCxId, xPagopaPnCxType, recipientTaxId, recipientType, qrCode, iun).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override

@@ -99,18 +99,18 @@ class ActServiceStartTransactionTest extends BaseTest {
         return fileDownloadResponseDto ;
     }
 
-    private SentNotificationDto createSentNotificationDto(){
-        NotificationPaymentInfoDto notificationPaymentInfoDto = new NotificationPaymentInfoDto();
-        notificationPaymentInfoDto.setPagoPaForm(new NotificationPaymentAttachmentDto());
+    private SentNotificationV21Dto createSentNotificationDto(){
+        NotificationPaymentItemDto notificationPaymentInfoDto = new NotificationPaymentItemDto();
+        notificationPaymentInfoDto.setPagoPa(new PagoPaPaymentDto());
 
-        NotificationRecipientDto notificationRecipientDto = new NotificationRecipientDto();
-        notificationRecipientDto.setPayment(notificationPaymentInfoDto);
+        NotificationRecipientV21Dto notificationRecipientDto = new NotificationRecipientV21Dto();
+        notificationRecipientDto.setPayments(List.of(notificationPaymentInfoDto));
         notificationRecipientDto.setTaxId("recTaxId");
 
         NotificationDocumentDto notificationDocumentDto =new NotificationDocumentDto();
         notificationDocumentDto.setDocIdx("0");
 
-        SentNotificationDto sentNotificationDto = new SentNotificationDto ();
+        SentNotificationV21Dto sentNotificationDto = new SentNotificationV21Dto ();
         sentNotificationDto.setRecipients(List.of(notificationRecipientDto));
         sentNotificationDto.setDocuments(List.of(notificationDocumentDto));
 
@@ -141,11 +141,11 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())).thenReturn(Mono.just("recipientTaxIdResult"));
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(raddTransactionDAOImpl.createRaddTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(raddTransactionEntity));
-        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted(Mockito.any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(Mockito.any())).thenReturn(Mono.just(0));
         FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto () ;
         Mockito.when(safeStorage.getFile (Mockito.any())).thenReturn(Mono.just(fileDownloadResponseDto));
         Mockito.when(safeStorage.updateFileMetadata(Mockito.any())).thenReturn(Mono.just(new OperationResultCodeResponseDto()));
-        SentNotificationDto sentNotificationDto = createSentNotificationDto();
+        SentNotificationV21Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(Mockito.any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto.setUrl("UrlDocument");
@@ -177,7 +177,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto () ;
         Mockito.when(safeStorage.getFile (Mockito.any())).thenReturn(Mono.just(fileDownloadResponseDto));
         Mockito.when(safeStorage.updateFileMetadata(Mockito.any())).thenReturn(Mono.just(new OperationResultCodeResponseDto()));
-        SentNotificationDto sentNotificationDto = createSentNotificationDto();
+        SentNotificationV21Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(Mockito.any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto.setUrl("UrlDocument");
@@ -195,7 +195,7 @@ class ActServiceStartTransactionTest extends BaseTest {
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted(Mockito.any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(Mockito.any())).thenReturn(Mono.just(0));
 
 
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();
@@ -213,7 +213,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted(Mockito.any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(Mockito.any())).thenReturn(Mono.just(0));
 
 
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();
@@ -232,7 +232,7 @@ class ActServiceStartTransactionTest extends BaseTest {
                 .thenReturn(Mono.error(new PnRaddException(exMock)));
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted(Mockito.any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(Mockito.any())).thenReturn(Mono.just(0));
 
 
         StepVerifier.create(actService.startTransaction("test", request))
@@ -250,7 +250,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDeliveryClient.getCheckAar(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAOImpl.createRaddTransaction(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST));
-        Mockito.when(raddTransactionDAOImpl.countFromQrCodeCompleted(Mockito.any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(Mockito.any())).thenReturn(Mono.just(0));
 
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));

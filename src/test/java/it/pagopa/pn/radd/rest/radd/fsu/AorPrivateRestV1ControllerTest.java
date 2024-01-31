@@ -36,9 +36,9 @@ class AorPrivateRestV1ControllerTest {
         AORInquiryResponse response = new AORInquiryResponse();
         response.setResult(true);
 
-        String path = "/radd-private/api/v1/aor/inquiry";
+        String path = "/radd/api/v1/aor/inquiry";
         Mockito.when(aorService
-                .aorInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), CxTypeAuthFleet.valueOf(Mockito.anyString()), Mockito.anyString())
+                .aorInquiry(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.get()
@@ -114,7 +114,6 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void abortAorTransactionTest() {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -125,8 +124,8 @@ class AorPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/aor/transaction/abort";
-        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any())
+        String path = "/radd/api/v1/aor/transaction/abort";
+        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()

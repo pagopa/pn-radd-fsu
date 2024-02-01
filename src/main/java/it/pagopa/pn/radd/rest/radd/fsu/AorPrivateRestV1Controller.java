@@ -27,7 +27,7 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
 
     @Override
     public Mono<ResponseEntity<AbortTransactionResponse>> abortAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
-        return aorService.abortTransaction(uid, abortTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return aorService.abortTransaction(uid,xPagopaPnCxType,xPagopaPnCxId ,abortTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override

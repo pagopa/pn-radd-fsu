@@ -88,11 +88,11 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing radd transaction'
 
-  OperationsAndIunsDynamoTableName:
+  OperationsDynamoTableName:
     Type: String
     Description: 'Name of dynamodb table containing iuns and operations'
 
-  OperationsAndIunsDynamoTableArn:
+  OperationsDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing iuns and operations'
   
@@ -228,7 +228,7 @@ Resources:
         ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
         ContainerEnvEntry10: !Sub 'PN_RADD_ATTEMPTBATCHWRITER=${AttemptBatchWriter}'
         ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
-        ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
+        ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsDynamoTableName}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -263,8 +263,8 @@ Resources:
             Resource:
               - !Sub "${RaddTransactionDynamoTableArn}"
               - !Sub "${RaddTransactionDynamoTableArn}/*"
-              - !Sub "${OperationsAndIunsDynamoTableArn}"
-              - !Sub "${OperationsAndIunsDynamoTableArn}/*"
+              - !Sub "${OperationsDynamoTableArn}"
+              - !Sub "${OperationsDynamoTableArn}/*"
             
 
   ApplicationLoadBalancerOnCallAlarm:
@@ -334,7 +334,7 @@ Resources:
         DynamoDBTableNames: !Join
           - ','
           - - !Ref RaddTransactionDynamoTableName
-            - !Ref OperationsAndIunsDynamoTableName
+            - !Ref OperationsDynamoTableName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

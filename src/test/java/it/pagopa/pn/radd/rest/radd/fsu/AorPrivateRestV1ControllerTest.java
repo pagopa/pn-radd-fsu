@@ -113,7 +113,6 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void abortAorTransactionTest() {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -124,8 +123,8 @@ class AorPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/aor/transaction/abort";
-        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any())
+        String path = "/radd/api/v1/aor/transaction/abort";
+        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()

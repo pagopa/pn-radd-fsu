@@ -23,8 +23,6 @@ tags:
     description: API di gestione della transazione per atti e attestazioni opponibili a terzi.
   - name: aorTransactionManagement
     description: API di gestione della transazione per avvisi di avvenuta ricezione.
-  - name: notificationInquiry
-    description: API di interrogazione delle pratiche.
 
 paths:
   /radd/api/v1/documents/upload:

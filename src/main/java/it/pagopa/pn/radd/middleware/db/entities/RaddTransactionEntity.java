@@ -33,8 +33,6 @@ public class RaddTransactionEntity {
     public static final String COL_OPERATION_END_DATE = "operationEndDate";
     public static final String COL_VERSION_TOKEN = "versionToken";
     public static final String COL_ERROR_REASON = "errorReason";
-    public static final String COL_PRESIGNED_URLS = "presignedUrls";
-    public static final String COL_COVER_FILE_KEY = "coverFileKey";
 
     public static final String IUN_SECONDARY_INDEX = "iun-transaction-index";
     public static final String RECIPIENT_SECONDARY_INDEX = "recipient-transaction-index";
@@ -76,6 +74,7 @@ public class RaddTransactionEntity {
     private String versionToken;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_ERROR_REASON)}))
     private String errorReason;
+
     public RaddTransactionEntity(String cxType, String cxId, String operationId) {
         this.setTransactionId(cxType, cxId, operationId);
     }

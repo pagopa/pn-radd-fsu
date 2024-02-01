@@ -38,7 +38,7 @@ class AorPrivateRestV1ControllerTest {
 
         String path = "/radd/api/v1/aor/inquiry";
         Mockito.when(aorService
-                .aorInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.anyString())
+                .aorInquiry(Mockito.anyString(), Mockito.any(), Mockito.anyString(), Mockito.any(), Mockito.anyString())
         ).thenReturn(Mono.just(response));
 
         webTestClient.get()
@@ -47,8 +47,8 @@ class AorPrivateRestV1ControllerTest {
                         .queryParam("recipientTaxId", "MRASSS90A67H718I")
                         .queryParam("recipientType", "PF").build())
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .exchange()
                 .expectStatus().isOk();
     }
@@ -77,8 +77,8 @@ class AorPrivateRestV1ControllerTest {
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), AorStartTransactionRequest.class)
                 .exchange()
@@ -97,16 +97,16 @@ class AorPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/aor/transaction/complete";
+        String path = "/radd/api/v1/aor/transaction/complete";
         Mockito.when(aorService
-                .completeTransaction(Mockito.anyString(), Mockito.any())
+                .completeTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), CompleteTransactionRequest.class)
                 .exchange()
@@ -125,15 +125,15 @@ class AorPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/aor/transaction/abort";
-        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any())
+        String path = "/radd/api/v1/aor/transaction/abort";
+        Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), AbortTransactionRequest.class)
                 .exchange()

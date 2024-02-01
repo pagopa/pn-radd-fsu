@@ -43,13 +43,9 @@ Resources:
           AttributeType: "S"
         - AttributeName: "iun"
           AttributeType: "S"
-        - AttributeName: "qrCode"
-          AttributeType: "S"
         - AttributeName: "recipientId"
           AttributeType: "S"
         - AttributeName: "delegateId"
-          AttributeType: "S"
-        - AttributeName: "coverFileKey"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "transactionId"
@@ -72,18 +68,6 @@ Resources:
         - IndexName: "delegate-transaction-index"
           KeySchema:
             - AttributeName: "delegateId"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-        - IndexName: "qrcode-transaction-index"
-          KeySchema:
-            - AttributeName: "qrCode"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
-        - IndexName: "coverFileKey-transaction-index"
-          KeySchema:
-            - AttributeName: "coverFileKey"
               KeyType: "HASH"
           Projection:
             ProjectionType: "ALL"
@@ -141,17 +125,17 @@ Outputs:
     Description: Name of dynamodb table containing radd transaction
     Value: !Ref RaddTransactionDynamoTable
 
-  OperationsAndIunsDynamoTableName:
+  OperationsDynamoTableName:
     Description: Name of dynamodb table containing iuns and operations
-    Value: !Ref OperationsAndIunsDynamoTable
+    Value: !Ref OperationsDynamoTable
 
   RaddTransactionDynamoTableArn:
     Description: ARN of dynamodb table containing transaction
     Value: !Sub '${RaddTransactionDynamoTable.Arn}'
 
-  OperationsAndIunsDynamoTableArn:
+  OperationsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations
-    Value: !Sub '${OperationsAndIunsDynamoTable.Arn}'
+    Value: !Sub '${OperationsDynamoTable.Arn}'
 
   # Log group exports
   EcsLogGroup:

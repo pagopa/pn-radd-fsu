@@ -32,7 +32,7 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
 
     @Override
     public Mono<ResponseEntity<CompleteTransactionResponse>> completeAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
-        return aorService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return aorService.completeTransaction(uid, completeTransactionRequest,xPagopaPnCxType,xPagopaPnCxId).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
 
     }
 

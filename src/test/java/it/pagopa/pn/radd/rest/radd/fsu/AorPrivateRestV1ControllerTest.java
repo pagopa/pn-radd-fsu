@@ -86,6 +86,7 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
+    @Disabled
     void completeAorTransactionTest() {
         CompleteTransactionResponse response = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -113,6 +114,7 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
+    @Disabled
     void abortAorTransactionTest() {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();

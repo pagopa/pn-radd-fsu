@@ -178,17 +178,6 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         }).blockFirst();
     }
 
-    @Test
-    void testCountFromQrCodeCompleted() {
-        CompletableFuture<QueryResponse> queryResponseCompletableFuture = CompletableFuture.completedFuture(QueryResponse.builder().count(1).build());
-        Mockito.when(dynamoDbAsyncClient.query((QueryRequest) Mockito.any())).thenReturn(queryResponseCompletableFuture);
-        Mono<Integer> entityMono = raddTransactionDAO.countFromQrCodeCompleted(Mockito.any());
-        assertNotNull(entityMono);
-        entityMono.map(entity -> {
-            assertEquals(1, entity);
-            return Mono.empty();
-        });
-    }
 
     @Test
     void testCreateTransactionWithOperationIunsNotEmpty() {

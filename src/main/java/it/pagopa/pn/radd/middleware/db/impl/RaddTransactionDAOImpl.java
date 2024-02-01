@@ -212,19 +212,17 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     }
 
     @Override
-    public Mono<Integer> countFromQrCodeCompleted(String qrCode) {
+    public Mono<Integer> countFromIunAndStatus(String iun) {
         Map<String, AttributeValue> expressionValues = new HashMap<>();
 
-        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed AND " + RaddTransactionEntity.COL_OPERATION_TYPE +  " = :type)";
-        expressionValues.put(":completed", AttributeValue.builder().s(Const.COMPLETED).build());
-        expressionValues.put(":type", AttributeValue.builder().s(OperationTypeEnum.ACT.name()).build());
-        expressionValues.put(":qrcodevalue",  AttributeValue.builder().s(qrCode).build());
+        String query = RaddTransactionEntity.COL_STATUS + " = :completed";
+        expressionValues.put(":iun", AttributeValue.builder().s(iun).build());
+        expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
 
-        log.trace("COUNT QUERY DAO TICK {}", new Date().getTime());
+        log.trace("COUNT DAO TICK {}", new Date().getTime());
 
-        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_QR_CODE + " = :qrcodevalue", RaddTransactionEntity.QRCODE_SECONDARY_INDEX)
-                .doOnNext(result ->  log.trace("COUNT QUERY DAO TOCK {}", new Date().getTime()))
-                .doOnError(ex ->  log.trace("COUNT QUERY DAO TOCK {}", new Date().getTime()));
+        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_IUN + " = :iun", RaddTransactionEntity.IUN_SECONDARY_INDEX)
+                .doOnNext(response -> log.trace("COUNT DAO TOCK {}", new Date().getTime()));
     }
 
 

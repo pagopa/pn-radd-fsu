@@ -37,7 +37,6 @@ public class RaddTransactionEntity {
     public static final String IUN_SECONDARY_INDEX = "iun-transaction-index";
     public static final String RECIPIENT_SECONDARY_INDEX = "recipient-transaction-index";
     public static final String DELEGATE_SECONDARY_INDEX = "delegate-transaction-index";
-    public static final String QRCODE_SECONDARY_INDEX = "qrcode-transaction-index";
 
     private static final int CX_TYPE_INDEX = 0;
     private static final int CX_ID_INDEX = 1;
@@ -57,7 +56,7 @@ public class RaddTransactionEntity {
     private String checksum;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_STATUS)}))
     private String status;
-    @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = QRCODE_SECONDARY_INDEX), @DynamoDbAttribute(COL_QR_CODE)}))
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_QR_CODE)}))
     private String qrCode;
     @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = RECIPIENT_SECONDARY_INDEX), @DynamoDbAttribute(COL_RECIPIENT_ID)}))
     private String recipientId;

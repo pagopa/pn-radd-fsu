@@ -37,18 +37,19 @@ class ActPrivateRestV1ControllerTest {
 
         String path = "/radd/api/v1/act/inquiry";
         Mockito.when(actService
-                .actInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
-                ).thenReturn(Mono.just(response));
+                .actInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
+        ).thenReturn(Mono.just(response));
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder.path(path)
-                                .queryParam("uid", "123-456")
-                                .queryParam("recipientTaxId", "MRASSS90A67H718I")
-                                .queryParam("recipientType", "PF")
-                                .queryParam("qrCode", "qrCode").build())
+                        .queryParam("iun", "")
+                        .queryParam("uid", "123-456")
+                        .queryParam("recipientTaxId", "MRASSS90A67H718I")
+                        .queryParam("recipientType", "PF")
+                        .queryParam("qrCode", "qrCode").build())
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .exchange()
                 .expectStatus().isOk();
     }
@@ -73,8 +74,8 @@ class ActPrivateRestV1ControllerTest {
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), CompleteTransactionRequest.class)
                 .exchange()
@@ -99,8 +100,8 @@ class ActPrivateRestV1ControllerTest {
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), AbortTransactionRequest.class)
                 .exchange()
@@ -132,8 +133,8 @@ class ActPrivateRestV1ControllerTest {
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), ActStartTransactionRequest.class)
                 .exchange()

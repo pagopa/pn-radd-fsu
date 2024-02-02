@@ -31,12 +31,11 @@ class ActPrivateRestV1ControllerTest {
     private ActService actService;
 
     @Test
-    @Disabled
     void actInquiryTest() {
         ActInquiryResponse response = new ActInquiryResponse();
         response.setResult(true);
 
-        String path = "/radd-private/api/v1/act/inquiry";
+        String path = "/radd/api/v1/act/inquiry";
         Mockito.when(actService
                 .actInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
                 ).thenReturn(Mono.just(response));
@@ -83,7 +82,6 @@ class ActPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void abortActTransactionTest() {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -94,9 +92,8 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/act/transaction/abort";
-        Mockito.when(actService
-                .abortTransaction(Mockito.anyString(), Mockito.any())
+        String path = "/radd/api/v1/act/transaction/abort";
+        Mockito.when(actService.abortTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()

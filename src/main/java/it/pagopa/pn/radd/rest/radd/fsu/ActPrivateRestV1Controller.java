@@ -43,7 +43,7 @@ public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTra
     @Override
     public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
         return abortTransactionRequest
-                .zipWhen(req -> actService.abortTransaction(uid, req), (req, resp) -> resp)
+                .zipWhen(req -> actService.abortTransaction(uid, xPagopaPnCxType,xPagopaPnCxId,req), (req,resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

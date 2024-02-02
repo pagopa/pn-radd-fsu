@@ -344,7 +344,7 @@ class ActServiceTest extends BaseTest {
     void testWhenAbortFunctionParametersAreInvalid(){
         AbortTransactionRequest abortTransactionRequest= new AbortTransactionRequest();
         abortTransactionRequest.setOperationId("");
-        Mono<AbortTransactionResponse> response = actService.abortTransaction("", abortTransactionRequest );
+        Mono<AbortTransactionResponse> response = actService.abortTransaction("", CxTypeAuthFleet.valueOf("PF"),"cxId",abortTransactionRequest );
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni paramentri come operazione id o data di operazione non sono valorizzate", exception.getMessage());
             return Mono.empty();
@@ -353,7 +353,7 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testWhenAbortTransactionReqNull(){
-        Mono<AbortTransactionResponse> abortTransactionResponse = actService.abortTransaction("test", null);
+        Mono<AbortTransactionResponse> abortTransactionResponse = actService.abortTransaction("test", CxTypeAuthFleet.valueOf("PF"),"cxId",null);
         abortTransactionResponse.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Alcuni parametri come operazione id o data di operazione non sono valorizzate", exception.getMessage() );
             return Mono.empty();}
@@ -384,7 +384,7 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testAbortTransactionReqNull (){
-        actService.abortTransaction("test", null)
+        actService.abortTransaction("test", CxTypeAuthFleet.valueOf("PF"),"cxId",null)
                 .onErrorResume(PnInvalidInputException.class, exception ->{
                     assertNotNull(exception);
                     return Mono.empty();
@@ -392,7 +392,7 @@ class ActServiceTest extends BaseTest {
 
         AbortTransactionRequest request = new AbortTransactionRequest();
         request.setOperationId(null);
-        actService.abortTransaction("test", request)
+        actService.abortTransaction("test", CxTypeAuthFleet.valueOf("PF"),"cxId",request)
                 .onErrorResume(PnInvalidInputException.class, exception ->{
                     assertNotNull(exception);
                     return Mono.empty();
@@ -400,7 +400,7 @@ class ActServiceTest extends BaseTest {
 
         request.setOperationId("Id");
         request.setReason(null);
-        actService.abortTransaction("test", request)
+        actService.abortTransaction("test", CxTypeAuthFleet.valueOf("PF"),"cxId",request)
                 .onErrorResume(PnInvalidInputException.class, exception ->{
                     assertNotNull(exception);
                     return Mono.empty();
@@ -422,7 +422,7 @@ class ActServiceTest extends BaseTest {
         Mockito.when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(Mono.just(entity));
         Mockito.when( raddTransactionDAOImpl.updateStatus(any(), any())).thenReturn(Mono.just(entity));
 
-        AbortTransactionResponse response = actService.abortTransaction("test", request).block();
+        AbortTransactionResponse response = actService.abortTransaction("test",CxTypeAuthFleet.valueOf("PF"),"cxId" ,request).block();
         assertNotNull(response);
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
@@ -440,7 +440,7 @@ class ActServiceTest extends BaseTest {
         entity.setStatus(Const.STARTED);
         Mockito.when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(Mono.just(entity));
         Mockito.when( raddTransactionDAOImpl.updateStatus(any(), any())).thenThrow(RaddGenericException.class);
-        actService.abortTransaction("test", request)
+        actService.abortTransaction("test",CxTypeAuthFleet.valueOf("PF"),"cxId" ,request)
                 .onErrorResume(RaddGenericException.class, exception ->{
                     assertNotNull(exception);
                     return Mono.empty();

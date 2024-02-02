@@ -184,15 +184,14 @@ public class ActService extends BaseService {
                 );
     }
 
-    public Mono<AbortTransactionResponse> abortTransaction(String uid, AbortTransactionRequest req) {
+    public Mono<AbortTransactionResponse> abortTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId ,AbortTransactionRequest req) {
         if (req == null || !StringUtils.hasText(req.getOperationId())
                 || !StringUtils.hasText(req.getReason())) {
             log.error("Missing input parameters");
             return Mono.error(new PnInvalidInputException("Alcuni parametri come operazione id o data di operazione non sono valorizzate"));
         }
-        log.info("Start ACT abort transaction - uid={} - operationId={}", uid, req.getOperationId());
-        // TODO passare cxType e cxId in seguito all'aggiornamento dell'open api
-        return raddTransactionDAO.getTransaction("", "", req.getOperationId(), OperationTypeEnum.ACT)
+        log.info("Start ACT abort transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, req.getOperationId());
+        return raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, req.getOperationId(), OperationTypeEnum.ACT)
                 .doOnNext(this::checkTransactionStatus)
                 .map(raddEntity -> {
                     raddEntity.setUid(uid);

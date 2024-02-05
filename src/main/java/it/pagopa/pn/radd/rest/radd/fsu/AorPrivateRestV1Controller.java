@@ -22,17 +22,17 @@ public class AorPrivateRestV1Controller implements AorDocumentInquiryApi, AorTra
     @Override
     public Mono<ResponseEntity<AORInquiryResponse>> aorInquiry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String recipientTaxId,
                                                                String recipientType, ServerWebExchange exchange) {
-        return aorService.aorInquiry(uid, recipientTaxId, recipientType).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return aorService.aorInquiry(uid, recipientTaxId, recipientType, xPagopaPnCxType, xPagopaPnCxId).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
     public Mono<ResponseEntity<AbortTransactionResponse>> abortAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
-        return aorService.abortTransaction(uid, abortTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return aorService.abortTransaction(uid,xPagopaPnCxType,xPagopaPnCxId ,abortTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
     public Mono<ResponseEntity<CompleteTransactionResponse>> completeAorTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
-        return aorService.completeTransaction(uid, completeTransactionRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return aorService.completeTransaction(uid, completeTransactionRequest,xPagopaPnCxType,xPagopaPnCxId).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
 
     }
 

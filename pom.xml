@@ -20,7 +20,9 @@
 	<properties>
 		<java.version>17</java.version>
     	<jacoco.min.line.cover.ratio>0.01</jacoco.min.line.cover.ratio>
+		<pagopa.codegen.version>v01.04.00</pagopa.codegen.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>it.pagopa.pn</groupId>
@@ -189,7 +191,7 @@
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery/1e3f9000330ef8c7bd174f7cc9d9550f4efe8467/docs/openapi/api-private-v1.yaml</inputSpec>
+							<inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery/0ab9e5d383b63bf527bce69423eba8a10b70a060/docs/openapi/api-private.yaml</inputSpec>
 							<generatorName>java</generatorName>
 							<library>webclient</library>
 							<generateApiDocumentation>false</generateApiDocumentation>

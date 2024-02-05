@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: flrF7F4lMEuzI/tOF634WnSfFQaTJ/jbQgHoIvG5Ktg=
+  version: UU+p/NXRqV/4xBOZ9K/olI/exgKWgr37GcrUb2MMuFk=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -74,6 +74,70 @@ paths:
         connectionId: ${stageVariables.NetworkLoadBalancerLink}
         httpMethod: ANY
         requestParameters: {}
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+  /api/v1/download/{operationType}/{operationId}:
+    parameters:
+      - $ref: '#/components/parameters/operationType'
+      - $ref: '#/components/parameters/operationId'
+    get:
+      tags:
+        - documentDownload
+      operationId: documentDownload
+      description: API utilizzata per il download del frontespizio
+      responses:
+        '200':
+          description: Ritorna il frontespizio
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+        '400':
+          $ref: '#/components/responses/Invalid'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '405':
+          $ref: '#/components/responses/NotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      security:
+        - pn-auth-fleet_b2bAuthorizer_openapi: []
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/download/{operationType}/{operationId}
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
+          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
+          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
+          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
+          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
+          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
+          integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
+          integration.request.path.operationType: method.request.path.operationType
+          integration.request.path.operationId: method.request.path.operationId
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+      parameters: []
+    options:
+      operationId: Options for /api/v1/download/{operationType}/{operationId} API CORS
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/download/{operationType}/{operationId}
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.path.operationType: method.request.path.operationType
+          integration.request.path.operationId: method.request.path.operationId
         passthroughBehavior: when_no_match
         connectionType: VPC_LINK
         timeoutInMillis: 29000
@@ -263,72 +327,6 @@ paths:
       x-amazon-apigateway-integration:
         uri: >-
           http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/act/transaction/start
-        connectionId: ${stageVariables.NetworkLoadBalancerLink}
-        httpMethod: ANY
-        requestParameters: {}
-        passthroughBehavior: when_no_match
-        connectionType: VPC_LINK
-        timeoutInMillis: 29000
-        type: http_proxy
-  /api/v1/act/transaction/poll:
-    parameters:
-      - $ref: '#/components/parameters/uid'
-    post:
-      tags:
-        - actTransactionManagement
-      operationId: pollActTransaction
-      description: >-
-        API utilizzata controllare se una richiesta di scaricamento e consegna
-        dell'atto e delle eventuali attestazioni è disponibile.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ActPollTransactionRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartTransactionResponse'
-        '400':
-          $ref: '#/components/responses/Invalid'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '405':
-          $ref: '#/components/responses/NotAllowed'
-        '500':
-          $ref: '#/components/responses/InternalError'
-      security:
-        - pn-auth-fleet_b2bAuthorizer_openapi: []
-      x-amazon-apigateway-integration:
-        uri: >-
-          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/act/transaction/poll
-        connectionId: ${stageVariables.NetworkLoadBalancerLink}
-        httpMethod: ANY
-        requestParameters:
-          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
-          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
-          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
-          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
-          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
-          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
-          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
-          integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
-        passthroughBehavior: when_no_match
-        connectionType: VPC_LINK
-        timeoutInMillis: 29000
-        type: http_proxy
-      parameters: []
-    options:
-      operationId: Options for /api/v1/act/transaction/poll API CORS
-      x-amazon-apigateway-integration:
-        uri: >-
-          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/act/transaction/poll
         connectionId: ${stageVariables.NetworkLoadBalancerLink}
         httpMethod: ANY
         requestParameters: {}
@@ -534,72 +532,6 @@ paths:
         connectionType: VPC_LINK
         timeoutInMillis: 29000
         type: http_proxy
-  /api/v1/aor/transaction/poll:
-    parameters:
-      - $ref: '#/components/parameters/uid'
-    post:
-      tags:
-        - aorTransactionManagement
-      operationId: pollAorTransaction
-      description: >-
-        API utilizzata controllare se una richiesta di scaricamento e consegna
-        degli avvisi di avvenuta ricezione è disponibile.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AorPollTransactionRequest'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartTransactionResponse'
-        '400':
-          $ref: '#/components/responses/Invalid'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '405':
-          $ref: '#/components/responses/NotAllowed'
-        '500':
-          $ref: '#/components/responses/InternalError'
-      security:
-        - pn-auth-fleet_b2bAuthorizer_openapi: []
-      x-amazon-apigateway-integration:
-        uri: >-
-          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/aor/transaction/poll
-        connectionId: ${stageVariables.NetworkLoadBalancerLink}
-        httpMethod: ANY
-        requestParameters:
-          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
-          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
-          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
-          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
-          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
-          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
-          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
-          integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
-        passthroughBehavior: when_no_match
-        connectionType: VPC_LINK
-        timeoutInMillis: 29000
-        type: http_proxy
-      parameters: []
-    options:
-      operationId: Options for /api/v1/aor/transaction/poll API CORS
-      x-amazon-apigateway-integration:
-        uri: >-
-          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v1/aor/transaction/poll
-        connectionId: ${stageVariables.NetworkLoadBalancerLink}
-        httpMethod: ANY
-        requestParameters: {}
-        passthroughBehavior: when_no_match
-        connectionType: VPC_LINK
-        timeoutInMillis: 29000
-        type: http_proxy
   /api/v1/aor/transaction/complete:
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -796,6 +728,17 @@ components:
       schema:
         type: string
       example: asd123
+    operationType:
+      name: operationType
+      description: Tipo di operazione aor o act
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - aor
+          - act
+      example: aor
   schemas:
     DocumentUploadRequest:
       description: >-
@@ -846,24 +789,6 @@ components:
           example: true
         status:
           $ref: '#/components/schemas/ResponseStatus'
-    ActPollTransactionRequest:
-      description: Richiesta  di controllo stato di un'operazione
-      required:
-        - operationId
-      properties:
-        operationId:
-          type: string
-        qrCode:
-          type: string
-        iun:
-          type: string
-    AorPollTransactionRequest:
-      description: Richiesta  di controllo stato di un'operazione AOR
-      required:
-        - operationId
-      properties:
-        operationId:
-          type: string
     ActStartTransactionRequest:
       description: Richiesta  di completamento operazione
       allOf:
@@ -877,12 +802,24 @@ components:
       description: Response alla richiesta di avvio della transazione
       type: object
       properties:
-        urlList:
+        downloadUrlList:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/DownloadUrl'
         status:
           $ref: '#/components/schemas/StartTransactionResponseStatus'
+    DownloadUrl:
+      description: >-
+        contiene l'url per il download e il meccanismo richiesto di
+        autenticazione
+      type: object
+      properties:
+        url:
+          type: string
+          description: url per il download
+        needAuthentication:
+          type: boolean
+          description: indica se inviare l'header di autenticazione
     AorStartTransactionRequest:
       description: Richiesta  di completamento operazione
       type: object
@@ -1004,9 +941,6 @@ components:
 
                 * 0 -> OK
 
-                * 1 -> Working (recupero documenti in corso, ritentare dopo il
-                tempo specificato nel retryAfter tramite il comando di poll)
-
                 * 2 -> NotReady (documenti temporaneamente non disponibili per
                 ragioni tecniche, ritentare dopo il tempo specificato nel
                 retryAfter con una nuova transaction)
@@ -1023,7 +957,6 @@ components:
               type: number
               enum:
                 - 0
-                - 1
                 - 99
                 - 2
                 - 3
@@ -1126,14 +1059,14 @@ tags:
       ricezione.
   - name: documentUpload
     description: API caricamento file.
+  - name: documentDownload
+    description: API download frontespizio.
   - name: actTransactionManagement
     description: >-
       API di gestione della transazione per atti e attestazioni opponibili a
       terzi.
   - name: aorTransactionManagement
     description: API di gestione della transazione per avvisi di avvenuta ricezione.
-  - name: notificationInquiry
-    description: API di interrogazione delle pratiche.
 x-amazon-apigateway-gateway-responses:
   DEFAULT_5XX:
     responseParameters:

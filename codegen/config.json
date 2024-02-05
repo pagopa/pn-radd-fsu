@@ -5,7 +5,7 @@
             "openapiFiles": [
                 "pn-radd-alt-internal.yaml"
             ],
-            "servicePath": "radd"
+            "servicePath": "radd-net"
         }
     ]
 }

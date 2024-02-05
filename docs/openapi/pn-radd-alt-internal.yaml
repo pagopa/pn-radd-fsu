@@ -4,10 +4,6 @@ info:
   description: |
     # Interface definition for Piattaforma Notifiche
     ## changelog
-      * ### 0.1
-        * First draft
-      * ### 0.2
-        * Second draft
       * ### 1.0
         * First version
   version: '1.0'
@@ -21,15 +17,15 @@ tags:
     description: API di interrogazione per la verifica presenza di avvisi di avvenuta ricezione.
   - name: documentUpload
     description: API caricamento file.
+  - name: documentDownload
+    description: API download frontespizio.
   - name: actTransactionManagement
     description: API di gestione della transazione per atti e attestazioni opponibili a terzi.
   - name: aorTransactionManagement
     description: API di gestione della transazione per avvisi di avvenuta ricezione.
-  - name: notificationInquiry
-    description: API di interrogazione delle pratiche.
 
 paths:
-  /radd/api/v1/documents/upload:
+  /radd-net/api/v1/documents/upload:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     post:
       tags:
@@ -67,7 +63,38 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /radd/api/v1/act/inquiry:
+  /radd-net/api/v1/download/{operationType}/{operationId}:
+    ## SLA - Tempo risposta medio: < 10s; Timeout :20s
+    parameters:
+      - $ref: '#/components/parameters/operationType'
+      - $ref: '#/components/parameters/operationId'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    get:
+      tags:
+        - documentDownload
+      operationId: documentDownload
+      description: API utilizzata per il download del frontespizio
+      responses:
+        200:
+          description: "Ritorna il frontespizio"
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /radd-net/api/v1/act/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
@@ -100,7 +127,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /radd/api/v1/aor/inquiry:
+  /radd-net/api/v1/aor/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s"
     parameters:
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
@@ -132,8 +159,8 @@ paths:
           $ref: '#/components/responses/InternalError'
 
 
-  /radd/api/v1/act/transaction/start:
-    ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling (response.status.code = 0): 100s
+  /radd-net/api/v1/act/transaction/start:
+    ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling (response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
@@ -167,42 +194,8 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /radd/api/v1/act/transaction/poll:
-    ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling (response.status.code = 0): 100s
-    parameters:
-      - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-    post:
-      tags:
-        - actTransactionManagement
-      operationId: pollActTransaction
-      description: API utilizzata controllare se una richiesta di scaricamento e consegna dell'atto e delle eventuali attestazioni è disponibile.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ActPollTransactionRequest'
-        required: true
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartTransactionResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
 
-  /radd/api/v1/act/transaction/complete:
+  /radd-net/api/v1/act/transaction/complete:
     ## SLA - Tempo risposta medio: < 1s, Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -236,7 +229,7 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /radd/api/v1/act/transaction/abort:
+  /radd-net/api/v1/act/transaction/abort:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -270,8 +263,8 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /radd/api/v1/aor/transaction/start:
-    ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling(response.status.code = 0): 100s
+  /radd-net/api/v1/aor/transaction/start:
+    ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling(response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
@@ -305,43 +298,9 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /radd/api/v1/aor/transaction/poll:
-    ## SLA - Tempo risposta medio: < 10s; Timeout: 30s. Tempo massimo polling (response.status.code = 0): 100s
-    parameters:
-      - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-    post:
-      tags:
-        - aorTransactionManagement
-      operationId: pollAorTransaction
-      description: API utilizzata controllare se una richiesta di scaricamento e consegna degli avvisi di avvenuta ricezione è disponibile.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AorPollTransactionRequest'
-        required: true
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StartTransactionResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
 
 
-  /radd/api/v1/aor/transaction/complete:
+  /radd-net/api/v1/aor/transaction/complete:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -376,7 +335,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /radd/api/v1/aor/transaction/abort:
+  /radd-net/api/v1/aor/transaction/abort:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
@@ -460,25 +419,6 @@ components:
         status:
           $ref: '#/components/schemas/ResponseStatus'
 
-    ActPollTransactionRequest:
-      description: Richiesta  di controllo stato di un'operazione
-      required:
-        - operationId
-      properties:
-        operationId:
-          type: string
-        qrCode:
-          type: string
-        iun:
-          type: string
-
-    AorPollTransactionRequest:
-      description: Richiesta  di controllo stato di un'operazione AOR
-      required:
-        - operationId
-      properties:
-        operationId:
-          type: string
 
     ActStartTransactionRequest:
       description: Richiesta  di completamento operazione
@@ -494,12 +434,23 @@ components:
       description: Response alla richiesta di avvio della transazione
       type: object
       properties:
-        urlList:
+        downloadUrlList:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/DownloadUrl'
         status:
           $ref: '#/components/schemas/StartTransactionResponseStatus'
+
+    DownloadUrl:
+      description: contiene l'url per il download e il meccanismo richiesto di autenticazione
+      type: object
+      properties:
+        url:
+          type: string
+          description: url per il download
+        needAuthentication:
+          type: boolean
+          description: indica se inviare l'header di autenticazione
 
     AorStartTransactionRequest:
       description: Richiesta  di completamento operazione
@@ -611,7 +562,6 @@ components:
               description: |
                 Return code.
                 * 0 -> OK
-                * 1 -> Working (recupero documenti in corso, ritentare dopo il tempo specificato nel retryAfter tramite il comando di poll)
                 * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche, ritentare dopo il tempo specificato nel retryAfter con una nuova transaction)
                 * 3 -> Stampa già eseguita
                 * 5 -> Codice operationId già presente
@@ -619,7 +569,7 @@ components:
                 * 80 -> Notifica annullata dalla PA
                 * 99 -> KO
               type: number
-              enum: [0,1, 99, 2,3,5,10,80]
+              enum: [0, 99, 2,3,5,10,80]
             retryAfter:
               description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
               type: number
@@ -719,6 +669,15 @@ components:
       schema:
         type: string
       example: "asd123"
+    operationType:
+      name: operationType
+      description: Tipo di operazione aor o act
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: ["aor", "act"]
+      example: aor
 
 
   responses:

@@ -23,7 +23,7 @@ public interface RaddTransactionDAO {
 
     Mono<Integer> countFromIunAndOperationIdAndStatus(String operationId, String iun);
 
-    Mono<Integer> countFromQrCodeCompleted(String qrCode);
+    Mono<Integer> countFromIunAndStatus(String iun);
 
     Flux<RaddTransactionEntity> getTransactionsFromIun(String iun);
     Flux<RaddTransactionEntity> getTransactionsFromFiscalCode(String ensureFiscalCode, Date from, Date to);

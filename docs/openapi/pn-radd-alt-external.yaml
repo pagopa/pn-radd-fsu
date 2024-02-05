@@ -36,8 +36,6 @@ paths:
         e la struttura dello zip deve seguire quanto specificato.
       operationId: documentUpload
       parameters:
-        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -68,8 +66,6 @@ paths:
     parameters:
       - $ref: '#/components/parameters/operationType'
       - $ref: '#/components/parameters/operationId'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     get:
       tags:
         - documentDownload
@@ -97,8 +93,6 @@ paths:
   /radd-net/api/v1/act/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
       - $ref: '#/components/parameters/uid'
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
@@ -130,8 +124,6 @@ paths:
   /radd-net/api/v1/aor/inquiry:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s"
     parameters:
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
       - $ref: '#/components/parameters/uid'
       - $ref: '#/components/parameters/recipientTaxId'
       - $ref: '#/components/parameters/recipientType'
@@ -163,8 +155,6 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling (response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -199,8 +189,6 @@ paths:
     ## SLA - Tempo risposta medio: < 1s, Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -233,8 +221,6 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - actTransactionManagement
@@ -267,8 +253,6 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling(response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -304,8 +288,6 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement
@@ -339,8 +321,6 @@ paths:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     parameters:
       - $ref: '#/components/parameters/uid'
-      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
     post:
       tags:
         - aorTransactionManagement

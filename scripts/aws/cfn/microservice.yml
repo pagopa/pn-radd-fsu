@@ -270,7 +270,7 @@ Resources:
               - !Sub "${OperationsDynamoTableArn}/*"
             
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
-  DeliveryMicroservicePublicAPI:
+  RaddAltMicroservicePublicAPI:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service-openapi.yaml"

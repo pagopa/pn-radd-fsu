@@ -35,7 +35,7 @@ class ActPrivateRestV1ControllerTest {
         ActInquiryResponse response = new ActInquiryResponse();
         response.setResult(true);
 
-        String path = "/radd/api/v1/act/inquiry";
+        String path = "/radd-net/api/v1/act/inquiry";
         Mockito.when(actService
                 .actInquiry(Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
         ).thenReturn(Mono.just(response));
@@ -55,7 +55,6 @@ class ActPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void completeActTransactionTest() {
         CompleteTransactionResponse response = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -66,9 +65,9 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/act/transaction/complete";
+        String path = "/radd-net/api/v1/act/transaction/complete";
         Mockito.when(actService
-                .completeTransaction(Mockito.anyString(), Mockito.any())
+                .completeTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()
@@ -93,7 +92,7 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd/api/v1/act/transaction/abort";
+        String path = "/radd-net/api/v1/act/transaction/abort";
         Mockito.when(actService.abortTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 

@@ -138,7 +138,7 @@ public class ActService extends BaseService {
                 })
                 .onErrorResume(PnRaddException.class, ex -> {
                     log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, null,null)
                             .flatMap(entity -> Mono.error(ex));
                 })
                 .onErrorResume(QrCodeAlreadyExistsException.class, ex -> {
@@ -151,18 +151,18 @@ public class ActService extends BaseService {
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT)
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT,null,null)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
 
     }
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, CompleteTransactionRequest
-            completeTransactionRequest) {
-        log.info("Start ACT CompleteTransaction - uid={} - operationId={}", uid, completeTransactionRequest.getOperationId());
+            completeTransactionRequest, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
+        log.info("Start ACT complete transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, completeTransactionRequest.getOperationId());
         return this.validateCompleteRequest(completeTransactionRequest)
-                .zipWhen(req -> getAndCheckStatusTransaction(req.getOperationId()))
-                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationViewed(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
+                .zipWhen(req -> getAndCheckStatusTransaction(req.getOperationId(),xPagopaPnCxType,xPagopaPnCxId))
+                .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationRaddRetrieved(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
                 .map(reqAndEntity -> {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
                     entity.setOperationEndDate(DateUtils.formatDate(reqAndEntity.getT1().getOperationDate()));
@@ -176,7 +176,7 @@ public class ActService extends BaseService {
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
                 .doOnError(PnRaddException.class, ex -> log.debug("End ACT Complete transaction with error {}", ex.getMessage(), ex))
                 .onErrorResume(PnRaddException.class, ex ->
-                        this.settingErrorReason(ex, completeTransactionRequest.getOperationId(), OperationTypeEnum.ACT)
+                        this.settingErrorReason(ex, completeTransactionRequest.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                                 .flatMap(entity -> Mono.error(ex))
                 )
                 .onErrorResume(RaddGenericException.class, ex ->
@@ -320,9 +320,8 @@ public class ActService extends BaseService {
                 .thenReturn(transactionData);
     }
 
-    private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId) {
-        // TODO passare cxType e cxId in seguito all'aggiornamento dell'open api
-        return raddTransactionDAO.getTransaction("", "", operationId, OperationTypeEnum.ACT)
+    private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId,CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
+        return raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, OperationTypeEnum.ACT)
                 .doOnNext(raddTransaction -> log.debug("[{}] Check status entity : {}", operationId, raddTransaction.getStatus()))
                 .doOnNext(this::checkTransactionStatus);
     }

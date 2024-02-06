@@ -27,7 +27,7 @@ class PnDeliveryPushClientTest extends BaseTest.WithMockServer {
         entity.setRecipientType(RecipientTypeDto.PF.getValue());
         entity.setOperationStartDate("2022-09-30T13:57:00.000");
         entity.setRecipientId("1924814");
-        Mono<ResponseNotificationViewedDtoDto> monoResponse = pnDeliveryPushClient.notifyNotificationViewed(entity, new Date());
+        Mono<ResponseNotificationViewedDtoDto> monoResponse = pnDeliveryPushClient.notifyNotificationRaddRetrieved(entity, new Date());
         monoResponse.map(response -> {
             assertNotNull(entity);
             assertEquals(entity.getIun(), response.getIun());
@@ -42,7 +42,7 @@ class PnDeliveryPushClientTest extends BaseTest.WithMockServer {
         entity.setRecipientType(RecipientTypeDto.PF.getValue());
         entity.setOperationStartDate("2022-09-30T13:57:00.000");
         entity.setRecipientId("");
-        Mono<ResponseNotificationViewedDtoDto> response = pnDeliveryPushClient.notifyNotificationViewed(entity, new Date());
+        Mono<ResponseNotificationViewedDtoDto> response = pnDeliveryPushClient.notifyNotificationRaddRetrieved(entity, new Date());
 
         response.onErrorResume(exception -> {
             if (exception instanceof PnRaddException){

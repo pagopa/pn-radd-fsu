@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
@@ -89,9 +90,8 @@ public class BaseService {
                 });
     }
 
-    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType){
-        // TODO passare cxType e cxId in seguito all'aggiornamento dell'open api
-        return this.raddTransactionDAO.getTransaction("", "", operationId, operationType)
+    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId){
+        return this.raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, operationType)
                 .map(entity -> {
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException){

@@ -98,19 +98,10 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     void testWhenGetActTransactionOnThrow() {
 
         StepVerifier.create(
-                raddTransactionDAO.getTransaction("PG", "cxId", "operationId", OperationTypeEnum.ACT)
+                raddTransactionDAO.getTransaction("", "", "", OperationTypeEnum.ACT)
                 ).expectError(RaddGenericException.class).verify();
     }
-
-    @Test
-    void testCountFromIunAndOperationIdAndStatus() {
-        baseEntity.setIun("iun");
-        baseEntity.setOperationId("operationId");
-        raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED).block();
-        StepVerifier.create( raddTransactionDAO.countFromIunAndOperationIdAndStatus(baseEntity.getOperationId(), baseEntity.getIun()))
-                    .expectNext(1)
-                    .verifyComplete();
-    }
+    
 
     @Test
     void testGetTransactionsFromIun() {

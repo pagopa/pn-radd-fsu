@@ -1,10 +1,11 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.NotificationStatusDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactCategoryDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.NotificationStatusDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
@@ -19,14 +20,12 @@ import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import reactor.core.CorePublisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 import reactor.util.function.Tuples;
 
 import java.util.Date;
-import java.util.List;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static org.springframework.util.StringUtils.*;
@@ -35,17 +34,18 @@ import static org.springframework.util.StringUtils.*;
 @Slf4j
 public class ActService extends BaseService {
     public static final String CONTENT_TYPE = "application/pdf";
+    public static final String ENDED_ACT_START_TRANSACTION_WITH_ERROR = "Ended ACT startTransaction with error {}";
     private final PnDeliveryClient pnDeliveryClient;
     private final PnDeliveryPushClient pnDeliveryPushClient;
-    private final PnDeliveryPushInternalClient pnDeliveryPushInternalClient;
     private final TransactionDataMapper transactionDataMapper;
+    private final PnRaddFsuConfig pnRaddFsuConfig;
 
-    public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, PnDeliveryPushInternalClient pnDeliveryPushInternalClient, TransactionDataMapper transactionDataMapper) {
+    public ActService(RaddTransactionDAO raddTransactionDAO, PnDeliveryClient pnDeliveryClient, PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient safeStorageClient, TransactionDataMapper transactionDataMapper, PnRaddFsuConfig pnRaddFsuConfig) {
         super(pnDataVaultClient, raddTransactionDAO, safeStorageClient);
         this.pnDeliveryClient = pnDeliveryClient;
         this.pnDeliveryPushClient = pnDeliveryPushClient;
-        this.pnDeliveryPushInternalClient = pnDeliveryPushInternalClient;
         this.transactionDataMapper = transactionDataMapper;
+        this.pnRaddFsuConfig = pnRaddFsuConfig;
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, String recipientTaxId, String recipientType, String qrCode, String iun) {
@@ -120,7 +120,7 @@ public class ActService extends BaseService {
                     return ParallelFlux.from(urlDocuments, urlAttachments, urlLegalFacts)
                             .sequential()
                             .collectList()
-                            .map(StartTransactionResponseMapper::fromResult);
+                            .map(resultList -> StartTransactionResponseMapper.fromResult(resultList, OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()));
                 }, (tupla, response) -> Tuples.of(tupla.getT1(), response))
                 .doOnError(e -> log.error(e.getMessage()))
                 .zipWhen(transactionAndResponse -> {
@@ -134,20 +134,20 @@ public class ActService extends BaseService {
                     return response;
                 })
                 .onErrorResume(PnRaddException.class, ex -> {
-                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, null,null)
                             .flatMap(entity -> Mono.error(ex));
                 })
                 .onErrorResume(IunAlreadyExistsException.class, ex -> {
-                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
-                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.error("Ended ACT startTransaction with error {}", ex.getMessage(), ex);
+                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT,null,null)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
@@ -212,14 +212,14 @@ public class ActService extends BaseService {
     }
 
     private ParallelFlux<String> legalFact(TransactionData transaction) {
-        return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
+        return pnDeliveryPushClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .parallel()
                 .filter(legalFact -> ((isEmpty(legalFact.getTaxId()) || (StringUtils.hasText(legalFact.getTaxId())
                         && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId())))
                         && legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT))
 
                 .flatMap(item ->
-                        pnDeliveryPushInternalClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
+                        pnDeliveryPushClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
                                 .filter(legalFact -> CONTENT_TYPE.equals(legalFact.getContentType()))
                                 .mapNotNull(legalFact -> {
                                     if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0) {

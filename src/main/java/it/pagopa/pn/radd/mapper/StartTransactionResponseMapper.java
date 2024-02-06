@@ -14,13 +14,17 @@ import java.util.List;
 
 public class StartTransactionResponseMapper {
 
+    private static final String DOWNLOAD_COVER_FILE_PATH = "/radd-net/api/v1/download/{operationType}/{operationId}";
+
     private StartTransactionResponseMapper() {
         // do nothing
     }
 
-    public static StartTransactionResponse fromResult(List<String> result) {
+    public static StartTransactionResponse fromResult(List<String> result, String operationType, String operationId, String pnRaddAltBasepath) {
         StartTransactionResponse response = new StartTransactionResponse();
         List<DownloadUrl> downloadUrlList = getDownloadUrls(result);
+        DownloadUrl firstDownloadUrl = getFirstDownloadUrl(pnRaddAltBasepath, operationType, operationId);
+        downloadUrlList.add(0, firstDownloadUrl);
         response.setDownloadUrlList(downloadUrlList);
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
         status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
@@ -32,23 +36,22 @@ public class StartTransactionResponseMapper {
     @NotNull
     private static List<DownloadUrl> getDownloadUrls(List<String> result) {
         List<DownloadUrl> downloadUrlList = new ArrayList<>();
-        DownloadUrl downloadUrl = getFirstDownloadUrl();
-        downloadUrlList.add(downloadUrl);
         downloadUrlList.addAll(result.stream().map(url -> {
-                    DownloadUrl downloadUrlItem = new DownloadUrl();
-                    downloadUrlItem.setUrl(url);
-                    downloadUrlItem.setNeedAuthentication(false);
-                    return downloadUrlItem;
-                }
-        ).toList());
+            DownloadUrl downloadUrlItem = new DownloadUrl();
+            downloadUrlItem.setUrl(url);
+            downloadUrlItem.setNeedAuthentication(false);
+            return downloadUrlItem;
+        }).toList());
+
         return downloadUrlList;
     }
 
     @NotNull
-    private static DownloadUrl getFirstDownloadUrl() {
+    private static DownloadUrl getFirstDownloadUrl(String pnRaddAltBasepath, String operationType, String operationId) {
         DownloadUrl downloadUrl = new DownloadUrl();
-        downloadUrl.setUrl("new api");
+        downloadUrl.setUrl(pnRaddAltBasepath + DOWNLOAD_COVER_FILE_PATH.replace("{operationType}", operationType).replace("{operationId}", operationId));
         downloadUrl.setNeedAuthentication(true);
+
         return downloadUrl;
     }
 

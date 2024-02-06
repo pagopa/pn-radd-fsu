@@ -1,8 +1,9 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -33,12 +34,14 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
 public class AorService extends BaseService {
     private final PnDeliveryPushClient pnDeliveryPushClient;
     private final TransactionDataMapper transactionDataMapper;
+    private final PnRaddFsuConfig pnRaddFsuConfig;
 
     public AorService(PnDeliveryPushClient pnDeliveryPushClient, PnDataVaultClient pnDataVaultClient, PnSafeStorageClient pnSafeStorageClient,
-                      TransactionDataMapper transactionDataMapper, RaddTransactionDAO raddTransactionDAO) {
+                      TransactionDataMapper transactionDataMapper, RaddTransactionDAO raddTransactionDAO, PnRaddFsuConfig pnRaddFsuConfig) {
         super(pnDataVaultClient, raddTransactionDAO, pnSafeStorageClient);
         this.pnDeliveryPushClient = pnDeliveryPushClient;
         this.transactionDataMapper = transactionDataMapper;
+        this.pnRaddFsuConfig = pnRaddFsuConfig;
     }
 
     public Mono<AORInquiryResponse> aorInquiry(String uid, String recipientTaxId, String recipientType, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
@@ -98,7 +101,7 @@ public class AorService extends BaseService {
                 .doOnNext(transactionData -> log.debug("Update file metadata"))
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
-                .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls()))
+                .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls(), OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
@@ -109,7 +112,7 @@ public class AorService extends BaseService {
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error("End AOR start transaction with error {}", ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR)
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR, null, null)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
     }

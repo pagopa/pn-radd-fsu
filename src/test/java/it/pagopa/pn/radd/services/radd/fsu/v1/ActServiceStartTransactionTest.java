@@ -1,12 +1,13 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.*;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
@@ -57,7 +58,7 @@ class ActServiceStartTransactionTest extends BaseTest {
     PnSafeStorageClient safeStorage ;
 
     @Mock
-    PnDeliveryPushInternalClient pnDeliveryPushInternalClient;
+    PnRaddFsuConfig pnRaddFsuConfig;
 
     @Autowired
     @Spy
@@ -157,11 +158,11 @@ class ActServiceStartTransactionTest extends BaseTest {
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto1 = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto1.setUrl("UrlPayment");
         Mockito.when(pnDeliveryClient.getPresignedUrlPaymentDocument (Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(notificationAttachmentDownloadMetadataResponseDto1));
-        Mockito.when(pnDeliveryPushInternalClient.getNotificationLegalFacts(Mockito.any(), Mockito.any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
+        Mockito.when(pnDeliveryPushClient.getNotificationLegalFacts(Mockito.any(), Mockito.any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
         LegalFactDownloadMetadataWithContentTypeResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataWithContentTypeResponseDto();
         legalFactDownloadMetadataResponseDto.setUrl("UrlLegalFact");
         legalFactDownloadMetadataResponseDto.setContentType("application/pdf");
-        Mockito.when(pnDeliveryPushInternalClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any(),Mockito.any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
+        Mockito.when(pnDeliveryPushClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any(),Mockito.any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", "cxId", CxTypeAuthFleet.PG, request).block();
         assertNotNull(startTransactionResponse);
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0, startTransactionResponse.getStatus().getCode());
@@ -190,13 +191,13 @@ class ActServiceStartTransactionTest extends BaseTest {
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto1 = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto1.setUrl("UrlPayment");
         Mockito.when(pnDeliveryClient.getPresignedUrlPaymentDocument (Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(notificationAttachmentDownloadMetadataResponseDto1));
-        Mockito.when(pnDeliveryPushInternalClient.getNotificationLegalFacts(Mockito.any(), Mockito.any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
-
+        Mockito.when(pnDeliveryPushClient.getNotificationLegalFacts(Mockito.any(), Mockito.any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
+        Mockito.when(pnRaddFsuConfig.getApplicationBasepath()).thenReturn("123");
         LegalFactDownloadMetadataWithContentTypeResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataWithContentTypeResponseDto();
         legalFactDownloadMetadataResponseDto.setUrl("UrlLegalFact");
         legalFactDownloadMetadataResponseDto.setContentType("application/pdf");
         legalFactDownloadMetadataResponseDto.setRetryAfter(new BigDecimal(20));
-        Mockito.when(pnDeliveryPushInternalClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any(),Mockito.any()))
+        Mockito.when(pnDeliveryPushClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any(),Mockito.any()))
                 .thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));

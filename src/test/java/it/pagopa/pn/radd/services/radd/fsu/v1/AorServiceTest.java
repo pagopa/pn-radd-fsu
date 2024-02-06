@@ -1,11 +1,12 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadInfoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
@@ -38,6 +39,8 @@ class AorServiceTest extends BaseTest {
     private static final String ENSURE_FC = "PF-4fc75df3-0913-407e-bdaa-e50329708b7d";
     @InjectMocks
     private AorService aorService;
+    @Mock
+    PnRaddFsuConfig pnRaddFsuConfig;
     @Mock
     private PnDeliveryPushClient pnDeliveryPushClient;
     @Mock
@@ -124,6 +127,8 @@ class AorServiceTest extends BaseTest {
         file1.setDownload(infoDto);
         Mockito.when(pnSafeStorageClient.getFile("//url:safestorage"))
                 .thenReturn(Mono.just(file1));
+
+        Mockito.when(pnRaddFsuConfig.getApplicationBasepath()).thenReturn("123");
 
         StartTransactionResponse response = this.aorService.startTransaction("uid", startTransactionRequest).block();
 

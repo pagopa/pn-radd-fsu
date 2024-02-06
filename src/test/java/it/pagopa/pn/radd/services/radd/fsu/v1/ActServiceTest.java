@@ -7,7 +7,7 @@ import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponseNotificationViewedDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.ResponseNotificationViewedDtoDto;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
@@ -77,7 +77,7 @@ class ActServiceTest extends BaseTest {
 
         ResponseNotificationViewedDtoDto responseNotificationViewedDtoDto = new ResponseNotificationViewedDtoDto();
         Mono<ResponseNotificationViewedDtoDto> monoNotificationViewedDtoDto = Mono.just(responseNotificationViewedDtoDto);
-        when(pnDeliveryPushClient.notifyNotificationViewed(any(), any())).thenReturn(monoNotificationViewedDtoDto);
+        when(pnDeliveryPushClient.notifyNotificationRaddRetrieved(any(), any())).thenReturn(monoNotificationViewedDtoDto);
     }
 
 
@@ -278,7 +278,6 @@ class ActServiceTest extends BaseTest {
         when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(monoEntity);
 
         WebClientResponseException ex = new WebClientResponseException("Internal server Error", 500, "header", null, null, null);
-        when(pnDeliveryPushClient.notifyNotificationViewed(any(), any()))
         Mockito.when(pnDeliveryPushClient.notifyNotificationRaddRetrieved(any(), any()))
                 .thenReturn(Mono.error(new PnRaddException(ex)));
 

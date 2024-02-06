@@ -19,4 +19,5 @@ public class PnRaddFsuConfig {
     private String clientSafeStorageBasepath;
     private String safeStorageCxId;
     private String safeStorageDocType;
+    private String applicationBasepath;
 }

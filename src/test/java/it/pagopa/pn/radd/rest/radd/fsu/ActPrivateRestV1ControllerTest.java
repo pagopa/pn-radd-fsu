@@ -55,7 +55,6 @@ class ActPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void completeActTransactionTest() {
         CompleteTransactionResponse response = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -66,9 +65,9 @@ class ActPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/act/transaction/complete";
+        String path = "/radd-net/api/v1/act/transaction/complete";
         Mockito.when(actService
-                .completeTransaction(Mockito.anyString(), Mockito.any())
+                .completeTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()

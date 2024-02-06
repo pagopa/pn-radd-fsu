@@ -28,7 +28,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Component
 public class PnDeliveryPushClient extends BaseClient {
-    private static final String RADD_TYPE = "__FSU__";
+    private static final String RADD_TYPE = "ALT";
     private EventComunicationApi eventComunicationApi;
     private TimelineAndStatusApi timelineAndStatusApi;
     private PaperNotificationFailedApi paperNotificationFailedApi;
@@ -66,7 +66,7 @@ public class PnDeliveryPushClient extends BaseClient {
                 });
     }
 
-    public Mono<ResponseNotificationViewedDtoDto> notifyNotificationViewed(RaddTransactionEntity entity, Date operationDate){
+    public Mono<ResponseNotificationViewedDtoDto> notifyNotificationRaddRetrieved(RaddTransactionEntity entity, Date operationDate){
         RequestNotificationViewedDtoDto request = new RequestNotificationViewedDtoDto();
         request.setRecipientType(RecipientTypeDto.fromValue(entity.getRecipientType()));
         request.setRecipientInternalId(entity.getRecipientId());
@@ -74,7 +74,7 @@ public class PnDeliveryPushClient extends BaseClient {
         request.setRaddBusinessTransactionId(entity.getOperationId());
         request.setRaddType(RADD_TYPE);
         log.trace("NOTIFICATION VIEWED TICK {}", new Date().getTime());
-        return this.eventComunicationApi.notifyNotificationViewed(entity.getIun(), request)
+        return this.eventComunicationApi.notifyNotificationRaddRetrieved(entity.getIun(), request)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

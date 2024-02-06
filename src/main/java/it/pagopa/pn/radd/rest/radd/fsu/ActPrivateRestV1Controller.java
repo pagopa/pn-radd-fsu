@@ -29,7 +29,7 @@ public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTra
     @Override
     public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId,  Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
         return actStartTransactionRequest
-                .zipWhen(request -> actService.startTransaction(uid, request), (req, resp) -> resp)
+                .zipWhen(request -> actService.startTransaction(uid, xPagopaPnCxId, xPagopaPnCxType, request), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 

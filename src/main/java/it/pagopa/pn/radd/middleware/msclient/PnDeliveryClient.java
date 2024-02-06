@@ -104,9 +104,9 @@ public class PnDeliveryClient extends BaseClient {
                 }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
-    public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlPaymentDocument(String iun, String attchamentName, String recipientTaxId) {
+    public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlPaymentDocument(String iun, String attachmentName, String recipientTaxId, Integer attachmentIdx) {
         log.trace("SINGLE PRESIGNED ATTACHEMENT TICK {}", new Date().getTime());
-        return this.deliveryApi.getReceivedNotificationAttachmentPrivate(iun, attchamentName, recipientTaxId, null, null)
+        return this.deliveryApi.getReceivedNotificationAttachmentPrivate(iun, attachmentName, recipientTaxId, null, attachmentIdx)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

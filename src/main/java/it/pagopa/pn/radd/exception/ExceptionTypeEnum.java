@@ -7,7 +7,7 @@ public enum ExceptionTypeEnum {
     IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params", 99),
     TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata", 99),
     TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente", 99),
-    TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted", 99),
+    TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted", 5),
     TRANSACTION_ALREADY_COMPLETED("TRANSACTION_ALREADY_COMPLETED", "La transazione risulta già completa", 99),
     TRANSACTION_ALREADY_ABORTED("TRANSACTION_ALREADY_ABORTED", "La transazione risulta annullata", 99),
     TRANSACTION_ERROR_STATUS("TRANSACTION_ERROR_STATUS", "La transazione risulta in errore", 99),
@@ -25,11 +25,11 @@ public enum ExceptionTypeEnum {
     OPERATION_TYPE_UNKNOWN("OPERATION TYPE UNKNOWN", "Il tipo di operazione è sconosciuto", 99),
     GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore", 99),
 
-    RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download", 99),
+    RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download", 2),
     NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "QrCode/CF non valido/i", 80),
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate", 99),
 
-    NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale", 99),
+    NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale", 10),
     TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale", 99),
     DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili", 99),
     ;

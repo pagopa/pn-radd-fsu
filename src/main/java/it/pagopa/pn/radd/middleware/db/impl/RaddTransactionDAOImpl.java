@@ -59,7 +59,8 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     public Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity) {
         Expression expression = createExpression(entity);
-        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class);
+        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class)
+                .doOnError(e -> log.error(e.getMessage()));
     }
 
     private Expression createExpression(RaddTransactionEntity entity) {

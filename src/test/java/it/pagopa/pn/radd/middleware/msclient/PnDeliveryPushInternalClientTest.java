@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ class PnDeliveryPushInternalClientTest extends BaseTest.WithMockServer {
     void testGetLegalFacts() {
         String recipientInternalId = "854Bgs31a", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
         LegalFactCategoryDto categoryDto = LegalFactCategoryDto.PEC_RECEIPT;
-        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
+        Mono<LegalFactDownloadMetadataWithContentTypeResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
         monoResponse.map(response -> {
             assertEquals("document", response.getFilename());
             assertEquals(new BigDecimal(54092), response.getContentLength());
@@ -66,7 +67,7 @@ class PnDeliveryPushInternalClientTest extends BaseTest.WithMockServer {
     void testGetLegalFactsCode400() {
         String recipientInternalId = "", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
         LegalFactCategoryDto categoryDto = LegalFactCategoryDto.PEC_RECEIPT;
-        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
+        Mono<LegalFactDownloadMetadataWithContentTypeResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof PnRaddException){
                 assertEquals(400, ((PnRaddException) exception).getWebClientEx().getStatusCode().value());

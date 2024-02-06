@@ -45,6 +45,7 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=iun,AttributeType=S \
     --key-schema \
         AttributeName=transactionId,KeyType=HASH \
+        AttributeName=iun,KeyType=RANGE \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5 \
     --global-secondary-indexes \

@@ -29,7 +29,7 @@ public class OperationsIunsEntity {
     @Getter(onMethod = @__({@DynamoDbPartitionKey, @DynamoDbSecondarySortKey(indexNames = IUN_TRANSACTION_INDEX), @DynamoDbAttribute(COL_TRANSACTION_ID)}))
     private String transactionId;
 
-    @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = IUN_TRANSACTION_INDEX), @DynamoDbAttribute(COL_IUN)}))
+    @Getter(onMethod = @__({@DynamoDbSortKey, @DynamoDbSecondaryPartitionKey(indexNames = IUN_TRANSACTION_INDEX), @DynamoDbAttribute(COL_IUN)}))
     private String iun;
 
 

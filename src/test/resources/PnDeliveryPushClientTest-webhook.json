@@ -49,7 +49,7 @@
   },
   {
     "httpRequest": {
-      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/raddretrieved",
 
       "method": "POST"
     },
@@ -65,7 +65,7 @@
   },
   {
     "httpRequest": {
-      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/viewed",
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/raddretrieved",
       "body" : {
         "recipientType" : "PF",
         "recipientInternalId" : "",

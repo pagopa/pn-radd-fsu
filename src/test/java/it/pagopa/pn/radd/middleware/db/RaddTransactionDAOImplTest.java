@@ -61,12 +61,12 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         baseEntity.setOperationType(OperationTypeEnum.ACT.toString());
         baseEntity.setStatus(Const.COMPLETED);
         baseEntity.setQrCode("qrcode12345");
-        baseEntity.setRecipientId("recipientId");
+        baseEntity.setRecipientId("ABCDEF12G34H567I");
         baseEntity.setFileKey("filekey1");
+        baseEntity.setTransactionId("PG#cxId#operationId");
     }
 
     @Test
-    @Disabled
     void testCreateRaddTransaction() {
 
         RaddTransactionEntity response = raddTransactionDAO.createRaddTransaction(baseEntity, iunsEntities).block();
@@ -79,7 +79,6 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     }
 
     @Test
-    @Disabled
     void testUpdateStatus() {
 
         RaddTransactionEntity response = raddTransactionDAO.updateStatus(baseEntity, RaddTransactionStatusEnum.COMPLETED).block(d);
@@ -89,24 +88,21 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     }
 
     @Test
-    @Disabled
     void testWhenGetActTransactionReturnEntity() {
-        RaddTransactionEntity response = raddTransactionDAO.getTransaction("", "", "operationId", OperationTypeEnum.ACT).block();
+        RaddTransactionEntity response = raddTransactionDAO.getTransaction("PG", "cxId", "operationId", OperationTypeEnum.ACT).block();
         assertNotNull(response);
         assertEquals(response.getOperationType(), baseEntity.getOperationType());
     }
 
     @Test
-    @Disabled
     void testWhenGetActTransactionOnThrow() {
 
         StepVerifier.create(
-                raddTransactionDAO.getTransaction("", "", "oper", OperationTypeEnum.ACT)
+                raddTransactionDAO.getTransaction("PG", "cxId", "operationId", OperationTypeEnum.ACT)
                 ).expectError(RaddGenericException.class).verify();
     }
 
     @Test
-    @Disabled
     void testCountFromIunAndOperationIdAndStatus() {
         baseEntity.setIun("iun");
         baseEntity.setOperationId("operationId");

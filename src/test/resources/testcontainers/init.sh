@@ -41,20 +41,19 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name pn-operations-iuns-alt \
     --attribute-definitions \
-        AttributeName=id,AttributeType=S \
-        AttributeName=operationId,AttributeType=S \
+        AttributeName=transactionId,AttributeType=S \
         AttributeName=iun,AttributeType=S \
     --key-schema \
-        AttributeName=id,KeyType=HASH \
+        AttributeName=transactionId,KeyType=HASH \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5 \
     --global-secondary-indexes \
     "[
         {
-            \"IndexName\": \"iun-and-operation-index\",
+            \"IndexName\": \"iun-transaction-index\",
             \"KeySchema\": [
                 {\"AttributeName\":\"iun\",\"KeyType\":\"HASH\"},
-                {\"AttributeName\":\"operationId\",\"KeyType\":\"RANGE\"}
+                {\"AttributeName\":\"transactionId\",\"KeyType\":\"RANGE\"}
             ],
             \"Projection\":{
                 \"ProjectionType\":\"ALL\"

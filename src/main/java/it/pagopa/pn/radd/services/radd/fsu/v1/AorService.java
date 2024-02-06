@@ -14,7 +14,6 @@ import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.DateUtils;
-import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
+import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
 
 @Slf4j
 @Service
@@ -84,9 +84,9 @@ public class AorService extends BaseService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
     }
 
-    public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request) {
-        log.info("Start AOR startTransaction - uid={} - operationId={}", uid, request.getOperationId());
-        return validationAorStartTransaction(uid, request)
+    public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
+        log.info("Start AOR startTransaction - uid={} - operationId={} - cxType={} - cxId={}", uid, request.getOperationId(), xPagopaPnCxType, xPagopaPnCxId);
+        return validationAorStartTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId)
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .flatMap(this::setIunsOfNotificationFailed)
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
@@ -101,7 +101,7 @@ public class AorService extends BaseService {
                 .doOnNext(transactionData -> log.debug("Update file metadata"))
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
-                .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls(), OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
+                .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls(), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
@@ -112,7 +112,7 @@ public class AorService extends BaseService {
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error("End AOR start transaction with error {}", ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR, null, null)
+                    return this.settingErrorReason(ex, request.getOperationId(), AOR, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
     }
@@ -155,7 +155,7 @@ public class AorService extends BaseService {
                 .filter(isValidAbortTransactionRequest)
                 .switchIfEmpty(Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate")))
                 .doOnNext(m -> log.info("Start AOR abort transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, m.getOperationId()))
-                .zipWhen(operation -> raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operation.getOperationId(), OperationTypeEnum.AOR))
+                .zipWhen(operation -> raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operation.getOperationId(), AOR))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
                     checkTransactionStatus(raddEntity);
@@ -173,7 +173,7 @@ public class AorService extends BaseService {
                 });
     }
 
-    private Mono<TransactionData> validationAorStartTransaction(String uid, AorStartTransactionRequest req) {
+    private Mono<TransactionData> validationAorStartTransaction(String uid, AorStartTransactionRequest req, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         if (Strings.isBlank(req.getOperationId())) {
             return Mono.error(new PnInvalidInputException("Id operazione non valorizzato"));
         }
@@ -183,7 +183,7 @@ public class AorService extends BaseService {
         if (req.getRecipientType() == null || !Utils.checkPersonType(req.getRecipientType().getValue())) {
             return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
-        return Mono.just(this.transactionDataMapper.toTransaction(uid, req));
+        return Mono.just(this.transactionDataMapper.toTransaction(uid, req, xPagopaPnCxType, xPagopaPnCxId));
     }
 
     private Flux<ResponsePaperNotificationFailedDtoDto> getIunFromPaperNotificationFailed(String recipientTaxId) {
@@ -193,7 +193,7 @@ public class AorService extends BaseService {
     }
 
     private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
-        return raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, OperationTypeEnum.AOR)
+        return raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, AOR)
                 .doOnNext(raddTransaction -> log.debug("[{}] Check status entity : {}", operationId, raddTransaction.getStatus()))
                 .doOnNext(this::checkTransactionStatus);
     }

@@ -2,7 +2,6 @@ package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.OperationService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-// TODO: Test disabilitati da riparare in fase di aggiornamento rispettiva API
 
 
 @WebFluxTest(controllers = {OperationPrivateRestV1Controller.class})
@@ -30,13 +28,12 @@ class OperationPrivateRestV1ControllerTest {
     private OperationService operationService;
 
     @Test
-    @Disabled
     void testWhenCalledActTransactionByOperationId() {
         OperationActResponse response = new OperationActResponse();
         response.setElement(new OperationActDetailResponse());
 
-        String path = "/radd/api/v1/act/operations/by-id/{operationId}"
-                .replace("{operationId}", "1200");
+        String path = "/radd-net-private/api/v1/act/operations/by-id/{transactionId}"
+                .replace("{transactionId}", "1200");
         Mockito.when(operationService
                         .getTransactionActByOperationIdAndType(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
@@ -50,13 +47,12 @@ class OperationPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void testWhenCalledActTransactionByIun() {
         OperationsResponse response = new OperationsResponse();
         response.setResult(true);
         response.setOperationIds(List.of("OperationId1"));
 
-        String path = "/radd/api/v1/act/operations/by-iun/{iun}"
+        String path = "/radd-net-private/api/v1/act/operations/by-iun/{iun}"
                 .replace("{iun}", "pppwww233");
         Mockito.when(operationService
                         .getOperationsActByIun(Mockito.anyString()))
@@ -71,12 +67,11 @@ class OperationPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void testWhenCalledAorTransactionByIun() {
         OperationsResponse response = new OperationsResponse();
         response.setResult(true);
 
-        String path = "/radd/api/v1/aor/operations/by-iun/{iun}"
+        String path = "/radd-net-private/api/v1/aor/operations/by-iun/{iun}"
                 .replace("{iun}", "iun-123");
         Mockito.when(operationService
                         .getOperationsAorByIun(Mockito.any()))
@@ -92,13 +87,12 @@ class OperationPrivateRestV1ControllerTest {
 
 
     @Test
-    @Disabled
     void testWhenCalledAorTransactionByOperationId() {
         OperationAorResponse response = new OperationAorResponse();
         response.setElement(new OperationAorDetailResponse());
 
-        String path = "/radd-private/api/v1/aor/operations/by-id/{operationId}"
-                .replace("{operationId}", "1200");
+        String path = "/radd-net-private/api/v1/aor/operations/by-id/{transactionId}"
+                .replace("{transactionId}", "1200");
         Mockito.when(operationService
                         .getTransactionAorByOperationIdAndType(Mockito.anyString()))
                 .thenReturn(Mono.just(response));

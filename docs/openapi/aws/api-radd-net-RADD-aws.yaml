@@ -91,10 +91,9 @@ paths:
         '200':
           description: Ritorna il frontespizio
           content:
-            '*/*':
-              schema:
-                type: string
-                format: byte
+            'application/pdf':
+                schema:
+                  type: object
         '400':
           $ref: '#/components/responses/Invalid'
         '401':

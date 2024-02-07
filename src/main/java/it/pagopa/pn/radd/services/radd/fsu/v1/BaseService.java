@@ -57,12 +57,12 @@ public class BaseService {
             //    throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             //}
             log.debug("Document version is : {}", response.getVersionId());
-            if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())){
+            if (!StringUtils.equals(transaction.getVersionId(), response.getVersionId())) {
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
             log.debug("Document checksum is : {}", response.getChecksum());
             if (Strings.isBlank(response.getChecksum()) ||
-                    !response.getChecksum().equals(transaction.getChecksum())){
+                    !response.getChecksum().equals(transaction.getChecksum())) {
                 log.error("Request contains Document checksum : {}", transaction.getChecksum());
                 log.error("Response contains Document version: {} checksum: {}", response.getVersionId(), response.getChecksum());
                 throw new RaddGenericException(CHECKSUM_VALIDATION);

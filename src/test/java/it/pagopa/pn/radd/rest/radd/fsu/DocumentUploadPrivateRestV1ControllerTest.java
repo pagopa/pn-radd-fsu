@@ -4,7 +4,6 @@ import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.services.radd.fsu.v1.DocumentUploadService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
-// TODO: Test disabilitati da riparare in fase di aggiornamento rispettiva API
 
 
 @WebFluxTest(controllers = {DocumentUploadPrivateRestV1Controller.class})
@@ -31,7 +29,6 @@ class DocumentUploadPrivateRestV1ControllerTest {
     private DocumentUploadService documentUploadService;
 
     @Test
-    @Disabled
     void documentUploadTest() {
         DocumentUploadResponse response = new DocumentUploadResponse();
         ResponseStatus status = new ResponseStatus();
@@ -39,7 +36,7 @@ class DocumentUploadPrivateRestV1ControllerTest {
         response.setStatus(status);
         DocumentUploadRequest req = new DocumentUploadRequest();
 
-        String path = "/radd-private/api/v1/documents/upload";
+        String path = "/radd-net/api/v1/documents/upload";
         Mockito.when(documentUploadService.createFile( Mockito.anyString(), Mockito.any() ))
                 .thenReturn(Mono.just(response));
         webTestClient.post()

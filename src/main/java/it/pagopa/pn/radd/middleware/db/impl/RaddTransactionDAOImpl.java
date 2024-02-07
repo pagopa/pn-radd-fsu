@@ -110,7 +110,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
      */
     private Expression buildExpressionForPK() {
         return Expression.builder()
-                .expression("attribute_not_exists(operationId) AND attribute_not_exists(operationType)")
+                .expression("attribute_not_exists(transactionId) AND attribute_not_exists(operationType)")
                 .build();
     }
 

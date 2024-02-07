@@ -37,6 +37,7 @@ public class TransactionDataMapper {
         entity.setRecipientId(transaction.getEnsureRecipientId());
         entity.setRecipientType(transaction.getRecipientType());
         entity.setFileKey(transaction.getFileKey());
+        entity.setChecksum(transaction.getChecksum());
         entity.setUid(uid);
         entity.setOperationType(transaction.getOperationType().name());
         entity.setQrCode(transaction.getQrCode());
@@ -64,8 +65,9 @@ public class TransactionDataMapper {
         return transactionData;
     }
 
-    public TransactionData toTransaction(String uid, AorStartTransactionRequest request) {
+    public TransactionData toTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         TransactionData transactionData = new TransactionData();
+        transactionData.setTransactionId(xPagopaPnCxType + ITEMS_SEPARATOR + xPagopaPnCxId + ITEMS_SEPARATOR + request.getOperationId());
         transactionData.setUid(uid);
         transactionData.setOperationType(OperationTypeEnum.AOR);
         transactionData.setRecipientType(request.getRecipientType().getValue());
@@ -85,7 +87,7 @@ public class TransactionDataMapper {
         return transactionData.getIuns().parallelStream()
                 .map(iun -> {
                     OperationsIunsEntity operationIun = new OperationsIunsEntity();
-                    operationIun.setTransactionId(transactionData.getOperationId());
+                    operationIun.setTransactionId(transactionData.getTransactionId());
                     operationIun.setIun(iun);
                     return operationIun;
                 })

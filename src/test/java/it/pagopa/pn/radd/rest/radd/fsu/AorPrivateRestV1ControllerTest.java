@@ -3,7 +3,6 @@ package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.AorService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +13,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Date;
-
-// TODO: Test disabilitati da riparare in fase di aggiornamento rispettiva API
 
 
 @WebFluxTest(controllers = {AorPrivateRestV1Controller.class})
@@ -54,7 +51,6 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void startActTransactionTest() {
         StartTransactionResponse response = new StartTransactionResponse();
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
@@ -66,12 +62,14 @@ class AorPrivateRestV1ControllerTest {
         req.setFileKey("123FileKey");
         req.setOperationId("123");
         req.setRecipientTaxId("TNTGTR76E21H751S");
+        req.setRecipientType(AorStartTransactionRequest.RecipientTypeEnum.valueOf("PF"));
         req.setChecksum("YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/aor/transaction/start";
+
+        String path = "/radd-net/api/v1/aor/transaction/start";
         Mockito.when(aorService
-                .startTransaction(Mockito.anyString(), Mockito.any())
+                .startTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()
@@ -86,7 +84,6 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void completeAorTransactionTest() {
         CompleteTransactionResponse response = new CompleteTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -97,7 +94,7 @@ class AorPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd/api/v1/aor/transaction/complete";
+        String path = "/radd-net/api/v1/aor/transaction/complete";
         Mockito.when(aorService
                 .completeTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
@@ -114,7 +111,6 @@ class AorPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void abortAorTransactionTest() {
         AbortTransactionResponse response = new AbortTransactionResponse();
         TransactionResponseStatus status = new TransactionResponseStatus();
@@ -125,7 +121,7 @@ class AorPrivateRestV1ControllerTest {
         req.setOperationId("123");
         req.setOperationDate(new Date());
 
-        String path = "/radd/api/v1/aor/transaction/abort";
+        String path = "/radd-net/api/v1/aor/transaction/abort";
         Mockito.when(aorService.abortTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 

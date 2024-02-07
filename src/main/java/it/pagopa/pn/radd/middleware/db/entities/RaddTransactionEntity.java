@@ -82,6 +82,10 @@ public class RaddTransactionEntity {
     private void setTransactionId(String cxType, String cxId, String operationId) {
         this.setTransactionId(cxType + ITEMS_SEPARATOR + cxId + ITEMS_SEPARATOR + operationId);
     }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
     @DynamoDbIgnore
     private String getCxType() {
         return this.getTransactionId().split(ITEMS_SEPARATOR)[CX_TYPE_INDEX];

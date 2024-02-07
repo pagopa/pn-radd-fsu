@@ -160,7 +160,7 @@ paths:
 
 
   /radd-net/api/v1/act/transaction/start:
-    ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling (response.status.code = 0): 10s
+    ## SLA - Tempo risposta medio: < 10s; Timeout: 20s. Tempo massimo polling (response.status.code = 0): 10s
     parameters:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL

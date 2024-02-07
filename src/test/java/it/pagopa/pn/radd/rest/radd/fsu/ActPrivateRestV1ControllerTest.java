@@ -108,7 +108,6 @@ class ActPrivateRestV1ControllerTest {
     }
 
     @Test
-    @Disabled
     void startActTransactionTest() {
         StartTransactionResponse response = new StartTransactionResponse();
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
@@ -121,12 +120,13 @@ class ActPrivateRestV1ControllerTest {
         req.setFileKey("123FileKey");
         req.setOperationId("123");
         req.setRecipientTaxId("TNTGTR76E21H751S");
+        req.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PG);
         req.setChecksum("YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo");
         req.setOperationDate(new Date());
 
-        String path = "/radd-private/api/v1/act/transaction/start";
+        String path = "/radd-net/api/v1/act/transaction/start";
         Mockito.when(actService
-                .startTransaction(Mockito.anyString(), Mockito.any())
+                .startTransaction(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()

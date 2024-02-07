@@ -59,7 +59,8 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     public Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity) {
         Expression expression = createExpression(entity);
-        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class);
+        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class)
+                .doOnError(e -> log.error(e.getMessage()));
     }
 
     private Expression createExpression(RaddTransactionEntity entity) {
@@ -190,25 +191,6 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)))
                 .filter(updated -> updated.getStatus().equals(entity.getStatus()))
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS)));
-    }
-
-    @Override
-    public Mono<Integer> countFromIunAndOperationIdAndStatus(String operationId, String iun) {
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-
-        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " +
-                RaddTransactionEntity.COL_STATUS + " = :aborted )" +
-                " AND ( " + RaddTransactionEntity.COL_IUN + " = :iun)";
-
-        expressionValues.put(":iun", AttributeValue.builder().s(iun).build());
-        expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
-        expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
-        expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
-
-        log.trace("COUNT DAO TICK {}", new Date().getTime());
-
-        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_OPERATION_ID + " = :operationId", null)
-                .doOnNext(response -> log.trace("COUNT DAO TOCK {}", new Date().getTime()));
     }
 
     @Override

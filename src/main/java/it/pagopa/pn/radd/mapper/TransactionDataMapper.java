@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
 import it.pagopa.pn.radd.rest.radd.v1.dto.AorStartTransactionRequest;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 
 @Component
 public class TransactionDataMapper {
@@ -28,6 +31,7 @@ public class TransactionDataMapper {
         } else {
             entity.setIun(transaction.getIun());
         }
+        entity.setTransactionId(transaction.getTransactionId());
         entity.setOperationId(transaction.getOperationId());
         entity.setDelegateId(transaction.getEnsureDelegateId());
         entity.setRecipientId(transaction.getEnsureRecipientId());
@@ -42,8 +46,9 @@ public class TransactionDataMapper {
         return entity;
     }
 
-    public TransactionData toTransaction(String uid, ActStartTransactionRequest request) {
+    public TransactionData toTransaction(String uid, ActStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         TransactionData transactionData = new TransactionData();
+        transactionData.setTransactionId(xPagopaPnCxType + ITEMS_SEPARATOR + xPagopaPnCxId + ITEMS_SEPARATOR + request.getOperationId());
         transactionData.setUid(uid);
         transactionData.setRecipientType(request.getRecipientType().getValue());
         transactionData.setRecipientId(request.getRecipientTaxId());

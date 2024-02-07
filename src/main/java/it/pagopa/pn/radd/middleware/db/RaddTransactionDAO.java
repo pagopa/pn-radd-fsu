@@ -20,9 +20,6 @@ public interface RaddTransactionDAO {
 
     Mono<RaddTransactionEntity> updateStatus(RaddTransactionEntity entity, RaddTransactionStatusEnum status);
 
-
-    Mono<Integer> countFromIunAndOperationIdAndStatus(String operationId, String iun);
-
     Mono<Integer> countFromIunAndStatus(String iun);
 
     Flux<RaddTransactionEntity> getTransactionsFromIun(String iun);

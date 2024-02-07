@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: UU+p/NXRqV/4xBOZ9K/olI/exgKWgr37GcrUb2MMuFk=
+  version: Qs34DDvcO8fXU6Rl1QRTYxzDcDfTRvP99Fa9YivmXak=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -675,7 +675,7 @@ components:
       required: true
       schema:
         type: string
-      example: null
+      example: 00001-000-2024_02_02T00:00:00
     recipientTaxId:
       name: recipientTaxId
       description: Codice Fiscale Destinatario

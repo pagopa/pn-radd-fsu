@@ -3,7 +3,7 @@
     "httpRequest": {
       "path": "/safe-storage/v1/files",
       "method": "POST",
-      "body": "{\"contentType\":\"application/pdf\",\"documentType\":\"PN_RADD_FSU_ATTACHMENT\",\"status\":\"PRELOADED\"}"
+      "body": "{\"contentType\":\"application/pdf\",\"documentType\":\"PN_RADD_ALT_ATTACHMENT\",\"status\":\"PRELOADED\"}"
     },
     "httpResponse": {
       "statusCode": 200,
@@ -19,7 +19,7 @@
     "httpRequest": {
       "path": "/safe-storage/v1/files",
       "method": "POST",
-      "body": "{\"contentType\":\"application/json\",\"documentType\":\"PN_RADD_FSU_ATTACHMENT\",\"status\":\"PRELOADED\"}"
+      "body": "{\"contentType\":\"application/json\",\"documentType\":\"PN_RADD_ALT_ATTACHMENT\",\"status\":\"PRELOADED\"}"
     },
     "httpResponse": {
       "statusCode": 404,

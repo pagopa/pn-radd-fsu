@@ -12,7 +12,7 @@ public interface OperationsIunsDAO {
 
     Flux<OperationsIunsEntity> getAllOperationFromIun(String iun);
 
-    Flux<OperationsIunsEntity> getAllIunsFromOperation(String operationId);
+    Flux<OperationsIunsEntity> getAllIunsFromTransactionId(String transactionId);
 
 
 }

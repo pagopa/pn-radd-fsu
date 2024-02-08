@@ -35,7 +35,7 @@ class OperationPrivateRestV1ControllerTest {
         String path = "/radd-net-private/api/v1/act/operations/by-id/{transactionId}"
                 .replace("{transactionId}", "1200");
         Mockito.when(operationService
-                        .getTransactionActByOperationIdAndType(Mockito.anyString()))
+                        .getTransactionActByTransactionIdAndType(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)
@@ -87,14 +87,14 @@ class OperationPrivateRestV1ControllerTest {
 
 
     @Test
-    void testWhenCalledAorTransactionByOperationId() {
+    void testWhenCalledAorTransactionByTransactionId() {
         OperationAorResponse response = new OperationAorResponse();
         response.setElement(new OperationAorDetailResponse());
 
         String path = "/radd-net-private/api/v1/aor/operations/by-id/{transactionId}"
                 .replace("{transactionId}", "1200");
         Mockito.when(operationService
-                        .getTransactionAorByOperationIdAndType(Mockito.anyString()))
+                        .getTransactionAorByTransactionIdAndType(Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)

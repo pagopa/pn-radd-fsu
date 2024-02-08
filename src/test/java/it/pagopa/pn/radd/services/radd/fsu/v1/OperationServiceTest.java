@@ -7,14 +7,16 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
-import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationAorResponse;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
+import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -32,8 +34,6 @@ import java.util.List;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTIONS_NOT_FOUND_FOR_CF;
 import static org.junit.jupiter.api.Assertions.*;
 
-// TODO: Test disabilitati da riparare in fase di aggiornamento rispettiva API
-
 @Slf4j
 class OperationServiceTest extends BaseTest {
     private final Duration d = Duration.ofMillis(3000);
@@ -49,7 +49,6 @@ class OperationServiceTest extends BaseTest {
 
     // ACT TRANSACTION FOR OPERATION ID //
     @Test
-    @Disabled
     void testWhenNoActTransactionForOperationId(){
         OperationActResponse r = new OperationActResponse();
         r.setResult(false);
@@ -57,21 +56,19 @@ class OperationServiceTest extends BaseTest {
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(transactionDAO.getTransaction("", "","TestNoActTransaction", OperationTypeEnum.ACT)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
-        StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestNoActTransaction"))
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        StepVerifier.create(operationService.getTransactionActByTransactionIdAndType("TestNoActTransaction"))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
-    @Disabled
     void testWhenNoActTransactionDaoThrowOtherException(){
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
-        StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestThrow"))
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        StepVerifier.create(operationService.getTransactionActByTransactionIdAndType("TestThrow"))
                 .expectError(NullPointerException.class).verify();
     }
 
     @Test
-    @Disabled
     void testWhenRetrieveActTransactionWithOperationIdThenReturnResponse(){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setOperationId("testOperation");
@@ -88,9 +85,9 @@ class OperationServiceTest extends BaseTest {
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReadon");
 
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
 
-        OperationActResponse response = operationService.getTransactionActByOperationIdAndType("err").block(d);
+        OperationActResponse response = operationService.getTransactionActByTransactionIdAndType("err").block(d);
 
         assertNotNull(response);
         assertNotNull(response.getElement());
@@ -151,32 +148,28 @@ class OperationServiceTest extends BaseTest {
     // ------------------------------ //
 
 
-    // AOR TRANSACTION FOR OPERATION ID //
+    // AOR TRANSACTION FOR TRANSACTION ID //
     @Test
-    @Disabled
-    void testWhenNoAorTransactionForOperationId(){
+    void testWhenNoAorTransactionForTransactionId(){
         OperationAorResponse r = new OperationAorResponse();
         r.setResult(false);
         OperationResponseStatus status = new OperationResponseStatus();
         status.setMessage(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage());
         status.setCode(OperationResponseStatus.CodeEnum.NUMBER_1);
         r.setStatus(status);
-        Mockito.when(transactionDAO.getTransaction("", "", "TestNoAorTransaction", OperationTypeEnum.AOR)).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
-        StepVerifier.create(operationService.getTransactionAorByOperationIdAndType("TestNoAorTransaction"))
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+        StepVerifier.create(operationService.getTransactionAorByTransactionIdAndType("TestNoAorTransaction"))
                 .expectNext(r).verifyComplete();
     }
 
     @Test
-    @Disabled
     void testWhenNoAorTransactionDaoThrowOtherException(){
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
-        StepVerifier.create(operationService.getTransactionActByOperationIdAndType("TestThrow"))
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new NullPointerException()));
+        StepVerifier.create(operationService.getTransactionActByTransactionIdAndType("TestThrow"))
                 .expectError(NullPointerException.class).verify();
     }
-
     @Test
-    @Disabled
-    void testWhenRetrieveAorTransactionWithOperationIdThenReturnResponse(){
+    void testGetAorTransactionWithIunReturnListOfTransactionId(){
         RaddTransactionEntity entity = new RaddTransactionEntity();
         entity.setOperationId("testOperation");
         entity.setIun("[iunTest, testIun]");
@@ -191,14 +184,48 @@ class OperationServiceTest extends BaseTest {
         entity.setOperationStartDate(DateUtils.formatDate(new Date()));
         entity.setOperationEndDate(DateUtils.formatDate(new Date()));
         entity.setVersionToken("VersionTokenOK");
-        entity.setErrorReason("errorReadon");
-
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        entity.setErrorReason("errorReason");
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
         OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
         operationsIunsEntity.setIun("[iunTest, testIun]");
-        Mockito.when(operationsIunsDAO.getAllIunsFromOperation(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
+        operationsIunsEntity.setTransactionId("testTransactionId");
+        Mockito.when(operationsIunsDAO.getAllOperationFromIun(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
 
-        OperationAorResponse response = operationService.getTransactionAorByOperationIdAndType("err").block(d);
+        OperationsResponse response = operationService.getOperationsAorByIun("Iun 1").block(d);
+
+        assertNotNull(response);
+        assertEquals(OperationResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+        assertTrue(response.getResult());
+        assertFalse(response.getOperationIds().isEmpty());
+        assertEquals(1, response.getOperationIds().size());
+        assertEquals(operationsIunsEntity.getTransactionId(), response.getOperationIds().get(0));
+    }
+
+    @Test
+    void testWhenRetrieveAorTransactionWithTransactionIdThenReturnResponse(){
+        RaddTransactionEntity entity = new RaddTransactionEntity();
+        entity.setOperationId("testOperation");
+        entity.setIun("[iunTest, testIun]");
+        entity.setFileKey("FileKey test");
+        entity.setQrCode("qrcodeTest");
+        entity.setRecipientId("FiscalCodeTest");
+        entity.setRecipientType("PF");
+        entity.setDelegateId("delegateId");
+        entity.setUid("uidTest");
+        entity.setStatus("COMPLETED");
+        entity.setOperationType(OperationTypeEnum.AOR.name());
+        entity.setOperationStartDate(DateUtils.formatDate(new Date()));
+        entity.setOperationEndDate(DateUtils.formatDate(new Date()));
+        entity.setVersionToken("VersionTokenOK");
+        entity.setErrorReason("errorReason");
+
+        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
+        OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
+        operationsIunsEntity.setIun("[iunTest, testIun]");
+        operationsIunsEntity.setTransactionId("testTransactionId");
+        Mockito.when(operationsIunsDAO.getAllIunsFromTransactionId(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
+
+        OperationAorResponse response = operationService.getTransactionAorByTransactionIdAndType("err").block(d);
 
         assertNotNull(response);
         assertNotNull(response.getElement());
@@ -286,7 +313,7 @@ class OperationServiceTest extends BaseTest {
                 .thenReturn(Flux.fromStream(List.of(entity1, entity2).stream()));
         OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
         operationsIunsEntity.setIun("[iunTest, testIun]");
-        Mockito.when(operationsIunsDAO.getAllIunsFromOperation(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
+        Mockito.when(operationsIunsDAO.getAllIunsFromTransactionId(Mockito.any())).thenReturn(Flux.just(operationsIunsEntity));
 
         operationService.getAllAorTransactionFromFiscalCode(fiscalCode, new Date(), new Date())
                 .map(response -> {

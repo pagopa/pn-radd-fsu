@@ -9,7 +9,7 @@ public class Const {
     public static final String PG = "PG";
 
     //Status document
-    public static final String DOCUMENT_TYPE = "PN_RADD_FSU_ATTACHMENT";
+    public static final String DOCUMENT_TYPE = "PN_RADD_ALT_ATTACHMENT";
     public static final String PRELOADED = "PRELOADED";
     public static final String ATTACHED = "ATTACHED";
 

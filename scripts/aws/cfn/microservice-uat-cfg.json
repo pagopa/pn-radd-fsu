@@ -1,7 +1,7 @@
 {
   "Parameters" : {
-    "SafeStorageCxId": "pn-radd-fsu",
-    "SafeStorageDocType": "PN_RADD_FSU_ATTACHMENT",
+    "SafeStorageCxId": "pn-radd-alt",
+    "SafeStorageDocType": "PN_RADD_ALT_ATTACHMENT",
     "SandboxSafeStorageBaseUrl": "https://eo6pdvms24.execute-api.eu-south-1.amazonaws.com/coll",
     "AttemptBatchWriter": "3"
   }

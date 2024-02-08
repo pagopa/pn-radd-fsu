@@ -421,13 +421,15 @@ components:
 
 
     ActStartTransactionRequest:
-      description: Richiesta  di completamento operazione
+      description: Richiesta  di completamento operazione.
       allOf:
         - $ref: '#/components/schemas/AorStartTransactionRequest'
       properties:
         qrCode:
+          description: in alternativa allo iun
           type: string
         iun:
+          description: in alternativa al qrCode
           type: string
 
     StartTransactionResponse:
@@ -468,6 +470,7 @@ components:
         operationId:
           type: string
         recipientTaxId:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
           example: "TNTGTR76E21H751S"
         recipientType:
@@ -475,6 +478,7 @@ components:
           enum: ["PF", "PG"]
           example: "PF"
         delegateTaxId:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
           example: "RFRGRZ66E21H751B"
         fileKey:
@@ -615,7 +619,7 @@ components:
   parameters:
     uid:
       name: uid
-      description: Identificativo del client giustapposizione dei campi frazionario-pdl-timestamp
+      description: Identificativo del client
       in: header
       required: true
       schema:

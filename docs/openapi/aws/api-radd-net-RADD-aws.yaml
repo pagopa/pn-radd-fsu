@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: Qs34DDvcO8fXU6Rl1QRTYxzDcDfTRvP99Fa9YivmXak=
+  version: fiFND+/6JdctQVIf0Icz5QKY64X4o5AU0HQOxEBvtQ4=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -91,9 +91,10 @@ paths:
         '200':
           description: Ritorna il frontespizio
           content:
-            'application/pdf':
-                schema:
-                  type: object
+            '*/*':
+              schema:
+                type: string
+                format: byte
         '400':
           $ref: '#/components/responses/Invalid'
         '401':
@@ -667,9 +668,7 @@ components:
   parameters:
     uid:
       name: uid
-      description: >-
-        Identificativo del client giustapposizione dei campi
-        frazionario-pdl-timestamp
+      description: Identificativo del client
       in: header
       required: true
       schema:
@@ -789,13 +788,15 @@ components:
         status:
           $ref: '#/components/schemas/ResponseStatus'
     ActStartTransactionRequest:
-      description: Richiesta  di completamento operazione
+      description: Richiesta  di completamento operazione.
       allOf:
         - $ref: '#/components/schemas/AorStartTransactionRequest'
       properties:
         qrCode:
+          description: in alternativa allo iun
           type: string
         iun:
+          description: in alternativa al qrCode
           type: string
     StartTransactionResponse:
       description: Response alla richiesta di avvio della transazione

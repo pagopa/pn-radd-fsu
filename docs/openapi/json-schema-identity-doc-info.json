@@ -15,17 +15,20 @@
 	  "docType": {
 		"description": "Tipologia del documento",
 		"type": "string",
-		"example": "2bb5c29e0cf411ed861d0242ac120002"
+		"example": "Carta d'identità",
+	    "pattern": "^[ -~]{1,1024}$"
 	  },
 	  "docNumber": {
 		"description": "Numero identificativo del documento",
 		"type": "string",
-		"example": "345678"
+		"example": "345678",
+		"pattern": "^[ -~]{1,1024}$"
 	  },
 	  "docIssuer": {
 		"description": "Autorità emittente del documento",
 		"type": "string",
-		"example": "Ministero dell'interno"
+		"example": "Ministero dell'interno",
+		"pattern": "^[ -~]{1,1024}$"
 	  },
 	  "issueDate": {
 		"type": "string",
@@ -42,7 +45,8 @@
 	  "operationId": {
 		"description": "operationId correlato a questi documenti",
 		"type": "string",
-		"example": "abcdfghi"
+		"example": "abcdfghi123456",
+		"pattern": "^[ -~]{1,1024}$"
 	  }
 	}
 }

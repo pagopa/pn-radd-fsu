@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.rest.radd.v1.api.DocumentUploadApi;
+import it.pagopa.pn.radd.rest.radd.v1.api.DocumentOperationsApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
@@ -12,7 +12,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @RestController
-public class DocumentUploadPrivateRestV1Controller implements DocumentUploadApi {
+public class DocumentUploadPrivateRestV1Controller implements DocumentOperationsApi {
 
     DocumentUploadService documentUploadService;
 

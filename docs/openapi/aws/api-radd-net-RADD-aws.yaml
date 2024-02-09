@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: fiFND+/6JdctQVIf0Icz5QKY64X4o5AU0HQOxEBvtQ4=
+  version: T3FNxmDDknJe1fP8GeWx6tRFiy9uj6AiBVc23y5NOHs=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -14,7 +14,7 @@ paths:
   /api/v1/documents/upload:
     post:
       tags:
-        - documentUpload
+        - documentOperations
       description: >-
         API utilizzata per la richiesta della presigned URL utilizzata per il
         caricamento della scansione dei documenti e metadati presentati a
@@ -84,7 +84,7 @@ paths:
       - $ref: '#/components/parameters/operationId'
     get:
       tags:
-        - documentDownload
+        - documentOperations
       operationId: documentDownload
       description: API utilizzata per il download del frontespizio
       responses:
@@ -151,7 +151,7 @@ paths:
       - $ref: '#/components/parameters/iun'
     get:
       tags:
-        - actDocumentInquiry
+        - actOperations
       operationId: actInquiry
       description: >-
         API utilizzata per la verifica della presenza a sistema di atti e
@@ -213,7 +213,7 @@ paths:
       - $ref: '#/components/parameters/recipientType'
     get:
       tags:
-        - aorDocumentInquiry
+        - aorOperations
       operationId: aorInquiry
       description: >-
         API utilizzata per la verifica della presenza a sistema di avvisi di
@@ -273,7 +273,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - actTransactionManagement
+        - actOperations
       operationId: startActTransaction
       description: >-
         API utilizzata per la richiesta di avvio dell'operazione di scaricamento
@@ -339,7 +339,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - actTransactionManagement
+        - actOperations
       operationId: completeActTransaction
       description: >-
         API utilizzata per la notifica del completamento dell'operazione di
@@ -405,7 +405,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - actTransactionManagement
+        - actOperations
       operationId: abortActTransaction
       description: >-
         API utilizzata per la notifica  dell'annullamento dell'operazione di
@@ -471,7 +471,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - aorTransactionManagement
+        - aorOperations
       operationId: startAorTransaction
       description: >-
         API utilizzata per la richiesta di avvio delloperazione di scaricamento
@@ -537,7 +537,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - aorTransactionManagement
+        - aorOperations
       operationId: completeAorTransaction
       description: >-
         API utilizzata per la notifica  del completamento dell'operazione di
@@ -603,7 +603,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - aorTransactionManagement
+        - aorOperations
       operationId: abortAorTransaction
       description: >-
         API utilizzata per la notifica  dell'annullamento dell'operazione       
@@ -855,14 +855,12 @@ components:
           example: >-
             YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo=
           description: >-
-            Checksum SHA256 del file caricato nella chiamata di documetUpload,
-            esepresso in base64
+            Checksum SHA256 del file caricato nella chiamata di documetUpload
+            codificato in base64
         operationDate:
           type: string
           format: date-time
-          description: >-
-            Data/ora di completamento della transazione,  espressa in formato
-            RFC3339.
+          description: Data/ora di completamento della transazione in formato RFC3339.
           example: '2022-06-21T11:44:28Z'
     CompleteTransactionRequest:
       description: Richiesta  di chiusura della transazione
@@ -1049,24 +1047,14 @@ components:
         identityValidationExpression: ^Bearer\s([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)\.([a-zA-Z0-9_\-]+)$
         type: token
 tags:
-  - name: actDocumentInquiry
+  - name: actOperations
     description: >-
-      API di interrogazione per la verifica presenza di  atti e attestazioni
-      opponibili a terzi.
-  - name: aorDocumentInquiry
-    description: >-
-      API di interrogazione per la verifica presenza di avvisi di avvenuta
-      ricezione.
-  - name: documentUpload
-    description: API caricamento file.
-  - name: documentDownload
-    description: API download frontespizio.
-  - name: actTransactionManagement
-    description: >-
-      API di gestione della transazione per atti e attestazioni opponibili a
+      API di interrogazione per il recupero di  atti e attestazioni opponibili a
       terzi.
-  - name: aorTransactionManagement
-    description: API di gestione della transazione per avvisi di avvenuta ricezione.
+  - name: aorOperations
+    description: API di interrogazione per il recupero di avvisi di avvenuta ricezione.
+  - name: documentOperations
+    description: API gestione file.
 x-amazon-apigateway-gateway-responses:
   DEFAULT_5XX:
     responseParameters:

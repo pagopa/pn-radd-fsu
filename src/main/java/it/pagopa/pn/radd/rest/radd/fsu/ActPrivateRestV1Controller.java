@@ -1,7 +1,6 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.rest.radd.v1.api.ActDocumentInquiryApi;
-import it.pagopa.pn.radd.rest.radd.v1.api.ActTransactionManagementApi;
+import it.pagopa.pn.radd.rest.radd.v1.api.ActOperationsApi;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.ActService;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 
 @RestController
-public class ActPrivateRestV1Controller implements ActDocumentInquiryApi, ActTransactionManagementApi {
+public class ActPrivateRestV1Controller implements ActOperationsApi {
 
 
     ActService actService;

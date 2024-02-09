@@ -1,35 +1,37 @@
 openapi: 3.0.1
 info:
-  title:  API Piattaforma Notifiche
-  description: |
-    # Interface definition for Piattaforma Notifiche
-    ## changelog
-      * ### 1.0
-        * First version
-  version: '1.0'
+  termsOfService: https://notifichedigitali.pagopa.it/radd/index.html
+  #  x-api-id: api-external-radd-net # ONLY EXTERNAL
+  title: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  x-summary: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  version: '1.0.0'
+  description: Api per gli operatori RADD (Rete Assorbimento Divario Digitale)
+  contact:
+    email: pn-supporto-enti@pagopa.it
+  license:
+    name: Licenza di PN
+    url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+
 servers:
-  - url: https://tbd/
+  - url: https://api-radd.notifichedigitali.it
+    description: Ambiente di produzione
+  - url: https://api.radd.uat.notifichedigitali.it
+    description: Ambiente di collaudo
 
 tags:
-  - name: actDocumentInquiry
-    description: API di interrogazione per la verifica presenza di  atti e attestazioni opponibili a terzi.
-  - name: aorDocumentInquiry
-    description: API di interrogazione per la verifica presenza di avvisi di avvenuta ricezione.
-  - name: documentUpload
-    description: API caricamento file.
-  - name: documentDownload
-    description: API download frontespizio.
-  - name: actTransactionManagement
-    description: API di gestione della transazione per atti e attestazioni opponibili a terzi.
-  - name: aorTransactionManagement
-    description: API di gestione della transazione per avvisi di avvenuta ricezione.
+  - name: actOperations
+    description: API di interrogazione per il recupero di  atti e attestazioni opponibili a terzi.
+  - name: aorOperations
+    description: API di interrogazione per il recupero di avvisi di avvenuta ricezione.
+  - name: documentOperations
+    description: API gestione file.
 
 paths:
   /radd-net/api/v1/documents/upload:
     ## SLA - Tempo risposta medio: < 1s; Timeout :3s
     post:
       tags:
-        - documentUpload
+        - documentOperations
       description: >-
         API utilizzata per la richiesta della presigned URL utilizzata per il caricamento della scansione
         dei documenti e metadati presentati a sportello dal cliente. Il file deve essere in formato ZIP
@@ -68,7 +70,7 @@ paths:
       - $ref: '#/components/parameters/operationId'
     get:
       tags:
-        - documentDownload
+        - documentOperations
       operationId: documentDownload
       description: API utilizzata per il download del frontespizio
       responses:
@@ -100,7 +102,7 @@ paths:
       - $ref: '#/components/parameters/iun'
     get:
       tags:
-        - actDocumentInquiry
+        - actOperations
       operationId: actInquiry
       description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni tramite iun o qrCode.
       responses:
@@ -129,7 +131,7 @@ paths:
       - $ref: '#/components/parameters/recipientType'
     get:
       tags:
-        - aorDocumentInquiry
+        - aorOperations
       operationId: aorInquiry
       description: API utilizzata per la verifica della presenza a sistema di avvisi di avvenuta ricezione per il cliente.
       responses:
@@ -157,7 +159,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - actTransactionManagement
+        - actOperations
       operationId: startActTransaction
       description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna dell'atto e delle eventuali attestazioni.
       requestBody:
@@ -191,7 +193,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - actTransactionManagement
+        - actOperations
       operationId: completeActTransaction
       description: API utilizzata per la notifica del completamento dell'operazione di consegna dell'atto e delle eventuali attestazioni.
       requestBody:
@@ -223,7 +225,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - actTransactionManagement
+        - actOperations
       operationId: abortActTransaction
       description: API utilizzata per la notifica  dell'annullamento dell'operazione di consegna dell'atto e delle eventuali attestazioni.
       requestBody:
@@ -255,7 +257,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - aorTransactionManagement
+        - aorOperations
       operationId: startAorTransaction
       description: API utilizzata per la richiesta di avvio delloperazione di scaricamento e consegna degli avvisi di avvenuta ricezione.
       requestBody:
@@ -290,7 +292,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - aorTransactionManagement
+        - aorOperations
       operationId: completeAorTransaction
       description: API utilizzata per la notifica  del completamento dell'operazione di consegna dell'atto.
       requestBody:
@@ -323,7 +325,7 @@ paths:
       - $ref: '#/components/parameters/uid'
     post:
       tags:
-        - aorTransactionManagement
+        - aorOperations
       operationId: abortAorTransaction
       description: API utilizzata per la notifica  dell'annullamento dell'operazione        di consegna del/degli avviso/i di avvenuta ricezione.
       requestBody:
@@ -465,11 +467,11 @@ components:
         checksum:
           type: string
           example: "YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo="
-          description: Checksum SHA256 del file caricato nella chiamata di documetUpload, esepresso in base64
+          description: Checksum SHA256 del file caricato nella chiamata di documetUpload codificato in base64
         operationDate:
           type: string
           format: date-time
-          description: Data/ora di completamento della transazione,  espressa in formato RFC3339.
+          description: Data/ora di completamento della transazione in formato RFC3339.
           example: "2022-06-21T11:44:28Z"
 
     CompleteTransactionRequest:

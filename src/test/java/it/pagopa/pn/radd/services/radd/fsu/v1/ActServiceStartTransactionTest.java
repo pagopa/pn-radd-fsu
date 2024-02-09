@@ -100,18 +100,18 @@ class ActServiceStartTransactionTest extends BaseTest {
         return fileDownloadResponseDto ;
     }
 
-    private SentNotificationV21Dto createSentNotificationDto(){
+    private SentNotificationV23Dto createSentNotificationDto(){
         NotificationPaymentItemDto notificationPaymentInfoDto = new NotificationPaymentItemDto();
         notificationPaymentInfoDto.setPagoPa(new PagoPaPaymentDto());
 
-        NotificationRecipientV21Dto notificationRecipientDto = new NotificationRecipientV21Dto();
+        NotificationRecipientV23Dto notificationRecipientDto = new NotificationRecipientV23Dto();
         notificationRecipientDto.setPayments(List.of(notificationPaymentInfoDto));
         notificationRecipientDto.setTaxId("recTaxId");
         notificationRecipientDto.setInternalId("internalId");
         NotificationDocumentDto notificationDocumentDto =new NotificationDocumentDto();
         notificationDocumentDto.setDocIdx("0");
 
-        SentNotificationV21Dto sentNotificationDto = new SentNotificationV21Dto ();
+        SentNotificationV23Dto sentNotificationDto = new SentNotificationV23Dto ();
         sentNotificationDto.setRecipients(List.of(notificationRecipientDto));
         sentNotificationDto.setDocuments(List.of(notificationDocumentDto));
 
@@ -149,7 +149,7 @@ class ActServiceStartTransactionTest extends BaseTest {
 
         Mockito.when(safeStorage.getFile (Mockito.any())).thenReturn(Mono.just(fileDownloadResponseDto));
         Mockito.when(safeStorage.updateFileMetadata(Mockito.any())).thenReturn(Mono.just(new OperationResultCodeResponseDto()));
-        SentNotificationV21Dto sentNotificationDto = createSentNotificationDto();
+        SentNotificationV23Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(Mockito.any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto.setUrl("UrlDocument");
@@ -181,7 +181,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto () ;
         Mockito.when(safeStorage.getFile (Mockito.any())).thenReturn(Mono.just(fileDownloadResponseDto));
         Mockito.when(safeStorage.updateFileMetadata(Mockito.any())).thenReturn(Mono.just(new OperationResultCodeResponseDto()));
-        SentNotificationV21Dto sentNotificationDto = createSentNotificationDto();
+        SentNotificationV23Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(Mockito.any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto.setUrl("UrlDocument");

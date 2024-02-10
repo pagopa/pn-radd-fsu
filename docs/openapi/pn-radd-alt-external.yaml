@@ -77,10 +77,9 @@ paths:
         200:
           description: "Ritorna il frontespizio"
           content:
-            '*/*':
+            'application/pdf':
               schema:
-                type: string
-                format: byte
+               type: object    # ONLY EXTERNAL
         400:
           $ref: '#/components/responses/Invalid'
         401:

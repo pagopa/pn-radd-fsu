@@ -3,6 +3,8 @@ package it.pagopa.pn.radd.middleware.db.entities;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
+import java.util.Map;
+
 /**
  * Questa entità mappa la tabella pn-radd-transaction. È utilizzata sia nel caso AOR che ACT.
  * Per le operazioni di tipo AOR, il campo iun non viene valorizzato con la lista degli iun dell'operazione,
@@ -33,6 +35,7 @@ public class RaddTransactionEntity {
     public static final String COL_OPERATION_END_DATE = "operationEndDate";
     public static final String COL_VERSION_TOKEN = "versionToken";
     public static final String COL_ERROR_REASON = "errorReason";
+    private static final String COL_ZIP_ATTACHMENTS = "zipAttachments";
 
     public static final String IUN_SECONDARY_INDEX = "iun-transaction-index";
     public static final String RECIPIENT_SECONDARY_INDEX = "recipient-transaction-index";
@@ -74,6 +77,8 @@ public class RaddTransactionEntity {
     private String versionToken;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_ERROR_REASON)}))
     private String errorReason;
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_ZIP_ATTACHMENTS)}))
+    private Map<String, String> zipAttachments;
 
     public RaddTransactionEntity(String cxType, String cxId, String operationId) {
         this.setTransactionId(cxType, cxId, operationId);

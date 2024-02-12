@@ -44,6 +44,7 @@ public class TransactionDataMapper {
         entity.setStatus(Const.DRAFT);
         entity.setErrorReason("");
         entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));
+        entity.setVersionToken(transaction.getVersionId());
         return entity;
     }
 

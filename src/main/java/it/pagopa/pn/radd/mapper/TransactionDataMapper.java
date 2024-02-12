@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
+import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Component
 public class TransactionDataMapper {
@@ -49,7 +49,7 @@ public class TransactionDataMapper {
 
     public TransactionData toTransaction(String uid, ActStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         TransactionData transactionData = new TransactionData();
-        transactionData.setTransactionId(xPagopaPnCxType + ITEMS_SEPARATOR + xPagopaPnCxId + ITEMS_SEPARATOR + request.getOperationId());
+        transactionData.setTransactionId(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, request.getOperationId()));
         transactionData.setUid(uid);
         transactionData.setRecipientType(request.getRecipientType().getValue());
         transactionData.setRecipientId(request.getRecipientTaxId());
@@ -67,7 +67,7 @@ public class TransactionDataMapper {
 
     public TransactionData toTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         TransactionData transactionData = new TransactionData();
-        transactionData.setTransactionId(xPagopaPnCxType + ITEMS_SEPARATOR + xPagopaPnCxId + ITEMS_SEPARATOR + request.getOperationId());
+        transactionData.setTransactionId(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, request.getOperationId()));
         transactionData.setUid(uid);
         transactionData.setOperationType(OperationTypeEnum.AOR);
         transactionData.setRecipientType(request.getRecipientType().getValue());

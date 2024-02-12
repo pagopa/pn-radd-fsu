@@ -25,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.Map;
 
+import static it.pagopa.pn.radd.utils.Const.ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED;
+
 @Component
 @Slf4j
 public class DocumentComposition {
@@ -118,10 +120,9 @@ public class DocumentComposition {
         } catch (IOException | TemplateException exc) {
             throw new PnInternalException(
                     "Processing template " + templateType,
-                    "ERROR_CODE_DELIVERYPUSH_DOCUMENTCOMPOSITIONFAILED",
+                    ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED,
                     exc);
         }
-        // TODO ERRORCODE
 
         log.info("Execute templateType={} END", templateType );
         return stringWriter.getBuffer().toString();

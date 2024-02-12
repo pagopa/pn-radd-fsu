@@ -1,7 +1,10 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
+
+import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 /**
  * Questa entità mappa la tabella pn-radd-transaction. È utilizzata sia nel caso AOR che ACT.
@@ -80,7 +83,7 @@ public class RaddTransactionEntity {
     }
 
     private void setTransactionId(String cxType, String cxId, String operationId) {
-        this.setTransactionId(cxType + ITEMS_SEPARATOR + cxId + ITEMS_SEPARATOR + operationId);
+        this.setTransactionId(transactionIdBuilder(CxTypeAuthFleet.valueOf(cxType), cxId, operationId));
     }
 
     public void setTransactionId(String transactionId) {

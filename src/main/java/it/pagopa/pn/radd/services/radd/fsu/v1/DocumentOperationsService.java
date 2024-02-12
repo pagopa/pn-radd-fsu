@@ -31,6 +31,7 @@ import java.util.Optional;
 
 import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 import static it.pagopa.pn.radd.utils.Const.*;
+import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Service
 @Slf4j
@@ -100,10 +101,6 @@ public class DocumentOperationsService {
                     }
                     return raddTransactionEntity;
                 });
-    }
-
-    private String transactionIdBuilder(CxTypeAuthFleet cxTypeAuthFleet, String xPagopaPnCxId, String operationId) {
-        return cxTypeAuthFleet.getValue() + ITEMS_SEPARATOR + xPagopaPnCxId + ITEMS_SEPARATOR + operationId;
     }
 
 

@@ -10,6 +10,7 @@ import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -30,6 +31,7 @@ import java.util.Map;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.OPERATION_TYPE_UNKNOWN;
 import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
+import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Repository
 @Slf4j
@@ -167,7 +169,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     @Override
     public Mono<RaddTransactionEntity> getTransaction(String cxType, String cxId, String operationId, OperationTypeEnum operationType) {
         Key key = Key.builder()
-                    .partitionValue(cxType + ITEMS_SEPARATOR + cxId + ITEMS_SEPARATOR + operationId)
+                    .partitionValue(transactionIdBuilder(CxTypeAuthFleet.valueOf(cxType), cxId, operationId))
                     .sortValue(operationType.name())
                     .build();
         return this.findFromKey(key)

@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
+import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 /**
  * Questa entità mappa la tabella pn-operations-iuns. Viene utilizzata solo dal caso d'uso AOR.
@@ -38,7 +40,7 @@ public class OperationsIunsEntity {
     }
 
     private void setTransactionId(String cxType, String cxId, String operationId) {
-        this.setTransactionId(cxType + ITEMS_SEPARATOR + cxId + ITEMS_SEPARATOR + operationId);
+        this.setTransactionId(transactionIdBuilder(CxTypeAuthFleet.valueOf(cxType), cxId, operationId));
     }
 
     @DynamoDbIgnore

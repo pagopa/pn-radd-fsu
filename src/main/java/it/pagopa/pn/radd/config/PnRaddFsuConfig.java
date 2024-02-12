@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
+import it.pagopa.pn.radd.utils.HtmlSanitizer;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -20,4 +21,5 @@ public class PnRaddFsuConfig {
     private String safeStorageCxId;
     private String safeStorageDocType;
     private String applicationBasepath;
+    private HtmlSanitizer.SanitizeMode sanitizeMode;
 }

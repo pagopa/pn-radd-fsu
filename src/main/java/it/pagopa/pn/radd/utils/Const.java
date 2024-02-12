@@ -38,4 +38,13 @@ public class Const {
 
     public static final String X_CHECKSUM = "SHA-256";
 
+    /* DocumentOperations */
+    public static final String ERROR_NO_RECIPIENT = "ERROR_NO_RECIPIENT";
+    public static final String ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED = "ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED";
+    public static final String MISSING_INPUT_PARAMETERS = "Missing input parameters";
+    public static final String CONTENT_TYPE_ZIP = "application/zip";
+
+
+
+
 }

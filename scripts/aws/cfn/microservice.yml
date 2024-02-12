@@ -196,6 +196,21 @@ Parameters:
     Type: Number
     Description: maximum autoscaling number of tasks
 
+  SanitizeMode:
+    Default: ESCAPING
+    Type: String
+    Description: Html Sanitize Mode
+
+  FreeMarkerTemplateLoaderPath:
+    Default: documents_composition_templates
+    Type: String
+    Description: directory in which html templates are found
+
+  FreeMarkerSuffix:
+    Default: .html
+    Type: String
+    Description: html template suffix
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -233,6 +248,10 @@ Resources:
         ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
         ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsDynamoTableName}'
         ContainerEnvEntry13: !Sub 'PN_RADD_APPLICATION_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry14: !Sub 'SANITIZE_MODE=${SanitizeMode}'
+        ContainerEnvEntry15: !Sub 'SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${FreeMarkerTemplateLoaderPath}'
+        ContainerEnvEntry16: !Sub 'SPRING_FREEMARKER_SUFFIX=${FreeMarkerSuffix}'
+
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

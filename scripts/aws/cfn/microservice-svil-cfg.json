@@ -2,6 +2,9 @@
   "Parameters" : {
     "SafeStorageCxId": "pn-radd-alt",
     "SafeStorageDocType": "PN_RADD_ALT_ATTACHMENT",
-    "AttemptBatchWriter": "3"
+    "AttemptBatchWriter": "3",
+    "SanitizeMode": "ESCAPING",
+    "FreeMarkerTemplateLoaderPath": "documents_composition_templates",
+    "FreeMarkerSuffix": ".html"
   }
 }

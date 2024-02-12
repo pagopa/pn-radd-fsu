@@ -98,7 +98,7 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
     void testWhenGetActTransactionOnThrow() {
 
         StepVerifier.create(
-                raddTransactionDAO.getTransaction("", "", "", OperationTypeEnum.ACT)
+                raddTransactionDAO.getTransaction("PF", "", "", OperationTypeEnum.ACT)
                 ).expectError(RaddGenericException.class).verify();
     }
     

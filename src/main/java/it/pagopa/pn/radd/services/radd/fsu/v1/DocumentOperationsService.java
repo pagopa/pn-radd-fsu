@@ -25,8 +25,6 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HexFormat;
 import java.util.Optional;
@@ -65,21 +63,15 @@ public class DocumentOperationsService {
         Optional<NotificationRecipientV21Dto> recipient = notificationEntityTuple.getT1().getRecipients().stream()
                 .filter(s -> notificationEntityTuple.getT2().getRecipientId().equals(s.getInternalId()))
                 .findFirst();
-        return generateCoverFile(recipient);
-    }
-
-    private byte @NotNull [] generateCoverFile(Optional<NotificationRecipientV21Dto> recipient) {
         if (recipient.isPresent()) {
-            return generatePdf(recipient);
+            return generatePdf(recipient.get());
         }
         throw new RaddGenericException(ERROR_NO_RECIPIENT);
-
     }
 
-    @NotNull
-    private byte[] generatePdf(Optional<NotificationRecipientV21Dto> recipient) {
+    private byte @NotNull [] generatePdf(NotificationRecipientV21Dto recipient) {
         try {
-            byte[] byteArray = pdfGenerator.generateCoverFile(recipient.get().getDenomination());
+            byte[] byteArray = pdfGenerator.generateCoverFile(recipient.getDenomination());
             return HexFormat.of().parseHex(Hex.encodeHexString(byteArray));
         } catch (IOException e) {
             throw new RaddGenericException(e.getMessage());

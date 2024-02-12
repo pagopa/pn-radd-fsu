@@ -6,6 +6,8 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 //import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV23Dto;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,11 +50,11 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             return Mono.empty();
         }).block();
     }
-/*
+
     @Test
     void testGetNotifications() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1";
-        Mono<SentNotificationDto> monoResponse = pnDeliveryClient.getNotifications(iun);
+        Mono<SentNotificationV23Dto> monoResponse = pnDeliveryClient.getNotifications(iun);
         monoResponse.map(response -> {
             assertNotEquals(0, response.getRecipients().size());
             assertEquals(iun, response.getIun());
@@ -62,7 +64,6 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             response.getRecipients().forEach(element -> {
                 assertEquals("FRMTTR76M06B715E", element.getTaxId());
                 assertEquals("Mario Cucumber denomination", element.getDenomination());
-                assertNotNull(element.getPayment());
                 assertNotNull(element.getDigitalDomicile());
                 assertNotNull(element.getPhysicalAddress());
                 assertNotNull(element.getRecipientType());
@@ -81,7 +82,25 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetNotificationsCode400() {
         String iun = "LJLH-GNTJ";
-        Mono<SentNotificationDto> response = pnDeliveryClient.getNotifications(iun);
+        Mono<SentNotificationV23Dto> response = pnDeliveryClient.getNotifications(iun);
+        response.onErrorResume(PnRaddException.class, exception -> {
+            assertEquals(400, exception.getWebClientEx().getStatusCode().value());
+            return Mono.empty();
+        }).block();
+    }
+
+    @Test
+    void testCheckIunAndInternalId(){
+        String iun = "LJLH-GNTJ-DVXR-202209-J-1";
+        String recipientInternalId = "PF-4fc75df3-0913-407e-bdaa-e50329708b7d";
+        Mono<Void> response = pnDeliveryClient.checkIunAndInternalId(iun, recipientInternalId);
+        response.map(item -> Mono.empty()).block();
+    }
+    @Test
+    void testCheckIunAndInternalId400(){
+        String iun = "LJLH-GNTJ-DVXR-202209-J-1";
+        String recipientInternalId = "4fc75df3-0913-407e-bdaa-e50329708b7d";
+        Mono<Void> response = pnDeliveryClient.checkIunAndInternalId(iun, recipientInternalId);
         response.onErrorResume(PnRaddException.class, exception -> {
             assertEquals(400, exception.getWebClientEx().getStatusCode().value());
             return Mono.empty();
@@ -101,7 +120,6 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             return Mono.empty();
         }).block();
     }
-
     @Test
     void testGetPresignedUrlDocumentCode400() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", docXid = "12984594", recipientTaxId = "";
@@ -119,7 +137,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetPresignedUrlPaymentDocument() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", attachmentName = "paymentDoc", recipientTaxId = "12df2qm7y";
-        Mono<NotificationAttachmentDownloadMetadataResponseDto> monoResponse = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId);
+        Mono<NotificationAttachmentDownloadMetadataResponseDto> monoResponse = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId,1);
         monoResponse.map(response -> {
             assertEquals("D73JG1340FJ3GBFI04NT0B73JV9W7331V", response.getSha256());
             assertEquals("application/pdf", response.getContentType());
@@ -131,7 +149,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetPresignedUrlPaymentDocumentCode400() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", attachmentName = "paymentDoc", recipientTaxId = "";
-        Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId);
+        Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId,null);
         response.onErrorResume(exception -> {
             if (exception instanceof PnRaddException){
                 assertEquals(HttpStatus.valueOf(400), ((PnRaddException) exception).getWebClientEx().getStatusCode());
@@ -141,5 +159,4 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             return null;
         }).block();
     }
-    */
 }

@@ -160,6 +160,55 @@
   },
   {
     "httpRequest": {
+      "method": "GET",
+      "path": "/delivery-private/check-iun-internalid/LJLH-GNTJ-DVXR-202209-J-1",
+      "queryStringParameters": {
+        "recipientInternalId": [
+          "PF-4fc75df3-0913-407e-bdaa-e50329708b7d"
+        ]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": "{\"iun\":\"LJLH-GNTJ-DVXR-202209-J-1\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/delivery-private/check-iun-internalid/LJLH-GNTJ-DVXR-202209-J-1",
+      "queryStringParameters": {
+        "recipientInternalId": [
+          "4fc75df3-0913-407e-bdaa-e50329708b7d"
+        ]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 400,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "type": "",
+        "status": 400,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {"code": "123-4567"},
+          {"detail": "Parameter not valid"}
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
       "path": "/delivery-private/check-aar-qr-code",
       "body": "{\"recipientType\":\"PF\",\"recipientInternalId\":\"PG-4fc75df3-0913-407e-bdaa-e50329708b7d\",\"aarQrCodeValue\":\"UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw\"}",
       "method": "POST"

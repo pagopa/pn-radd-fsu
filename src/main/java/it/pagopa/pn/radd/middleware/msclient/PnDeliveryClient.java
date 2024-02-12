@@ -10,15 +10,13 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.api.Inter
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.RequestCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV21Dto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV23Dto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-import software.amazon.awssdk.services.sqs.endpoints.internal.Value;
 
 import javax.annotation.PostConstruct;
 import java.net.ConnectException;
@@ -77,7 +75,7 @@ public class PnDeliveryClient extends BaseClient {
                 });
     }
 
-    public Mono<SentNotificationV21Dto> getNotifications(String iun) {
+    public Mono<SentNotificationV23Dto> getNotifications(String iun) {
         log.trace("GET NOTIFICATIONS TICK {}", new Date().getTime());
         return this.deliveryApi.getSentNotificationPrivate(iun)
                 .retryWhen(
@@ -116,9 +114,9 @@ public class PnDeliveryClient extends BaseClient {
                 }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
-    public Mono<Void> checkIunAndInternalId(String iun, String internalId, String mandateId) {
+    public Mono<Void> checkIunAndInternalId(String iun, String recipientInternalId) {
         log.info("checkIunAndInternalId");
-        return this.deliveryApi.checkIUNAndInternalId(iun, internalId, mandateId)
+        return this.deliveryApi.checkIUNAndInternalId(iun, recipientInternalId,null,null, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.HexFormat;
 import java.util.Optional;
 
-import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 

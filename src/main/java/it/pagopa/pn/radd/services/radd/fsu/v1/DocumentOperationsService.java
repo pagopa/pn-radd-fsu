@@ -4,9 +4,9 @@ import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.mapper.DocumentUploadResponseMapper;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientV21Dto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV21Dto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientV23Dto;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
@@ -60,8 +60,8 @@ public class DocumentOperationsService {
                 });
     }
 
-    private byte @NotNull [] checkRecipientIdAndCreatePdf(Tuple2<SentNotificationV21Dto, RaddTransactionEntity> notificationEntityTuple) {
-        Optional<NotificationRecipientV21Dto> recipient = notificationEntityTuple.getT1().getRecipients().stream()
+    private byte @NotNull [] checkRecipientIdAndCreatePdf(Tuple2<SentNotificationV23Dto, RaddTransactionEntity> notificationEntityTuple) {
+        Optional<NotificationRecipientV23Dto> recipient = notificationEntityTuple.getT1().getRecipients().stream()
                 .filter(s -> notificationEntityTuple.getT2().getRecipientId().equals(s.getInternalId()))
                 .findFirst();
         if (recipient.isPresent()) {
@@ -70,7 +70,7 @@ public class DocumentOperationsService {
         throw new RaddGenericException(ERROR_NO_RECIPIENT);
     }
 
-    private byte @NotNull [] generatePdf(NotificationRecipientV21Dto recipient) {
+    private byte @NotNull [] generatePdf(NotificationRecipientV23Dto recipient) {
         try {
             byte[] byteArray = pdfGenerator.generateCoverFile(recipient.getDenomination());
             return HexFormat.of().parseHex(Hex.encodeHexString(byteArray));

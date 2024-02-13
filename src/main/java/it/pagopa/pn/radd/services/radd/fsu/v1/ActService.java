@@ -91,7 +91,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<Void> checkIunAndInternalId(String iun, String internalId) {
-        return pnDeliveryClient.checkIunAndInternalId(iun, internalId, null);
+        return pnDeliveryClient.checkIunAndInternalId(iun, internalId);
     }
 
     private Mono<Integer> checkIunIsAlreadyExistsInCompleted(String iun) {
@@ -232,7 +232,7 @@ public class ActService extends BaseService {
                 );
     }
 
-    private Flux<String> getUrlDoc(TransactionData transaction, SentNotificationV21Dto sentDTO) {
+    private Flux<String> getUrlDoc(TransactionData transaction, SentNotificationV23Dto sentDTO) {
         return Flux.fromStream(sentDTO.getDocuments().stream())
                 .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
                         .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl))
@@ -240,7 +240,7 @@ public class ActService extends BaseService {
                 ;
     }
 
-    private Flux<String> getUrlsAttachments(TransactionData transactionData, SentNotificationV21Dto sentDTO) {
+    private Flux<String> getUrlsAttachments(TransactionData transactionData, SentNotificationV23Dto sentDTO) {
         if (sentDTO.getRecipients().isEmpty())
             return Flux.empty();
         return Flux.fromStream(sentDTO.getRecipients().stream())

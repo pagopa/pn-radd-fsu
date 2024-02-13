@@ -10,12 +10,12 @@ import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.R
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadInfoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
+import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +91,7 @@ class AorServiceTest extends BaseTest {
                 .expectError(PnInvalidInputException.class).verify();
 
         request.setOperationId("1234AOR");
-        StepVerifier.create(aorService.startTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId"))
+        StepVerifier.create(aorService.startTransaction("uid", request, it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId"))
                 .expectError(PnInvalidInputException.class).verify();
     }
 

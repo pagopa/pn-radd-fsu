@@ -48,14 +48,14 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
     public Flux<OperationsIunsEntity> getAllOperationFromIun(String iun) {
         Key key = Key.builder().partitionValue(iun).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
-        return this.getByFilter(conditional, OperationsIunsEntity.SECONDARY_INDEX, null, null, null);
+        return this.getByFilter(conditional, OperationsIunsEntity.IUN_TRANSACTION_INDEX, null, null, null);
     }
 
-    @Override
-    public Flux<OperationsIunsEntity> getAllIunsFromOperation(String operationId) {
-        Key key = Key.builder().partitionValue(operationId).build();
+   @Override
+    public Flux<OperationsIunsEntity> getAllIunsFromTransactionId(String transactionId) {
+        Key key = Key.builder().partitionValue(transactionId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
-        return this.getByFilter(conditional, OperationsIunsEntity.OPERATION_INDEX, null, null, null);
+        return this.getByFilter(conditional, null, null, null, null);
     }
 
 

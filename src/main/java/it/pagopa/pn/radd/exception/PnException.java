@@ -1,7 +1,5 @@
 package it.pagopa.pn.radd.exception;
 
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-
 public class PnException extends RuntimeException {
     
     private final String description;

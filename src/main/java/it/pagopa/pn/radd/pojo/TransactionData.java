@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 @ToString
 public class TransactionData {
+    private String transactionId;
     private String uid;
     private String iun;
     private String qrCode;

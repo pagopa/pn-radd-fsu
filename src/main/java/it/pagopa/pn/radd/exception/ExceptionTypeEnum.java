@@ -4,41 +4,42 @@ import lombok.Getter;
 
 @Getter
 public enum ExceptionTypeEnum {
-    IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params"),
-    TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata"),
-    TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente"),
-    TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted"),
-    TRANSACTION_ALREADY_COMPLETED("TRANSACTION_ALREADY_COMPLETED", "La transazione risulta già completa"),
-    TRANSACTION_ALREADY_ABORTED("TRANSACTION_ALREADY_ABORTED", "La transazione risulta annullata"),
-    TRANSACTION_ERROR_STATUS("TRANSACTION_ERROR_STATUS", "La transazione risulta in errore"),
-    TRANSACTION_NOT_UPDATE_STATUS("TRANSACTION_NOT_UPDATE_STATUS", "Lo stato della transazione non è stato aggiornato"),
-    CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde"),
-    DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto"),
-    DOCUMENT_UPLOAD_ERROR("DOCUMENT_UPLOAD_ERROR", "si è verificato un errore durante il caricamento"),
-    DOCUMENT_UNAVAILABLE("DOCUMENT_UNAVAILABLE", "Documenti non disponibili"),
-    VERSION_ID_VALIDATION("VERSION_ID_VALIDATION", "Version id non corrispondono"),
-    QR_CODE_VALIDATION("QR_CODE_VALIDATION", "QrCode non valido"),
-    DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Documenti non più disponibili"),
-    ALREADY_COMPLETE_PRINT("ALREADY_COMPLETE_PRINT", "Stampa già eseguita"),
-    CF_OR_QRCODE_NOT_VALID("CF_OR_QRCODE_NOT_VALID", "Input non valido"),
-    ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato"),
-    OPERATION_TYPE_UNKNOWN("OPERATION TYPE UNKNOWN", "Il tipo di operazione è sconosciuto"),
-    GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore"),
+    IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params", 99),
+    TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata", 99),
+    TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente", 99),
+    TRANSACTION_ALREADY_EXIST("TRANSACTION_ALREADY_EXIST", "Transazione già esistente o con stato completed o aborted", 5),
+    TRANSACTION_ALREADY_COMPLETED("TRANSACTION_ALREADY_COMPLETED", "La transazione risulta già completa", 99),
+    TRANSACTION_ALREADY_ABORTED("TRANSACTION_ALREADY_ABORTED", "La transazione risulta annullata", 99),
+    TRANSACTION_ERROR_STATUS("TRANSACTION_ERROR_STATUS", "La transazione risulta in errore", 99),
+    TRANSACTION_NOT_UPDATE_STATUS("TRANSACTION_NOT_UPDATE_STATUS", "Lo stato della transazione non è stato aggiornato", 99),
+    CHECKSUM_VALIDATION("CHECKSUM_VALIDATION", "Il valore del checksum non corrisponde", 99),
+    DOCUMENT_STATUS_VALIDATION("DOCUMENT_STATUS_VALIDATION", "Stato documento non corretto", 99),
+    DOCUMENT_UPLOAD_ERROR("DOCUMENT_UPLOAD_ERROR", "si è verificato un errore durante il caricamento", 99),
+    DOCUMENT_UNAVAILABLE("DOCUMENT_UNAVAILABLE", "Documenti non disponibili", 4),
+    VERSION_ID_VALIDATION("VERSION_ID_VALIDATION", "Version id non corrispondono", 99),
+    QR_CODE_VALIDATION("QR_CODE_VALIDATION", "QrCode non valido", 1),
+    DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Documenti non più disponibili", 2),
+    ALREADY_COMPLETE_PRINT("ALREADY_COMPLETE_PRINT", "Stampa già eseguita", 3),
+    CF_OR_QRCODE_NOT_VALID("CF_OR_QRCODE_NOT_VALID", "Input non valido", 10),
+    ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato", 99),
+    OPERATION_TYPE_UNKNOWN("OPERATION TYPE UNKNOWN", "Il tipo di operazione è sconosciuto", 99),
+    GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore", 99),
 
-    RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download"),
-    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "QrCode/CF non valido/i"),
-    NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate"),
+    RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download", 2),
+    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "QrCode/CF non valido/i", 80),
+    NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate", 99),
 
-    NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale"),
-    TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale"),
-    DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili"),
+    NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale", 10),
+    TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale", 99),
+    DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili", 99),
     ;
     private final String title;
     private final String message;
+    private final Integer code;
 
-    ExceptionTypeEnum(String title, String message){
+    ExceptionTypeEnum(String title, String message, Integer code){
         this.title = title;
         this.message = message;
+        this.code = code;
     }
-
 }

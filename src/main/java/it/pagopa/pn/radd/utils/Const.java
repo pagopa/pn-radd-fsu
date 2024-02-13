@@ -9,7 +9,7 @@ public class Const {
     public static final String PG = "PG";
 
     //Status document
-    public static final String DOCUMENT_TYPE = "PN_RADD_FSU_ATTACHMENT";
+    public static final String DOCUMENT_TYPE = "PN_RADD_ALT_ATTACHMENT";
     public static final String PRELOADED = "PRELOADED";
     public static final String ATTACHED = "ATTACHED";
 
@@ -37,5 +37,14 @@ public class Const {
     /* Checksum value */
 
     public static final String X_CHECKSUM = "SHA-256";
+
+    /* DocumentOperations */
+    public static final String ERROR_NO_RECIPIENT = "ERROR_NO_RECIPIENT";
+    public static final String ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED = "ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED";
+    public static final String MISSING_INPUT_PARAMETERS = "Missing input parameters";
+    public static final String CONTENT_TYPE_ZIP = "application/zip";
+
+
+
 
 }

@@ -11,14 +11,10 @@ Parameters:
     Type: String
     Description: ARN of alarm topic
 
-   #ApiDnsName:
-   #  Type: String
-   #  Description: 'The DNS name used for B2B rest API.'
-
-  WebApiDnsName:
+  ApiDnsName:
     Type: String
-    Description: 'The DNS name used for WEB rest API.'
-  
+    Description: 'The DNS name used for B2B rest API.'
+
   CorsAllowedDomains:
     Type: String
     Description: 'Comma separated list of domains allowed to make cross origin request'
@@ -88,11 +84,11 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing radd transaction'
 
-  OperationsAndIunsDynamoTableName:
+  OperationsDynamoTableName:
     Type: String
     Description: 'Name of dynamodb table containing iuns and operations'
 
-  OperationsAndIunsDynamoTableArn:
+  OperationsDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing iuns and operations'
   
@@ -104,10 +100,25 @@ Parameters:
     Type: String
     Description: 'Application load balancer security group'
 
+  # OpenApi Bucket params
+  MicroserviceBucketName:
+    Type: String
+    Default: ''
+    Description: 'Name of the bucket where the microservice files are copied during deploy'
+
+  MicroserviceBucketBaseKey:
+    Type: String
+    Default: ''
+    Description: 'Base key of the microservice in the s3 bucket'
+
   # Log group parameters
   EcsLogGroup:
     Type: String
     Description: 'Ecs log group name'
+
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
 
   # Heath Check parameters
   HealthCheckInterval:
@@ -185,14 +196,21 @@ Parameters:
     Type: Number
     Description: maximum autoscaling number of tasks
 
-  ApplicationLoadBalancerMetricsDimensionName:
+  SanitizeMode:
+    Default: ESCAPING
     Type: String
-    Description: 'ALB name (used by alarm metrics)'
-    Default: ''
+    Description: Html Sanitize Mode
 
-Conditions:
-  HasAlbDimensionName: !Not [ !Equals [ !Ref ApplicationLoadBalancerMetricsDimensionName, '' ] ]
-     
+  FreeMarkerTemplateLoaderPath:
+    Default: documents_composition_templates
+    Type: String
+    Description: directory in which html templates are found
+
+  FreeMarkerSuffix:
+    Default: .html
+    Type: String
+    Description: html template suffix
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -201,7 +219,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-radd-fsu'
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-alt'
         CpuValue: !Ref CpuValue
         MemoryAmount: !Ref MemoryAmount
         HealthCheckTimeout: !Ref HealthCheckTimeout
@@ -228,8 +246,13 @@ Resources:
         ContainerEnvEntry9: !Sub 'PN_RADD_SAFESTORAGECXID=${SafeStorageCxId}'
         ContainerEnvEntry10: !Sub 'PN_RADD_ATTEMPTBATCHWRITER=${AttemptBatchWriter}'
         ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
-        ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
-        MappedPaths: '/radd/*,/radd-private/*'
+        ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsDynamoTableName}'
+        ContainerEnvEntry13: !Sub 'PN_RADD_APPLICATION_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry14: !Sub 'SANITIZE_MODE=${SanitizeMode}'
+        ContainerEnvEntry15: !Sub 'SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${FreeMarkerTemplateLoaderPath}'
+        ContainerEnvEntry16: !Sub 'SPRING_FREEMARKER_SUFFIX=${FreeMarkerSuffix}'
+
+        MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -263,79 +286,38 @@ Resources:
             Resource:
               - !Sub "${RaddTransactionDynamoTableArn}"
               - !Sub "${RaddTransactionDynamoTableArn}/*"
-              - !Sub "${OperationsAndIunsDynamoTableArn}"
-              - !Sub "${OperationsAndIunsDynamoTableArn}/*"
+              - !Sub "${OperationsDynamoTableArn}"
+              - !Sub "${OperationsDynamoTableArn}/*"
             
-
-  ApplicationLoadBalancerOnCallAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: HasAlbDimensionName
+  # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
+  RaddAltMicroservicePublicAPI:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      AlarmName: !Sub "oncall-${ProjectName}-radd-fsu-alb-alarm"
-      AlarmDescription: "CloudWatch alarm when an application load balancer respond with a HTTP status 500."
-      AlarmActions:
-        - !Ref AlarmSNSTopicArn
-      OKActions:
-        - !Ref AlarmSNSTopicArn
-      DatapointsToAlarm: 2
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 6
-      Threshold: 1
-      TreatMissingData: notBreaching
-      Metrics:
-        - Id: m1
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: LoadBalancer
-                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
-                - Name: TargetGroup
-                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
-              MetricName: HTTPCode_Target_4XX_Count
-              Namespace: AWS/ApplicationELB
-            Period: 300
-            Stat: Sum
-          ReturnData: False
-        - Id: m2
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: LoadBalancer
-                  Value: !Ref ApplicationLoadBalancerMetricsDimensionName
-                - Name: TargetGroup
-                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
-              MetricName: HTTPCode_Target_5XX_Count
-              Namespace: AWS/ApplicationELB
-            Period: 300
-            Stat: Sum
-          ReturnData: False
-        - Id: m3
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: TargetGroup
-                  Value: !GetAtt RaddMicroservice.Outputs.TargetGroupName
-              MetricName: RequestCountPerTarget
-              Namespace: AWS/ApplicationELB
-            Period: 300
-            Stat: Sum
-          ReturnData: False          
-        - Id: e1
-          Expression: IF(m3>=10 AND (m1/m3>=0.9 OR m2/m3>=0.1), 1, 0)
-          Label: !Sub "${ProjectName}-radd-fsu-ALBAlarm-oncall-metric"
-
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service-openapi.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-alt'
+        IntendedUsage: RADD
+        DnsName: !Ref ApiDnsName
+        ProjectName: !Ref ProjectName
+        ServiceApiPath: 'radd-net'
+        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        OpenApiBucketName: !Ref MicroserviceBucketName
+        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-radd-net-RADD-aws.yaml
+        
   # Dashboard
-  RaddFsuMicroserviceCloudWatchDashboard:
+  RaddAltMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
       Parameters:
-        DashboardName: !Sub "${ProjectName}-radd-fsu"
+        DashboardName: !Sub "${ProjectName}-radd-alt"
         DynamoDBTableNames: !Join
           - ','
           - - !Ref RaddTransactionDynamoTableName
-            - !Ref OperationsAndIunsDynamoTableName
+            - !Ref OperationsDynamoTableName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !If [ HasAlbDimensionName, !GetAtt ApplicationLoadBalancerOnCallAlarm.Arn, '' ]

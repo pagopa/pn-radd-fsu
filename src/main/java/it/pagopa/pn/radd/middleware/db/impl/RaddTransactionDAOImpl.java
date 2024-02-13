@@ -10,6 +10,7 @@ import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -29,6 +30,8 @@ import java.util.Map;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.OPERATION_TYPE_UNKNOWN;
+import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
+import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Repository
 @Slf4j
@@ -58,7 +61,8 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
     public Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity) {
         Expression expression = createExpression(entity);
-        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class);
+        return super.putItemWithConditions(entity, expression, RaddTransactionEntity.class)
+                .doOnError(e -> log.error(e.getMessage()));
     }
 
     private Expression createExpression(RaddTransactionEntity entity) {
@@ -108,7 +112,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
      */
     private Expression buildExpressionForPK() {
         return Expression.builder()
-                .expression("attribute_not_exists(operationId) AND attribute_not_exists(operationType)")
+                .expression("attribute_not_exists(transactionId) AND attribute_not_exists(operationType)")
                 .build();
     }
 
@@ -163,11 +167,21 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
 
     @Override
-    public Mono<RaddTransactionEntity> getTransaction(String operationId, OperationTypeEnum operationType) {
+    public Mono<RaddTransactionEntity> getTransaction(String cxType, String cxId, String operationId, OperationTypeEnum operationType) {
         Key key = Key.builder()
-                    .partitionValue(operationId)
+                    .partitionValue(transactionIdBuilder(CxTypeAuthFleet.valueOf(cxType), cxId, operationId))
                     .sortValue(operationType.name())
                     .build();
+        return this.findFromKey(key)
+                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
+    }
+
+    @Override
+    public Mono<RaddTransactionEntity> getTransaction(String transactionId, OperationTypeEnum operationType) {
+        Key key = Key.builder()
+                .partitionValue(transactionId)
+                .sortValue(operationType.name())
+                .build();
         return this.findFromKey(key)
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
     }
@@ -182,38 +196,17 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     }
 
     @Override
-    public Mono<Integer> countFromIunAndOperationIdAndStatus(String operationId, String iun) {
+    public Mono<Integer> countFromIunAndStatus(String iun) {
         Map<String, AttributeValue> expressionValues = new HashMap<>();
 
-        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed" + " OR " +
-                RaddTransactionEntity.COL_STATUS + " = :aborted )" +
-                " AND ( " + RaddTransactionEntity.COL_IUN + " = :iun)";
-
+        String query = RaddTransactionEntity.COL_STATUS + " = :completed";
         expressionValues.put(":iun", AttributeValue.builder().s(iun).build());
-        expressionValues.put(":operationId",  AttributeValue.builder().s(operationId).build());
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
-        expressionValues.put(":aborted",  AttributeValue.builder().s(Const.ABORTED).build());
 
         log.trace("COUNT DAO TICK {}", new Date().getTime());
 
-        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_OPERATION_ID + " = :operationId", null)
+        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_IUN + " = :iun", RaddTransactionEntity.IUN_SECONDARY_INDEX)
                 .doOnNext(response -> log.trace("COUNT DAO TOCK {}", new Date().getTime()));
-    }
-
-    @Override
-    public Mono<Integer> countFromQrCodeCompleted(String qrCode) {
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-
-        String query = "(" + RaddTransactionEntity.COL_STATUS + " = :completed AND " + RaddTransactionEntity.COL_OPERATION_TYPE +  " = :type)";
-        expressionValues.put(":completed", AttributeValue.builder().s(Const.COMPLETED).build());
-        expressionValues.put(":type", AttributeValue.builder().s(OperationTypeEnum.ACT.name()).build());
-        expressionValues.put(":qrcodevalue",  AttributeValue.builder().s(qrCode).build());
-
-        log.trace("COUNT QUERY DAO TICK {}", new Date().getTime());
-
-        return this.getCounterQuery(expressionValues, query, RaddTransactionEntity.COL_QR_CODE + " = :qrcodevalue", RaddTransactionEntity.QRCODE_SECONDARY_INDEX)
-                .doOnNext(result ->  log.trace("COUNT QUERY DAO TOCK {}", new Date().getTime()))
-                .doOnError(ex ->  log.trace("COUNT QUERY DAO TOCK {}", new Date().getTime()));
     }
 
 

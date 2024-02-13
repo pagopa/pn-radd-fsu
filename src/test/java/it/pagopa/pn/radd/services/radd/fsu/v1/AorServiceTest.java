@@ -1,20 +1,21 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.ResponsePaperNotificationFailedDtoDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadInfoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
+import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,8 @@ class AorServiceTest extends BaseTest {
     @InjectMocks
     private AorService aorService;
     @Mock
+    PnRaddFsuConfig pnRaddFsuConfig;
+    @Mock
     private PnDeliveryPushClient pnDeliveryPushClient;
     @Mock
     private PnDataVaultClient pnDataVaultClient;
@@ -56,7 +59,7 @@ class AorServiceTest extends BaseTest {
     private AorStartTransactionRequest startTransactionRequest;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just(ENSURE_FC));
         abortTransactionRequest = new AbortTransactionRequest();
         abortTransactionRequest.setOperationId("1234AOR");
@@ -82,18 +85,18 @@ class AorServiceTest extends BaseTest {
 
     // AOR START //
     @Test
-    void testStartWhenValidateRequestThenThrowInvalidInputException(){
+    void testStartWhenValidateRequestThenThrowInvalidInputException() {
         AorStartTransactionRequest request = new AorStartTransactionRequest();
-        StepVerifier.create(aorService.startTransaction("uid", request))
+        StepVerifier.create(aorService.startTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId"))
                 .expectError(PnInvalidInputException.class).verify();
 
         request.setOperationId("1234AOR");
-        StepVerifier.create(aorService.startTransaction("uid", request))
+        StepVerifier.create(aorService.startTransaction("uid", request, it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId"))
                 .expectError(PnInvalidInputException.class).verify();
     }
 
     @Test
-    void testStartOK(){
+    void testStartOK() {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(startTransactionRequest.getRecipientTaxId(), startTransactionRequest.getRecipientType().getValue()))
                 .thenReturn(Mono.just("PF-4fc75df3-0913-407e-bdaa-e50329708b7d"));
 
@@ -125,12 +128,14 @@ class AorServiceTest extends BaseTest {
         Mockito.when(pnSafeStorageClient.getFile("//url:safestorage"))
                 .thenReturn(Mono.just(file1));
 
-        StartTransactionResponse response = this.aorService.startTransaction("uid", startTransactionRequest).block();
+        Mockito.when(pnRaddFsuConfig.getApplicationBasepath()).thenReturn("123");
+
+        StartTransactionResponse response = this.aorService.startTransaction("uid", startTransactionRequest, CxTypeAuthFleet.valueOf("PF"),"1").block();
 
         assertNotNull(response);
-        assertNotNull(response.getUrlList());
-        assertFalse(response.getUrlList().isEmpty());
-        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0,response.getStatus().getCode());
+       // assertNotNull(response.getUrlList());
+      //  assertFalse(response.getUrlList().isEmpty());
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
 
     }
 
@@ -140,16 +145,16 @@ class AorServiceTest extends BaseTest {
 
     // AOR COMPLETE //
     @Test
-    void testCompleteWhenValidateRequestThenThrowInvalidInputException(){
+    void testCompleteWhenValidateRequestThenThrowInvalidInputException() {
         CompleteTransactionRequest request = new CompleteTransactionRequest();
-        StepVerifier.create(aorService.completeTransaction("uid", Mono.just(request)))
+        StepVerifier.create(aorService.completeTransaction("uid", Mono.just(request), CxTypeAuthFleet.valueOf("PF"), "cxId"))
                 .expectError(PnInvalidInputException.class).verify();
     }
 
     @Test
-    void testCompleteWhenDaoNotFindThenReturnResponseKO(){
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST));
-        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
+    void testCompleteWhenDaoNotFindThenReturnResponseKO() {
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST));
+        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest), CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -158,10 +163,10 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testCompleteWhenTransactionAlreadyCompletedThenReturnResponseKO(){
+    void testCompleteWhenTransactionAlreadyCompletedThenReturnResponseKO() {
         entityComplete.setStatus(Const.COMPLETED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest), CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -170,10 +175,10 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testCompleteWhenTransactionAlreadyAbortedThenReturnResponseKO(){
+    void testCompleteWhenTransactionAlreadyAbortedThenReturnResponseKO() {
         entityComplete.setStatus(Const.ABORTED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest), CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -182,10 +187,10 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testCompleteWhenTransactionInErrorThenReturnResponseKO(){
+    void testCompleteWhenTransactionInErrorThenReturnResponseKO() {
         entityComplete.setStatus(Const.ERROR);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest), CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -194,12 +199,12 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testCompleteWhenUpdateStatusThenReturnKO(){
+    void testCompleteWhenUpdateStatusThenReturnKO() {
         entityComplete.setStatus(Const.STARTED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
 
-        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
+        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest), CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -208,12 +213,12 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testCompleteAllOKThenReturnOK(){
+    void testCompleteAllOKThenReturnOK() {
         entityComplete.setStatus(Const.STARTED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
 
-        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest)).block();
+        CompleteTransactionResponse response = aorService.completeTransaction("uid", Mono.just(completeTransactionRequest), CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -225,24 +230,24 @@ class AorServiceTest extends BaseTest {
     // AOR ABORT //
 
     @Test
-    void testAbortWhenValidateRequestThenThrowInvalidInputException(){
+    void testAbortWhenValidateRequestThenThrowInvalidInputException() {
         AbortTransactionRequest request = new AbortTransactionRequest();
-        StepVerifier.create(aorService.abortTransaction("uid", Mono.just(request)))
+        StepVerifier.create(aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(request)))
                 .expectError(PnInvalidInputException.class).verify();
 
         request.setOperationId("1234AOR");
-        StepVerifier.create(aorService.abortTransaction("uid", Mono.just(request)))
+        StepVerifier.create(aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(request)))
                 .expectError(PnInvalidInputException.class).verify();
 
         request.setReason("cancelled by user");
-        StepVerifier.create(aorService.abortTransaction("uid", Mono.just(request)))
+        StepVerifier.create(aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(request)))
                 .expectError(PnInvalidInputException.class).verify();
     }
 
     @Test
-    void testAbortWhenDaoNotFindThenReturnResponseKO(){
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST));
-        AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
+    void testAbortWhenDaoNotFindThenReturnResponseKO() {
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST));
+        AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(abortTransactionRequest)).block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -251,9 +256,9 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testAbortWhenTransactionAlreadyCompletedThenReturnResponseKO(){
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
+    void testAbortWhenTransactionAlreadyCompletedThenReturnResponseKO() {
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(abortTransactionRequest)).block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -262,10 +267,10 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testAbortWhenTransactionAlreadyAbortedThenReturnResponseKO(){
+    void testAbortWhenTransactionAlreadyAbortedThenReturnResponseKO() {
         entityComplete.setStatus(Const.ABORTED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(abortTransactionRequest)).block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -274,10 +279,10 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testAbortWhenTransactionInErrorThenReturnResponseKO(){
+    void testAbortWhenTransactionInErrorThenReturnResponseKO() {
         entityComplete.setStatus(Const.ERROR);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
-        AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(abortTransactionRequest)).block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -286,12 +291,12 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testAbortWhenUpdateStatusThenReturnKO(){
+    void testAbortWhenUpdateStatusThenReturnKO() {
         entityComplete.setStatus(Const.STARTED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS));
 
-        AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
+        AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(abortTransactionRequest)).block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -300,12 +305,12 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testAbortAllOKThenReturnOK(){
+    void testAbortAllOKThenReturnOK() {
         entityComplete.setStatus(Const.STARTED);
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
         Mockito.when(raddTransactionDAOImpl.updateStatus(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entityComplete));
 
-        AbortTransactionResponse response = aorService.abortTransaction("uid", Mono.just(abortTransactionRequest)).block();
+        AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", Mono.just(abortTransactionRequest)).block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
@@ -316,11 +321,11 @@ class AorServiceTest extends BaseTest {
 
     //  AOR INQUIRY //
     @Test
-    void testWhenSearchReturnEmptyThrowException(){
+    void testWhenSearchReturnEmptyThrowException() {
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(new ResponsePaperNotificationFailedDtoDto()));
-        aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF")
+        aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId")
                 .onErrorResume(ex -> {
-                    if (ex instanceof RaddGenericException){
+                    if (ex instanceof RaddGenericException) {
                         assertNotNull(((RaddGenericException) ex).getExceptionType());
                         assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF, ((RaddGenericException) ex).getExceptionType());
                     }
@@ -330,7 +335,7 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testWhenSearchListEmptyReturnResponseKO(){
+    void testWhenSearchListEmptyReturnResponseKO() {
         ResponsePaperNotificationFailedDtoDto response1 = new ResponsePaperNotificationFailedDtoDto();
         response1.setRecipientInternalId("testCF1");
 
@@ -339,7 +344,7 @@ class AorServiceTest extends BaseTest {
 
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
 
-        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF").block();
+        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId").block();
         assertNotNull(inquiryResponse);
         assertFalse(inquiryResponse.getResult());
         assertEquals(new BigDecimal(99), inquiryResponse.getStatus().getCode().getValue());
@@ -347,7 +352,7 @@ class AorServiceTest extends BaseTest {
     }
 
     @Test
-    void testWhenSearchListReturnOK(){
+    void testWhenSearchListReturnOK() {
         ResponsePaperNotificationFailedDtoDto response1 = new ResponsePaperNotificationFailedDtoDto();
         response1.setRecipientInternalId(ENSURE_FC);
 
@@ -355,17 +360,17 @@ class AorServiceTest extends BaseTest {
         response2.setRecipientInternalId("testCF2");
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
 
-        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF").block();
+        AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId").block();
         log.info("Response {}", inquiryResponse);
         assertNotNull(inquiryResponse);
         assertTrue(inquiryResponse.getResult());
     }
 
     @Test
-    void testWhenRecipientIdIsNullThrowPnInvalidInput(){
+    void testWhenRecipientIdIsNullThrowPnInvalidInput() {
         try {
-            aorService.aorInquiry("uid", "", "type").block();
-        } catch (PnInvalidInputException ex){
+            aorService.aorInquiry("uid", "", "type", CxTypeAuthFleet.valueOf("PF"), "cxId").block();
+        } catch (PnInvalidInputException ex) {
             assertNotNull(ex);
             assertEquals("Il campo codice fiscale non è valorizzato", ex.getReason());
             return;

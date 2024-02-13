@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
+import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
@@ -56,12 +57,12 @@ public class BaseService {
             //    throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             //}
             log.debug("Document version is : {}", response.getVersionId());
-            if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())){
+            if (!StringUtils.equals(transaction.getVersionId(), response.getVersionId())) {
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
             log.debug("Document checksum is : {}", response.getChecksum());
             if (Strings.isBlank(response.getChecksum()) ||
-                    !response.getChecksum().equals(transaction.getChecksum())){
+                    !response.getChecksum().equals(transaction.getChecksum())) {
                 log.error("Request contains Document checksum : {}", transaction.getChecksum());
                 log.error("Response contains Document version: {} checksum: {}", response.getVersionId(), response.getChecksum());
                 throw new RaddGenericException(CHECKSUM_VALIDATION);
@@ -89,8 +90,8 @@ public class BaseService {
                 });
     }
 
-    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType){
-        return this.raddTransactionDAO.getTransaction(operationId, operationType)
+    protected Mono<RaddTransactionEntity> settingErrorReason(Exception ex, String operationId, OperationTypeEnum operationType, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId){
+        return this.raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, operationType)
                 .map(entity -> {
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException){

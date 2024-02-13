@@ -1,0 +1,173 @@
+<html>
+<head>
+  <meta name="author" content="SEND - Servizio Notifiche Digitali" />
+  <style type="text/css" media="all">
+      @font-face {
+        font-family: 'Montserrat';
+        src: url(fonts/Montserrat/static/Montserrat-Regular.ttf);
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Montserrat';
+        src: url(fonts/Montserrat/static/Montserrat-Bold.ttf);
+        font-weight: bold;
+        font-style: normal;
+      }
+
+      @page {
+        size: A4;
+         margin: 36mm 10mm 32mm 10mm;
+
+        @top-left {
+          content: element(header);
+          vertical-align: top;
+        }
+
+        @bottom-center {
+          content: element(footer);
+        }
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-size: 16px;
+        font-family: "Montserrat", sans-serif;
+        font-weight: 400;
+      }
+
+      p {
+        margin: 0;
+        padding: 0;
+        line-height: 1.5em;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      #header {
+        position: running(header);
+        font-size: 14px
+      }
+
+      #header img {
+        margin-top: 15mm;
+        width: 119px;
+        height: 35px;
+        /* 85x25 */
+      }
+
+      #footer {
+        position: running(footer);
+        font-size: 8px;
+        color: #475A6D;
+        border-top: 1px solid #E3E7EB;
+        padding-top: 3mm;
+        margin-bottom: 10mm;
+      }
+
+      #footer p {
+        margin: 0;
+        padding: 0;
+        line-height: 1em;
+      }
+
+      #footer img {
+        width: 45px;
+        height: 45px;
+      }
+
+      .row {
+        width: 100%;
+      }
+      .row::after {
+        content: "";
+        display: block;
+        clear: both;
+      }
+
+      .left-col {
+        float: left;
+      }
+
+      .right-col {
+        float: right;
+      }
+
+      .col-1-10 { width: 10%; }
+      .col-2-10 { width: 20%; }
+      .col-3-10 { width: 30%; }
+      .col-4-10 { width: 40%; }
+      .col-5-10 { width: 50%; }
+      .col-6-10 { width: 60%; }
+      .col-7-10 { width: 70%; }
+      .col-8-10 { width: 80%; }
+      .col-9-10 { width: 90%; }
+
+      .margin-top-medium { margin-top: 10mm; }
+      .margin-top-large { margin-top: 15mm; }
+
+      .margin-y-small { margin: 5mm 0; }
+      .margin-y-medium { margin: 10mm 0; }
+
+      .right {
+        text-align: right;
+      }
+
+      #subject {
+        font-size: 20px;
+        margin-bottom: 7mm;
+      }
+
+      .paragraph {
+        margin: 7mm 0;
+        /* text-align: justify;
+        text-justify: inter-word; */
+      }
+
+      .hash-list li {
+        list-style-type: disc;
+        list-style-position: inside;
+      }
+    </style>
+</head>
+<body>
+<div class="container">
+  <div class="container">
+    <div id="header" class="row">
+      <div class="left-col">
+        <img src="images/pn-logo-header.png" style="width:126px; height:35px;" />
+      </div>
+      <div class="right-col">
+        <img src="images/send-logo.png" style="width:81px; height:26.24px;" />
+      </div>
+    </div>
+    <!-- Se il footer viene messo in fondo al documento compare solo nell'ultima pagina -->
+    <div id="footer" class="row">
+      <div class="left-col">
+        <p>PagoPA S.p.A.</p>
+        <p>società per azioni con socio unico</p>
+        <p>capitale sociale di euro 1,000,000 interamente versato</p>
+        <p>sede legale in Roma, Piazza Colonna 370, CAP 00187</p>
+        <p>n. di iscrizione a Registro Imprese di Roma, CF e P.IVA 15376371009</p>
+      </div>
+      <div class="right-col">
+        <img src="images/pn-logo-footer.png"/>
+      </div>
+    </div>
+
+    <h3 id="subject">Frontespizio</h3>
+
+    <p class="paragraph">
+      Nome e cognome: ${denomination}
+    </p>
+  </div>
+</body>
+</html>
+

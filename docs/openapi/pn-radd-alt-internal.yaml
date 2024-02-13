@@ -1,0 +1,713 @@
+openapi: 3.0.1
+info:
+  termsOfService: https://notifichedigitali.pagopa.it/radd/index.html
+  x-api-id: api-internal-radd-net # NO EXTERNAL
+  #  x-api-id: api-external-radd-net # ONLY EXTERNAL
+  title: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  x-summary: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  version: '1.0.0'
+  description: Api per gli operatori RADD (Rete Assorbimento Divario Digitale)
+  contact:
+    email: pn-supporto-enti@pagopa.it
+  license:
+    name: Licenza di PN
+    url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+
+servers:
+  - url: https://api-radd.notifichedigitali.it
+    description: Ambiente di produzione
+  - url: https://api.radd.uat.notifichedigitali.it
+    description: Ambiente di collaudo
+
+tags:
+  - name: actOperations
+    description: API di interrogazione per il recupero di  atti e attestazioni opponibili a terzi.
+  - name: aorOperations
+    description: API di interrogazione per il recupero di avvisi di avvenuta ricezione.
+  - name: documentOperations
+    description: API gestione file.
+
+paths:
+  /radd-net/api/v1/documents/upload:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    post:
+      tags:
+        - documentOperations
+      description: >-
+        API utilizzata per la richiesta della presigned URL utilizzata per il caricamento della scansione
+        dei documenti e metadati presentati a sportello dal cliente. Il file deve essere in formato ZIP
+        e la struttura dello zip deve seguire quanto specificato.
+      operationId: documentUpload
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentUploadRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /radd-net/api/v1/download/{operationType}/{operationId}:
+    ## SLA - Tempo risposta medio: < 10s; Timeout :20s
+    parameters:
+      - $ref: '#/components/parameters/operationType'
+      - $ref: '#/components/parameters/operationId'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    get:
+      tags:
+        - documentOperations
+      operationId: documentDownload
+      description: API utilizzata per il download del frontespizio
+      responses:
+        200:
+          description: "Ritorna il frontespizio"
+          content:
+            'application/pdf':
+              schema:
+#               type: object    # ONLY EXTERNAL
+                type: string    # NO EXTERNAL
+                format: byte    # NO EXTERNAL
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /radd-net/api/v1/act/inquiry:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: '#/components/parameters/uid'
+      - $ref: '#/components/parameters/recipientTaxId'
+      - $ref: '#/components/parameters/recipientType'
+      - $ref: '#/components/parameters/qrCode'
+      - $ref: '#/components/parameters/iun'
+    get:
+      tags:
+        - actOperations
+      operationId: actInquiry
+      description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni tramite iun o qrCode.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActInquiryResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /radd-net/api/v1/aor/inquiry:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s"
+    parameters:
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: '#/components/parameters/uid'
+      - $ref: '#/components/parameters/recipientTaxId'
+      - $ref: '#/components/parameters/recipientType'
+    get:
+      tags:
+        - aorOperations
+      operationId: aorInquiry
+      description: API utilizzata per la verifica della presenza a sistema di avvisi di avvenuta ricezione per il cliente.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AORInquiryResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+
+  /radd-net/api/v1/act/transaction/start:
+    ## SLA - Tempo risposta medio: < 10s; Timeout: 20s. Tempo massimo polling (response.status.code = 0): 10s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    post:
+      tags:
+        - actOperations
+      operationId: startActTransaction
+      description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna dell'atto e delle eventuali attestazioni.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActStartTransactionRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartTransactionResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+
+  /radd-net/api/v1/act/transaction/complete:
+    ## SLA - Tempo risposta medio: < 1s, Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    post:
+      tags:
+        - actOperations
+      operationId: completeActTransaction
+      description: API utilizzata per la notifica del completamento dell'operazione di consegna dell'atto e delle eventuali attestazioni.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteTransactionRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteTransactionResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-net/api/v1/act/transaction/abort:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    post:
+      tags:
+        - actOperations
+      operationId: abortActTransaction
+      description: API utilizzata per la notifica  dell'annullamento dell'operazione di consegna dell'atto e delle eventuali attestazioni.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbortTransactionRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortTransactionResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-net/api/v1/aor/transaction/start:
+    ## SLA - Tempo risposta medio: < 1s; Timeout: 3s. Tempo massimo polling(response.status.code = 0): 10s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    post:
+      tags:
+        - aorOperations
+      operationId: startAorTransaction
+      description: API utilizzata per la richiesta di avvio delloperazione di scaricamento e consegna degli avvisi di avvenuta ricezione.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AorStartTransactionRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartTransactionResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+
+
+  /radd-net/api/v1/aor/transaction/complete:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    post:
+      tags:
+        - aorOperations
+      operationId: completeAorTransaction
+      description: API utilizzata per la notifica  del completamento dell'operazione di consegna dell'atto.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteTransactionRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteTransactionResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /radd-net/api/v1/aor/transaction/abort:
+    ## SLA - Tempo risposta medio: < 1s; Timeout :3s
+    parameters:
+      - $ref: '#/components/parameters/uid'
+      - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+    post:
+      tags:
+        - aorOperations
+      operationId: abortAorTransaction
+      description: API utilizzata per la notifica  dell'annullamento dell'operazione        di consegna del/degli avviso/i di avvenuta ricezione.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbortTransactionRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortTransactionResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    DocumentUploadRequest:
+      description: Richiesta di upload di un file zip contenente i documenti/metadati verso PagoPA
+      type: object
+      required:
+        - operationId
+        - checksum
+      properties:
+        operationId:
+          type: string
+        checksum:
+          type: string
+          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
+
+    DocumentUploadResponse:
+      description: Response della Richiesta di upload
+      type: object
+      properties:
+        url:
+          type: string
+          example: "https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host"
+        fileKey:
+          type: string
+          example: "PN_RADD_FSU"
+        secret:
+          type: string
+          example: "alow22ddw"
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+
+    ActInquiryResponse:
+      description: Response di verifica presenza atto ed eventuali attestazione opponibili a terzi
+      type: object
+      properties:
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ActInquiryResponseStatus'
+    AORInquiryResponse:
+      description: Response di verifica presenza AAR.
+      type: object
+      properties:
+        result:
+          type: boolean
+          example: true
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+
+
+    ActStartTransactionRequest:
+      description: Richiesta  di completamento operazione.
+      allOf:
+        - $ref: '#/components/schemas/AorStartTransactionRequest'
+      properties:
+        qrCode:
+          description: in alternativa allo iun
+          type: string
+        iun:
+          description: in alternativa al qrCode
+          type: string
+
+    StartTransactionResponse:
+      description: Response alla richiesta di avvio della transazione
+      type: object
+      properties:
+        downloadUrlList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownloadUrl'
+        status:
+          $ref: '#/components/schemas/StartTransactionResponseStatus'
+
+    DownloadUrl:
+      description: contiene l'url per il download e il meccanismo richiesto di autenticazione
+      type: object
+      properties:
+        url:
+          type: string
+          description: url per il download
+        needAuthentication:
+          type: boolean
+          description: indica se inviare l'header di autenticazione
+
+    AorStartTransactionRequest:
+      description: Richiesta  di completamento operazione
+      type: object
+      required:
+        - versionToken
+        - operationId
+        - recipientTaxId
+        - recipientType
+        - fileKey
+        - checksum
+      properties:
+        versionToken:
+          type: string
+        operationId:
+          type: string
+        recipientTaxId:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          type: string
+          example: "TNTGTR76E21H751S"
+        recipientType:
+          type: string
+          enum: ["PF", "PG"]
+          example: "PF"
+        delegateTaxId:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          type: string
+          example: "RFRGRZ66E21H751B"
+        fileKey:
+          type: string
+          example: "XXXXX"
+        checksum:
+          type: string
+          example: "YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo="
+          description: Checksum SHA256 del file caricato nella chiamata di documetUpload codificato in base64
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di completamento della transazione in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+
+    CompleteTransactionRequest:
+      description: Richiesta  di chiusura della transazione
+      type: object
+      required:
+        - operationId
+        - operationDate
+      properties:
+        operationId:
+          type: string
+          example: "2bb5c29e0cf411ed861d0242ac120002"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di completamento della transazione,  espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+    CompleteTransactionResponse:
+      description: Response alla richiesta di chiusura della transazione
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionResponseStatus'
+
+    AbortTransactionRequest:
+      description: Richiesta  di cancellazione della transazione
+      type: object
+      required:
+        - operationId
+        - operationDate
+      properties:
+        operationId:
+          type: string
+          example: "2bb5c29e0cf411ed861d0242ac120002"
+        reason:
+          type: string
+          default: "abort"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di annullamento della transazione,  espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+    AbortTransactionResponse:
+      description: Response alla richiesta di chiusura della transazione
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionResponseStatus'
+
+    ResponseStatus:
+      description: Stato della response
+      type: object
+      properties:
+        code:
+          description: |
+            Return code.
+            * 0 -> OK
+            * 99 -> KO
+          type: number
+          enum: [0, 99]
+        message:
+          type: string
+          example: OK
+
+    StartTransactionResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche, ritentare dopo il tempo specificato nel retryAfter con una nuova transaction)
+                * 3 -> Stampa già eseguita
+                * 5 -> Codice operationId già presente
+                * 10 -> AAR non disponibili
+                * 80 -> Notifica annullata dalla PA
+                * 99 -> KO
+              type: number
+              enum: [0, 99, 2,3,5,10,80]
+            retryAfter:
+              description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
+              type: number
+              example: 670
+
+    TransactionResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK (Anche in caso di  chiamata successiva con identici parametri)
+                * 1 -> Transazione inesistente
+                * 2 -> Transazione già completata (Messaggio di errore differente se già completata per chiamata a complete piuttosto che abort)
+                * 99 -> KO
+              type: number
+              enum: [0,1,2,99]
+
+    ActInquiryResponseStatus:
+      description: Stato della response
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 1 -> QrCode/CF non valido/i
+                * 2 -> Documenti non più disponibili
+                * 3 -> Stampa già eseguita
+                * 4 -> Documento non più disponibili
+                * 10 -> QrCode/CF non valido/i
+                * 80 -> Notifica annullata dalla PA
+                * 99 -> KO generico
+              type: number
+              enum: [0,1,2,3,4,10,80,99]
+
+
+  parameters:
+    uid:
+      name: uid
+      description: Identificativo del client
+      in: header
+      required: true
+      schema:
+        type: string
+      example: 00001-000-2024_02_02T00:00:00
+    recipientTaxId:
+      name: recipientTaxId
+      description: Codice Fiscale Destinatario
+      in: query
+      required: true
+      schema:
+        type: string
+      example: TNTGTR76E21H751S
+    recipientType:
+      name: recipientType
+      description: Sigla, Persona fisica o giuridica
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: ["PF", "PG"]
+      example: PF
+    delegateTaxId:
+      name: delegateTaxId
+      description: Codice Fiscale Delegato
+      in: query
+      schema:
+        type: string
+      example: TNTGTR76E21H751S
+    qrCode:
+      name: qrCode
+      description: Qr Code presente sull'avviso di Avvenuta ricezione. Da usare in alternativa a "iun".
+      in: query
+      required: false
+      schema:
+        type: string
+      example: "TBD"
+    iun:
+      name: iun
+      description: IUN da ricercare per il destinatario. Da usare in alternativa a qrCode.
+      in: query
+      required: false
+      schema:
+        type: string
+      example: "TBD"
+    operationId:
+      name: operationId
+      description: Id della pratica
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "asd123"
+    operationType:
+      name: operationType
+      description: Tipo di operazione aor o act
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: ["aor", "act"]
+      example: aor
+
+
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized
+
+
+  securitySchemes:
+    APIKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+security:
+  - APIKeyAuth: []

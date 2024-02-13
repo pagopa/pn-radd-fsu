@@ -36,9 +36,9 @@ public class OperationService {
     }
 
 
-    public Mono<OperationActResponse> getTransactionActByOperationIdAndType(String operationId){
-        log.info("Find transaction with {} operation id", operationId);
-        return transactionDAO.getTransaction(operationId, OperationTypeEnum.ACT)
+    public Mono<OperationActResponse> getTransactionActByTransactionIdAndType(String transactionId){
+        log.info("Find transaction with {} transaction id", transactionId);
+        return transactionDAO.getTransaction(transactionId, OperationTypeEnum.ACT)
                 .map(entity ->
                         OperationActResponseMapper.fromResult(
                                 mapperToNotificationResponse.toDto(entity)
@@ -47,10 +47,10 @@ public class OperationService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(OperationActResponseMapper.fromException(ex)));
     }
 
-    public Mono<OperationAorResponse> getTransactionAorByOperationIdAndType(String operationId){
-        log.info("Find transaction with {} operation id", operationId);
-        return transactionDAO.getTransaction(operationId, OperationTypeEnum.AOR)
-                .flatMap(transaction -> operationsIunsDAO.getAllIunsFromOperation(operationId)
+    public Mono<OperationAorResponse> getTransactionAorByTransactionIdAndType(String transactionId){
+        log.info("Find transaction with {} transaction id", transactionId);
+        return transactionDAO.getTransaction(transactionId, OperationTypeEnum.AOR)
+                .flatMap(transaction -> operationsIunsDAO.getAllIunsFromTransactionId(transactionId)
                         .map(OperationsIunsEntity::getIun)
                         .collectList()
                         .map(iuns -> {
@@ -71,7 +71,7 @@ public class OperationService {
 
     public Mono<OperationsResponse> getOperationsAorByIun(String iun){
         return operationsIunsDAO.getAllOperationFromIun(iun)
-                .map(OperationsIunsEntity::getOperationId)
+                .map(OperationsIunsEntity::getTransactionId)
                 .collectList()
                 .map(OperationsResponseMapper::fromResult);
     }
@@ -147,7 +147,7 @@ public class OperationService {
 
     private Flux<RaddTransactionEntity> getTransactionsFromInternalId(String internalId, Date from, Date to){
         return this.transactionDAO.getTransactionsFromFiscalCode(internalId, from, to)
-                .flatMap(transaction -> operationsIunsDAO.getAllIunsFromOperation(transaction.getOperationId())
+                .flatMap(transaction -> operationsIunsDAO.getAllIunsFromTransactionId(transaction.getTransactionId())
                         .map(OperationsIunsEntity::getIun)
                         .collectList()
                         .map(iuns -> {

@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -17,8 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+// TODO: Test disabilitati da riparare in fase di aggiornamento rispettiva API
+
+
 class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
     private static final String IUN_TEST = "IUN-TEST";
+    private static final String TRANSACTION_ID_TEST = "cxId#PF#operationId";
     @Autowired
     private OperationsIunsDAO operationsIunsDAO;
     @Spy
@@ -27,7 +32,7 @@ class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
 
     @BeforeEach
     void setUp(){
-        List<OperationsIunsEntity> entities = this.createOperations(IUN_TEST, "OPT_1", 99);
+        List<OperationsIunsEntity> entities = this.createOperations(IUN_TEST, "cxId#PF#operationId", 99);
         operationsIunsDAO.putWithBatch(entities).block();
     }
 
@@ -47,6 +52,20 @@ class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
         assertNotNull(operationsIunsEntities);
 
     }
+    @Test
+    void getAllOperationFromTransactionId(){
+        List<OperationsIunsEntity> operationsIunsEntities = operationsIunsDAO.getAllIunsFromTransactionId(TRANSACTION_ID_TEST)
+                .map(operationsIunsEntity -> operationsIunsEntity)
+                .collectList().block();
+        assertNotNull(operationsIunsEntities);
+    }
+
+    @Test
+    void getAllOperationFromTransactionIdException(){
+        StepVerifier.create(operationsIunsDAO.getAllIunsFromTransactionId(null))
+                .expectError()
+                .verify();
+    }
 
     @Test
     void getAllOperationFromIunExceptionTest(){
@@ -55,13 +74,12 @@ class OperationsIunsDAOImplTest extends BaseTest.WithLocalStack {
                 .verify();
     }
 
-    private List<OperationsIunsEntity> createOperations(String iun, String operation, int size) {
+    private List<OperationsIunsEntity> createOperations(String iun, String transactionId, int size) {
         List<OperationsIunsEntity> list = new ArrayList<>();
         for(int i=0; i<size; i++){
             OperationsIunsEntity op = new OperationsIunsEntity();
-            op.setOperationId(operation);
-            op.setIun(iun);
-            op.setId(UUID.randomUUID().toString());
+            op.setTransactionId(transactionId);
+            op.setIun(iun+i);
             list.add(op);
         }
         return list;

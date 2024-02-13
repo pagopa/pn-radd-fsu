@@ -1,0 +1,11 @@
+{
+    "openapi": [
+        {
+            "intendedUsage": "RADD",
+            "openapiFiles": [
+                "pn-radd-alt-internal.yaml"
+            ],
+            "servicePath": "radd-net"
+        }
+    ]
+}

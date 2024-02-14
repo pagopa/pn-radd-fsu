@@ -1,5 +1,7 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
@@ -10,6 +12,7 @@ import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
+import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
@@ -22,6 +25,7 @@ import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.utils.ImmutableMap;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +34,6 @@ import java.util.Map;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.OPERATION_TYPE_UNKNOWN;
-import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Repository
@@ -245,6 +248,14 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
         return this.getByFilter(conditional, indexRecipient, map, query, null)
                 .concatWith(this.getByFilter(conditional, indexDelegate, map, query, null))
                 .distinct(RaddTransactionEntity::getOperationId);
+    }
+    @Override
+    public Mono<RaddTransactionEntity> updateZipAttachments(RaddTransactionEntity entity, Map<String, String> zipAttachments) {
+        entity.setZipAttachments(zipAttachments);
+        return this.updateItem(entity)
+                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)))
+                .filter(updated -> updated.getZipAttachments().equals(entity.getZipAttachments()))
+                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS)));
     }
 
 }

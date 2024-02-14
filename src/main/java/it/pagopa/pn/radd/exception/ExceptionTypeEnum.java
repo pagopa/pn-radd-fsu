@@ -23,8 +23,8 @@ public enum ExceptionTypeEnum {
     CF_OR_QRCODE_NOT_VALID("CF_OR_QRCODE_NOT_VALID", "Input non valido", 10),
     ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato", 99),
     OPERATION_TYPE_UNKNOWN("OPERATION TYPE UNKNOWN", "Il tipo di operazione è sconosciuto", 99),
-    GENERIC_ERROR("GENERIC_ ERROR", "Si è verificato un errore", 99),
-
+    GENERIC_ERROR("GENERIC ERROR", "Si è verificato un errore", 99),
+    DOCUMENT_UNAVAILABLE_RETRY_AFTER("DOCUMENT UNAVAILABLE RETRY AFTER", "Documento non disponibile per il download", 99),
     RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download", 2),
     NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "QrCode/CF non valido/i", 80),
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate", 99),

@@ -37,7 +37,7 @@ public class DocumentOperationsRestV1Controller implements DocumentOperationsApi
      * or Internal Server Error (status code 500)
      */
     @Override
-    public Mono<ResponseEntity<byte[]>> documentDownload(String operationType, String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, final ServerWebExchange exchange) {
+    public Mono<ResponseEntity<byte[]>> documentDownload(String operationType, String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String attachmentId,  final ServerWebExchange exchange) {
         return documentOperationsService.documentDownload(operationType, operationId, xPagopaPnCxType, xPagopaPnCxId)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
+import static it.pagopa.pn.radd.mapper.StartTransactionResponseMapper.getDownloadUrls;
 import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
 
 @Slf4j
@@ -101,7 +102,7 @@ public class AorService extends BaseService {
                 .doOnNext(transactionData -> log.debug("Update file metadata"))
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
-                .map(data -> StartTransactionResponseMapper.fromResult(data.getUrls(), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
+                .map(data -> StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
@@ -180,7 +181,7 @@ public class AorService extends BaseService {
         if (Strings.isBlank(req.getRecipientTaxId())) {
             return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
         }
-        if (req.getRecipientType() == null || !Utils.checkPersonType(req.getRecipientType().getValue())) {
+        if (!Utils.checkPersonType(req.getRecipientType().getValue())) {
             return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
         return Mono.just(this.transactionDataMapper.toTransaction(uid, req, xPagopaPnCxType, xPagopaPnCxId));

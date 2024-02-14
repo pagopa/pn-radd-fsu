@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface RaddTransactionDAO {
 
@@ -26,4 +27,6 @@ public interface RaddTransactionDAO {
     Flux<RaddTransactionEntity> getTransactionsFromFiscalCode(String ensureFiscalCode, Date from, Date to);
 
     Mono<RaddTransactionEntity> putTransactionWithConditions(RaddTransactionEntity entity);
+
+    Mono<RaddTransactionEntity> updateZipAttachments(RaddTransactionEntity entity, Map<String, String> zipAttachments);
 }

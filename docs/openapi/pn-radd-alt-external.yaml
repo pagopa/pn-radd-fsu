@@ -68,6 +68,7 @@ paths:
     parameters:
       - $ref: '#/components/parameters/operationType'
       - $ref: '#/components/parameters/operationId'
+      - $ref: '#/components/parameters/attachmentId'
     get:
       tags:
         - documentOperations
@@ -661,7 +662,13 @@ components:
         type: string
         enum: ["aor", "act"]
       example: aor
-
+    attachmentId:
+      name: attachmentId
+      description: Identificativo file
+      in: query
+      required: false
+      schema:
+        type: string
 
   responses:
     Forbidden:

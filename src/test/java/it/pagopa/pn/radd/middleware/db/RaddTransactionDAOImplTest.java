@@ -26,10 +26,7 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DATE_VALIDATION_ERROR;
@@ -85,6 +82,15 @@ class RaddTransactionDAOImplTest extends BaseTest.WithLocalStack {
         assertNotNull(response);
         assertEquals(response.getOperationId(), baseEntity.getOperationId());
         assertEquals(response.getStatus(), baseEntity.getStatus());
+    }
+
+    @Test
+    void testUpdateZipAttachments() {
+
+        RaddTransactionEntity response = raddTransactionDAO.updateZipAttachments(baseEntity, Map.of("123", "123")).block(d);
+        assertNotNull(response);
+        assertEquals(response.getOperationId(), baseEntity.getOperationId());
+        assertEquals(response.getZipAttachments(), baseEntity.getZipAttachments());
     }
 
     @Test

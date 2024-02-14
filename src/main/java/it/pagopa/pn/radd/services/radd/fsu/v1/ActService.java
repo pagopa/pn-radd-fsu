@@ -5,10 +5,13 @@ import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactCategoryDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactListElementDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.NotificationStatusDto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
+import it.pagopa.pn.radd.pojo.LegalFactInfo;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.rest.radd.v1.dto.*;
@@ -18,23 +21,31 @@ import it.pagopa.pn.radd.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
+import software.amazon.awssdk.services.sqs.endpoints.internal.Value;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
+import static it.pagopa.pn.radd.utils.Const.*;
+import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
 import static org.springframework.util.StringUtils.*;
 
 @Service
 @Slf4j
 public class ActService extends BaseService {
-    public static final String CONTENT_TYPE = "application/pdf";
-    public static final String ENDED_ACT_START_TRANSACTION_WITH_ERROR = "Ended ACT startTransaction with error {}";
     private final PnDeliveryClient pnDeliveryClient;
     private final PnDeliveryPushClient pnDeliveryPushClient;
     private final TransactionDataMapper transactionDataMapper;
@@ -112,16 +123,8 @@ public class ActService extends BaseService {
                 .flatMap(transactionData -> this.createRaddTransaction(uid, transactionData))
                 .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
-                .zipWhen(transactionAndSentNotification -> {
-                    log.debug("Retrieving document and attachments");
-                    Flux<String> urlDocuments = getUrlDoc(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
-                    Flux<String> urlAttachments = getUrlsAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
-                    ParallelFlux<String> urlLegalFacts = legalFact(transactionAndSentNotification.getT1());
-                    return ParallelFlux.from(urlDocuments, urlAttachments, urlLegalFacts)
-                            .sequential()
-                            .collectList()
-                            .map(resultList -> StartTransactionResponseMapper.fromResult(resultList, OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()));
-                }, (tupla, response) -> Tuples.of(tupla.getT1(), response))
+                .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
+                        (tupla, response) -> Tuples.of(tupla.getT1(), response))
                 .doOnError(e -> log.error(e.getMessage()))
                 .zipWhen(transactionAndResponse -> {
                     log.debug("Update file metadata");
@@ -148,10 +151,22 @@ public class ActService extends BaseService {
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT,xPagopaPnCxType, xPagopaPnCxId)
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
 
+    }
+
+    @NotNull
+    private Mono<StartTransactionResponse> retrieveDocumentsAndAttachments(ActStartTransactionRequest request, Tuple2<TransactionData, SentNotificationV23Dto> transactionAndSentNotification) {
+        log.debug("Retrieving document and attachments");
+        Flux<DownloadUrl> urlDocuments = getUrlDoc(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
+        Flux<DownloadUrl> urlAttachments = getUrlsAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
+        Flux<DownloadUrl> urlLegalFacts = legalFact(transactionAndSentNotification.getT1());
+        return ParallelFlux.from(urlDocuments, urlAttachments, urlLegalFacts)
+                .sequential()
+                .collectList()
+                .map(resultList -> StartTransactionResponseMapper.fromResult(resultList, OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()));
     }
 
     @NotNull
@@ -164,7 +179,7 @@ public class ActService extends BaseService {
             completeTransactionRequest, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         log.info("Start ACT complete transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, completeTransactionRequest.getOperationId());
         return this.validateCompleteRequest(completeTransactionRequest)
-                .zipWhen(req -> getAndCheckStatusTransaction(req.getOperationId(),xPagopaPnCxType,xPagopaPnCxId))
+                .zipWhen(req -> getAndCheckStatusTransaction(req.getOperationId(), xPagopaPnCxType, xPagopaPnCxId))
                 .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationRaddRetrieved(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
                 .map(reqAndEntity -> {
                     RaddTransactionEntity entity = reqAndEntity.getT2();
@@ -211,36 +226,105 @@ public class ActService extends BaseService {
                 );
     }
 
-    private ParallelFlux<String> legalFact(TransactionData transaction) {
+    private Flux<DownloadUrl> legalFact(TransactionData transaction) {
         return pnDeliveryPushClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
-                .parallel()
-                .filter(legalFact -> ((!StringUtils.hasText(legalFact.getTaxId()) || (StringUtils.hasText(legalFact.getTaxId())
-                        && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId())))
-                        && legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT))
-
+                .filter(filterLegalFacts(transaction))
                 .flatMap(item ->
-                        pnDeliveryPushClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
-                                .filter(legalFact -> CONTENT_TYPE.equals(legalFact.getContentType()))
-                                .mapNotNull(legalFact -> {
-                                    if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0) {
-                                        log.debug("Found legal fact with retry after {}", legalFact.getRetryAfter());
-                                        throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
-                                    }
-                                    log.debug("URL : {}", legalFact.getUrl());
-                                    return legalFact.getUrl();
-                                })
-                );
+                        pnDeliveryPushClient.getLegalFact(transaction.getEnsureRecipientId(),
+                                        transaction.getIun(),
+                                        item.getLegalFactsId().getCategory(),
+                                        item.getLegalFactsId().getKey())
+                                .filter(legalFact -> CONTENT_TYPE_PDF.equals(legalFact.getContentType()) ||
+                                        CONTENT_TYPE_ZIP.equals(legalFact.getContentType()))
+                                .mapNotNull(legalFact -> getLegalFactInfo(item, legalFact)))
+                .collectList()
+                .flatMap(legalFactInfoList -> updateZipAttachments(transaction, legalFactInfoList))
+                .flatMapMany(Flux::fromIterable)
+                .map(legalFactInfo -> getDownloadUrl(transaction, legalFactInfo))
+                .doOnError(throwable -> log.error(throwable.getMessage()));
     }
 
-    private Flux<String> getUrlDoc(TransactionData transaction, SentNotificationV23Dto sentDTO) {
+    @NotNull
+    private DownloadUrl getDownloadUrl(TransactionData transaction, LegalFactInfo legalFactInfo) {
+        if (CONTENT_TYPE_PDF.equals(legalFactInfo.getContentType())) {
+            return getDownloadUrl(legalFactInfo.getUrl(), false);
+        } else {
+            return getDocumentDownloadUrl(pnRaddFsuConfig.getApplicationBasepath(),
+                    transaction.getOperationType().name(),
+                    transaction.getOperationId(),
+                    legalFactInfo.getKey());
+        }
+    }
+
+    @NotNull
+    private static Predicate<LegalFactListElementDto> filterLegalFacts(TransactionData transaction) {
+        return legalFact -> StringUtils.hasText(legalFact.getTaxId())
+                && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId())
+                && legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT;
+    }
+
+    @NotNull
+    private static LegalFactInfo getLegalFactInfo(LegalFactListElementDto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
+        if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0) {
+            log.debug("Found legal fact with retry after {}", legalFact.getRetryAfter());
+            throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
+        }
+        log.debug("URL : {}", legalFact.getUrl());
+        return createLegalFactInfo(item, legalFact);
+    }
+
+    @NotNull
+    private static LegalFactInfo createLegalFactInfo(LegalFactListElementDto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
+        LegalFactInfo legalFactInfo = new LegalFactInfo();
+        legalFactInfo.setKey(item.getLegalFactsId().getKey());
+        legalFactInfo.setUrl(removeSafeStoragePrefix(legalFact.getUrl()));
+        legalFactInfo.setContentType(legalFact.getContentType());
+        return legalFactInfo;
+    }
+
+    @NotNull
+    private static String removeSafeStoragePrefix(String legalFactUrl) {
+        if (StringUtils.hasText(legalFactUrl) && legalFactUrl.contains(SAFESTORAGE_PREFIX)) {
+            legalFactUrl = legalFactUrl.replace(SAFESTORAGE_PREFIX, "");
+        }
+        return legalFactUrl;
+    }
+
+    @NotNull
+    private Mono<List<LegalFactInfo>> updateZipAttachments(TransactionData transaction, List<LegalFactInfo> legalFactInfoList) {
+        Map<String, String> zipAttachments = legalFactInfoList.stream()
+                .filter(legalFactInfo -> CONTENT_TYPE_ZIP.equals(legalFactInfo.getContentType()))
+                .collect(Collectors.toMap(LegalFactInfo::getKey, LegalFactInfo::getUrl));
+        transaction.setZipAttachments(zipAttachments);
+        return raddTransactionDAO.updateZipAttachments(transactionDataMapper.toEntity(transaction.getUid(), transaction), zipAttachments)
+                .thenReturn(legalFactInfoList);
+    }
+
+    @NotNull
+    private static DownloadUrl getDownloadUrl(String url, boolean needAuthentication) {
+        DownloadUrl downloadUrl = new DownloadUrl();
+        downloadUrl.setUrl(url);
+        downloadUrl.setNeedAuthentication(needAuthentication);
+        return downloadUrl;
+    }
+
+    private Flux<DownloadUrl> getUrlDoc(TransactionData transaction, SentNotificationV23Dto sentDTO) {
         return Flux.fromStream(sentDTO.getDocuments().stream())
                 .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
-                        .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl))
-                .doOnError(e -> log.error(e.getMessage()))
-                ;
+                        .mapNotNull(ActService::getNotificationAttachmentUrl))
+                .map(url -> getDownloadUrl(url, false));
     }
 
-    private Flux<String> getUrlsAttachments(TransactionData transactionData, SentNotificationV23Dto sentDTO) {
+    @Nullable
+    private static String getNotificationAttachmentUrl(NotificationAttachmentDownloadMetadataResponseDto notificationAttachment) {
+        if (notificationAttachment.getRetryAfter() != null && notificationAttachment.getRetryAfter() != 0) {
+            log.debug("Found attachment with retry after {}", notificationAttachment.getRetryAfter());
+            throw new RaddGenericException(DOCUMENT_UNAVAILABLE_RETRY_AFTER, notificationAttachment.getRetryAfter());
+        }
+        return notificationAttachment.getUrl();
+    }
+
+    private Flux<DownloadUrl> getUrlsAttachments(TransactionData transactionData, SentNotificationV23Dto sentDTO) {
         if (sentDTO.getRecipients().isEmpty())
             return Flux.empty();
         return Flux.fromStream(sentDTO.getRecipients().stream())
@@ -254,9 +338,9 @@ public class ActService extends BaseService {
                                 Flux.fromStream(notificationRecipientV21Dto.getPayments().stream())
                                         .index()
                                         .flatMap(item -> getF24AttachmentDownloadMetadataResponseDto(transactionData, item.getT2(), Math.toIntExact(item.getT1())))))
-                .mapNotNull(NotificationAttachmentDownloadMetadataResponseDto::getUrl)
-                .doOnError(e -> log.error(e.getMessage()))
-                ;
+                .mapNotNull(ActService::getNotificationAttachmentUrl)
+                .map(url -> getDownloadUrl(url, false))
+                .doOnError(e -> log.error(e.getMessage()));
     }
 
     private Mono<NotificationAttachmentDownloadMetadataResponseDto> getPagoPAAttachmentDownloadMetadataResponse(TransactionData transactionData, NotificationPaymentItemDto item, Integer attachmentIdx) {
@@ -291,7 +375,7 @@ public class ActService extends BaseService {
         if (Strings.isBlank(request.getRecipientTaxId())) {
             return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
         }
-        if (request.getRecipientType() == null || !Utils.checkPersonType(request.getRecipientType().getValue())) {
+        if (!Utils.checkPersonType(request.getRecipientType().getValue())) {
             return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
         }
         if (Strings.isBlank(request.getIun()) && Strings.isBlank(request.getQrCode())) {
@@ -347,7 +431,7 @@ public class ActService extends BaseService {
                 .thenReturn(transactionData);
     }
 
-    private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId,CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
+    private Mono<RaddTransactionEntity> getAndCheckStatusTransaction(String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         return raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, OperationTypeEnum.ACT)
                 .doOnNext(raddTransaction -> log.debug("[{}] Check status entity : {}", operationId, raddTransaction.getStatus()))
                 .doOnNext(this::checkTransactionStatus);

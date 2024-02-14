@@ -43,6 +43,15 @@ public class Const {
     public static final String ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED = "ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED";
     public static final String MISSING_INPUT_PARAMETERS = "Missing input parameters";
     public static final String CONTENT_TYPE_ZIP = "application/zip";
+    public static final String DOWNLOAD_COVER_FILE_PATH = "/radd-net/api/v1/download/{operationType}/{operationId}";
+
+
+    /* ActService */
+    public static final String ENDED_ACT_START_TRANSACTION_WITH_ERROR = "Ended ACT startTransaction with error {}";
+    public static final String CONTENT_TYPE_PDF = "application/pdf";
+    public static final String SAFESTORAGE_PREFIX = "safestorage://";
+
+
 
 
 

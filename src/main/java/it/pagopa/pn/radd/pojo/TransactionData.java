@@ -8,6 +8,7 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -30,7 +31,7 @@ public class TransactionData {
     private OperationTypeEnum operationType;
     private List<String> iuns = new ArrayList<>();
     private List<String> urls = new ArrayList<>();
-
+    private Map<String, String> zipAttachments;
 
 
 }

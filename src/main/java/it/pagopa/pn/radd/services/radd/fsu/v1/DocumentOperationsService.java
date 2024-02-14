@@ -53,10 +53,7 @@ public class DocumentOperationsService {
                 .flatMap(isValid -> checkTransactionIsAlreadyExistsInCompletedErrorOrAborted(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, operationId), operationType))
                 .flatMap(raddTansactionEntity -> pnDeliveryClient.getNotifications(raddTansactionEntity.getIun())
                         .zipWith(Mono.just(raddTansactionEntity)))
-                .map(this::checkRecipientIdAndCreatePdf)
-                .doOnError(throwable -> {
-                    throw new RaddGenericException(throwable.getMessage());
-                });
+                .map(this::checkRecipientIdAndCreatePdf);
     }
 
     private byte @NotNull [] checkRecipientIdAndCreatePdf(Tuple2<SentNotificationV23Dto, RaddTransactionEntity> notificationEntityTuple) {

@@ -64,7 +64,7 @@ class DocumentOperationsRestV1ControllerTest {
     void testDocumentDownload3() {
         when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
                 Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any())).thenReturn(mock(Mono.class));
-        documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PA, "42", null);
+        documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PA, "42", "attach", null);
         verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
                 Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any());
     }
@@ -76,7 +76,7 @@ class DocumentOperationsRestV1ControllerTest {
     void testDocumentDownload4() {
         when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
                 Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any())).thenReturn(mock(Mono.class));
-        documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PF, "42", null);
+        documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PF, "42", "attach", null);
         verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
                 Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any());
     }
@@ -88,7 +88,7 @@ class DocumentOperationsRestV1ControllerTest {
     void testDocumentDownload5() {
         when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
                 Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any())).thenReturn(mock(Mono.class));
-        documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PG, "42", null);
+        documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PG, "42", "attach", null);
         verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
                 Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any());
     }

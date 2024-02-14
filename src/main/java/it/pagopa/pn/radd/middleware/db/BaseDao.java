@@ -1,11 +1,8 @@
 package it.pagopa.pn.radd.middleware.db;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
-import it.pagopa.pn.radd.pojo.TransactionData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
@@ -129,16 +126,5 @@ public abstract class BaseDao<T> {
                             return Mono.error(new TransactionAlreadyExistsException());
                         }
                 );
-    }
-
-    public Mono<UpdateItemResponse> updateZipAttachments(ImmutableMap<String, AttributeValue> key, String updateExpression, ImmutableMap<String, AttributeValue> expressionAttributeValues) {
-        UpdateItemRequest updateItemRequest = UpdateItemRequest.builder()
-                .tableName(tableName)
-                .key(key)
-                .updateExpression(updateExpression)
-                .expressionAttributeValues(expressionAttributeValues)
-                .build();
-
-        return Mono.fromFuture(dynamoDbAsyncClient.updateItem(updateItemRequest));
     }
 }

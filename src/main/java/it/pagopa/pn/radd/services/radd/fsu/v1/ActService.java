@@ -30,6 +30,7 @@ import reactor.core.publisher.ParallelFlux;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
+import software.amazon.awssdk.services.sqs.endpoints.internal.Value;
 
 import java.util.Date;
 import java.util.List;
@@ -276,14 +277,13 @@ public class ActService extends BaseService {
     private static LegalFactInfo createLegalFactInfo(LegalFactListElementDto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
         legalFactInfo.setKey(item.getLegalFactsId().getKey());
-        legalFactInfo.setUrl(legalFact.getUrl());
+        legalFactInfo.setUrl(removeSafeStoragePrefix(legalFact.getUrl()));
         legalFactInfo.setContentType(legalFact.getContentType());
         return legalFactInfo;
     }
 
     @NotNull
-    private static String removeSafeStoragePrefix(LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
-        String legalFactUrl = legalFact.getUrl();
+    private static String removeSafeStoragePrefix(String legalFactUrl) {
         if (StringUtils.hasText(legalFactUrl) && legalFactUrl.contains(SAFESTORAGE_PREFIX)) {
             legalFactUrl = legalFactUrl.replace(SAFESTORAGE_PREFIX, "");
         }

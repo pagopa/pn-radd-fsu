@@ -14,7 +14,7 @@ info:
     url: 'https://notifichedigitali.pagopa.it/radd/index.html'
 
 servers:
-  - url: https://api-radd.notifichedigitali.it
+  - url: https://api.radd.notifichedigitali.it
     description: Ambiente di produzione
   - url: https://api.radd.uat.notifichedigitali.it
     description: Ambiente di collaudo

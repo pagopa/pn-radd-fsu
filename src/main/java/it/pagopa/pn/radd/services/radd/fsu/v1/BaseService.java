@@ -57,7 +57,7 @@ public class BaseService {
             //    throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
             //}
             log.debug("Document version is : {}", response.getVersionId());
-            if (!StringUtils.equals(transaction.getVersionId(), response.getVersionId())) {
+            if (!StringUtils.equals(transaction.getVersionId(), transaction.getVersionId())) {
                 throw new RaddGenericException(VERSION_ID_VALIDATION, KO);
             }
             log.debug("Document checksum is : {}", response.getChecksum());
@@ -94,11 +94,11 @@ public class BaseService {
         return this.raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operationId, operationType)
                 .map(entity -> {
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
-                    if(ex instanceof RaddGenericException){
-                        entity.setErrorReason(((RaddGenericException) ex).getExceptionType().getMessage());
-                        log.error("Error message {}", ex.getMessage(), ex);
-                    } else if (ex instanceof PnRaddException){
-                        entity.setErrorReason(((PnRaddException) ex).getWebClientEx().getMessage());
+                    if(ex instanceof RaddGenericException raddGenericException){
+                        entity.setErrorReason(raddGenericException.getExceptionType().getMessage());
+                        log.error("Error message {}", raddGenericException.getMessage(), raddGenericException);
+                    } else if (ex instanceof PnRaddException pnRaddException){
+                        entity.setErrorReason(pnRaddException.getWebClientEx().getMessage());
                     }
                     return entity;
                 })

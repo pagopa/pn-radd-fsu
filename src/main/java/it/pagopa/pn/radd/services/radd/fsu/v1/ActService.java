@@ -135,7 +135,7 @@ public class ActService extends BaseService {
                 })
                 .onErrorResume(PnRaddException.class, ex -> {
                     log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, null,null)
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.error(ex));
                 })
                 .onErrorResume(IunAlreadyExistsException.class, ex -> {
@@ -148,7 +148,7 @@ public class ActService extends BaseService {
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
                     log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
-                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT,null,null)
+                    return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT,xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
 
@@ -214,7 +214,7 @@ public class ActService extends BaseService {
     private ParallelFlux<String> legalFact(TransactionData transaction) {
         return pnDeliveryPushClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .parallel()
-                .filter(legalFact -> ((isEmpty(legalFact.getTaxId()) || (StringUtils.hasText(legalFact.getTaxId())
+                .filter(legalFact -> ((!StringUtils.hasText(legalFact.getTaxId()) || (StringUtils.hasText(legalFact.getTaxId())
                         && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId())))
                         && legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT))
 
@@ -305,7 +305,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<CompleteTransactionRequest> validateCompleteRequest(CompleteTransactionRequest req) {
-        if (isEmpty(req.getOperationId())) {
+        if (!StringUtils.hasText(req.getOperationId())) {
             return Mono.error(new PnInvalidInputException("Operation id non valorizzato"));
         }
         return Mono.just(req);

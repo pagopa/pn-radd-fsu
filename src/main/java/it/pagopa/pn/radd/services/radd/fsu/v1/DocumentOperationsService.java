@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.HexFormat;
 import java.util.Optional;
 
-import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
@@ -51,7 +50,7 @@ public class DocumentOperationsService {
 
     public Mono<byte[]> documentDownload(String operationType, String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
         return validateOperationTypeAndOperationId(operationType, operationId)
-                .flatMap(isValid -> checkTransactionIsAlreadyExistsInCompletedErrorOrAborted(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, operationId), operationId))
+                .flatMap(isValid -> checkTransactionIsAlreadyExistsInCompletedErrorOrAborted(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, operationId), operationType))
                 .flatMap(raddTansactionEntity -> pnDeliveryClient.getNotifications(raddTansactionEntity.getIun())
                         .zipWith(Mono.just(raddTansactionEntity)))
                 .map(this::checkRecipientIdAndCreatePdf)

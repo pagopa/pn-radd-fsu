@@ -48,7 +48,9 @@ public class PnDataVaultClient extends BaseClient {
                 ).map(item -> {
                     log.trace("ENSURE FISCAL CODE TOCK {}", new Date().getTime());
                     return item;
-                }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                })
+                .doOnError(ex -> log.error("Error in getEnsureFiscalCode", ex))
+                .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
 }

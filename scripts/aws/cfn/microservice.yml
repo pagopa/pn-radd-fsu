@@ -11,7 +11,7 @@ Parameters:
     Type: String
     Description: ARN of alarm topic
 
-  ApiDnsName:
+  RaddApiDnsName:
     Type: String
     Description: 'The DNS name used for B2B rest API.'
 
@@ -297,7 +297,7 @@ Resources:
       Parameters:
         MicroServiceUniqueName: !Sub '${ProjectName}-radd-alt'
         IntendedUsage: RADD
-        DnsName: !Ref ApiDnsName
+        DnsName: !Ref RaddApiDnsName
         ProjectName: !Ref ProjectName
         ServiceApiPath: 'radd-net'
         NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink

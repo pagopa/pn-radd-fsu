@@ -93,6 +93,8 @@ Resources:
       KeySchema:
         - AttributeName: "transactionId"
           KeyType: "HASH"
+        - AttributeName: "iun"
+          KeyType: "RANGE"
       GlobalSecondaryIndexes:
         - IndexName: "iun-transaction-index"
           KeySchema:

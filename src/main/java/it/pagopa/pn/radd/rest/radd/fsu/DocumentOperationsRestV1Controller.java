@@ -1,9 +1,9 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.rest.radd.v1.api.DocumentOperationsApi;
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.DocumentOperationsApi;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.services.radd.fsu.v1.DocumentOperationsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,9 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 
 public class DocumentUploadResponseMapper {

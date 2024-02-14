@@ -1,7 +1,8 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.rest.radd.v1.api.AorOperationsApi;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.AorOperationsApi;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.AorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

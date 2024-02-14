@@ -1,18 +1,18 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.api.EventComunicationApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.api.LegalFactsPrivateApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.api.PaperNotificationFailedApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.api.TimelineAndStatusApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.PaperNotificationFailedEmptyException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.ApiClient;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.api.EventComunicationApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.api.LegalFactsPrivateApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.api.PaperNotificationFailedApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.api.TimelineAndStatusApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.*;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.DateUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
+import lombok.CustomLog;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -20,36 +20,23 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
-@Slf4j
+@CustomLog
 @Component
+@AllArgsConstructor
 public class PnDeliveryPushClient extends BaseClient {
     private static final String RADD_TYPE = "ALT";
-    private EventComunicationApi eventComunicationApi;
-    private TimelineAndStatusApi timelineAndStatusApi;
-    private PaperNotificationFailedApi paperNotificationFailedApi;
-    private LegalFactsPrivateApi legalFactsApi;
+    private final EventComunicationApi eventComunicationApi;
+    private final TimelineAndStatusApi timelineAndStatusApi;
+    private final PaperNotificationFailedApi paperNotificationFailedApi;
+    private final LegalFactsPrivateApi legalFactsApi;
 
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
-    public PnDeliveryPushClient(PnRaddFsuConfig pnRaddFsuConfig) {
-        this.pnRaddFsuConfig = pnRaddFsuConfig;
-    }
-
-    @PostConstruct
-    public void init(){
-        ApiClient newApiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()));
-        newApiClient.setBasePath(pnRaddFsuConfig.getClientDeliveryPushBasepath());
-        this.eventComunicationApi = new EventComunicationApi(newApiClient);
-        this.timelineAndStatusApi = new TimelineAndStatusApi(newApiClient);
-        this.paperNotificationFailedApi = new PaperNotificationFailedApi(newApiClient);
-        this.legalFactsApi = new LegalFactsPrivateApi(newApiClient);
-    }
 
     public Flux<LegalFactListElementDto> getNotificationLegalFacts(String recipientInternalId, String iun) {
         CxTypeAuthFleetDto cxType = null;

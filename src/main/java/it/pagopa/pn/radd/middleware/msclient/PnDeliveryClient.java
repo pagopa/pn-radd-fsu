@@ -1,24 +1,23 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.api.InternalOnlyApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.RequestCheckAarDtoDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.ApiClient;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.api.InternalOnlyApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.RequestCheckAarDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV23Dto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Date;
@@ -26,21 +25,12 @@ import java.util.concurrent.TimeoutException;
 
 @Component
 @Slf4j
+@AllArgsConstructor
 public class PnDeliveryClient extends BaseClient {
-    private InternalOnlyApi deliveryApi;
+    private final InternalOnlyApi deliveryApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
 
-    public PnDeliveryClient(PnRaddFsuConfig pnRaddFsuConfig) {
-        this.pnRaddFsuConfig = pnRaddFsuConfig;
-    }
-
-    @PostConstruct
-    public void init() {
-        ApiClient newApiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()));
-        newApiClient.setBasePath(pnRaddFsuConfig.getClientDeliveryBasepath());
-        this.deliveryApi = new InternalOnlyApi(newApiClient);
-    }
 
     public Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode) {
         RequestCheckAarDtoDto request = new RequestCheckAarDtoDto();

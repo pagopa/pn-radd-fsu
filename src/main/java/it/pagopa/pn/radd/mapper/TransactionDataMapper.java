@@ -1,11 +1,11 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ActStartTransactionRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.AorStartTransactionRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.TransactionData;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ActStartTransactionRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AorStartTransactionRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;

@@ -147,6 +147,24 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>pn-commons</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/dependency-resources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
@@ -172,8 +190,9 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
                             <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-internal.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
@@ -190,10 +209,10 @@
                                 <reactive>true</reactive>
                                 <skipDefaultInterface>false</skipDefaultInterface>
                                 <useTags>true</useTags>
-                                <basePackage>${project.groupId}.radd.rest.radd.v1</basePackage>
-                                <modelPackage>${project.groupId}.radd.rest.radd.v1.dto</modelPackage>
-                                <apiPackage>${project.groupId}.radd.rest.radd.v1.api</apiPackage>
-                                <configPackage>${project.groupId}.radd.rest.radd.v1.config</configPackage>
+                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v1</basePackage>
+                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.dto</modelPackage>
+                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.api</apiPackage>
+                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.config</configPackage>
                             </configOptions>
                         </configuration>
                     </execution>
@@ -202,8 +221,9 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
                             <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-private.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
@@ -220,10 +240,11 @@
                                 <reactive>true</reactive>
                                 <skipDefaultInterface>false</skipDefaultInterface>
                                 <useTags>true</useTags>
-                                <basePackage>${project.groupId}.radd.rest.radd.v1</basePackage>
-                                <modelPackage>${project.groupId}.radd.rest.radd.v1.dto</modelPackage>
-                                <apiPackage>${project.groupId}.radd.rest.radd.v1.api</apiPackage>
-                                <configPackage>${project.groupId}.radd.rest.radd.v1.config</configPackage>
+                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v1</basePackage>
+                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.dto</modelPackage>
+                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.api</apiPackage>
+                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.config
+                                </configPackage>
                             </configOptions>
                         </configuration>
                     </execution>
@@ -232,11 +253,10 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
-                            <inputSpec>
-                                https://raw.githubusercontent.com/pagopa/pn-delivery/ccfe13ede02ad95ddda83679e50cd55aa88353af/docs/openapi/api-private.yaml
-                            </inputSpec>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
+                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery/ccfe13ede02ad95ddda83679e50cd55aa88353af/docs/openapi/api-private.yaml</inputSpec>
                             <generatorName>java</generatorName>
                             <library>webclient</library>
                             <generateApiDocumentation>false</generateApiDocumentation>
@@ -247,9 +267,9 @@
                                 <swaggerAnnotations>false</swaggerAnnotations>
                                 <openApiNullable>false</openApiNullable>
                             </configOptions>
-                            <modelPackage>${project.groupId}.radd.microservice.msclient.generated.pndelivery.v1.dto
+                            <modelPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pndelivery.v1.dto
                             </modelPackage>
-                            <apiPackage>${project.groupId}.radd.microservice.msclient.generated.pndelivery.v1.api
+                            <apiPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pndelivery.v1.api
                             </apiPackage>
                             <modelNameSuffix>Dto</modelNameSuffix>
                         </configuration>
@@ -259,11 +279,10 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
-                            <inputSpec>
-                                https://raw.githubusercontent.com/pagopa/pn-delivery-push/4333b55f6589ce4d2d01f563ab21d7f14a43b6f4/docs/openapi/api-private.yaml
-                            </inputSpec>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
+                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery-push/4333b55f6589ce4d2d01f563ab21d7f14a43b6f4/docs/openapi/api-private.yaml</inputSpec>
                             <generatorName>java</generatorName>
                             <library>webclient</library>
                             <generateApiDocumentation>false</generateApiDocumentation>
@@ -274,10 +293,8 @@
                                 <swaggerAnnotations>false</swaggerAnnotations>
                                 <openApiNullable>false</openApiNullable>
                             </configOptions>
-                            <modelPackage>
-                                ${project.groupId}.radd.microservice.msclient.generated.pndeliverypush.v1.dto
-                            </modelPackage>
-                            <apiPackage>${project.groupId}.radd.microservice.msclient.generated.pndeliverypush.v1.api
+                            <modelPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto</modelPackage>
+                            <apiPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pndeliverypush.v1.api
                             </apiPackage>
                             <modelNameSuffix>Dto</modelNameSuffix>
                         </configuration>
@@ -287,10 +304,10 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
-                            <inputSpec>${project.basedir}/docs/wsclients/pn-safe-storage/pn-safestorage-api-v1.yaml
-                            </inputSpec>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
+                            <inputSpec>${project.basedir}/docs/wsclients/pn-safe-storage/pn-safestorage-api-v1.yaml</inputSpec>
                             <generatorName>java</generatorName>
                             <library>webclient</library>
                             <generateApiDocumentation>false</generateApiDocumentation>
@@ -301,9 +318,9 @@
                                 <swaggerAnnotations>false</swaggerAnnotations>
                                 <openApiNullable>false</openApiNullable>
                             </configOptions>
-                            <modelPackage>${project.groupId}.radd.microservice.msclient.generated.pnsafestorage.v1.dto
+                            <modelPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto
                             </modelPackage>
-                            <apiPackage>${project.groupId}.radd.microservice.msclient.generated.pnsafestorage.v1.api
+                            <apiPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api
                             </apiPackage>
                             <modelNameSuffix>Dto</modelNameSuffix>
                         </configuration>
@@ -313,11 +330,10 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>process-resources</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
-                            <inputSpec>
-                                https://raw.githubusercontent.com/pagopa/pn-data-vault/fd6899d33ff9c719aae872c0a3a4db51a921ace7/docs/openapi/pn-datavault-api-v1.yaml
-                            </inputSpec>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
+                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-data-vault/fd6899d33ff9c719aae872c0a3a4db51a921ace7/docs/openapi/pn-datavault-api-v1.yaml</inputSpec>
                             <generatorName>java</generatorName>
                             <library>webclient</library>
                             <generateApiDocumentation>false</generateApiDocumentation>
@@ -328,9 +344,9 @@
                                 <swaggerAnnotations>false</swaggerAnnotations>
                                 <openApiNullable>false</openApiNullable>
                             </configOptions>
-                            <modelPackage>${project.groupId}.radd.microservice.msclient.generated.pndatavault.v1.dto
+                            <modelPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pndatavault.v1.dto
                             </modelPackage>
-                            <apiPackage>${project.groupId}.radd.microservice.msclient.generated.pndatavault.v1.api
+                            <apiPackage>${project.groupId}.radd.alt.generated.openapi.msclient.pndatavault.v1.api
                             </apiPackage>
                             <modelNameSuffix>Dto</modelNameSuffix>
                         </configuration>

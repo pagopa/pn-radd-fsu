@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.rest.radd.v1.api.ActOperationsApi;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.ActOperationsApi;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.ActService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class ActPrivateRestV1Controller implements ActOperationsApi {
     }
 
     @Override
-    public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId,  Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
         return actStartTransactionRequest
                 .zipWhen(request -> actService.startTransaction(uid, xPagopaPnCxId, xPagopaPnCxType, request), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));

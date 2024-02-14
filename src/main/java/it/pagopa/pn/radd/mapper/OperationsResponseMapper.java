@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.mapper;
 
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationsResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationResponseStatus;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationsResponse;
 import it.pagopa.pn.radd.utils.Const;
 
 import java.util.List;

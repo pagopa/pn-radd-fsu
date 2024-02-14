@@ -4,10 +4,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.services.radd.fsu.v1.DocumentOperationsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

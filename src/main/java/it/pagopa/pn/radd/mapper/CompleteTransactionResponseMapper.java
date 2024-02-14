@@ -1,8 +1,8 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CompleteTransactionResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.TransactionResponseStatus;
 import it.pagopa.pn.radd.exception.*;
-import it.pagopa.pn.radd.rest.radd.v1.dto.CompleteTransactionResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.TransactionResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 
 public class CompleteTransactionResponseMapper {

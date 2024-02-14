@@ -1,7 +1,8 @@
 package it.pagopa.pn.radd.utils;
 
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DownloadUrl;
+
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
 import org.apache.commons.lang3.StringUtils;
 
 import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;

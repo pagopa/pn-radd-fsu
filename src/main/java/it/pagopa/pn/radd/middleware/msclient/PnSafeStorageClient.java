@@ -1,20 +1,16 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api.FileDownloadApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api.FileMetadataUpdateApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api.FileUploadApi;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnSafeStorageException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.ApiClient;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileDownloadApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileMetadataUpdateApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.api.FileUploadApi;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationRequestDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.UpdateFileMetadataRequestDto;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.Const;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -22,7 +18,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
-import javax.annotation.PostConstruct;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Date;
@@ -32,24 +27,13 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERRO
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class PnSafeStorageClient extends BaseClient {
     private FileUploadApi fileUploadApi;
     private FileDownloadApi fileDownloadApi;
     private FileMetadataUpdateApi fileMetadataUpdateApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
-    public PnSafeStorageClient(PnRaddFsuConfig pnRaddFsuConfig) {
-        this.pnRaddFsuConfig = pnRaddFsuConfig;
-    }
-
-    @PostConstruct
-    public void init() {
-        ApiClient newApiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()));
-        newApiClient.setBasePath(pnRaddFsuConfig.getClientSafeStorageBasepath());
-        this.fileUploadApi = new FileUploadApi(newApiClient);
-        this.fileDownloadApi = new FileDownloadApi(newApiClient);
-        this.fileMetadataUpdateApi = new FileMetadataUpdateApi(newApiClient);
-    }
 
     public Mono<FileCreationResponseDto> createFile(String contentType, String checksum) {
         log.debug(String.format("Req params: %s", contentType));
@@ -105,7 +89,7 @@ public class PnSafeStorageClient extends BaseClient {
         log.debug("Req params : {}", fileKey);
         log.trace("UPDATE FILE METADATA TICK {}", new Date().getTime());
 
-        it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.UpdateFileMetadataRequestDto request = new UpdateFileMetadataRequestDto();
+        it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.UpdateFileMetadataRequestDto request = new UpdateFileMetadataRequestDto();
         request.setStatus(Const.ATTACHED);
         return fileMetadataUpdateApi.updateFileMetadata(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), request)
                 .retryWhen(

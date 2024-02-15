@@ -248,7 +248,7 @@ public class ActService extends BaseService {
     @NotNull
     private DownloadUrl getDownloadUrl(TransactionData transaction, LegalFactInfo legalFactInfo) {
         if (CONTENT_TYPE_PDF.equals(legalFactInfo.getContentType())) {
-            return getDownloadUrl(legalFactInfo.getUrl(), false,  getDocumentType(legalFactInfo));
+            return getDownloadUrl(legalFactInfo.getUrl(), getDocumentType(legalFactInfo));
         } else {
             return getDocumentDownloadUrl(pnRaddFsuConfig.getApplicationBasepath(),
                     transaction.getOperationType().name(),
@@ -286,12 +286,12 @@ public class ActService extends BaseService {
     @NotNull
     private static LegalFactInfo createLegalFactInfo(LegalFactListElementDto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setKey(item.getLegalFactsId().getKey());
         if (CONTENT_TYPE_ZIP.equals(legalFact.getContentType())) {
-            legalFactInfo.setUrl(removeSafeStoragePrefix(legalFact.getUrl()));
+            legalFactInfo.setKey(removeSafeStoragePrefix(item.getLegalFactsId().getKey()));
         } else {
-            legalFactInfo.setUrl(legalFact.getUrl());
+            legalFactInfo.setKey(item.getLegalFactsId().getKey());
         }
+        legalFactInfo.setUrl(legalFact.getUrl());
         legalFactInfo.setContentType(legalFact.getContentType());
         legalFactInfo.setCategory(item.getLegalFactsId().getCategory());
         return legalFactInfo;
@@ -316,10 +316,10 @@ public class ActService extends BaseService {
     }
 
     @NotNull
-    private static DownloadUrl getDownloadUrl(String url, boolean needAuthentication, DownloadUrl.DocumentTypeEnum documentType) {
+    private static DownloadUrl getDownloadUrl(String url, DownloadUrl.DocumentTypeEnum documentType) {
         DownloadUrl downloadUrl = new DownloadUrl();
         downloadUrl.setUrl(url);
-        downloadUrl.setNeedAuthentication(needAuthentication);
+        downloadUrl.setNeedAuthentication(false);
         downloadUrl.setDocumentType(documentType);
         return downloadUrl;
     }
@@ -328,7 +328,7 @@ public class ActService extends BaseService {
         return Flux.fromStream(sentDTO.getDocuments().stream())
                 .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
                         .mapNotNull(ActService::getNotificationAttachmentUrl))
-                .map(url -> getDownloadUrl(url, false, DownloadUrl.DocumentTypeEnum.DOCUMENT));
+                .map(url -> getDownloadUrl(url, DownloadUrl.DocumentTypeEnum.DOCUMENT));
     }
 
     @Nullable
@@ -355,7 +355,7 @@ public class ActService extends BaseService {
                                         .index()
                                         .flatMap(item -> getF24AttachmentDownloadMetadataResponseDto(transactionData, item.getT2(), Math.toIntExact(item.getT1())))))
                 .mapNotNull(ActService::getNotificationAttachmentUrl)
-                .map(url -> getDownloadUrl(url, false, DownloadUrl.DocumentTypeEnum.ATTACHMENT))
+                .map(url -> getDownloadUrl(url, DownloadUrl.DocumentTypeEnum.ATTACHMENT))
                 .doOnError(e -> log.error(e.getMessage()));
     }
 

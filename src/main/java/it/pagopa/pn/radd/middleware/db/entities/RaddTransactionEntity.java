@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
+
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 

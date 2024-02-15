@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
@@ -8,12 +9,10 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
-import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -44,11 +43,10 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     public RaddTransactionDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                   DynamoDbAsyncClient dynamoDbAsyncClient,
                                   OperationsIunsDAO operationsIunsDAO,
-                                  PnRaddFsuConfig pnRaddFsuConfig,
-                                  AwsConfigs awsConfigs) {
+                                  PnRaddFsuConfig pnRaddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
-                awsConfigs.getDynamodbTable(),
+                pnRaddFsuConfig.getDynamodbTable(),
                 pnRaddFsuConfig,
                 RaddTransactionEntity.class);
         this.operationsIunsDAO = operationsIunsDAO;

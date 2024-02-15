@@ -1,19 +1,22 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.*;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.*;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ActStartTransactionRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponseStatus;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.FileDownloadResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;

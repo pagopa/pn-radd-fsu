@@ -1,9 +1,9 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
+
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.*;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndatavault.v1.dto.RecipientTypeDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.*;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,24 +1,28 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationPaymentItemDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactListElementDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationStatusDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.*;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactCategoryDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.LegalFactListElementDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.v1.dto.NotificationStatusDto;
+
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
 import it.pagopa.pn.radd.pojo.LegalFactInfo;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
-import it.pagopa.pn.radd.rest.radd.v1.dto.*;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,9 +32,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
-import software.amazon.awssdk.services.sqs.endpoints.internal.Value;
 
 import java.util.Date;
 import java.util.List;
@@ -44,7 +46,7 @@ import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
 import static org.springframework.util.StringUtils.*;
 
 @Service
-@Slf4j
+@CustomLog
 public class ActService extends BaseService {
     private final PnDeliveryClient pnDeliveryClient;
     private final PnDeliveryPushClient pnDeliveryPushClient;
@@ -61,7 +63,6 @@ public class ActService extends BaseService {
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, String recipientTaxId, String recipientType, String qrCode, String iun) {
         log.info("Start act inquiry - uid={}, cxType={}, cxId={}", uid, xPagopaPnCxType, xPagopaPnCxId);
-        // check if iun exists
         return validateInputActInquiry(recipientTaxId, recipientType, qrCode, iun)
                 .doOnNext(isValid -> log.trace("ACT INQUIRY TICK {}", new Date().getTime()))
                 .flatMap(isValid -> getEnsureFiscalCode(recipientTaxId, recipientType))
@@ -318,7 +319,7 @@ public class ActService extends BaseService {
     @Nullable
     private static String getNotificationAttachmentUrl(NotificationAttachmentDownloadMetadataResponseDto notificationAttachment) {
         if (notificationAttachment.getRetryAfter() != null && notificationAttachment.getRetryAfter() != 0) {
-            log.debug("Found attachment with retry after {}", notificationAttachment.getRetryAfter());
+            log.fatal("Found document/attachment with retry after {}", notificationAttachment.getRetryAfter());
             throw new RaddGenericException(DOCUMENT_UNAVAILABLE_RETRY_AFTER, notificationAttachment.getRetryAfter());
         }
         return notificationAttachment.getUrl();

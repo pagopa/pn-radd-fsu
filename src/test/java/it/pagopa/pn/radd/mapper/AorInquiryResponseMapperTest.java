@@ -1,9 +1,9 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.AORInquiryResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.rest.radd.v1.dto.AORInquiryResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.ResponseStatus;
 import org.junit.jupiter.api.Test;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.QR_CODE_VALIDATION;

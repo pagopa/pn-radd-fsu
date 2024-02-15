@@ -5,11 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponseStatus;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DownloadUrl;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponseStatus;
 
 import java.util.ArrayList;
 import java.util.List;

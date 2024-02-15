@@ -21,5 +21,8 @@ public class PnRaddFsuConfig {
     private String safeStorageCxId;
     private String safeStorageDocType;
     private String applicationBasepath;
+
+    private String dynamodbTable;
+    private String dynamodbIunsoperationsTable;
     private HtmlSanitizer.SanitizeMode sanitizeMode;
 }

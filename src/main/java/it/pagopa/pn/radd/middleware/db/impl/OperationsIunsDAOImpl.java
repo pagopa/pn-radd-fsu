@@ -3,7 +3,6 @@ package it.pagopa.pn.radd.middleware.db.impl;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
-import it.pagopa.pn.radd.middleware.db.config.AwsConfigs;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -23,11 +22,10 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
 
     public OperationsIunsDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                  DynamoDbAsyncClient dynamoDbAsyncClient,
-                                 PnRaddFsuConfig raddFsuConfig,
-                                 AwsConfigs awsConfigs) {
+                                 PnRaddFsuConfig raddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
-                awsConfigs.getDynamodbIunsoperationsTable(),
+                raddFsuConfig.getDynamodbIunsoperationsTable(),
                 raddFsuConfig,
                 OperationsIunsEntity.class
         );

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DownloadUrl;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

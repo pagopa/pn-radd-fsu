@@ -1,18 +1,19 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationRecipientV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.mapper.DocumentUploadResponseMapper;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationV23Dto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationRecipientV23Dto;
+
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.rest.radd.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadRequest;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.PdfGenerator;

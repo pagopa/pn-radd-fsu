@@ -1,10 +1,10 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponseStatus;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.rest.radd.v1.dto.DownloadUrl;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.StartTransactionResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 import org.jetbrains.annotations.NotNull;
 

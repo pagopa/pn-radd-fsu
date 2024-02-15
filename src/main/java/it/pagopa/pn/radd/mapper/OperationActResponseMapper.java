@@ -1,11 +1,11 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationActDetailResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationActResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationResponseStatus;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActDetailResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationActResponse;
-import it.pagopa.pn.radd.rest.radd.v1.dto.OperationResponseStatus;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 

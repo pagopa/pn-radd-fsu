@@ -22,10 +22,9 @@ public class StartTransactionResponseMapper {
 
     public static StartTransactionResponse fromResult(List<DownloadUrl> result, String operationType, String operationId, String pnRaddAltBasepath) {
         StartTransactionResponse response = new StartTransactionResponse();
-        List<DownloadUrl> downloadUrlList = result;
-        DownloadUrl firstDownloadUrl = getDocumentDownloadUrl(pnRaddAltBasepath, operationType, operationId, null);
-        downloadUrlList.add(0, firstDownloadUrl);
-        response.setDownloadUrlList(downloadUrlList);
+        DownloadUrl firstDownloadUrl = getDocumentDownloadUrl(pnRaddAltBasepath, operationType, operationId, null, DownloadUrl.DocumentTypeEnum.COVER_FILE);
+        result.add(0, firstDownloadUrl);
+        response.setDownloadUrlList(result);
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
         status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
         response.setStatus(status);
@@ -40,6 +39,7 @@ public class StartTransactionResponseMapper {
             DownloadUrl downloadUrlItem = new DownloadUrl();
             downloadUrlItem.setUrl(url);
             downloadUrlItem.setNeedAuthentication(false);
+            downloadUrlItem.setDocumentType(DownloadUrl.DocumentTypeEnum.AAR);
             return downloadUrlItem;
         }).toList());
 

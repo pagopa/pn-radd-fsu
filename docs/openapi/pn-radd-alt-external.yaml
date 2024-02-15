@@ -435,6 +435,10 @@ components:
         needAuthentication:
           type: boolean
           description: indica se inviare l'header di autenticazione
+        documentType:
+          type: string
+          enum: [ "DOCUMENT", "ATTACHMENT", "LEGAL_FACT", "LEGAL_FACT_EXTERNAL", "COVER_FILE", "AAR" ]
+          example: "DOCUMENT"
 
     AorStartTransactionRequest:
       description: Richiesta  di completamento operazione

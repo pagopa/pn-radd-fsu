@@ -30,15 +30,14 @@ import java.util.HexFormat;
 import java.util.Optional;
 
 import static it.pagopa.pn.radd.utils.Const.*;
-import static it.pagopa.pn.radd.utils.OperationTypeEnum.ACT;
 import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
-import static it.pagopa.pn.radd.utils.ZipUtils.extractPdfFromZip;
 
 @Service
 @Slf4j
 public class DocumentOperationsService {
 
+    public static final String ZIP_ATTACHMENT_URL_NOT_FOUND = "ZIP_ATTACHMENT_URL_NOT FOUND";
     private final PnDeliveryClient pnDeliveryClient;
     private final RaddTransactionDAO raddTransactionDAO;
     private final PnSafeStorageClient pnSafeStorageClient;
@@ -60,30 +59,44 @@ public class DocumentOperationsService {
                 .flatMap(isValid -> checkTransactionIsAlreadyExistsInCompletedErrorOrAborted(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, operationId), operationType))
                 .flatMap(raddTansactionEntity -> {
                     if (StringUtils.hasText(attachmentId)) {
-                        String zipUrl = raddTansactionEntity.getZipAttachments().get(attachmentId);
-                        return documentDownloadClient.downloadContent(zipUrl)
-                                .map(bytes -> getHexBytes(extractPdfFromZip(bytes)));
+                        return getPdfInZipAttachment(attachmentId, raddTansactionEntity);
                     } else {
-                        if (AOR.name().equals(operationType)) {
-                            return operationsIunsDAO.getAllIunsFromTransactionId(raddTansactionEntity.getTransactionId())
-                                    .next()
-                                    .flatMap(operationsIunsEntity -> getCoverFile(raddTansactionEntity, operationsIunsEntity.getIun()));
-                        }
-                        return getCoverFile(raddTansactionEntity, raddTansactionEntity.getIun());
+                        return createCoverFile(operationType, raddTansactionEntity);
                     }
-                });
+                })
+                .map(DocumentOperationsService::getHexBytes);
     }
 
     @NotNull
-    private Mono<byte[]> getCoverFile(RaddTransactionEntity raddTansactionEntity, String iun) {
-        return pnDeliveryClient.getNotifications(iun)
-                .zipWith(Mono.just(raddTansactionEntity))
-                .map(this::checkRecipientIdAndCreatePdf);
+    private Mono<byte[]> createCoverFile(String operationType, RaddTransactionEntity raddTansactionEntity) {
+        if (AOR.name().equals(operationType)) {
+            return operationsIunsDAO.getAllIunsFromTransactionId(raddTansactionEntity.getTransactionId())
+                    .next()
+                    .flatMap(operationsIunsEntity -> createCoverFile(raddTansactionEntity, operationsIunsEntity.getIun()));
+        }
+        return createCoverFile(raddTansactionEntity, raddTansactionEntity.getIun());
     }
 
-    private byte @NotNull [] checkRecipientIdAndCreatePdf(Tuple2<SentNotificationV23Dto, RaddTransactionEntity> notificationEntityTuple) {
-        Optional<NotificationRecipientV23Dto> recipient = notificationEntityTuple.getT1().getRecipients().stream()
-                .filter(s -> notificationEntityTuple.getT2().getRecipientId().equals(s.getInternalId()))
+    @NotNull
+    private Mono<byte[]> getPdfInZipAttachment(String attachmentId, RaddTransactionEntity raddTansactionEntity) {
+        if (raddTansactionEntity.getZipAttachments() != null &&
+                StringUtils.hasText(raddTansactionEntity.getZipAttachments().get(attachmentId))) {
+            String zipUrl = raddTansactionEntity.getZipAttachments().get(attachmentId);
+            return documentDownloadClient.downloadContent(zipUrl)
+                    .map(ZipUtils::extractPdfFromZip);
+        }
+        throw new RaddGenericException(ZIP_ATTACHMENT_URL_NOT_FOUND);
+    }
+
+    @NotNull
+    private Mono<byte[]> createCoverFile(RaddTransactionEntity raddTansactionEntity, String iun) {
+        return pnDeliveryClient.getNotifications(iun)
+                .map(sentNotificationV23Dto -> checkRecipientIdAndCreatePdf(sentNotificationV23Dto, raddTansactionEntity.getRecipientId()));
+    }
+
+    private byte @NotNull [] checkRecipientIdAndCreatePdf(SentNotificationV23Dto sentNotificationV23Dto, String internalId) {
+        Optional<NotificationRecipientV23Dto> recipient = sentNotificationV23Dto.getRecipients().stream()
+                .filter(notificationRecipient -> internalId.equals(notificationRecipient.getInternalId()))
                 .findFirst();
         if (recipient.isPresent()) {
             return generatePdf(recipient.get());
@@ -93,8 +106,7 @@ public class DocumentOperationsService {
 
     private byte @NotNull [] generatePdf(NotificationRecipientV23Dto recipient) {
         try {
-            byte[] byteArray = pdfGenerator.generateCoverFile(recipient.getDenomination());
-            return getHexBytes(byteArray);
+            return pdfGenerator.generateCoverFile(recipient.getDenomination());
         } catch (IOException e) {
             throw new RaddGenericException(e.getMessage());
         }

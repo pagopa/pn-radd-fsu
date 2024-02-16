@@ -460,8 +460,7 @@ components:
           description: indica se inviare l'header di autenticazione
         documentType:
           type: string
-          enum: [ "DOCUMENT", "ATTACHMENT", "LEGAL_FACT", "LEGAL_FACT_EXTERNAL", "COVER_FILE", "AAR" ]
-          example: "DOCUMENT"
+          description: categoria del documento, ATTO_NOTIFICATO oppure ATTESTAZIONE_OPPONIBILE_A_TERZI
 
 
     AorStartTransactionRequest:

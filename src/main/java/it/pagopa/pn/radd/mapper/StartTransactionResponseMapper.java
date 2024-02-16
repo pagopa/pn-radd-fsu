@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionRes
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponseStatus;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.pojo.DocumentTypeEnum;
 import it.pagopa.pn.radd.utils.Const;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,16 +21,32 @@ public class StartTransactionResponseMapper {
         // do nothing
     }
 
-    public static StartTransactionResponse fromResult(List<DownloadUrl> result, String operationType, String operationId, String pnRaddAltBasepath) {
+    public static StartTransactionResponse fromResult(List<DownloadUrl> result, String operationType, String operationId, String pnRaddAltBasepath, List<DocumentTypeEnum> documentTypeEnumFilter) {
         StartTransactionResponse response = new StartTransactionResponse();
-        DownloadUrl firstDownloadUrl = getDocumentDownloadUrl(pnRaddAltBasepath, operationType, operationId, null, DownloadUrl.DocumentTypeEnum.COVER_FILE);
+        DownloadUrl firstDownloadUrl = getDocumentDownloadUrl(pnRaddAltBasepath, operationType, operationId, null, DocumentTypeEnum.COVER_FILE.name());
         result.add(0, firstDownloadUrl);
-        response.setDownloadUrlList(result);
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
         status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_0);
         response.setStatus(status);
         status.setMessage(Const.OK);
+
+        result = filterByAndMapDocumentType(result, documentTypeEnumFilter);
+        response.setDownloadUrlList(result);
+
         return response;
+    }
+
+    @NotNull
+    private static List<DownloadUrl> filterByAndMapDocumentType(List<DownloadUrl> result, List<DocumentTypeEnum> documentTypeEnumFilter) {
+        result = result.stream()
+                .filter(downloadUrl -> !documentTypeEnumFilter.contains(DocumentTypeEnum.valueOf(downloadUrl.getDocumentType())))
+                .map(downloadUrl -> {
+                            downloadUrl.setDocumentType(DocumentTypeEnum.valueOf(downloadUrl.getDocumentType()).getValue());
+                            return downloadUrl;
+                        }
+                )
+                .toList();
+        return result;
     }
 
     @NotNull
@@ -39,7 +56,7 @@ public class StartTransactionResponseMapper {
             DownloadUrl downloadUrlItem = new DownloadUrl();
             downloadUrlItem.setUrl(url);
             downloadUrlItem.setNeedAuthentication(false);
-            downloadUrlItem.setDocumentType(DownloadUrl.DocumentTypeEnum.AAR);
+            downloadUrlItem.setDocumentType(DocumentTypeEnum.AAR.name());
             return downloadUrlItem;
         }).toList());
 

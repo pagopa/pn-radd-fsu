@@ -16,6 +16,7 @@ import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
+import it.pagopa.pn.radd.pojo.DocumentTypeEnum;
 import it.pagopa.pn.radd.pojo.LegalFactInfo;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
 import it.pagopa.pn.radd.pojo.TransactionData;
@@ -167,7 +168,7 @@ public class ActService extends BaseService {
         return ParallelFlux.from(urlDocuments, urlAttachments, urlLegalFacts)
                 .sequential()
                 .collectList()
-                .map(resultList -> StartTransactionResponseMapper.fromResult(resultList, OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()));
+                .map(resultList -> StartTransactionResponseMapper.fromResult(resultList, OperationTypeEnum.ACT.name(), request.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(), pnRaddFsuConfig.getDocumentTypeEnumFilter()));
     }
 
     @NotNull
@@ -259,11 +260,11 @@ public class ActService extends BaseService {
     }
 
     @NotNull
-    private static DownloadUrl.DocumentTypeEnum getDocumentType(LegalFactInfo legalFactInfo) {
+    private static String getDocumentType(LegalFactInfo legalFactInfo) {
         return LegalFactCategoryDto.PEC_RECEIPT.equals(legalFactInfo.getCategory()) ||
                 LegalFactCategoryDto.ANALOG_DELIVERY.equals(legalFactInfo.getCategory()) ?
-                DownloadUrl.DocumentTypeEnum.LEGAL_FACT_EXTERNAL :
-                DownloadUrl.DocumentTypeEnum.LEGAL_FACT;
+                DocumentTypeEnum.LEGAL_FACT_EXTERNAL.name() :
+                DocumentTypeEnum.LEGAL_FACT.name();
     }
 
     @NotNull
@@ -316,7 +317,7 @@ public class ActService extends BaseService {
     }
 
     @NotNull
-    private static DownloadUrl getDownloadUrl(String url, DownloadUrl.DocumentTypeEnum documentType) {
+    private static DownloadUrl getDownloadUrl(String url, String documentType) {
         DownloadUrl downloadUrl = new DownloadUrl();
         downloadUrl.setUrl(url);
         downloadUrl.setNeedAuthentication(false);
@@ -328,7 +329,7 @@ public class ActService extends BaseService {
         return Flux.fromStream(sentDTO.getDocuments().stream())
                 .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
                         .mapNotNull(ActService::getNotificationAttachmentUrl))
-                .map(url -> getDownloadUrl(url, DownloadUrl.DocumentTypeEnum.DOCUMENT));
+                .map(url -> getDownloadUrl(url, DocumentTypeEnum.DOCUMENT.name()));
     }
 
     @Nullable
@@ -355,7 +356,7 @@ public class ActService extends BaseService {
                                         .index()
                                         .flatMap(item -> getF24AttachmentDownloadMetadataResponseDto(transactionData, item.getT2(), Math.toIntExact(item.getT1())))))
                 .mapNotNull(ActService::getNotificationAttachmentUrl)
-                .map(url -> getDownloadUrl(url, DownloadUrl.DocumentTypeEnum.ATTACHMENT))
+                .map(url -> getDownloadUrl(url, DocumentTypeEnum.ATTACHMENT.name()))
                 .doOnError(e -> log.error(e.getMessage()));
     }
 

@@ -22,7 +22,7 @@ class StartTransactionResponseMapperTest {
     @Test
     void testFromResult() {
         // Arrange and Act
-        StartTransactionResponse actualFromResultResult = StartTransactionResponseMapper.fromResult(new ArrayList<>(), "PF", "1", "");
+        StartTransactionResponse actualFromResultResult = StartTransactionResponseMapper.fromResult(new ArrayList<>(), "PF", "1", "", new ArrayList<>());
 
         // Assert
         StartTransactionResponseStatus status = actualFromResultResult.getStatus();
@@ -43,7 +43,7 @@ class StartTransactionResponseMapperTest {
         result.add("new api");
 
         // Act
-        StartTransactionResponse actualFromResultResult = StartTransactionResponseMapper.fromResult(StartTransactionResponseMapper.getDownloadUrls(result), "PF", "1", "");
+        StartTransactionResponse actualFromResultResult = StartTransactionResponseMapper.fromResult(StartTransactionResponseMapper.getDownloadUrls(result), "PF", "1", "", new ArrayList<>());
 
         // Assert
         StartTransactionResponseStatus status = actualFromResultResult.getStatus();
@@ -67,7 +67,7 @@ class StartTransactionResponseMapperTest {
         result.add("new api");
 
         // Act
-        StartTransactionResponse actualFromResultResult = StartTransactionResponseMapper.fromResult(StartTransactionResponseMapper.getDownloadUrls(result), "PF", "1", "");
+        StartTransactionResponse actualFromResultResult = StartTransactionResponseMapper.fromResult(StartTransactionResponseMapper.getDownloadUrls(result), "PF", "1", "", new ArrayList<>());
 
         // Assert
         List<DownloadUrl> downloadUrlList = actualFromResultResult.getDownloadUrlList();

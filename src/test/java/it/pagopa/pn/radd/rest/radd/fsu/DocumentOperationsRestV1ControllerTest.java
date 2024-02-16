@@ -43,9 +43,10 @@ class DocumentOperationsRestV1ControllerTest {
     void documentDownloadTest() {
         byte[] response = new byte[0];
 
-        String path = "/radd-net/api/v1/download/ACT/ACT";
+        String path = "/radd-net/api/v1/download/{operationType}/{operationId}".replace("{operationType}", "ACT")
+                .replace("{operationId}", "42");
         Mockito.when(documentOperationsService
-                .documentDownload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString())
+                .documentDownload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.get()

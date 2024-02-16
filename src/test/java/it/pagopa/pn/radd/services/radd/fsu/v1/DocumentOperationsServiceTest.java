@@ -30,6 +30,7 @@ import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.PdfGenerator;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +112,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(documentDownloadClient.downloadContent(any())).thenReturn(Mono.just(zipFile));
 
         StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
-                .expectNext(responseHex)
+                .expectNextMatches(res -> Arrays.equals(res, responseHex))
                 .verifyComplete();
     }
 

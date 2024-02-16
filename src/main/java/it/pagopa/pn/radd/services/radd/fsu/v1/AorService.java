@@ -142,7 +142,7 @@ public class AorService extends BaseService {
                 .parallel()
                 .map(file -> {
                     if (file.getDownload() != null && file.getDownload().getRetryAfter() != null && file.getDownload().getRetryAfter().intValue() != 0) {
-                        log.info("Finded document with retry after {}", file.getDownload().getRetryAfter());
+                        log.info("Found document with retry after {}", file.getDownload().getRetryAfter());
                         throw new RaddGenericException(RETRY_AFTER, file.getDownload().getRetryAfter());
                     }
                     if (file.getDownload() != null) {

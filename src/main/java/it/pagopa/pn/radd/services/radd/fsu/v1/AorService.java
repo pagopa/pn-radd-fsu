@@ -197,10 +197,10 @@ public class AorService extends BaseService {
                     return raddEntity;
                 })
                 .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ABORTED))
-                .doOnNext(raddTransaction -> logEvent.generateSuccess("End AOR abortTransaction with entity status {}", raddTransaction.getStatus()))
+                .doOnNext(raddTransaction -> logEvent.generateSuccess("End AOR abortTransaction with entity status {}", raddTransaction.getStatus()).log())
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    logEvent.generateFailure("Errore AOR Abort transaction {}", ex.getMessage(), ex);
+                    logEvent.generateFailure("Errore AOR Abort transaction {}", ex.getMessage(), ex).log();
                     return Mono.just(AbortTransactionResponseMapper.fromException(ex));
                 });
     }

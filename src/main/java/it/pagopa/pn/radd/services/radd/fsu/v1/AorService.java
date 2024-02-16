@@ -74,9 +74,14 @@ public class AorService extends BaseService {
 
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, Mono<CompleteTransactionRequest> completeTransactionRequest, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
+        PnAuditLogBuilder auditLogBuilder = new PnAuditLogBuilder();
+        PnAuditLogEvent logEvent = auditLogBuilder
+                .before(PnAuditLogEventType.AUD_RADD_ACTINQUIRY, "Start AOR complete transaction - uid={}, cxType={}, cxId={}", uid, xPagopaPnCxType, xPagopaPnCxId)
+                .build();
+        logEvent.log();
         return completeTransactionRequest
                 .doOnNext(completeTransaction ->
-                        log.info("Start AOR complete transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, completeTransaction.getOperationId()))
+                        log.info("Start AOR complete transaction with operationId={}", completeTransaction.getOperationId()))
                 .map(this::validateCompleteRequest)
                 .zipWhen(req -> this.getAndCheckStatusTransaction(req.getOperationId(), xPagopaPnCxType, xPagopaPnCxId))
                 .map(reqAndEntity -> {
@@ -87,9 +92,12 @@ public class AorService extends BaseService {
                 })
                 .doOnNext(entity -> log.debug("[uid={} - operationId={}] Updating transaction entity with status {}", entity.getUid(), entity.getOperationId(), entity.getStatus()))
                 .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.COMPLETED))
-                .doOnNext(entity -> log.debug("[uid={} - operationId={}] New status of transaction entity is {}", entity.getUid(), entity.getOperationId(), entity.getStatus()))
+                .doOnNext(entity -> logEvent.generateSuccess("[uid={} - operationId={}] New status of transaction entity is {}", entity.getUid(), entity.getOperationId(), entity.getStatus()).log())
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
-                .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)));
+                .onErrorResume(RaddGenericException.class, ex -> {
+                    logEvent.generateFailure("[AOR complete transaction failed = {}]" + ex.getMessage()).log();
+                    return Mono.just(CompleteTransactionResponseMapper.fromException(ex));
+                });
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
@@ -170,10 +178,15 @@ public class AorService extends BaseService {
 
 
     public Mono<AbortTransactionResponse> abortTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> monoAbortTransactionRequest) {
+        PnAuditLogBuilder auditLogBuilder = new PnAuditLogBuilder();
+        PnAuditLogEvent logEvent = auditLogBuilder
+                .before(PnAuditLogEventType.AUD_RADD_AORTRAN, "Starting AOR abort with: operationId = {}, uid = {}, cxType = {}, cxId = {} and fileKey = {}", uid, xPagopaPnCxType, xPagopaPnCxId)
+                .build();
+        logEvent.log();
         return monoAbortTransactionRequest
                 .filter(isValidAbortTransactionRequest)
                 .switchIfEmpty(Mono.error(new PnInvalidInputException("Alcuni paramentri come operazione id o data di operazione non sono valorizzate")))
-                .doOnNext(m -> log.info("Start AOR abort transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, m.getOperationId()))
+                .doOnNext(m -> log.info("Start AOR abort transaction - operationId={}", m.getOperationId()))
                 .zipWhen(operation -> raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, operation.getOperationId(), AOR))
                 .map(entity -> {
                     RaddTransactionEntity raddEntity = entity.getT2();
@@ -184,10 +197,10 @@ public class AorService extends BaseService {
                     return raddEntity;
                 })
                 .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ABORTED))
-                .doOnNext(raddTransaction -> log.debug("End AOR abortTransaction with entity status {}", raddTransaction.getStatus()))
+                .doOnNext(raddTransaction -> logEvent.generateSuccess("End AOR abortTransaction with entity status {}", raddTransaction.getStatus()))
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.error("Errore AOR Abort transaction {}", ex.getMessage(), ex);
+                    logEvent.generateFailure("Errore AOR Abort transaction {}", ex.getMessage(), ex);
                     return Mono.just(AbortTransactionResponseMapper.fromException(ex));
                 });
     }

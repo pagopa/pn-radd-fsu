@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
+import static it.pagopa.pn.radd.utils.ZipUtils.extractPdfFromZip;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +23,7 @@ import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
+import it.pagopa.pn.radd.middleware.msclient.DocumentDownloadClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.utils.Const;
@@ -30,6 +32,7 @@ import it.pagopa.pn.radd.utils.PdfGenerator;
 import java.io.IOException;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
@@ -38,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.core.io.ClassPathResource;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -58,6 +62,9 @@ class DocumentOperationsServiceTest extends BaseTest {
     @Mock
     PdfGenerator pdfGenerator;
 
+    @Mock
+    DocumentDownloadClient documentDownloadClient;
+
     @Test
     void documentDownloadTest() throws IOException {
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
@@ -77,10 +84,44 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", null))
                 .expectNext(responseHex)
                 .verifyComplete();
 
+    }
+
+    @Test
+    void documentDownloadWithAttachmentIdTest() {
+        RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
+        raddTransactionEntity.setRecipientId("123");
+        raddTransactionEntity.setStatus(Const.STARTED);
+        raddTransactionEntity.setZipAttachments(Map.of("123", "123"));
+
+        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
+        notificationRecipientV21Dto.setInternalId("123");
+        notificationRecipientV21Dto.setDenomination("denomination");
+        sentNotificationV21Dto.setRecipients(List.of(notificationRecipientV21Dto));
+
+        byte[] zipFile = getFile();
+        byte[] pdfFile = extractPdfFromZip(zipFile);
+        byte[] responseHex = HexFormat.of().parseHex(Hex.encodeHexString(pdfFile));
+
+        when(raddTransactionDAOImpl.getTransaction(any(), any())).thenReturn(Mono.just(raddTransactionEntity));
+        when(documentDownloadClient.downloadContent(any())).thenReturn(Mono.just(zipFile));
+
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
+                .expectNext(responseHex)
+                .verifyComplete();
+    }
+
+    private byte[] getFile() {
+        try {
+            return new ClassPathResource("zip/zip-with-pdf.zip").getInputStream().readAllBytes();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -101,7 +142,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -125,7 +166,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -149,7 +190,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -173,7 +214,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenThrow(IOException.class);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -197,7 +238,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenThrow(IOException.class);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 

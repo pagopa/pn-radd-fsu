@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.commons.log.PnAuditLogBuilder;
+import it.pagopa.pn.commons.log.PnAuditLogEvent;
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
@@ -46,21 +49,25 @@ public class AorService extends BaseService {
     }
 
     public Mono<AORInquiryResponse> aorInquiry(String uid, String recipientTaxId, String recipientType, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
-        log.info("start AORInquiry - cxType={} cxId={}", xPagopaPnCxType, xPagopaPnCxId);
+        PnAuditLogBuilder auditLogBuilder = new PnAuditLogBuilder();
+        PnAuditLogEvent logEvent = auditLogBuilder
+                .before(PnAuditLogEventType.AUD_RADD_ACTINQUIRY, "Starting aor inquiry with uid = {}, cxType = {},  and cxId = {}", uid, xPagopaPnCxType, xPagopaPnCxId)
+                .build();
+        logEvent.log();
         if (StringUtils.isBlank(recipientTaxId)) {
             throw new PnInvalidInputException("Il campo codice fiscale non è valorizzato");
         }
-        log.info("Start AORInquiry - uid={}", uid);
         return this.getEnsureFiscalCode(recipientTaxId, recipientType)
+                .doOnNext(recipientInternalId -> logEvent.getMdc().put("internalId", recipientInternalId))
                 .flatMap(ensureFiscalCode ->
                         this.getIunFromPaperNotificationFailed(ensureFiscalCode)
                                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF)))
                                 .collectList()
                                 .doOnNext(list -> log.info("End of AORInquiry with documents list size {}", list.size()))
                                 .map(list -> AorInquiryResponseMapper.fromResult())
-                )
+                ).doOnNext(aorInquiryResponse -> logEvent.generateSuccess("Ending AOR inquiry for internalId = {} with result = {} and status = {}", logEvent.getMdc().get("internalId"), aorInquiryResponse.getResult(), aorInquiryResponse.getStatus()).log())
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.error("End of AORInquiry with error {}", ex.getMessage(), ex);
+                    logEvent.generateFailure("[aor inquiry failed = {}]" + ex.getMessage()).log();
                     return Mono.just(AorInquiryResponseMapper.fromException(ex));
                 });
     }
@@ -86,9 +93,17 @@ public class AorService extends BaseService {
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
-        log.info("Start AOR startTransaction - uid={} - operationId={} - cxType={} - cxId={}", uid, request.getOperationId(), xPagopaPnCxType, xPagopaPnCxId);
+        PnAuditLogBuilder auditLogBuilder = new PnAuditLogBuilder();
+        PnAuditLogEvent logEvent = auditLogBuilder
+                .before(PnAuditLogEventType.AUD_RADD_AORTRAN, "Starting AOR transaction with: operationId = {}, uid = {}, cxType = {}, cxId = {} and fileKey = {}", request.getOperationId(), uid, xPagopaPnCxType, xPagopaPnCxId, request.getFileKey())
+                .build();
+        logEvent.log();
         return validationAorStartTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId)
                 .flatMap(this::getEnsureRecipientAndDelegate)
+                .doOnNext(transactionData -> {
+                    logEvent.getMdc().put("internalId", transactionData.getEnsureRecipientId());
+                    logEvent.getMdc().put("delegateId", transactionData.getEnsureDelegateId());
+                })
                 .flatMap(this::setIunsOfNotificationFailed)
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
                 .flatMap(this::verifyCheckSum)
@@ -102,17 +117,20 @@ public class AorService extends BaseService {
                 .doOnNext(transactionData -> log.debug("Update file metadata"))
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
-                .map(data -> StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
+                .map(data -> {
+                    logEvent.generateSuccess("Ending AOR transaction: transactionId = {}, internalId = {}, delegateId = {}, fileKey = {}", data.getTransactionId(), logEvent.getMdc().get("internalId"), logEvent.getMdc().get("delegateId"), logEvent.getMdc().get("fileKey")).log();
+                    return StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(), data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath());
+                })
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
-                    log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
+                    logEvent.generateFailure("[aor transaction failed = {}]" + ex.getMessage()).log();
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(PaperNotificationFailedEmptyException.class, ex -> {
-                    log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
+                    logEvent.generateFailure("[aor transaction failed = {}]" + ex.getMessage()).log();
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.error("End AOR start transaction with error {}", ex.getMessage(), ex);
+                    logEvent.generateFailure("[aor transaction failed = {}]" + ex.getMessage()).log();
                     return this.settingErrorReason(ex, request.getOperationId(), AOR, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });

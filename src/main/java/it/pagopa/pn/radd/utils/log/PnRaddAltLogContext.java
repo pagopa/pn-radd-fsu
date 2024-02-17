@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.utils.log;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.utils.Utils;
 
 import java.util.List;
@@ -18,6 +18,7 @@ public class PnRaddAltLogContext {
     private String result="";
     private String status="";
     private String operationId="";
+    private String iun="";
 
     public PnRaddAltLogContext addUid(String uid) {
         this.uid = "uid=%s ".formatted(uid);
@@ -54,30 +55,46 @@ public class PnRaddAltLogContext {
         return this;
     }
 
-    public PnRaddAltLogContext addDownloadFilekeys(List<String> presignedUrls) {
+    public PnRaddAltLogContext addDownloadFilekeys(List<DownloadUrl> downloadUrlList) {
+        List<String> presignedUrls = downloadUrlList.stream().map(DownloadUrl::getUrl).toList();
         String joinedFileKeys = presignedUrls.stream().map(Utils::getFileKeyFromPresignedUrl).collect(Collectors.joining());
         this.downloadedFilekeys = "downloadedFilekeys=[ %s ] ".formatted(joinedFileKeys);
         return this;
     }
 
     public PnRaddAltLogContext addResponseResult(Boolean result) {
-        this.result = "result=%s".formatted(result);
+        this.result = "result=%s ".formatted(result);
         return this;
     }
 
     public PnRaddAltLogContext addResponseStatus(ResponseStatus status) {
-        this.status = "status=%s".formatted(status.toString());
+        this.status = "status=%s ".formatted(status.toString());
+        return this;
+    }
+
+    public PnRaddAltLogContext addResponseStatus(ActInquiryResponseStatus status) {
+        this.status = "status=%s ".formatted(status.toString());
+        return this;
+    }
+
+    public PnRaddAltLogContext addResponseStatus(TransactionResponseStatus status) {
+        this.status = "status=%s ".formatted(status.toString());
         return this;
     }
 
     public PnRaddAltLogContext addOperationId(String operationId) {
-        this.operationId = "operationId=%s".formatted(operationId);
+        this.operationId = "operationId=%s ".formatted(operationId);
+        return this;
+    }
+
+    public PnRaddAltLogContext addIun(String iun) {
+        this.iun = "iun=%s ".formatted(iun);
         return this;
     }
 
     public String logContext() {
         return uid + cxId + cxType + operationId + transactionId + recipientInternalId + delegateInternalId + requestFileKey
-                + downloadedFilekeys + result + status;
+                + iun + downloadedFilekeys + result + status;
     }
 
 

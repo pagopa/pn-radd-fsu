@@ -5,6 +5,9 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity.ITEMS_SEPARATOR;
 import static it.pagopa.pn.radd.utils.Const.DOWNLOAD_COVER_FILE_PATH;
 import static it.pagopa.pn.radd.utils.OperationTypeEnum.ACT;
@@ -38,5 +41,29 @@ public class Utils {
         downloadUrl.setNeedAuthentication(true);
 
         return downloadUrl;
+    }
+
+    public static String getFileKeyFromPresignedUrl(String presignedUrl) {
+        //TODO Sostituire la regex con una funzionante per le presigned url di safestorage
+        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(fileKey=)(.*)");
+
+        Matcher matcher = FILEKEY_IN_PRESIGNED_URL.matcher(presignedUrl);
+        if(matcher.find()) {
+            return matcher.group(2);
+        }
+
+        Pattern ZIP_LEGAL_FACT = Pattern.compile("download/(ACT|AOR)/.*(\\?attachmentId=)");
+        matcher = ZIP_LEGAL_FACT.matcher(presignedUrl);
+        if(matcher.find()) {
+            return "zipUrl";
+        }
+
+        Pattern COVERFILE = Pattern.compile("download/(ACT|AOR)/.*");
+        matcher = COVERFILE.matcher(presignedUrl);
+        if(matcher.find()) {
+            return "coverFileUrl";
+        }
+
+        return "";
     }
 }

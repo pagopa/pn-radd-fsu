@@ -63,11 +63,11 @@ class DocumentOperationsRestV1ControllerTest {
      */
     @Test
     void testDocumentDownload3() {
-        when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any(), Mockito.anyString())).thenReturn(mock(Mono.class));
+        when(documentOperationsService.documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString())).thenReturn(mock(Mono.class));
         documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PA, "42", "attach", null);
-        verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any(), Mockito.anyString());
+        verify(documentOperationsService).documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString());
     }
 
     /**
@@ -75,11 +75,11 @@ class DocumentOperationsRestV1ControllerTest {
      */
     @Test
     void testDocumentDownload4() {
-        when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any(), Mockito.anyString())).thenReturn(mock(Mono.class));
+        when(documentOperationsService.documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString())).thenReturn(mock(Mono.class));
         documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PF, "42", "attach", null);
-        verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any(), Mockito.anyString());
+        verify(documentOperationsService).documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString());
     }
 
     /**
@@ -87,11 +87,11 @@ class DocumentOperationsRestV1ControllerTest {
      */
     @Test
     void testDocumentDownload5() {
-        when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any(), Mockito.anyString())).thenReturn(mock(Mono.class));
+        when(documentOperationsService.documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString())).thenReturn(mock(Mono.class));
         documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PG, "42", "attach", null);
-        verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any(), Mockito.anyString());
+        verify(documentOperationsService).documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString());
     }
 
     @Test

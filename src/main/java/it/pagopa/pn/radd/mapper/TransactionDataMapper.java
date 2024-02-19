@@ -40,7 +40,7 @@ public class TransactionDataMapper {
         entity.setChecksum(transaction.getChecksum());
         entity.setUid(uid);
         entity.setOperationType(transaction.getOperationType().name());
-        entity.setQrCode(transaction.getQrCode());
+        entity.setQrCode(transaction.getQrCode() != null ? transaction.getQrCode() : "");
         entity.setStatus(Const.DRAFT);
         entity.setErrorReason("");
         entity.setOperationStartDate(DateUtils.formatDate(transaction.getOperationDate()));

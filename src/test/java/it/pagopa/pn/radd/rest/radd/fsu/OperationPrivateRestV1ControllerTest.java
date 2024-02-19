@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
@@ -105,4 +106,44 @@ class OperationPrivateRestV1ControllerTest {
                 .expectStatus().isOk();
     }
 
+    @Test
+    void testWhenCalledAorPracticesByInternalId() {
+        OperationsAorDetailsResponse response = new OperationsAorDetailsResponse();
+        response.setElements(List.of(new OperationAorDetailResponse()));
+
+        String path = "/radd-net-private/api/v1/aor/operations/by-internalId/{internalId}"
+                .replace("{internalId}", "internalId");
+        Mockito.when(operationService
+                        .getAllAorTransactionFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(Mono.just(response));
+        webTestClient.post()
+                .uri(path)
+                .header(PN_PAGOPA_UID, "myUid")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
+                .contentType(MediaType.valueOf("application/json"))
+                .bodyValue(new FilterRequest())
+                .exchange()
+                .expectStatus().isOk();
+    }
+    @Test
+    void testWhenCalledActPracticesByInternalId() {
+        OperationsActDetailsResponse response = new OperationsActDetailsResponse();
+        response.setElements(List.of(new OperationActDetailResponse()));
+
+        String path = "/radd-net-private/api/v1/act/operations/by-internalId/{internalId}"
+                .replace("{internalId}", "internalId");
+        Mockito.when(operationService
+                        .getAllActTransactionFromFiscalCode(Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(Mono.just(response));
+        webTestClient.post()
+                .uri(path)
+                .header(PN_PAGOPA_UID, "myUid")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
+                .contentType(MediaType.valueOf("application/json"))
+                .bodyValue(new FilterRequest())
+                .exchange()
+                .expectStatus().isOk();
+    }
 }

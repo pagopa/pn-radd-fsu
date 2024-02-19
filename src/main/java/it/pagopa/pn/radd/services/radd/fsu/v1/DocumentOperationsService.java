@@ -9,28 +9,28 @@ import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.mapper.DocumentUploadResponseMapper;
+import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 
+import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.middleware.msclient.DocumentDownloadClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.utils.Const;
-import it.pagopa.pn.radd.utils.OperationTypeEnum;
-import it.pagopa.pn.radd.utils.PdfGenerator;
-import it.pagopa.pn.radd.utils.Utils;
+import it.pagopa.pn.radd.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.io.IOException;
 import java.util.HexFormat;
 import java.util.Optional;
 
 import static it.pagopa.pn.radd.utils.Const.*;
+import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Service
@@ -40,26 +40,63 @@ public class DocumentOperationsService {
     private final PnDeliveryClient pnDeliveryClient;
     private final RaddTransactionDAO raddTransactionDAO;
     private final PnSafeStorageClient pnSafeStorageClient;
+    private final DocumentDownloadClient documentDownloadClient;
     private final PdfGenerator pdfGenerator;
+    private final OperationsIunsDAO operationsIunsDAO;
 
-    public DocumentOperationsService(PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PdfGenerator pdfGenerator, PnSafeStorageClient pnSafeStorageClient) {
+    public DocumentOperationsService(PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PdfGenerator pdfGenerator, PnSafeStorageClient pnSafeStorageClient, DocumentDownloadClient documentDownloadClient, OperationsIunsDAO operationsIunsDAO) {
         this.pnDeliveryClient = pnDeliveryClient;
         this.raddTransactionDAO = raddTransactionDAO;
         this.pdfGenerator = pdfGenerator;
         this.pnSafeStorageClient = pnSafeStorageClient;
+        this.documentDownloadClient = documentDownloadClient;
+        this.operationsIunsDAO = operationsIunsDAO;
     }
 
     public Mono<byte[]> documentDownload(String operationType, String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String attachmentId) {
         return validateOperationTypeAndOperationId(operationType, operationId)
                 .flatMap(isValid -> checkTransactionIsAlreadyExistsInCompletedErrorOrAborted(transactionIdBuilder(xPagopaPnCxType, xPagopaPnCxId, operationId), operationType))
-                .flatMap(raddTansactionEntity -> pnDeliveryClient.getNotifications(raddTansactionEntity.getIun())
-                        .zipWith(Mono.just(raddTansactionEntity)))
-                .map(this::checkRecipientIdAndCreatePdf);
+                .flatMap(raddTansactionEntity -> {
+                    if (StringUtils.hasText(attachmentId)) {
+                        return getPdfInZipAttachment(attachmentId, raddTansactionEntity);
+                    } else {
+                        return checkOperationType(operationType, raddTansactionEntity)
+                                .flatMap(iun -> createCoverFile(raddTansactionEntity, iun));
+                    }
+                })
+                .map(DocumentOperationsService::getHexBytes);
     }
 
-    private byte @NotNull [] checkRecipientIdAndCreatePdf(Tuple2<SentNotificationV23Dto, RaddTransactionEntity> notificationEntityTuple) {
-        Optional<NotificationRecipientV23Dto> recipient = notificationEntityTuple.getT1().getRecipients().stream()
-                .filter(s -> notificationEntityTuple.getT2().getRecipientId().equals(s.getInternalId()))
+    private Mono<String> checkOperationType(String operationType, RaddTransactionEntity raddTansactionEntity) {
+        if (AOR.name().equals(operationType)) {
+            return operationsIunsDAO.getAllIunsFromTransactionId(raddTansactionEntity.getTransactionId())
+                    .next()
+                    .map(OperationsIunsEntity::getIun);
+        }
+        return Mono.just(raddTansactionEntity.getIun());
+    }
+
+
+    @NotNull
+    private Mono<byte[]> getPdfInZipAttachment(String attachmentId, RaddTransactionEntity raddTansactionEntity) {
+        if (raddTansactionEntity.getZipAttachments() != null &&
+                StringUtils.hasText(raddTansactionEntity.getZipAttachments().get(attachmentId))) {
+            String zipUrl = raddTansactionEntity.getZipAttachments().get(attachmentId);
+            return documentDownloadClient.downloadContent(zipUrl)
+                    .map(ZipUtils::extractPdfFromZip);
+        }
+        throw new RaddGenericException(ZIP_ATTACHMENT_URL_NOT_FOUND);
+    }
+
+    @NotNull
+    private Mono<byte[]> createCoverFile(RaddTransactionEntity raddTansactionEntity, String iun) {
+        return pnDeliveryClient.getNotifications(iun)
+                .map(sentNotificationV23Dto -> checkRecipientIdAndCreatePdf(sentNotificationV23Dto, raddTansactionEntity.getRecipientId()));
+    }
+
+    private byte @NotNull [] checkRecipientIdAndCreatePdf(SentNotificationV23Dto sentNotificationV23Dto, String internalId) {
+        Optional<NotificationRecipientV23Dto> recipient = sentNotificationV23Dto.getRecipients().stream()
+                .filter(notificationRecipient -> internalId.equals(notificationRecipient.getInternalId()))
                 .findFirst();
         if (recipient.isPresent()) {
             return generatePdf(recipient.get());
@@ -69,11 +106,14 @@ public class DocumentOperationsService {
 
     private byte @NotNull [] generatePdf(NotificationRecipientV23Dto recipient) {
         try {
-            byte[] byteArray = pdfGenerator.generateCoverFile(recipient.getDenomination());
-            return HexFormat.of().parseHex(Hex.encodeHexString(byteArray));
+            return pdfGenerator.generateCoverFile(recipient.getDenomination());
         } catch (IOException e) {
             throw new RaddGenericException(e.getMessage());
         }
+    }
+
+    private static byte[] getHexBytes(byte[] byteArray) {
+        return HexFormat.of().parseHex(Hex.encodeHexString(byteArray));
     }
 
     private Mono<Boolean> validateOperationTypeAndOperationId(String operationType, String operationId) {
@@ -101,10 +141,10 @@ public class DocumentOperationsService {
     }
 
 
-    public Mono<DocumentUploadResponse> createFile(String uid, Mono<DocumentUploadRequest> documentUploadRequest) {
-        if (documentUploadRequest==null){
+    public Mono<DocumentUploadResponse> createFile(Mono<DocumentUploadRequest> documentUploadRequest) {
+        if (documentUploadRequest == null) {
             log.error(MISSING_INPUT_PARAMETERS);
-            return Mono.error( new PnInvalidInputException("Body non valido") );
+            return Mono.error(new PnInvalidInputException("Body non valido"));
         }
         // retrieve presigned url
         return documentUploadRequest

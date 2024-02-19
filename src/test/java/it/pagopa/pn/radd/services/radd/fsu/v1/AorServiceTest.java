@@ -18,6 +18,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -147,8 +148,7 @@ class AorServiceTest extends BaseTest {
     @Test
     void testCompleteWhenValidateRequestThenThrowInvalidInputException() {
         CompleteTransactionRequest request = new CompleteTransactionRequest();
-        StepVerifier.create(aorService.completeTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "cxId"))
-                .expectError(PnInvalidInputException.class).verify();
+        Assertions.assertThrows(PnInvalidInputException.class, (() -> aorService.completeTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "cxId")));
     }
 
     @Test
@@ -246,7 +246,7 @@ class AorServiceTest extends BaseTest {
 
     @Test
     void testAbortWhenDaoNotFindThenReturnResponseKO() {
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST));
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
         AbortTransactionResponse response = aorService.abortTransaction("uid", CxTypeAuthFleet.valueOf("PF"), "cxId", abortTransactionRequest).block();
 
         assertNotNull(response);

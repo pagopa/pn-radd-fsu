@@ -211,7 +211,7 @@ public class AorService extends BaseService {
                 .build()
                 .log();
 
-        if (StringUtils.isBlank(abortTransactionRequest.getOperationId()) || StringUtils.isBlank(abortTransactionRequest.getReason())) {
+        if (StringUtils.isEmpty(abortTransactionRequest.getOperationId()) || StringUtils.isEmpty(abortTransactionRequest.getReason()) || abortTransactionRequest.getOperationDate() == null) {
             log.error("Missing input parameters");
             return Mono.error(new PnInvalidInputException("Alcuni parametri come operazione id o data di operazione non sono valorizzate"));
         }
@@ -226,7 +226,7 @@ public class AorService extends BaseService {
                 .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ABORTED))
                 .map(result -> AbortTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(AbortTransactionResponseMapper.fromException(ex)))
-                .doOnError(ex -> pnRaddAltAuditLog.generateFailure("Errore AOR Abort transaction {}", ex.getMessage(), ex))
+                .doOnError(ex -> pnRaddAltAuditLog.generateFailure("Error AOR Abort transaction {}", ex.getMessage(), ex))
                 .doOnNext(raddTransaction -> {
                     pnRaddAltAuditLog.getContext().addResponseStatus(raddTransaction.getStatus());
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR abortTransaction");

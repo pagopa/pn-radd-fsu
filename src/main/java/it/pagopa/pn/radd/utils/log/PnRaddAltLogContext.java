@@ -56,7 +56,7 @@ public class PnRaddAltLogContext {
     }
 
     public PnRaddAltLogContext addDownloadFilekeys(List<String> presignedUrls) {
-        String joinedFileKeys = presignedUrls.stream().map(Utils::getFileKeyFromPresignedUrl).collect(Collectors.joining());
+        String joinedFileKeys = presignedUrls.stream().map(Utils::getFileKeyFromPresignedUrl).collect(Collectors.joining(","));
         this.downloadedFilekeys = "downloadedFilekeys=[ %s ] ".formatted(joinedFileKeys);
         return this;
     }

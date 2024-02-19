@@ -45,8 +45,7 @@ public class Utils {
     }
 
     public static String getFileKeyFromPresignedUrl(String presignedUrl) {
-        //TODO Sostituire la regex con una funzionante per le presigned url di safestorage
-        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(fileKey=)(.*)");
+        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(.*/)(.*)(\\?.*)");
 
         Matcher matcher = FILEKEY_IN_PRESIGNED_URL.matcher(presignedUrl);
         if(matcher.find()) {

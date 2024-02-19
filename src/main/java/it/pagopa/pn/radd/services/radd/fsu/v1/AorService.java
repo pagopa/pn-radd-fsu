@@ -102,7 +102,7 @@ public class AorService extends BaseService {
                 .doOnNext(transactionData -> log.debug("Update file metadata"))
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
-                .map(data -> StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath()))
+                .map(data -> StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(), pnRaddFsuConfig.getDocumentTypeEnumFilter()))
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     log.error("Ended AOR startTransaction with error {}", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));

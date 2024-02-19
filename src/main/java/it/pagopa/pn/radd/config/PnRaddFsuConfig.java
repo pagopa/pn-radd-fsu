@@ -1,11 +1,15 @@
 package it.pagopa.pn.radd.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
+import it.pagopa.pn.radd.pojo.DocumentTypeEnum;
 import it.pagopa.pn.radd.utils.HtmlSanitizer;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Configuration
@@ -25,4 +29,5 @@ public class PnRaddFsuConfig {
     private String dynamodbTable;
     private String dynamodbIunsoperationsTable;
     private HtmlSanitizer.SanitizeMode sanitizeMode;
+    private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 }

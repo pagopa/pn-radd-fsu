@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
+import it.pagopa.pn.radd.pojo.DocumentTypeEnum;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -29,12 +30,13 @@ class UtilsTest {
     }
 
     /**
-     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String)}
+     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String, String)}
      */
     @Test
     void testGetDocumentDownloadUrl() {
         DownloadUrl actualDocumentDownloadUrl = Utils.getDocumentDownloadUrl("https://example.org/example",
-                "https://example.org/example", "https://example.org/example", "https://example.org/example");
+                "https://example.org/example", "https://example.org/example", "https://example.org/example",
+                DocumentTypeEnum.DOCUMENT.name());
         assertTrue(actualDocumentDownloadUrl.getNeedAuthentication());
         assertEquals(
                 "https://example.org/example/radd-net/api/v1/download/https://example.org/example/https://example.org"
@@ -43,7 +45,7 @@ class UtilsTest {
     }
 
     /**
-     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String)}
+     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String, String)}
      */
     @Test
     @Disabled("TODO: Complete this test")
@@ -58,11 +60,11 @@ class UtilsTest {
         //   See https://diff.blue/R013 to resolve this issue.
 
         Utils.getDocumentDownloadUrl("https://example.org/example", null, "https://example.org/example",
-                "https://example.org/example");
+                "https://example.org/example", DocumentTypeEnum.DOCUMENT.name());
     }
 
     /**
-     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String)}
+     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String, String)}
      */
     @Test
     @Disabled("TODO: Complete this test")
@@ -77,16 +79,16 @@ class UtilsTest {
         //   See https://diff.blue/R013 to resolve this issue.
 
         Utils.getDocumentDownloadUrl("https://example.org/example", "https://example.org/example", null,
-                "https://example.org/example");
+                "https://example.org/example", DocumentTypeEnum.DOCUMENT.name());
     }
 
     /**
-     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String)}
+     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String, String)}
      */
     @Test
     void testGetDocumentDownloadUrl4() {
         DownloadUrl actualDocumentDownloadUrl = Utils.getDocumentDownloadUrl("https://example.org/example",
-                "https://example.org/example", "https://example.org/example", null);
+                "https://example.org/example", "https://example.org/example", null, DocumentTypeEnum.DOCUMENT.name());
         assertTrue(actualDocumentDownloadUrl.getNeedAuthentication());
         assertEquals(
                 "https://example.org/example/radd-net/api/v1/download/https://example.org/example/https://example.org"

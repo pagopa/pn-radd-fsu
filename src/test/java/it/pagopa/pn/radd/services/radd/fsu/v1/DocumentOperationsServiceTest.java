@@ -77,7 +77,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectNext(responseHex)
                 .verifyComplete();
 
@@ -101,7 +101,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -125,7 +125,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -149,7 +149,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenReturn(response);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -173,7 +173,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenThrow(IOException.class);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 
@@ -197,7 +197,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV21Dto));
         when(pdfGenerator.generateCoverFile(any())).thenThrow(IOException.class);
 
-        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId"))
+        StepVerifier.create(documentOperationsService.documentDownload("ACT", "ACT", CxTypeAuthFleet.PF, "cxId", "123"))
                 .expectError()
                 .verify();
 

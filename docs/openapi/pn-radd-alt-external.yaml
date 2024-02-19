@@ -439,6 +439,7 @@ components:
           type: string
           description: categoria del documento, ATTO_NOTIFICATO oppure ATTESTAZIONE_OPPONIBILE_A_TERZI
 
+
     AorStartTransactionRequest:
       description: Richiesta  di completamento operazione
       type: object
@@ -672,6 +673,7 @@ components:
       required: false
       schema:
         type: string
+
 
   responses:
     Forbidden:

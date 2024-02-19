@@ -38,12 +38,12 @@ public class DocumentOperationsRestV1Controller implements DocumentOperationsApi
      */
     @Override
     public Mono<ResponseEntity<byte[]>> documentDownload(String operationType, String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String attachmentId,  final ServerWebExchange exchange) {
-        return documentOperationsService.documentDownload(operationType, operationId, xPagopaPnCxType, xPagopaPnCxId)
+        return documentOperationsService.documentDownload(operationType, operationId, xPagopaPnCxType, xPagopaPnCxId, attachmentId)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
     public Mono<ResponseEntity<DocumentUploadResponse>> documentUpload(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Mono<DocumentUploadRequest> documentUploadRequest, ServerWebExchange exchange) {
-        return documentOperationsService.createFile(uid, documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return documentOperationsService.createFile(documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

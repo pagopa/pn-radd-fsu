@@ -31,7 +31,7 @@ public class Utils {
         return cxTypeAuthFleet.getValue() + ITEMS_SEPARATOR + xPagopaPnCxId + ITEMS_SEPARATOR + operationId;
     }
 
-    public static DownloadUrl getDocumentDownloadUrl(String pnRaddAltBasepath, String operationType, String operationId, String attachmentId) {
+    public static DownloadUrl getDocumentDownloadUrl(String pnRaddAltBasepath, String operationType, String operationId, String attachmentId, String documentType) {
         DownloadUrl downloadUrl = new DownloadUrl();
         String url = pnRaddAltBasepath + DOWNLOAD_COVER_FILE_PATH.replace("{operationType}", operationType).replace("{operationId}", operationId);
         if(attachmentId != null) {
@@ -39,13 +39,13 @@ public class Utils {
         }
         downloadUrl.setUrl(url);
         downloadUrl.setNeedAuthentication(true);
+        downloadUrl.setDocumentType(documentType);
 
         return downloadUrl;
     }
 
     public static String getFileKeyFromPresignedUrl(String presignedUrl) {
-        //TODO Sostituire la regex con una funzionante per le presigned url di safestorage
-        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(fileKey=)(.*)");
+        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(.*/)(.*)(\\?.*)");
 
         Matcher matcher = FILEKEY_IN_PRESIGNED_URL.matcher(presignedUrl);
         if(matcher.find()) {

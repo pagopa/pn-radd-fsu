@@ -211,6 +211,10 @@ Parameters:
     Type: String
     Description: html template suffix
 
+  DocumentTypeEnumFilter:
+    Type: String
+    Description: document type filter list
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -251,6 +255,7 @@ Resources:
         ContainerEnvEntry14: !Sub 'PN_RADD_SANITIZE_MODE=${SanitizeMode}'
         ContainerEnvEntry15: !Sub 'SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${FreeMarkerTemplateLoaderPath}'
         ContainerEnvEntry16: !Sub 'SPRING_FREEMARKER_SUFFIX=${FreeMarkerSuffix}'
+        ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName

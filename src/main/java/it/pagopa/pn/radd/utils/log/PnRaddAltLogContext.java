@@ -72,6 +72,7 @@ public class PnRaddAltLogContext {
         return this;
     }
 
+
     public PnRaddAltLogContext addResponseStatus(ActInquiryResponseStatus status) {
         this.status = "status=%s ".formatted(status.toString());
         return this;

@@ -38,7 +38,7 @@ public class PnRaddAltAuditLog {
     }
 
     public void generateSuccessWithContext(String msgPrefix) {
-        this.logEvent.generateSuccess(msgPrefix + context.logContext()).log();
+        this.logEvent.generateSuccess(msgPrefix + " - " + context.logContext()).log();
     }
 
     public void generateSuccess() {
@@ -54,7 +54,8 @@ public class PnRaddAltAuditLog {
         private PnRaddAltLogContext context;
         private PnAuditLogEventType eventType;
 
-        RaddAltAuditLogBuilder() {}
+        RaddAltAuditLogBuilder() {
+        }
 
         public RaddAltAuditLogBuilder msg(String msg) {
             this.msg = msg;
@@ -77,7 +78,7 @@ public class PnRaddAltAuditLog {
         }
 
         private PnAuditLogEventType getEventType() {
-            if(eventType == null) {
+            if (eventType == null) {
                 throw new RaddGenericException("Missing eventType in RaddAltAuditLogBuilder");
             }
 

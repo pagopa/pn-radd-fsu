@@ -40,12 +40,13 @@ class DocumentOperationsRestV1ControllerTest {
     public static final String PN_PAGOPA_UID = "uid";
 
     @Test
-    void actInquiryTest() {
+    void documentDownloadTest() {
         byte[] response = new byte[0];
 
-        String path = "/radd-net/api/v1/download/ACT/ACT";
+        String path = "/radd-net/api/v1/download/{operationType}/{operationId}".replace("{operationType}", "ACT")
+                .replace("{operationId}", "42");
         Mockito.when(documentOperationsService
-                .documentDownload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+                .documentDownload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.get()
@@ -58,39 +59,39 @@ class DocumentOperationsRestV1ControllerTest {
     }
 
     /**
-     * Method under test: {@link DocumentOperationsRestV1Controller#documentDownload(String, String, CxTypeAuthFleet, String, ServerWebExchange)}
+     * Method under test: {@link DocumentOperationsRestV1Controller#documentDownload(String, String, CxTypeAuthFleet, String, String, ServerWebExchange)}
      */
     @Test
     void testDocumentDownload3() {
-        when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any())).thenReturn(mock(Mono.class));
+        when(documentOperationsService.documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString())).thenReturn(mock(Mono.class));
         documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PA, "42", "attach", null);
-        verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any());
+        verify(documentOperationsService).documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString());
     }
 
     /**
-     * Method under test: {@link DocumentOperationsRestV1Controller#documentDownload(String, String, CxTypeAuthFleet, String, ServerWebExchange)}
+     * Method under test: {@link DocumentOperationsRestV1Controller#documentDownload(String, String, CxTypeAuthFleet, String, String, ServerWebExchange)}
      */
     @Test
     void testDocumentDownload4() {
-        when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any())).thenReturn(mock(Mono.class));
+        when(documentOperationsService.documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString())).thenReturn(mock(Mono.class));
         documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PF, "42", "attach", null);
-        verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any());
+        verify(documentOperationsService).documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString());
     }
 
     /**
-     * Method under test: {@link DocumentOperationsRestV1Controller#documentDownload(String, String, CxTypeAuthFleet, String, ServerWebExchange)}
+     * Method under test: {@link DocumentOperationsRestV1Controller#documentDownload(String, String, CxTypeAuthFleet, String, String, ServerWebExchange)}
      */
     @Test
     void testDocumentDownload5() {
-        when(documentOperationsService.documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any())).thenReturn(mock(Mono.class));
+        when(documentOperationsService.documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString())).thenReturn(mock(Mono.class));
         documentOperationsRestV1Controller.documentDownload("Operation Type", "42", CxTypeAuthFleet.PG, "42", "attach", null);
-        verify(documentOperationsService).documentDownload(Mockito.<String>any(), Mockito.<String>any(),
-                Mockito.<CxTypeAuthFleet>any(), Mockito.<String>any());
+        verify(documentOperationsService).documentDownload(Mockito.any(), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.anyString());
     }
 
     @Test
@@ -102,7 +103,7 @@ class DocumentOperationsRestV1ControllerTest {
         DocumentUploadRequest req = new DocumentUploadRequest();
 
         String path = "/radd-net/api/v1/documents/upload";
-        Mockito.when(documentOperationsService.createFile( Mockito.anyString(), Mockito.any() ))
+        Mockito.when(documentOperationsService.createFile(Mockito.any() ))
                 .thenReturn(Mono.just(response));
         webTestClient.post()
                 .uri(path)

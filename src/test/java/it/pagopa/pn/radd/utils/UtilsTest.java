@@ -28,12 +28,12 @@ class UtilsTest {
     }
 
     /**
-     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String)}
+     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String, String)}
      */
     @Test
     void testGetDocumentDownloadUrl() {
         DownloadUrl actualDocumentDownloadUrl = Utils.getDocumentDownloadUrl("https://example.org/example",
-                "https://example.org/example", "https://example.org/example", "https://example.org/example");
+                "https://example.org/example", "https://example.org/example", "https://example.org/example", "DOCUMENT");
         assertTrue(actualDocumentDownloadUrl.getNeedAuthentication());
         assertEquals(
                 "https://example.org/example/radd-net/api/v1/download/https://example.org/example/https://example.org"
@@ -42,12 +42,12 @@ class UtilsTest {
     }
 
     /**
-     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String)}
+     * Method under test: {@link Utils#getDocumentDownloadUrl(String, String, String, String, String)}
      */
     @Test
     void testGetDocumentDownloadUrl4() {
         DownloadUrl actualDocumentDownloadUrl = Utils.getDocumentDownloadUrl("https://example.org/example",
-                "https://example.org/example", "https://example.org/example", null);
+                "https://example.org/example", "https://example.org/example", null, "DOCUMENT");
         assertTrue(actualDocumentDownloadUrl.getNeedAuthentication());
         assertEquals(
                 "https://example.org/example/radd-net/api/v1/download/https://example.org/example/https://example.org"

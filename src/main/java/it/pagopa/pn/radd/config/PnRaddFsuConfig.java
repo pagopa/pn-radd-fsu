@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -28,5 +29,5 @@ public class PnRaddFsuConfig {
     private String dynamodbTable;
     private String dynamodbIunsoperationsTable;
     private HtmlSanitizer.SanitizeMode sanitizeMode;
-    private List<DocumentTypeEnum> documentTypeEnumFilter;
+    private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 }

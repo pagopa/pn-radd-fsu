@@ -23,7 +23,7 @@ public class ZipUtils {
 
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-                if (zipEntry.getName().endsWith(".pdf")) {
+                if (zipEntry.getName().toLowerCase().endsWith(".pdf")) {
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                     byte[] buffer = new byte[1024];
                     int bytesRead;

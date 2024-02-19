@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.utils.log;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.TransactionResponseStatus;
 import it.pagopa.pn.radd.utils.Utils;
 
 import java.util.List;
@@ -61,17 +62,22 @@ public class PnRaddAltLogContext {
     }
 
     public PnRaddAltLogContext addResponseResult(Boolean result) {
-        this.result = "result=%s".formatted(result);
+        this.result = "result=%s ".formatted(result);
         return this;
     }
 
     public PnRaddAltLogContext addResponseStatus(ResponseStatus status) {
-        this.status = "status=%s".formatted(status.toString());
+        this.status = "status=%s ".formatted(status.toString());
+        return this;
+    }
+
+    public PnRaddAltLogContext addResponseStatus(TransactionResponseStatus status) {
+        this.status = "status=%s ".formatted(status.toString());
         return this;
     }
 
     public PnRaddAltLogContext addOperationId(String operationId) {
-        this.operationId = "operationId=%s".formatted(operationId);
+        this.operationId = "operationId=%s ".formatted(operationId);
         return this;
     }
 

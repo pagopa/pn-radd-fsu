@@ -21,7 +21,7 @@
     <properties>
         <java.version>17</java.version>
         <jacoco.min.line.cover.ratio>0.01</jacoco.min.line.cover.ratio>
-        <pagopa.codegen.version>v01.04.00</pagopa.codegen.version>
+        <pagopa.codegen.version>v01.04.01</pagopa.codegen.version>
     </properties>
 
     <dependencies>

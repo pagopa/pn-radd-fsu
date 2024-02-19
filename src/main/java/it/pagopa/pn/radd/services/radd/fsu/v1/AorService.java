@@ -161,6 +161,7 @@ public class AorService extends BaseService {
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR transaction: ");
                     return StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(), data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath());
                 })
+                .map(data -> StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(),data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(), pnRaddFsuConfig.getDocumentTypeEnumFilter()))
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     pnRaddAltAuditLog.generateFailure("[aor transaction failed = {}]", ex.getMessage());
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));

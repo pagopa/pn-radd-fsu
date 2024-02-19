@@ -44,6 +44,6 @@ public class DocumentOperationsRestV1Controller implements DocumentOperationsApi
 
     @Override
     public Mono<ResponseEntity<DocumentUploadResponse>> documentUpload(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Mono<DocumentUploadRequest> documentUploadRequest, ServerWebExchange exchange) {
-        return documentOperationsService.createFile(uid, documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
+        return documentOperationsService.createFile(documentUploadRequest).map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

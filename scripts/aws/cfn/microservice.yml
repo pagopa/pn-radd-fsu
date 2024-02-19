@@ -212,7 +212,6 @@ Parameters:
     Description: html template suffix
 
   DocumentTypeEnumFilter:
-    Default:
     Type: String
     Description: document type filter list
 

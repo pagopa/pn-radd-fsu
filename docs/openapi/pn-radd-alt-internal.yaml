@@ -458,6 +458,10 @@ components:
         needAuthentication:
           type: boolean
           description: indica se inviare l'header di autenticazione
+        documentType:
+          type: string
+          description: categoria del documento, ATTO_NOTIFICATO oppure ATTESTAZIONE_OPPONIBILE_A_TERZI
+
 
     AorStartTransactionRequest:
       description: Richiesta  di completamento operazione

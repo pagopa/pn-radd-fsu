@@ -52,7 +52,9 @@ public class Const {
     public static final String SAFESTORAGE_PREFIX = "safestorage://";
 
 
-
+    /* Document type external mapping */
+    public static final String ATTO_NOTIFICATO = "ATTO_NOTIFICATO";
+    public static final String ATTESTAZIONE_OPPONIBILE_A_TERZI = "ATTESTAZIONE_OPPONIBILE_A_TERZI";
 
 
 

@@ -12,6 +12,7 @@ import it.pagopa.pn.radd.mapper.DocumentUploadResponseMapper;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 
+import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.DocumentDownloadClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
@@ -23,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 import java.io.IOException;
 import java.util.HexFormat;
@@ -37,7 +37,6 @@ import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 @Slf4j
 public class DocumentOperationsService {
 
-    public static final String ZIP_ATTACHMENT_URL_NOT_FOUND = "ZIP_ATTACHMENT_URL_NOT FOUND";
     private final PnDeliveryClient pnDeliveryClient;
     private final RaddTransactionDAO raddTransactionDAO;
     private final PnSafeStorageClient pnSafeStorageClient;
@@ -61,21 +60,22 @@ public class DocumentOperationsService {
                     if (StringUtils.hasText(attachmentId)) {
                         return getPdfInZipAttachment(attachmentId, raddTansactionEntity);
                     } else {
-                        return createCoverFile(operationType, raddTansactionEntity);
+                        return checkOperationType(operationType, raddTansactionEntity)
+                                .flatMap(iun -> createCoverFile(raddTansactionEntity, iun));
                     }
                 })
                 .map(DocumentOperationsService::getHexBytes);
     }
 
-    @NotNull
-    private Mono<byte[]> createCoverFile(String operationType, RaddTransactionEntity raddTansactionEntity) {
+    private Mono<String> checkOperationType(String operationType, RaddTransactionEntity raddTansactionEntity) {
         if (AOR.name().equals(operationType)) {
             return operationsIunsDAO.getAllIunsFromTransactionId(raddTansactionEntity.getTransactionId())
                     .next()
-                    .flatMap(operationsIunsEntity -> createCoverFile(raddTansactionEntity, operationsIunsEntity.getIun()));
+                    .map(OperationsIunsEntity::getIun);
         }
-        return createCoverFile(raddTansactionEntity, raddTansactionEntity.getIun());
+        return Mono.just(raddTansactionEntity.getIun());
     }
+
 
     @NotNull
     private Mono<byte[]> getPdfInZipAttachment(String attachmentId, RaddTransactionEntity raddTansactionEntity) {
@@ -141,7 +141,7 @@ public class DocumentOperationsService {
     }
 
 
-    public Mono<DocumentUploadResponse> createFile(String uid, Mono<DocumentUploadRequest> documentUploadRequest) {
+    public Mono<DocumentUploadResponse> createFile(Mono<DocumentUploadRequest> documentUploadRequest) {
         if (documentUploadRequest == null) {
             log.error(MISSING_INPUT_PARAMETERS);
             return Mono.error(new PnInvalidInputException("Body non valido"));

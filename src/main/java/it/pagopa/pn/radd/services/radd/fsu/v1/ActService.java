@@ -68,8 +68,8 @@ public class ActService extends BaseService {
                 .doOnNext(isValid -> log.trace("ACT INQUIRY TICK {}", new Date().getTime()))
                 .flatMap(isValid -> getEnsureFiscalCode(recipientTaxId, recipientType))
                 .flatMap(recCode -> checkQrCodeOrIun(recipientType, qrCode, iun, recCode))
-                .flatMap(this::hasDocumentsAvailable)
                 .flatMap(this::hasNotificationsCancelled)
+                .flatMap(this::hasDocumentsAvailable)
                 .doOnNext(nothing -> log.trace("ACT INQUIRY TOCK {}", new Date().getTime()))
                 .map(item -> ActInquiryResponseMapper.fromResult())
                 .onErrorResume(

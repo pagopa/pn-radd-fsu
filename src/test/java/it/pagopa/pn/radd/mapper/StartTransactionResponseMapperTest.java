@@ -10,10 +10,14 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StartTransactionResponseStatus;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.IunAlreadyExistsException;
+import it.pagopa.pn.radd.exception.PaperNotificationFailedEmptyException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.jupiter.api.Disabled;
 
 import org.junit.jupiter.api.Test;
 
@@ -98,5 +102,57 @@ class StartTransactionResponseMapperTest {
         assertEquals("Documento non disponibile per il download", status.getMessage());
         assertNull(actualFromExceptionResult.getDownloadUrlList());
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_2, status.getCode());
+    }
+
+    /**
+     * Method under test: {@link StartTransactionResponseMapper#fromException(RaddGenericException)}
+     */
+    @Test
+    void testFromException2() {
+        StartTransactionResponse actualFromExceptionResult = StartTransactionResponseMapper
+                .fromException(new RaddGenericException(ExceptionTypeEnum.IUN_NOT_FOUND));
+        assertNull(actualFromExceptionResult.getDownloadUrlList());
+        StartTransactionResponseStatus status = actualFromExceptionResult.getStatus();
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_99, status.getCode());
+        assertEquals("Iun not found with params", status.getMessage());
+    }
+
+    /**
+     * Method under test: {@link StartTransactionResponseMapper#fromException(RaddGenericException)}
+     */
+    @Test
+    void testFromException3() {
+        StartTransactionResponse actualFromExceptionResult = StartTransactionResponseMapper
+                .fromException(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST));
+        assertNull(actualFromExceptionResult.getDownloadUrlList());
+        StartTransactionResponseStatus status = actualFromExceptionResult.getStatus();
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_5, status.getCode());
+        assertEquals("Transazione già esistente o con stato completed o aborted", status.getMessage());
+    }
+
+    /**
+     * Method under test: {@link StartTransactionResponseMapper#fromException(RaddGenericException)}
+     */
+    @Test
+    void testFromException4() {
+        StartTransactionResponse actualFromExceptionResult = StartTransactionResponseMapper
+                .fromException(new IunAlreadyExistsException());
+        assertNull(actualFromExceptionResult.getDownloadUrlList());
+        StartTransactionResponseStatus status = actualFromExceptionResult.getStatus();
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_3, status.getCode());
+        assertEquals("Stampa già eseguita", status.getMessage());
+    }
+
+    /**
+     * Method under test: {@link StartTransactionResponseMapper#fromException(RaddGenericException)}
+     */
+    @Test
+    void testFromException5() {
+        StartTransactionResponse actualFromExceptionResult = StartTransactionResponseMapper
+                .fromException(new PaperNotificationFailedEmptyException());
+        assertNull(actualFromExceptionResult.getDownloadUrlList());
+        StartTransactionResponseStatus status = actualFromExceptionResult.getStatus();
+        assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_10, status.getCode());
+        assertEquals("Non ci sono notifiche non consegnate per questo codice fiscale", status.getMessage());
     }
 }

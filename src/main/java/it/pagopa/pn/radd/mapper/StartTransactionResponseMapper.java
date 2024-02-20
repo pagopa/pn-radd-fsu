@@ -68,11 +68,21 @@ public class StartTransactionResponseMapper {
         StartTransactionResponse response = new StartTransactionResponse();
         StartTransactionResponseStatus status = new StartTransactionResponseStatus();
         status.setMessage(ex.getExceptionType().getMessage());
-        status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_99);
         if (ex.getExceptionType() == ExceptionTypeEnum.RETRY_AFTER) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
             status.setRetryAfter((BigDecimal) ex.getExtra());
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF) {
+            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_10);
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
+            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_3);
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST) {
+            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_5);
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.NOTIFICATION_CANCELLED) {
+            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_80);
+        } else {
+            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_99);
         }
+
         response.setStatus(status);
         return response;
     }

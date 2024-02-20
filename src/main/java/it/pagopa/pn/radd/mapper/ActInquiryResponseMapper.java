@@ -8,11 +8,11 @@ import it.pagopa.pn.radd.utils.Const;
 
 public class ActInquiryResponseMapper {
 
-    private ActInquiryResponseMapper () {
+    private ActInquiryResponseMapper() {
         // do nothing
     }
 
-    public static ActInquiryResponse fromResult(){
+    public static ActInquiryResponse fromResult() {
         ActInquiryResponse actInquiryResponse = new ActInquiryResponse();
         actInquiryResponse.setResult(true);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
@@ -23,19 +23,22 @@ public class ActInquiryResponseMapper {
     }
 
 
-    public static ActInquiryResponse fromException(RaddGenericException ex){
+    public static ActInquiryResponse fromException(RaddGenericException ex) {
         ActInquiryResponse r = new ActInquiryResponse();
         r.setResult(false);
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
         status.setMessage((ex.getExceptionType() == null) ? ex.getMessage() : ex.getExceptionType().getMessage());
 
-        if (ex.getExceptionType() == ExceptionTypeEnum.QR_CODE_VALIDATION
-                || ex.getExceptionType() == ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID
-                || ex.getExceptionType() ==ExceptionTypeEnum.NOTIFICATION_CANCELLED) {
+        if (ex.getExceptionType() == ExceptionTypeEnum.QR_CODE_VALIDATION) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
-        } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_NOT_FOUND
-                || ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_UNAVAILABLE) {
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID) {
+            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_10);
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.NOTIFICATION_CANCELLED) {
+            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_80);
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_NOT_FOUND) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_2);
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_UNAVAILABLE) {
+            status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_4);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);
         } else {

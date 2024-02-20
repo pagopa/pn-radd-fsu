@@ -45,7 +45,7 @@ public class Utils {
     }
 
     public static String getFileKeyFromPresignedUrl(String presignedUrl) {
-        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(.*/)(.*)(\\?.*)");
+        Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(.*safestorage.*/)(.*)(\\?.*)");
 
         Matcher matcher = FILEKEY_IN_PRESIGNED_URL.matcher(presignedUrl);
         if(matcher.find()) {

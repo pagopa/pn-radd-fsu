@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationPaymentItemDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
@@ -23,6 +24,8 @@ import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import it.pagopa.pn.radd.utils.Utils;
+import it.pagopa.pn.radd.utils.log.PnRaddAltAuditLog;
+import it.pagopa.pn.radd.utils.log.PnRaddAltLogContext;
 import lombok.CustomLog;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
@@ -63,19 +66,35 @@ public class ActService extends BaseService {
     }
 
     public Mono<ActInquiryResponse> actInquiry(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, String recipientTaxId, String recipientType, String qrCode, String iun) {
-        log.info("Start act inquiry - uid={}, cxType={}, cxId={}", uid, xPagopaPnCxType, xPagopaPnCxId);
+        PnRaddAltAuditLog raddAltAuditLog = PnRaddAltAuditLog.builder()
+                .eventType(PnAuditLogEventType.AUD_RADD_ACTINQUIRY)
+                .msg("Start actInquiry")
+                .context(new PnRaddAltLogContext()
+                        .addUid(uid)
+                        .addCxId(xPagopaPnCxId)
+                        .addCxType(xPagopaPnCxType.toString())
+                )
+                .build()
+                .log();
+
         return validateInputActInquiry(recipientTaxId, recipientType, qrCode, iun)
                 .doOnNext(isValid -> log.trace("ACT INQUIRY TICK {}", new Date().getTime()))
                 .flatMap(isValid -> getEnsureFiscalCode(recipientTaxId, recipientType))
+                .doOnNext(recipientInternalId -> raddAltAuditLog.getContext().addRecipientInternalId(recipientInternalId))
                 .flatMap(recCode -> checkQrCodeOrIun(recipientType, qrCode, iun, recCode))
+                .doOnNext(usedIun -> raddAltAuditLog.getContext().addIun(usedIun))
                 .flatMap(this::hasNotificationsCancelled)
                 .flatMap(this::hasDocumentsAvailable)
                 .doOnNext(nothing -> log.trace("ACT INQUIRY TOCK {}", new Date().getTime()))
                 .map(item -> ActInquiryResponseMapper.fromResult())
+                .doOnNext(response -> {
+                    raddAltAuditLog.getContext().addResponseResult(response.getResult()).addResponseStatus(response.getStatus());
+                    raddAltAuditLog.generateSuccessWithContext("Ending actInquiry ");
+                })
                 .onErrorResume(
                         RaddGenericException.class,
                         ex -> {
-                            log.error(ex.getMessage());
+                            raddAltAuditLog.generateFailure("[actInquiry failed = {}]", ex.getMessage(), ex);
                             return Mono.just(ActInquiryResponseMapper.fromException(ex));
                         });
     }
@@ -115,7 +134,17 @@ public class ActService extends BaseService {
     }
 
     public Mono<StartTransactionResponse> startTransaction(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, ActStartTransactionRequest request) {
-        log.info("Start ACT startTransaction - uid={} - cxId={} - cxType={} - operationId={}", uid, xPagopaPnCxId, xPagopaPnCxType, request.getOperationId());
+        PnRaddAltAuditLog pnRaddAltAuditLog = PnRaddAltAuditLog.builder()
+                .eventType(PnAuditLogEventType.AUD_RADD_ACTTRAN)
+                .msg("Start ACT startTransaction")
+                .context(new PnRaddAltLogContext()
+                        .addUid(uid)
+                        .addCxType(xPagopaPnCxType.toString())
+                        .addCxId(xPagopaPnCxId)
+                        .addOperationId(request.getOperationId()))
+                .build()
+                .log();
+
         return validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId)
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .flatMap(transactionData -> checkQrCodeOrIun(request.getRecipientType().getValue(), request.getQrCode(), request.getIun(), transactionData.getEnsureRecipientId())
@@ -123,6 +152,10 @@ public class ActService extends BaseService {
                 .flatMap(transactionData -> hasNotificationsCancelled(transactionData.getIun())
                         .thenReturn(transactionData))
                 .flatMap(transactionData -> this.createRaddTransaction(uid, transactionData))
+                .doOnNext(transactionData ->
+                        pnRaddAltAuditLog.getContext().addTransactionId(transactionData.getTransactionId())
+                                .addIun(transactionData.getIun())
+                )
                 .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
@@ -135,24 +168,25 @@ public class ActService extends BaseService {
                 }, (in, out) -> in.getT2())
                 .map(response -> {
                     log.trace("START ACT TRANSACTION TOCK {}", new Date().getTime());
-                    log.debug("Ended startTransaction");
+                    pnRaddAltAuditLog.getContext().addDownloadFilekeys(response.getDownloadUrlList());
+                    pnRaddAltAuditLog.generateSuccessWithContext("Ending ACT transaction");
                     return response;
                 })
                 .onErrorResume(PnRaddException.class, ex -> {
-                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.error(ex));
                 })
                 .onErrorResume(IunAlreadyExistsException.class, ex -> {
-                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
-                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    log.error(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure(ENDED_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });
@@ -179,7 +213,17 @@ public class ActService extends BaseService {
 
     public Mono<CompleteTransactionResponse> completeTransaction(String uid, CompleteTransactionRequest
             completeTransactionRequest, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
-        log.info("Start ACT complete transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, completeTransactionRequest.getOperationId());
+        PnRaddAltAuditLog pnRaddAltAuditLog = PnRaddAltAuditLog.builder()
+                .eventType(PnAuditLogEventType.AUD_RADD_ACTTRAN)
+                .msg("Start ACT completeTransaction")
+                .context(new PnRaddAltLogContext()
+                        .addUid(uid)
+                        .addCxType(xPagopaPnCxType.toString())
+                        .addCxId(xPagopaPnCxId)
+                        .addOperationId(completeTransactionRequest.getOperationId()))
+                .build()
+                .log();
+
         return this.validateCompleteRequest(completeTransactionRequest)
                 .zipWhen(req -> getAndCheckStatusTransaction(req.getOperationId(), xPagopaPnCxType, xPagopaPnCxId))
                 .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationRaddRetrieved(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
@@ -191,17 +235,20 @@ public class ActService extends BaseService {
                 })
                 .doOnNext(raddTransaction -> log.debug("[uid={} - operationId={}] updating transaction entity with status {}", raddTransaction.getUid(), raddTransaction.getOperationId(), raddTransaction.getStatus()))
                 .flatMap(entity -> this.raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.COMPLETED))
-                .doOnNext(entity -> log.debug("[uid={} - operationId={}]  New status of transaction entity is {}", entity.getUid(), entity.getOperationId(), entity.getStatus()))
-                .doOnNext(entity -> log.debug("[uid={} - operationId={}] End ACT Complete transaction", entity.getUid(), entity.getOperationId()))
+                .doOnNext(entity -> log.debug("[uid={} - transactionId={}]  New status of transaction entity is {}", entity.getUid(), entity.getTransactionId(), entity.getStatus()))
+                .doOnNext(entity -> log.debug("[uid={} - transactionId={}] End ACT Complete transaction", entity.getUid(), entity.getTransactionId()))
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
-                .doOnError(PnRaddException.class, ex -> log.debug("End ACT Complete transaction with error {}", ex.getMessage(), ex))
                 .onErrorResume(PnRaddException.class, ex ->
                         this.settingErrorReason(ex, completeTransactionRequest.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                                 .flatMap(entity -> Mono.error(ex))
                 )
                 .onErrorResume(RaddGenericException.class, ex ->
                         Mono.just(CompleteTransactionResponseMapper.fromException(ex))
-                );
+                                .doOnError(throwable -> pnRaddAltAuditLog.generateFailure("End ACT completeTransaction with error {}", ex.getMessage(), ex))
+                ).doOnNext(completeTransactionResponse -> {
+                    pnRaddAltAuditLog.getContext().addResponseStatus(completeTransactionResponse.getStatus());
+                    pnRaddAltAuditLog.generateSuccessWithContext("End ACT completeTransaction");
+                });
     }
 
     public Mono<AbortTransactionResponse> abortTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, AbortTransactionRequest req) {
@@ -210,7 +257,17 @@ public class ActService extends BaseService {
             log.error("Missing input parameters");
             return Mono.error(new PnInvalidInputException("Alcuni parametri come operazione id o data di operazione non sono valorizzate"));
         }
-        log.info("Start ACT abort transaction - uid={}, cxType={}, cxId={}, operationId={}", uid, xPagopaPnCxType, xPagopaPnCxId, req.getOperationId());
+
+        PnRaddAltAuditLog pnRaddAltAuditLog = PnRaddAltAuditLog.builder()
+                .eventType(PnAuditLogEventType.AUD_RADD_ACTTRAN)
+                .msg("Start ACT abortTransaction")
+                .context(new PnRaddAltLogContext()
+                        .addUid(uid)
+                        .addCxType(xPagopaPnCxType.toString())
+                        .addCxId(xPagopaPnCxId)
+                        .addOperationId(req.getOperationId()))
+                .build()
+                .log();
         return raddTransactionDAO.getTransaction(String.valueOf(xPagopaPnCxType), xPagopaPnCxId, req.getOperationId(), OperationTypeEnum.ACT)
                 .doOnNext(this::checkTransactionStatus)
                 .map(raddEntity -> {
@@ -220,12 +277,15 @@ public class ActService extends BaseService {
                     return raddEntity;
                 })
                 .flatMap(entity -> raddTransactionDAO.updateStatus(entity, RaddTransactionStatusEnum.ABORTED))
-                .doOnNext(raddTransaction -> log.debug("[uid={} - operationId={}] End ACT abortTransaction with entity status {}", raddTransaction.getUid(), raddTransaction.getOperationId(), raddTransaction.getStatus()))
+                .doOnNext(raddTransaction -> log.debug("[uid={} - transactionId={}] End ACT abortTransaction with entity status {}", raddTransaction.getUid(), raddTransaction.getTransactionId(), raddTransaction.getStatus()))
                 .map(result -> AbortTransactionResponseMapper.fromResult())
-                .doOnError(RaddGenericException.class, ex -> log.error("End ACT abort transaction with error : {}", ex.getMessage(), ex))
                 .onErrorResume(RaddGenericException.class, ex ->
                         Mono.just(AbortTransactionResponseMapper.fromException(ex))
-                );
+                ).doOnError(RaddGenericException.class, ex -> pnRaddAltAuditLog.generateFailure("End ACT abort transaction with error : {}", ex.getMessage(), ex))
+                .doOnNext(abortTransactionResponse -> {
+                    pnRaddAltAuditLog.getContext().addResponseStatus(abortTransactionResponse.getStatus());
+                    pnRaddAltAuditLog.generateSuccessWithContext("End ACT abortTransaction");
+                });
     }
 
     private Flux<DownloadUrl> legalFact(TransactionData transaction) {

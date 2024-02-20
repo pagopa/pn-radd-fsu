@@ -138,7 +138,6 @@ public class AorService extends BaseService {
                         this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
                                 .map(urls -> {
                                     transactionData.setUrls(urls);
-                                    pnRaddAltAuditLog.getContext().addDownloadFilekeys(urls);
                                     return transactionData;
                                 })
                 )
@@ -146,20 +145,21 @@ public class AorService extends BaseService {
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR start transaction"))
                 .map(data -> {
-                    pnRaddAltAuditLog.getContext().addTransactionId(data.getTransactionId());
+                    List<DownloadUrl> downloadUrls = getDownloadUrls(data.getUrls());
+                    pnRaddAltAuditLog.getContext().addTransactionId(data.getTransactionId()).addDownloadFilekeys(downloadUrls);
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR transaction");
-                    return StartTransactionResponseMapper.fromResult(getDownloadUrls(data.getUrls()), AOR.name(), data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(), pnRaddFsuConfig.getDocumentTypeEnumFilter());
+                    return StartTransactionResponseMapper.fromResult(downloadUrls, AOR.name(), data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(),pnRaddFsuConfig.getDocumentTypeEnumFilter());
                 })
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
-                    pnRaddAltAuditLog.generateFailure("[aor transaction failed = {}]", ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure("[aor startTransaction failed = {}]", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(PaperNotificationFailedEmptyException.class, ex -> {
-                    pnRaddAltAuditLog.generateFailure("[aor transaction failed = {}]", ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure("[aor startTransaction failed = {}]", ex.getMessage(), ex);
                     return Mono.just(StartTransactionResponseMapper.fromException(ex));
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
-                    pnRaddAltAuditLog.generateFailure("[aor transaction failed = {}]", ex.getMessage(), ex);
+                    pnRaddAltAuditLog.generateFailure("[aor startTransaction failed = {}]", ex.getMessage(), ex);
                     return this.settingErrorReason(ex, request.getOperationId(), AOR, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.just(StartTransactionResponseMapper.fromException(ex)));
                 });

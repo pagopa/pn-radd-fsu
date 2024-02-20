@@ -83,8 +83,8 @@ public class ActService extends BaseService {
                 .doOnNext(recipientInternalId -> raddAltAuditLog.getContext().addRecipientInternalId(recipientInternalId))
                 .flatMap(recCode -> checkQrCodeOrIun(recipientType, qrCode, iun, recCode))
                 .doOnNext(usedIun -> raddAltAuditLog.getContext().addIun(usedIun))
-                .flatMap(this::hasDocumentsAvailable)
                 .flatMap(this::hasNotificationsCancelled)
+                .flatMap(this::hasDocumentsAvailable)
                 .doOnNext(nothing -> log.trace("ACT INQUIRY TOCK {}", new Date().getTime()))
                 .map(item -> ActInquiryResponseMapper.fromResult())
                 .doOnNext(response -> {

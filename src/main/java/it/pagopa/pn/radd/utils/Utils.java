@@ -34,7 +34,7 @@ public class Utils {
     public static DownloadUrl getDocumentDownloadUrl(String pnRaddAltBasepath, String operationType, String operationId, String attachmentId, String documentType) {
         DownloadUrl downloadUrl = new DownloadUrl();
         String url = pnRaddAltBasepath + DOWNLOAD_COVER_FILE_PATH.replace("{operationType}", operationType).replace("{operationId}", operationId);
-        if(attachmentId != null) {
+        if (attachmentId != null) {
             url = url + "?attachmentId=" + attachmentId;
         }
         downloadUrl.setUrl(url);
@@ -48,19 +48,19 @@ public class Utils {
         Pattern FILEKEY_IN_PRESIGNED_URL = Pattern.compile("(.*safestorage.*/)(.*)(\\?.*)");
 
         Matcher matcher = FILEKEY_IN_PRESIGNED_URL.matcher(presignedUrl);
-        if(matcher.find()) {
+        if (matcher.find()) {
             return matcher.group(2);
         }
 
         Pattern ZIP_LEGAL_FACT = Pattern.compile("download/(ACT|AOR)/.*(\\?attachmentId=)");
         matcher = ZIP_LEGAL_FACT.matcher(presignedUrl);
-        if(matcher.find()) {
+        if (matcher.find()) {
             return "zipUrl";
         }
 
         Pattern COVERFILE = Pattern.compile("download/(ACT|AOR)/.*");
         matcher = COVERFILE.matcher(presignedUrl);
-        if(matcher.find()) {
+        if (matcher.find()) {
             return "coverFileUrl";
         }
 

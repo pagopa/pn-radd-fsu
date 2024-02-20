@@ -215,6 +215,11 @@ Parameters:
     Type: String
     Description: document type filter list
 
+  RaddWafLimit:
+    Type: Number
+    Default: 600000
+    Description: RADD waf limit
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -312,6 +317,16 @@ Resources:
         OpenApiBucketName: !Ref MicroserviceBucketName
         OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-radd-net-RADD-aws.yaml
         
+  RaddAltMicroservicePublicRaddApiWaf:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-waf-acl.yaml"
+      Parameters:
+        WAFName: !Sub '${ProjectName}-radd-alt-radd'
+        IntendedUsage: RADD
+        APIGatewayARNs: !GetAtt RaddAltMicroservicePublicAPI.Outputs.APIGatewayARN
+        Limit: !Ref RaddWafLimit
+
   # Dashboard
   RaddAltMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack

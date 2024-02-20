@@ -94,7 +94,7 @@ public class ActService extends BaseService {
                 .onErrorResume(
                         RaddGenericException.class,
                         ex -> {
-                            raddAltAuditLog.generateFailure("[actInquiry failed = {}]", ex.getMessage());
+                            raddAltAuditLog.generateFailure("[actInquiry failed = {}]", ex.getMessage(), ex);
                             return Mono.just(ActInquiryResponseMapper.fromException(ex));
                         });
     }

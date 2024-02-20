@@ -207,7 +207,7 @@ class ActServiceTest extends BaseTest {
         StartTransactionResponse response = actService.startTransaction("id","cxId",CxTypeAuthFleet.PF, startTransactionRequest).block();
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isNotNull();
-        assertThat(response.getStatus().getCode()).isEqualTo(StartTransactionResponseStatus.CodeEnum.NUMBER_99);
+        assertThat(response.getStatus().getCode()).isEqualTo(StartTransactionResponseStatus.CodeEnum.NUMBER_3);
         assertThat(response.getStatus().getMessage()).isEqualTo(new RaddGenericException(ALREADY_COMPLETE_PRINT).getExceptionType().getMessage());
     }
 

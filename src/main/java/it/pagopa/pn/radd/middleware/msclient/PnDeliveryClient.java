@@ -116,7 +116,7 @@ public class PnDeliveryClient extends BaseClient {
                     ExceptionTypeEnum message;
                     if (ex.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()
                             || ex.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
-                        message = ExceptionTypeEnum.DOCUMENT_NOT_FOUND;
+                        message = ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
                     } else {
                         return Mono.error(new PnRaddException(ex));
                     }

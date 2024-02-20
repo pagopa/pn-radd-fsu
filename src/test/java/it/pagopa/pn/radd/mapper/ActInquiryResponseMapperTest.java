@@ -34,6 +34,7 @@ class ActInquiryResponseMapperTest {
         assertEquals(status.getCode(), response.getStatus().getCode());
         assertEquals(ex.getExceptionType().getMessage(), response.getStatus().getMessage());
 
+        status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_10);
         ex = new RaddGenericException(CF_OR_QRCODE_NOT_VALID);
         response = ActInquiryResponseMapper.fromException(ex);
         assertEquals(status.getCode(), response.getStatus().getCode());

@@ -148,7 +148,7 @@ class ActServiceTest extends BaseTest {
         transactionData.setQrCode("qrcode");
         transactionData.setIun("iun");
         when (transactionDataMapper.toTransaction("id", startTransactionRequest, CxTypeAuthFleet.PG, "cxId")).thenReturn(transactionData);
-        when(raddTransactionDAOImpl.countFromIunAndStatus("iun")).thenReturn(Mono.just(0));
+        when(raddTransactionDAOImpl.countFromIunAndStatus("iun","recipientId")).thenReturn(Mono.just(0));
         StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, startTransactionRequest) )
                 .expectError(PnInvalidInputException.class).verify();
     }
@@ -202,7 +202,7 @@ class ActServiceTest extends BaseTest {
         when(raddTransactionDAOImpl.getTransaction("", "", "id", OperationTypeEnum.ACT))
                 .thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
 
-        when(raddTransactionDAOImpl.countFromIunAndStatus("iun")).thenReturn(Mono.just(1));
+        when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(1));
 
         StartTransactionResponse response = actService.startTransaction("id","cxId",CxTypeAuthFleet.PF, startTransactionRequest).block();
         assertThat(response).isNotNull();
@@ -359,7 +359,7 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testActInquiryWhenControlCheckArrResponseError() {
-        when(this.raddTransactionDAOImpl.countFromIunAndStatus(any())).thenReturn(Mono.just(0));
+        when(this.raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
         when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
         when(pnDeliveryClient.getCheckAar(any(), any(), any())).thenReturn(Mono.just(new ResponseCheckAarDtoDto()));
         ActInquiryResponse monoResponse = actService.actInquiry("test","123", CxTypeAuthFleet.PF,"test","PF", "test", "").block();

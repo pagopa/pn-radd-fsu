@@ -100,25 +100,25 @@ public class ActService extends BaseService {
     }
 
     @NotNull
-    private Mono<String> checkQrCodeOrIun(String recipientType, String qrCode, String iun, String recCode) {
+    private Mono<String> checkQrCodeOrIun(String recipientType, String qrCode, String iun, String recipientId) {
         if (hasText(qrCode)) {
-            return checkQrCode(recipientType, qrCode, recCode);
+            return checkQrCode(recipientType, qrCode, recipientId);
         } else {
-            return checkIun(iun, recCode);
+            return checkIun(iun, recipientId,recipientId);
         }
     }
 
     @NotNull
-    private Mono<String> checkIun(String iun, String recCode) {
-        return checkIunIsAlreadyExistsInCompleted(iun)
+    private Mono<String> checkIun(String iun, String recCode, String recipientId) {
+        return checkIunIsAlreadyExistsInCompleted(iun, recipientId)
                 .flatMap(counter -> checkIunAndInternalId(iun, recCode)
                         .thenReturn(iun));
     }
 
     @NotNull
-    private Mono<String> checkQrCode(String recipientType, String qrCode, String recCode) {
-        return controlAndCheckAar(recipientType, recCode, qrCode)
-                .flatMap(responseCheckAarDtoDto -> checkIunIsAlreadyExistsInCompleted(responseCheckAarDtoDto.getIun())
+    private Mono<String> checkQrCode(String recipientType, String qrCode, String recipientId) {
+        return controlAndCheckAar(recipientType, recipientId, qrCode)
+                .flatMap(responseCheckAarDtoDto -> checkIunIsAlreadyExistsInCompleted(responseCheckAarDtoDto.getIun(),recipientId)
                         .thenReturn(responseCheckAarDtoDto.getIun()));
     }
 
@@ -126,8 +126,8 @@ public class ActService extends BaseService {
         return pnDeliveryClient.checkIunAndInternalId(iun, internalId);
     }
 
-    private Mono<Integer> checkIunIsAlreadyExistsInCompleted(String iun) {
-        return this.raddTransactionDAO.countFromIunAndStatus(iun)
+    private Mono<Integer> checkIunIsAlreadyExistsInCompleted(String iun, String recipientId) {
+        return this.raddTransactionDAO.countFromIunAndStatus(iun,recipientId)
                 .filter(counter -> counter == 0)
                 .switchIfEmpty(Mono.error(new IunAlreadyExistsException()))
                 .doOnError(err -> log.error(err.getMessage()));

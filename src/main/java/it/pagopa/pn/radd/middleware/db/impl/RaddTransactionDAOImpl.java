@@ -197,12 +197,14 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
     }
 
     @Override
-    public Mono<Integer> countFromIunAndStatus(String iun) {
+    public Mono<Integer> countFromIunAndStatus(String iun, String recipientId) {
         Map<String, AttributeValue> expressionValues = new HashMap<>();
 
-        String query = RaddTransactionEntity.COL_STATUS + " = :completed";
+        String query = RaddTransactionEntity.COL_STATUS + " = :completed" +
+                " AND " + RaddTransactionEntity.COL_RECIPIENT_ID + " = :recipientId";
         expressionValues.put(":iun", AttributeValue.builder().s(iun).build());
         expressionValues.put(":completed",  AttributeValue.builder().s(Const.COMPLETED).build());
+        expressionValues.put(":recipientId",  AttributeValue.builder().s(recipientId).build());
 
         log.trace("COUNT DAO TICK {}", new Date().getTime());
 

@@ -17,7 +17,7 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
+
 
 import org.junit.jupiter.api.Test;
 

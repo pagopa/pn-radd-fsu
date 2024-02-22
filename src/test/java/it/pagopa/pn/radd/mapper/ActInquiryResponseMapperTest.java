@@ -5,7 +5,6 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ActInquiryResponseS
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.IunAlreadyExistsException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;

@@ -150,7 +150,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())).thenReturn(Mono.just("recipientTaxIdResult"));
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(raddTransactionDAOImpl.createRaddTransaction(any(), any())).thenReturn(Mono.just(raddTransactionEntity));
-        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
         FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto () ;
         Mockito.when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(new NotificationHistoryResponseDto()));
 
@@ -209,7 +209,7 @@ class ActServiceStartTransactionTest extends BaseTest {
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAOImpl.updateStatus(any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
 
         Mockito.when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(new NotificationHistoryResponseDto()));
 
@@ -228,7 +228,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDeliveryClient.getCheckAar(any(), any(), any())).thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAOImpl.updateStatus(any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
 
 
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", "cxId", CxTypeAuthFleet.PG, request).block();
@@ -247,7 +247,7 @@ class ActServiceStartTransactionTest extends BaseTest {
                 .thenReturn(Mono.error(new PnRaddException(exMock)));
         Mockito.when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));
         Mockito.when(raddTransactionDAOImpl.updateStatus(any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));
-        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
 
 
         StepVerifier.create(actService.startTransaction("test", "cxId", CxTypeAuthFleet.PG, request))
@@ -265,7 +265,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDeliveryClient.getCheckAar(any(), any(), any()))
                 .thenReturn(Mono.just(responseCheckAarDtoDto));
         Mockito.when(raddTransactionDAOImpl.createRaddTransaction(any(), any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST));
-        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any())).thenReturn(Mono.just(0));
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
 
         Mockito.when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(new NotificationHistoryResponseDto()));
 

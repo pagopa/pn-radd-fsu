@@ -10,7 +10,6 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.TransactionResponse
 import java.util.ArrayList;
 import java.util.List;
 
-import it.pagopa.pn.radd.utils.log.PnRaddAltLogContext;
 import org.junit.jupiter.api.Test;
 
 class PnRaddAltLogContextDiffblueTest {

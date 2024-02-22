@@ -256,7 +256,7 @@ Resources:
         ContainerEnvEntry10: !Sub 'PN_RADD_ATTEMPTBATCHWRITER=${AttemptBatchWriter}'
         ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
         ContainerEnvEntry12: !Sub 'PN_RADD_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsDynamoTableName}'
-        ContainerEnvEntry13: !Sub 'PN_RADD_APPLICATION_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry13: !Sub 'PN_RADD_APPLICATION_BASEPATH=https://${RaddApiDnsName}'
         ContainerEnvEntry14: !Sub 'PN_RADD_SANITIZE_MODE=${SanitizeMode}'
         ContainerEnvEntry15: !Sub 'SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${FreeMarkerTemplateLoaderPath}'
         ContainerEnvEntry16: !Sub 'SPRING_FREEMARKER_SUFFIX=${FreeMarkerSuffix}'
@@ -298,7 +298,7 @@ Resources:
               - !Sub "${RaddTransactionDynamoTableArn}/*"
               - !Sub "${OperationsDynamoTableArn}"
               - !Sub "${OperationsDynamoTableArn}/*"
-            
+
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:
     Type: AWS::CloudFormation::Stack
@@ -316,7 +316,7 @@ Resources:
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         OpenApiBucketName: !Ref MicroserviceBucketName
         OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-radd-net-RADD-aws.yaml
-        
+
   RaddAltMicroservicePublicRaddApiWaf:
     Type: AWS::CloudFormation::Stack
     Properties:

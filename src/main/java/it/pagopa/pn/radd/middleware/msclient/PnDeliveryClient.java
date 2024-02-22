@@ -31,7 +31,6 @@ public class PnDeliveryClient extends BaseClient {
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
 
-
     public Mono<ResponseCheckAarDtoDto> getCheckAar(String recipientType, String recipientInternalId, String qrCode) {
         RequestCheckAarDtoDto request = new RequestCheckAarDtoDto();
         request.setAarQrCodeValue(qrCode);
@@ -89,7 +88,13 @@ public class PnDeliveryClient extends BaseClient {
                 ).map(item -> {
                     log.trace("SINGLE PRESIGNED DOCUMENT URL TOCK : {}", new Date().getTime());
                     return item;
-                }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                }).onErrorResume(WebClientResponseException.class, ex -> {
+                    ExceptionTypeEnum message = ExceptionTypeEnum.DOCUMENT_UNAVAILABLE;
+                    if (ex.getRawStatusCode() == HttpResponseStatus.GONE.code()) {
+                        return Mono.error(new RaddGenericException(message));
+                    }
+                    return Mono.error(new PnRaddException(ex));
+                });
     }
 
     public Mono<NotificationAttachmentDownloadMetadataResponseDto> getPresignedUrlPaymentDocument(String iun, String attachmentName, String recipientTaxId, Integer attachmentIdx) {
@@ -106,7 +111,7 @@ public class PnDeliveryClient extends BaseClient {
 
     public Mono<Void> checkIunAndInternalId(String iun, String recipientInternalId) {
         log.info("checkIunAndInternalId");
-        return this.deliveryApi.checkIUNAndInternalId(iun, recipientInternalId,null,null, null)
+        return this.deliveryApi.checkIUNAndInternalId(iun, recipientInternalId, null, null, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

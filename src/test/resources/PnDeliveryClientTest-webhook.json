@@ -32,8 +32,12 @@
         "detail": "Format code error, iun is incorrect",
         "traceId": "123987653p",
         "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
         ]
       }
     }
@@ -41,8 +45,10 @@
   {
     "httpRequest": {
       "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/documents/12984594",
-      "queryStringParameters" : {
-        "recipientInternalId" : [ "65df2qm7y" ]
+      "queryStringParameters": {
+        "recipientInternalId": [
+          "65df2qm7y"
+        ]
       },
       "method": "GET"
     },
@@ -67,8 +73,10 @@
     "httpRequest": {
       "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/documents/12984594",
       "method": "GET",
-      "queryStringParameters" : {
-        "recipientInternalId" : [ "" ]
+      "queryStringParameters": {
+        "recipientInternalId": [
+          ""
+        ]
       }
     },
     "httpResponse": {
@@ -84,8 +92,12 @@
         "detail": "Format code error, docIdx is incorrect",
         "traceId": "123987653p",
         "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
         ]
       }
     }
@@ -93,8 +105,10 @@
   {
     "httpRequest": {
       "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/payment/paymentDoc",
-      "queryStringParameters" : {
-        "recipientInternalId" : [ "12df2qm7y" ]
+      "queryStringParameters": {
+        "recipientInternalId": [
+          "12df2qm7y"
+        ]
       },
       "method": "GET"
     },
@@ -118,8 +132,10 @@
   {
     "httpRequest": {
       "path": "/delivery-private/notifications/received/LJLH-GNTJ-DVXR-202209-J-1/attachments/payment/paymentDoc",
-      "queryStringParameters" : {
-        "recipientInternalId" : [ "" ]
+      "queryStringParameters": {
+        "recipientInternalId": [
+          ""
+        ]
       },
       "method": "GET"
     },
@@ -136,8 +152,12 @@
         "detail": "Format name error, name is incorrect",
         "traceId": "123987653p",
         "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
         ]
       }
     }
@@ -201,8 +221,12 @@
         "title": "Service Unavailable",
         "detail": "A human readable explanation of the problem.",
         "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
         ]
       }
     }
@@ -221,8 +245,12 @@
         "title": "Service Unavailable",
         "detail": "A human readable explanation of the problem.",
         "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
         ]
       }
     }
@@ -241,8 +269,45 @@
         "title": "Service Unavailable",
         "detail": "A human readable explanation of the problem.",
         "errors": [
-          {"code": "123-4567"},
-          {"detail": "Parameter not valid"}
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/delivery-private/notifications/received/LJLH-GONE/attachments/documents/12984410",
+      "queryStringParameters": {
+        "recipientInternalId": [
+          "1"
+        ]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 410,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "type": "",
+        "status": 410,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
         ]
       }
     }

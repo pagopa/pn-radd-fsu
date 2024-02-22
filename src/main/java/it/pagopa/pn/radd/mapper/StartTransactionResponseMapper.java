@@ -79,6 +79,8 @@ public class StartTransactionResponseMapper {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_5);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.NOTIFICATION_CANCELLED) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_80);
+        }else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_UNAVAILABLE) {
+            status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_4);
         } else {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_99);
         }

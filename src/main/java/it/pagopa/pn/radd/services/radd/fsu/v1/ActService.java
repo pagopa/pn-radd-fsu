@@ -482,7 +482,7 @@ public class ActService extends BaseService {
     private Mono<SentNotificationV23Dto> hasDocumentsAvailable(String iun) {
         return this.pnDeliveryClient.getNotifications(iun)
                 .flatMap(response -> {
-                    if (null == response.getDocumentsAvailable() || Boolean.FALSE.equals(response.getDocumentsAvailable())) {
+                    if (response.getDocumentsAvailable() != null && Boolean.FALSE.equals(response.getDocumentsAvailable())) {
                         return Mono.error(new RaddGenericException(DOCUMENT_UNAVAILABLE));
                     }
                     return Mono.just(response);

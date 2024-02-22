@@ -26,7 +26,7 @@ public enum ExceptionTypeEnum {
     GENERIC_ERROR("GENERIC ERROR", "Si è verificato un errore", 99),
     DOCUMENT_UNAVAILABLE_RETRY_AFTER("DOCUMENT UNAVAILABLE RETRY AFTER", "Documento non disponibile per il download", 99),
     RETRY_AFTER("RETRY_AFTER", "Documento non disponibile per il download", 2),
-    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "QrCode/CF non valido/i", 80),
+    NOTIFICATION_CANCELLED("NOTIFICATION_CANCELLED", "Questa notifica è stata annullata dall’ente mittente", 80),
     NO_NOTIFICATIONS_FAILED("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate", 99),
 
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale", 10),
@@ -37,7 +37,7 @@ public enum ExceptionTypeEnum {
     private final String message;
     private final Integer code;
 
-    ExceptionTypeEnum(String title, String message, Integer code){
+    ExceptionTypeEnum(String title, String message, Integer code) {
         this.title = title;
         this.message = message;
         this.code = code;

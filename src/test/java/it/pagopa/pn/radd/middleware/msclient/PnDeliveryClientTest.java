@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.Notifi
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import org.junit.jupiter.api.Disabled;
@@ -89,14 +90,15 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     }
 
     @Test
-    void testCheckIunAndInternalId(){
+    void testCheckIunAndInternalId() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1";
         String recipientInternalId = "PF-4fc75df3-0913-407e-bdaa-e50329708b7d";
         Mono<Void> response = pnDeliveryClient.checkIunAndInternalId(iun, recipientInternalId);
         response.map(item -> Mono.empty()).block();
     }
+
     @Test
-    void testCheckIunAndInternalId400(){
+    void testCheckIunAndInternalId400() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1";
         String recipientInternalId = "4fc75df3-0913-407e-bdaa-e50329708b7d";
         Mono<Void> response = pnDeliveryClient.checkIunAndInternalId(iun, recipientInternalId);
@@ -119,12 +121,13 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
             return Mono.empty();
         }).block();
     }
+
     @Test
     void testGetPresignedUrlDocumentCode400() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", docXid = "12984594", recipientTaxId = "";
         Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlDocument(iun, docXid, recipientTaxId);
         response.onErrorResume(exception -> {
-            if (exception instanceof PnRaddException){
+            if (exception instanceof PnRaddException) {
                 assertEquals(HttpStatus.valueOf(400), ((PnRaddException) exception).getWebClientEx().getStatusCode());
                 return Mono.empty();
             }
@@ -134,9 +137,22 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     }
 
     @Test
+    void testGetPresignedUrlDocumentCode410() {
+        String iun = "LJLH-GONE", docXid = "12984410", recipientTaxId = "1";
+        Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlDocument(iun, docXid, recipientTaxId);
+        response.onErrorResume(exception -> {
+            if (exception instanceof RaddGenericException) {
+                assertEquals(ExceptionTypeEnum.DOCUMENT_UNAVAILABLE, ((RaddGenericException) exception).getExceptionType());
+                return Mono.empty();
+            }
+            return Mono.empty();
+        }).block();
+    }
+
+    @Test
     void testGetPresignedUrlPaymentDocument() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", attachmentName = "paymentDoc", recipientTaxId = "12df2qm7y";
-        Mono<NotificationAttachmentDownloadMetadataResponseDto> monoResponse = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId,1);
+        Mono<NotificationAttachmentDownloadMetadataResponseDto> monoResponse = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId, 1);
         monoResponse.map(response -> {
             assertEquals("D73JG1340FJ3GBFI04NT0B73JV9W7331V", response.getSha256());
             assertEquals("application/pdf", response.getContentType());
@@ -148,9 +164,9 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetPresignedUrlPaymentDocumentCode400() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1", attachmentName = "paymentDoc", recipientTaxId = "";
-        Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId,null);
+        Mono<NotificationAttachmentDownloadMetadataResponseDto> response = pnDeliveryClient.getPresignedUrlPaymentDocument(iun, attachmentName, recipientTaxId, null);
         response.onErrorResume(exception -> {
-            if (exception instanceof PnRaddException){
+            if (exception instanceof PnRaddException) {
                 assertEquals(HttpStatus.valueOf(400), ((PnRaddException) exception).getWebClientEx().getStatusCode());
                 return Mono.empty();
             }

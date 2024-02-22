@@ -77,7 +77,7 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return validateInputActInquiry(recipientTaxId, recipientType, qrCode, iun)
+        return validateRecTaxIdRecTypeQrCodeIun(recipientTaxId, recipientType, qrCode, iun)
                 .doOnNext(isValid -> log.trace("ACT INQUIRY TICK {}", new Date().getTime()))
                 .flatMap(isValid -> getEnsureFiscalCode(recipientTaxId, recipientType))
                 .doOnNext(recipientInternalId -> raddAltAuditLog.getContext().addRecipientInternalId(recipientInternalId))
@@ -157,7 +157,7 @@ public class ActService extends BaseService {
                                 .addIun(transactionData.getIun())
                 )
                 .flatMap(this::verifyCheckSum)
-                .zipWhen(transaction -> this.pnDeliveryClient.getNotifications(transaction.getIun()))
+                .zipWhen(transaction -> hasDocumentsAvailable(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
                         (tupla, response) -> Tuples.of(tupla.getT1(), response))
                 .doOnError(e -> log.error(e.getMessage()))
@@ -224,7 +224,7 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return this.validateCompleteRequest(completeTransactionRequest)
+        return this.validateCompleteTransactionRequest(completeTransactionRequest)
                 .zipWhen(req -> getAndCheckStatusTransaction(req.getOperationId(), xPagopaPnCxType, xPagopaPnCxId))
                 .zipWhen(reqAndEntity -> this.pnDeliveryPushClient.notifyNotificationRaddRetrieved(reqAndEntity.getT2(), reqAndEntity.getT1().getOperationDate()), (reqAndEntity, response) -> reqAndEntity)
                 .map(reqAndEntity -> {
@@ -329,9 +329,7 @@ public class ActService extends BaseService {
 
     @NotNull
     private static Predicate<LegalFactListElementDto> filterLegalFacts(TransactionData transaction) {
-        return legalFact -> StringUtils.hasText(legalFact.getTaxId())
-                && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId())
-                && legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT;
+        return legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT;
     }
 
     @NotNull
@@ -405,7 +403,7 @@ public class ActService extends BaseService {
         if (sentDTO.getRecipients().isEmpty())
             return Flux.empty();
         return Flux.fromStream(sentDTO.getRecipients().stream())
-                .filter(recipient -> recipient.getInternalId().equalsIgnoreCase(transactionData.getRecipientId()))
+                .filter(recipient -> recipient.getInternalId().equalsIgnoreCase(transactionData.getEnsureRecipientId()))
                 .filter(recipient -> recipient.getPayments() != null)
                 .doOnError(e -> log.error(e.getMessage()))
                 .flatMap(notificationRecipientV21Dto -> Flux.concat
@@ -446,49 +444,48 @@ public class ActService extends BaseService {
     }
 
     private Mono<TransactionData> validateAndSettingsData(String uid, ActStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
-        if (Strings.isBlank(request.getOperationId())) {
-            return Mono.error(new PnInvalidInputException("Id operazione non valorizzato"));
-        }
-        if (Strings.isBlank(request.getRecipientTaxId())) {
-            return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
-        }
-        if (!Utils.checkPersonType(request.getRecipientType().getValue())) {
-            return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
-        }
-        if (Strings.isBlank(request.getIun()) && Strings.isBlank(request.getQrCode())) {
-            return Mono.error(new PnInvalidInputException("Né IUN nè QrCode valorizzati"));
-        }
-        if (!Strings.isBlank(request.getIun()) && !Strings.isBlank(request.getQrCode())) {
-            return Mono.error(new PnInvalidInputException("IUN e QrCode valorizzati contemporaneamente"));
-        }
-        log.trace("START ACT TRANSACTION TICK {}", new Date().getTime());
-        return Mono.just(this.transactionDataMapper.toTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId));
+        return validateOperationId(request.getOperationId())
+                .flatMap(validated -> validateRecTaxIdRecTypeQrCodeIun(request.getRecipientTaxId(), request.getRecipientType().getValue(), request.getQrCode(), request.getIun()))
+                .doOnNext(validated -> log.trace("START ACT TRANSACTION TICK {}", new Date().getTime()))
+                .map(validated -> transactionDataMapper.toTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId));
     }
 
-    private Mono<CompleteTransactionRequest> validateCompleteRequest(CompleteTransactionRequest req) {
-        if (!StringUtils.hasText(req.getOperationId())) {
+    private Mono<CompleteTransactionRequest> validateCompleteTransactionRequest(CompleteTransactionRequest req) {
+        return validateOperationId(req.getOperationId())
+                .map(validated -> req);
+    }
+
+    private static Mono<Boolean> validateOperationId(String operationId) {
+        if (!StringUtils.hasText(operationId)) {
             return Mono.error(new PnInvalidInputException("Operation id non valorizzato"));
-        }
-        return Mono.just(req);
-    }
-
-    private Mono<Boolean> validateInputActInquiry(String recipientTaxId, String recipientType, String
-            qrCode, String iun) {
-        if (!StringUtils.hasText(recipientTaxId) || !Utils.checkPersonType(recipientType)
-                || (!StringUtils.hasText(qrCode) && !StringUtils.hasText(iun)) || (StringUtils.hasText(qrCode) && StringUtils.hasText(iun))) {
-            log.error("Missing input parameters");
-            return Mono.error(new PnInvalidInputException("Codice fiscale, tipo utente o codice fiscale non valorizzati correttamente"));
         }
         return Mono.just(true);
     }
 
-    private Mono<String> hasDocumentsAvailable(String iun) {
+    private Mono<Boolean> validateRecTaxIdRecTypeQrCodeIun(String recipientTaxId, String recipientType, String
+            qrCode, String iun) {
+        if (Strings.isBlank(recipientTaxId)) {
+            return Mono.error(new PnInvalidInputException("Codice fiscale non valorizzato"));
+        }
+        if (!Utils.checkPersonType(recipientType)) {
+            return Mono.error(new PnInvalidInputException("Recipient Type non valorizzato correttamente"));
+        }
+        if (Strings.isBlank(iun) && Strings.isBlank(qrCode)) {
+            return Mono.error(new PnInvalidInputException("Né IUN nè QrCode valorizzati"));
+        }
+        if (!Strings.isBlank(iun) && !Strings.isBlank(qrCode)) {
+            return Mono.error(new PnInvalidInputException("IUN e QrCode valorizzati contemporaneamente"));
+        }
+        return Mono.just(true);
+    }
+
+    private Mono<SentNotificationV23Dto> hasDocumentsAvailable(String iun) {
         return this.pnDeliveryClient.getNotifications(iun)
                 .flatMap(response -> {
-                    if (response.getDocumentsAvailable() != null && !response.getDocumentsAvailable()) {
+                    if (null == response.getDocumentsAvailable() || Boolean.FALSE.equals(response.getDocumentsAvailable())) {
                         return Mono.error(new RaddGenericException(DOCUMENT_UNAVAILABLE));
                     }
-                    return Mono.just(iun);
+                    return Mono.just(response);
                 });
     }
 

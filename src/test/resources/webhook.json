@@ -529,5 +529,38 @@
         ]
       }
     }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/delivery-private/notifications/received/LJLH-GONE/attachments/documents/12984410",
+      "queryStringParameters": {
+        "recipientInternalId": [
+          "1"
+        ]
+      }
+    },
+    "httpResponse": {
+      "statusCode": 410,
+      "headers": {
+        "content-type": [
+          "application/json"
+        ]
+      },
+      "body": {
+        "type": "",
+        "status": 410,
+        "title": "Service Unavailable",
+        "detail": "A human readable explanation of the problem.",
+        "errors": [
+          {
+            "code": "123-4567"
+          },
+          {
+            "detail": "Parameter not valid"
+          }
+        ]
+      }
+    }
   }
 ]

@@ -122,6 +122,7 @@ class ActServiceStartTransactionTest extends BaseTest {
         sentNotificationDto.setRecipients(List.of(notificationRecipientDto));
         sentNotificationDto.setDocuments(List.of(notificationDocumentDto));
 
+        sentNotificationDto.setDocumentsAvailable(true);
         return sentNotificationDto;
     }
 

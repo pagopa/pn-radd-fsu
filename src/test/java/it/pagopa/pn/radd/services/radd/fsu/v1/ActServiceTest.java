@@ -120,7 +120,7 @@ class ActServiceTest extends BaseTest {
                 .thenThrow(PnInvalidInputException.class);
         Mono<ActInquiryResponse> response = actService.actInquiry("test","", CxTypeAuthFleet.PG,"test","test", "test", "test");
         response.onErrorResume( PnInvalidInputException.class, exception ->{
-            assertEquals("Codice fiscale, tipo utente o codice fiscale non valorizzati correttamente", exception.getMessage());
+            assertEquals("Recipient Type non valorizzato correttamente", exception.getMessage());
             return Mono.empty();
         }).block();
 
@@ -160,7 +160,7 @@ class ActServiceTest extends BaseTest {
         Mono<StartTransactionResponse> response = actService.startTransaction("test", "123", CxTypeAuthFleet.PG, startTransactionRequest);
         response.onErrorResume(PnInvalidInputException.class, exception -> {
             log.info("Exception {}", exception.getReason());
-            assertEquals("Id operazione non valorizzato", exception.getReason());
+            assertEquals("Operation id non valorizzato", exception.getReason());
             return Mono.empty();
         }).block();
 

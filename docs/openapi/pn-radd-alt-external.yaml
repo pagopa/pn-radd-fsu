@@ -552,12 +552,13 @@ components:
                 * 0 -> OK
                 * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche, ritentare dopo il tempo specificato nel retryAfter con una nuova transaction)
                 * 3 -> Stampa già eseguita
+                * 4 -> Documenti non disponibili
                 * 5 -> Codice operationId già presente
                 * 10 -> AAR non disponibili
                 * 80 -> Notifica annullata dalla PA
                 * 99 -> KO
               type: number
-              enum: [0, 99, 2,3,5,10,80]
+              enum: [0, 99, 2,4,3,5,10,80]
             retryAfter:
               description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
               type: number

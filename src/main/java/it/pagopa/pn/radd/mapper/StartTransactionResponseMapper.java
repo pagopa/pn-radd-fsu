@@ -70,7 +70,7 @@ public class StartTransactionResponseMapper {
         status.setMessage(ex.getExceptionType().getMessage());
         if (ex.getExceptionType() == ExceptionTypeEnum.RETRY_AFTER) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
-            status.setRetryAfter((BigDecimal) ex.getExtra());
+            status.setRetryAfter(getRetryAfter(ex));
         } else if (ex.getExceptionType() == ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF
                 || ex.getExceptionType() == ExceptionTypeEnum.INVALID_INPUT) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_10);
@@ -89,4 +89,14 @@ public class StartTransactionResponseMapper {
         response.setStatus(status);
         return response;
     }
+
+    @NotNull
+    private static BigDecimal getRetryAfter(RaddGenericException ex) {
+        if (ex.getExtra() instanceof BigDecimal) {
+            return (BigDecimal) ex.getExtra();
+        } else {
+            return new BigDecimal((Integer) ex.getExtra());
+        }
+    }
+
 }

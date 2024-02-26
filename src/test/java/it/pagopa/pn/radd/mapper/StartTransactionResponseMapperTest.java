@@ -95,7 +95,7 @@ class StartTransactionResponseMapperTest {
     void testFromException() {
         // Arrange and Act
         StartTransactionResponse actualFromExceptionResult = StartTransactionResponseMapper
-                .fromException(new RaddGenericException(ExceptionTypeEnum.RETRY_AFTER));
+                .fromException(new RaddGenericException(ExceptionTypeEnum.RETRY_AFTER, 10000));
 
         // Assert
         StartTransactionResponseStatus status = actualFromExceptionResult.getStatus();

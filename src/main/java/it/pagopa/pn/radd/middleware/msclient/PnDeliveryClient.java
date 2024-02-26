@@ -105,7 +105,13 @@ public class PnDeliveryClient extends BaseClient {
                 ).map(item -> {
                     log.trace("SINGLE PRESIGNED ATTACHEMENT TOCK {}", new Date().getTime());
                     return item;
-                }).onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
+                }).onErrorResume(WebClientResponseException.class, ex -> {
+                    ExceptionTypeEnum message = ExceptionTypeEnum.DOCUMENT_UNAVAILABLE;
+                    if (ex.getRawStatusCode() == HttpResponseStatus.GONE.code()) {
+                        return Mono.error(new RaddGenericException(message));
+                    }
+                    return Mono.error(new PnRaddException(ex));
+                });
     }
 
     public Mono<Void> checkIunAndInternalId(String iun, String recipientInternalId) {

@@ -41,7 +41,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-import static it.pagopa.pn.radd.pojo.NotificationPayment.PaymentType.*;
+import static it.pagopa.pn.radd.pojo.NotificationAttachment.AttachmentType.*;
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
 import static org.springframework.util.StringUtils.*;
@@ -382,25 +382,25 @@ public class ActService extends BaseService {
     private Flux<DownloadUrl> getUrlDoc(TransactionData transaction, SentNotificationV23Dto sentDTO) {
         return Flux.fromStream(sentDTO.getDocuments().stream())
                 .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
-                        .map(notificationMetadata -> new NotificationPayment(DOCUMENT, notificationMetadata))
+                        .map(notificationMetadata -> new NotificationAttachment(DOCUMENT, notificationMetadata))
                         .mapNotNull(ActService::getNotificationAttachmentUrl))
                 .map(url -> getDownloadUrl(url, DocumentTypeEnum.DOCUMENT.name()));
     }
 
     @Nullable
-    private static String getNotificationAttachmentUrl(NotificationPayment notificationPayment) {
-        if (notificationPayment.getNotificationMetadata().getRetryAfter() != null && notificationPayment.getNotificationMetadata().getRetryAfter() != 0) {
-            logFatalOrError(notificationPayment);
-            throw new RaddGenericException(RETRY_AFTER, notificationPayment.getNotificationMetadata().getRetryAfter());
+    private static String getNotificationAttachmentUrl(NotificationAttachment notificationAttachment) {
+        if (notificationAttachment.getNotificationMetadata().getRetryAfter() != null && notificationAttachment.getNotificationMetadata().getRetryAfter() != 0) {
+            logFatalOrError(notificationAttachment);
+            throw new RaddGenericException(RETRY_AFTER, notificationAttachment.getNotificationMetadata().getRetryAfter());
         }
-        return notificationPayment.getNotificationMetadata().getUrl();
+        return notificationAttachment.getNotificationMetadata().getUrl();
     }
 
-    private static void logFatalOrError(NotificationPayment notificationPayment) {
-        if(F24.equals(notificationPayment.getTipo())) {
-            log.error("Found document/attachment with retry after {}", notificationPayment.getNotificationMetadata().getRetryAfter());
+    private static void logFatalOrError(NotificationAttachment notificationAttachment) {
+        if(F24.equals(notificationAttachment.getType())) {
+            log.error("Found document/attachment with retry after {}", notificationAttachment.getNotificationMetadata().getRetryAfter());
         } else {
-            log.fatal("Found document/attachment with retry after {}", notificationPayment.getNotificationMetadata().getRetryAfter());
+            log.fatal("Found document/attachment with retry after {}", notificationAttachment.getNotificationMetadata().getRetryAfter());
         }
     }
 
@@ -422,18 +422,18 @@ public class ActService extends BaseService {
                 .map(url -> getDownloadUrl(url, DocumentTypeEnum.ATTACHMENT.name()));
     }
 
-    private Mono<NotificationPayment> getPagoPAAttachmentDownloadMetadataResponse(TransactionData transactionData, NotificationPaymentItemDto item, Integer attachmentIdx) {
+    private Mono<NotificationAttachment> getPagoPAAttachmentDownloadMetadataResponse(TransactionData transactionData, NotificationPaymentItemDto item, Integer attachmentIdx) {
         if (item.getPagoPa() != null && item.getPagoPa().getAttachment() != null) {
             return pnDeliveryClient.getPresignedUrlPaymentDocument(transactionData.getIun(), "PAGOPA", transactionData.getEnsureRecipientId(), attachmentIdx)
-                    .map(notificationMetadata -> new NotificationPayment(PAGOPA, notificationMetadata));
+                    .map(notificationMetadata -> new NotificationAttachment(PAGOPA, notificationMetadata));
         }
         return Mono.empty();
     }
 
-    private Mono<NotificationPayment> getF24AttachmentDownloadMetadataResponseDto(TransactionData transactionData, NotificationPaymentItemDto item, Integer attachmentIdx) {
+    private Mono<NotificationAttachment> getF24AttachmentDownloadMetadataResponseDto(TransactionData transactionData, NotificationPaymentItemDto item, Integer attachmentIdx) {
         if (item.getF24() != null) {
             return pnDeliveryClient.getPresignedUrlPaymentDocument(transactionData.getIun(), "F24", transactionData.getEnsureRecipientId(), attachmentIdx)
-                    .map(notificationAttachmentDownloadMetadataResponseDto -> new NotificationPayment(F24, notificationAttachmentDownloadMetadataResponseDto));
+                    .map(notificationAttachmentDownloadMetadataResponseDto -> new NotificationAttachment(F24, notificationAttachmentDownloadMetadataResponseDto));
         }
         return Mono.empty();
     }

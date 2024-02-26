@@ -6,7 +6,6 @@ import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import org.junit.jupiter.api.Test;
 
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.QR_CODE_VALIDATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

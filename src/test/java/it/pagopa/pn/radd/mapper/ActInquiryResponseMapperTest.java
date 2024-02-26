@@ -29,17 +29,10 @@ class ActInquiryResponseMapperTest {
     @Test
     void fromException() {
         ActInquiryResponseStatus status = new ActInquiryResponseStatus();
-        status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_1);
 
-        RaddGenericException ex = new RaddGenericException(QR_CODE_VALIDATION);
+        RaddGenericException ex = new RaddGenericException(INVALID_INPUT);
         ActInquiryResponse response = ActInquiryResponseMapper.fromException(ex);
-        assertNotNull(response);
-        assertEquals(status.getCode(), response.getStatus().getCode());
-        assertEquals(ex.getExceptionType().getMessage(), response.getStatus().getMessage());
-
         status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_10);
-        ex = new RaddGenericException(CF_OR_QRCODE_NOT_VALID);
-        response = ActInquiryResponseMapper.fromException(ex);
         assertEquals(status.getCode(), response.getStatus().getCode());
 
         ex = new RaddGenericException(DOCUMENT_NOT_FOUND);
@@ -117,11 +110,11 @@ class ActInquiryResponseMapperTest {
     @Test
     void testFromException6() {
         ActInquiryResponse actualFromExceptionResult = ActInquiryResponseMapper
-                .fromException(new RaddGenericException(ExceptionTypeEnum.QR_CODE_VALIDATION));
+                .fromException(new RaddGenericException(INVALID_INPUT));
         assertFalse(actualFromExceptionResult.getResult());
         ActInquiryResponseStatus status = actualFromExceptionResult.getStatus();
-        assertEquals(ActInquiryResponseStatus.CodeEnum.NUMBER_1, status.getCode());
-        assertEquals("QrCode non valido", status.getMessage());
+        assertEquals(ActInquiryResponseStatus.CodeEnum.NUMBER_10, status.getCode());
+        assertEquals("Input non valido", status.getMessage());
     }
 
     /**

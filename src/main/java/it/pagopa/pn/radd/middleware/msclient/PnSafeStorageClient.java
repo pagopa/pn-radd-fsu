@@ -79,7 +79,7 @@ public class PnSafeStorageClient extends BaseClient {
                     log.trace("GET FILE TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
                     if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
-                        return Mono.error(new RaddGenericException(ExceptionTypeEnum.DOCUMENT_UNAVAILABLE, (ExceptionTypeEnum.DOCUMENT_UNAVAILABLE).getMessage()));
+                        return Mono.error(new RaddGenericException(ExceptionTypeEnum.DOCUMENT_UNAVAILABLE));
                     }
                     return Mono.error(new PnSafeStorageException(ex));
                 });

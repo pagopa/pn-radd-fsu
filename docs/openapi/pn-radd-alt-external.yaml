@@ -590,15 +590,14 @@ components:
               description: |
                 Return code.
                 * 0 -> OK
-                * 1 -> QrCode/CF non valido/i
-                * 2 -> Documenti non più disponibili
+                * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche, ritentare dopo il tempo specificato nel retryAfter)
                 * 3 -> Stampa già eseguita
                 * 4 -> Documento non più disponibili
-                * 10 -> QrCode/CF non valido/i
+                * 10 -> Input non valido
                 * 80 -> Notifica annullata dalla PA
                 * 99 -> KO generico
               type: number
-              enum: [0,1,2,3,4,10,80,99]
+              enum: [0,2,3,4,10,80,99]
 
 
   parameters:

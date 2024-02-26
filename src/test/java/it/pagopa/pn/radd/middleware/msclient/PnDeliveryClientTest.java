@@ -12,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
 
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.QR_CODE_VALIDATION;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.INVALID_INPUT;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PnDeliveryClientTest extends BaseTest.WithMockServer {
@@ -36,7 +35,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
         String recipientType = "PF", recipientInternalId = "PG-4fc75df3-0913-407e-bdaa-e50329708b7d", qrCode = "UFVNUS1ETVdHLUhSTFAtMjAyMjA5LVEtMV9GUk1UVFI3Nk0wNkI3MTVFXzVhZGIxMGE2LTM1MDEtNDcyYS04ZTkyLTU3ZGUyYzgxNTZhYw";
         Mono<ResponseCheckAarDtoDto> monoResponse1 = pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
         monoResponse1.onErrorResume(RaddGenericException.class, exception -> {
-            assertEquals(CF_OR_QRCODE_NOT_VALID, exception.getExceptionType());
+            assertEquals(INVALID_INPUT, exception.getExceptionType());
             return Mono.empty();
         }).block();
 
@@ -45,7 +44,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
         qrCode = "";
         Mono<ResponseCheckAarDtoDto> monoResponse2 = pnDeliveryClient.getCheckAar(recipientType, recipientInternalId, qrCode);
         monoResponse2.onErrorResume(RaddGenericException.class, exception -> {
-            assertEquals(QR_CODE_VALIDATION, exception.getExceptionType());
+            assertEquals(INVALID_INPUT, exception.getExceptionType());
             return Mono.empty();
         }).block();
     }

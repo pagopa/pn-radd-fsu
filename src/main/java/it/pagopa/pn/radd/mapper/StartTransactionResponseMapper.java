@@ -71,7 +71,8 @@ public class StartTransactionResponseMapper {
         if (ex.getExceptionType() == ExceptionTypeEnum.RETRY_AFTER) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_2);
             status.setRetryAfter((BigDecimal) ex.getExtra());
-        } else if (ex.getExceptionType() == ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF) {
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF
+                || ex.getExceptionType() == ExceptionTypeEnum.INVALID_INPUT) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_10);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_3);
@@ -79,7 +80,7 @@ public class StartTransactionResponseMapper {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_5);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.NOTIFICATION_CANCELLED) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_80);
-        }else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_UNAVAILABLE) {
+        } else if (ex.getExceptionType() == ExceptionTypeEnum.DOCUMENT_UNAVAILABLE) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_4);
         } else {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_99);
@@ -88,5 +89,4 @@ public class StartTransactionResponseMapper {
         response.setStatus(status);
         return response;
     }
-
 }

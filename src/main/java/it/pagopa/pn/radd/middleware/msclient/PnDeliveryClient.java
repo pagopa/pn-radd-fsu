@@ -49,14 +49,13 @@ public class PnDeliveryClient extends BaseClient {
                 }).onErrorResume(WebClientResponseException.class, ex -> {
                     log.error("Error : {}", ex.getResponseBodyAsString());
                     ExceptionTypeEnum message;
-                    if (ex.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
-                        message = ExceptionTypeEnum.QR_CODE_VALIDATION;
+                    if (ex.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code() ||
+                            ex.getRawStatusCode() == HttpResponseStatus.BAD_REQUEST.code()) {
+                        message = ExceptionTypeEnum.INVALID_INPUT;
                     } else if (ex.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
                         message = ExceptionTypeEnum.DOCUMENT_NOT_FOUND;
                     } else if (ex.getRawStatusCode() == HttpResponseStatus.CONFLICT.code()) {
                         message = ExceptionTypeEnum.ALREADY_COMPLETE_PRINT;
-                    } else if (ex.getRawStatusCode() == HttpResponseStatus.BAD_REQUEST.code()) {
-                        message = ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
                     } else {
                         return Mono.error(new PnRaddException(ex));
                     }
@@ -121,7 +120,7 @@ public class PnDeliveryClient extends BaseClient {
                     ExceptionTypeEnum message;
                     if (ex.getRawStatusCode() == HttpResponseStatus.NOT_FOUND.code()
                             || ex.getRawStatusCode() == HttpResponseStatus.FORBIDDEN.code()) {
-                        message = ExceptionTypeEnum.CF_OR_QRCODE_NOT_VALID;
+                        message = ExceptionTypeEnum.INVALID_INPUT;
                     } else {
                         return Mono.error(new PnRaddException(ex));
                     }

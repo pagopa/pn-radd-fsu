@@ -1,0 +1,1625 @@
+{
+	"info": {
+		"_postman_id": "ae1ec7b6-f845-4493-bfbf-5cc03a1604e3",
+		"name": "radd-alt",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26143046"
+	},
+	"item": [
+		{
+			"name": "actDocumentInquiry",
+			"item": [
+				{
+					"name": "200 OK",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-id",
+								"value": "cxId",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-type",
+								"value": "PF",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/act/inquiry?recipientTaxId=DRCGNN12A46A326K&recipientType=PF&iun=AQDE-DYDN-LMPT-202402-G-1",
+							"host": [
+								"{{BASE_PATH_DEV}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"act",
+								"inquiry"
+							],
+							"query": [
+								{
+									"key": "recipientTaxId",
+									"value": "DRCGNN12A46A326K"
+								},
+								{
+									"key": "recipientType",
+									"value": "PF"
+								},
+								{
+									"key": "qrCode",
+									"value": "WFJBRC1QTkRQLVJRV00tMjAyNDAyLU4tMV9QRi1hYTBjNDU1Ni01YTZmLTQ1YjEtODAwYy0wZjRmM2M1YTU3YjZfODBhM2MyNTUtYjAyNi00MTg3LTg0NDUtYWMwYjMyOGU2Yjky",
+									"disabled": true
+								},
+								{
+									"key": "iun",
+									"value": "AQDE-DYDN-LMPT-202402-G-1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 OK (load balancer)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/act/inquiry?recipientTaxId=BRGLRZ80D58H501Q&recipientType=PF&iun=DAGJ-XZYR-UDUY-202402-H-1",
+							"host": [
+								"{{BASE_PATH_LB}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"act",
+								"inquiry"
+							],
+							"query": [
+								{
+									"key": "recipientTaxId",
+									"value": "BRGLRZ80D58H501Q"
+								},
+								{
+									"key": "recipientType",
+									"value": "PF"
+								},
+								{
+									"key": "qrCode",
+									"value": "WFJBRC1QTkRQLVJRV00tMjAyNDAyLU4tMV9QRi1hYTBjNDU1Ni01YTZmLTQ1YjEtODAwYy0wZjRmM2M1YTU3YjZfODBhM2MyNTUtYjAyNi00MTg3LTg0NDUtYWMwYjMyOGU2Yjky",
+									"disabled": true
+								},
+								{
+									"key": "iun",
+									"value": "DAGJ-XZYR-UDUY-202402-H-1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "aorDocumentInquiry",
+			"item": [
+				{
+					"name": "200 OK",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-id",
+								"value": "cxId",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-type",
+								"value": "PF",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/aor/inquiry?recipientTaxId=DRCGNN12A46A326K&recipientType=PF",
+							"host": [
+								"{{BASE_PATH_DEV}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"aor",
+								"inquiry"
+							],
+							"query": [
+								{
+									"key": "recipientTaxId",
+									"value": "DRCGNN12A46A326K"
+								},
+								{
+									"key": "recipientType",
+									"value": "PF"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 OK (load balancer)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/aor/inquiry?recipientTaxId=DRCGNN12A46A326K&recipientType=PF",
+							"host": [
+								"{{BASE_PATH_LB}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"aor",
+								"inquiry"
+							],
+							"query": [
+								{
+									"key": "recipientTaxId",
+									"value": "DRCGNN12A46A326K"
+								},
+								{
+									"key": "recipientType",
+									"value": "PF"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "documentUpload",
+			"item": [
+				{
+					"name": "200 OK",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-id",
+								"value": "cxId",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-type",
+								"value": "PF",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"operationId\": \"41\",\r\n  \"checksum\": \"T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/documents/upload",
+							"host": [
+								"{{BASE_PATH_DEV}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"documents",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 OK (load balancer)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"operationId\": \"41\",\r\n  \"checksum\": \"T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/documents/upload",
+							"host": [
+								"{{BASE_PATH_LB}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"documents",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SafeStorage",
+			"item": [
+				{
+					"name": "200 OK",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-amz-checksum-sha256",
+								"value": "T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=",
+								"type": "text"
+							},
+							{
+								"key": "x-amz-meta-secret",
+								"value": "[FCbB_NaUP7lbqKOVGAZzYSUbss82iimt5vpqJZdpbwGuVQiMsTkDV0KAR5semOG9ZXccsNR5K5VRbmhQ01fZJQd4NzYfI4F5jCvhZtxX8x4E9yOH5hyE_Qv5GogA9g2QCJHNEfLYQIvG3Hf_zrE5Ie_28mgJ78wr1Cnh_zeRv2Q2jvepafqxsORQZdbweIT3e6Q9YWvqUx-2KYyYXh1_Ga4noaHAuJek-blH5dSIF1N-2-pFZGM5R1XGQM5jGNUc3wBqVjNqFeZ_i1XNmtFdz1XwKfBNQLqLp7bGgaVrSgPAK-OLWI-yWgAkVGLrj-o1bAN3OtMPkl0nLI0G6ZqKVg]",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "file",
+							"file": {
+								"src": "/C:/Users/ECAPOLD0Q/OneDrive - NTT DATA EMEAL/Desktop/radd-alt-act-test.zip"
+							}
+						},
+						"url": {
+							"raw": "https://pn-safestorage-eu-south-1-089813480515.s3.eu-south-1.amazonaws.com/PN_RADD_ALT_ATTACHMENT-81bfe01217c847b390a486a4f33965b2.zip?x-amzn-trace-id=Self%3D1-65da7ee1-311908bf5aace0f825ead674%3BRoot%3D1-65da7ee1-dd88b18cb4c87d06e3b99c24%3BParent%3D778dabf44231acf7%3BSampled%3D1&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEKz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LXNvdXRoLTEiSDBGAiEAt5MQQe3yo4wtFkQA0vVV3PVnGzBHQWH9G2jCtdTFOmACIQDxdpbO1ZQOHA6U%2F%2BnqJ9AoWgGA5oXAloVieYP5DxdvqSqXBAiV%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDA4OTgxMzQ4MDUxNSIM0l%2FanQTHk6i%2B5fW8KusDYsnokH1ySAqk3mk46isJCTbYZY2MMnsmwluSEiTPJejKAlmHXjDZZ9qypxTtwrccxjwTeVdTk2OZpyuFT9YV4rHLlnH%2BC9jRT1u1pDu9jR7YRNSezHrMwsgjkU9JSsx9P9RZA5WoZLiPleSlkeS2o2aIOQXhaf5dSr%2F1IAuToz%2FdHaiQN1QlH2YP5OnZekGfahLYaz4vJgHXaxx%2BmVgNytutTcq17V6Oc9ymraMwsE08WigEnMKgF%2B725%2BD0oFQhDh8ckmVUKB91QgDXxcK%2FZc2DaaCdNsY0ao2CSYNubknxDdrkqv1NSI2mL7VYRWP%2BK%2BgaIu5a8nM%2Bi9gxbs9nHGv%2FGYHBn8jPicqCX6ETa1NCodFnRIO4ckUh5TEgFgcntsxhrnTEoD0Nudv3QfpqA0G%2FrVYqcW%2Fj%2BQzMi1ju1RPOedAgpUyp%2F2NGRBPgLRUdHr5LvRzWL5iUxLD%2FExGWX2v2xlmZZHvQJsTdvKJ69g6DRZq%2FoQe7zAly7tvKxcSyiYB2PloUeI133rMLLj0cMugwn3owMmXMRxdjCLVINEEFVLUe2GtqZ0YrPR0TakXCH7FUu1e3nOI11NwJ6evtXmhsShOLzZcvHirZ60A2UevWqBFb0YiqpERnTyhTAbIzkYLp5ytSEm6P5sswzIbprgY6pQGBJ6JPvQo4JS0OL3KKG0sTJcLqC3WEvskLFulGEkmEy5Rp3RyvrY7w2pslbcMNetvRRpdBIPDr6t4QCwz9bL%2FTAHI0ECHFwsHaLGD9oBQK3hLcPjDbXTb4eH2j5UmBVavUs%2BAz7QtkR3u3bE%2BGXTVttcXD7tSmRz3rD4a%2FapIqdS%2Fk9hXR0kijIzLR9rgHxF2gozuJZYeBcoTdRNQ46mEsQ4wW3Gw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240224T234225Z&X-Amz-SignedHeaders=content-type%3Bhost%3Bx-amz-checksum-sha256%3Bx-amz-meta-secret&X-Amz-Expires=3600&X-Amz-Credential=ASIARJ2KM6RB7TLQGWP3%2F20240224%2Feu-south-1%2Fs3%2Faws4_request&X-Amz-Signature=5eea6bd2bd8e06c7b14b122d921b62edbb98acf2e1ea72673f516b8db801b923",
+							"protocol": "https",
+							"host": [
+								"pn-safestorage-eu-south-1-089813480515",
+								"s3",
+								"eu-south-1",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"PN_RADD_ALT_ATTACHMENT-81bfe01217c847b390a486a4f33965b2.zip"
+							],
+							"query": [
+								{
+									"key": "x-amzn-trace-id",
+									"value": "Self%3D1-65da7ee1-311908bf5aace0f825ead674%3BRoot%3D1-65da7ee1-dd88b18cb4c87d06e3b99c24%3BParent%3D778dabf44231acf7%3BSampled%3D1"
+								},
+								{
+									"key": "X-Amz-Security-Token",
+									"value": "IQoJb3JpZ2luX2VjEKz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCmV1LXNvdXRoLTEiSDBGAiEAt5MQQe3yo4wtFkQA0vVV3PVnGzBHQWH9G2jCtdTFOmACIQDxdpbO1ZQOHA6U%2F%2BnqJ9AoWgGA5oXAloVieYP5DxdvqSqXBAiV%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDA4OTgxMzQ4MDUxNSIM0l%2FanQTHk6i%2B5fW8KusDYsnokH1ySAqk3mk46isJCTbYZY2MMnsmwluSEiTPJejKAlmHXjDZZ9qypxTtwrccxjwTeVdTk2OZpyuFT9YV4rHLlnH%2BC9jRT1u1pDu9jR7YRNSezHrMwsgjkU9JSsx9P9RZA5WoZLiPleSlkeS2o2aIOQXhaf5dSr%2F1IAuToz%2FdHaiQN1QlH2YP5OnZekGfahLYaz4vJgHXaxx%2BmVgNytutTcq17V6Oc9ymraMwsE08WigEnMKgF%2B725%2BD0oFQhDh8ckmVUKB91QgDXxcK%2FZc2DaaCdNsY0ao2CSYNubknxDdrkqv1NSI2mL7VYRWP%2BK%2BgaIu5a8nM%2Bi9gxbs9nHGv%2FGYHBn8jPicqCX6ETa1NCodFnRIO4ckUh5TEgFgcntsxhrnTEoD0Nudv3QfpqA0G%2FrVYqcW%2Fj%2BQzMi1ju1RPOedAgpUyp%2F2NGRBPgLRUdHr5LvRzWL5iUxLD%2FExGWX2v2xlmZZHvQJsTdvKJ69g6DRZq%2FoQe7zAly7tvKxcSyiYB2PloUeI133rMLLj0cMugwn3owMmXMRxdjCLVINEEFVLUe2GtqZ0YrPR0TakXCH7FUu1e3nOI11NwJ6evtXmhsShOLzZcvHirZ60A2UevWqBFb0YiqpERnTyhTAbIzkYLp5ytSEm6P5sswzIbprgY6pQGBJ6JPvQo4JS0OL3KKG0sTJcLqC3WEvskLFulGEkmEy5Rp3RyvrY7w2pslbcMNetvRRpdBIPDr6t4QCwz9bL%2FTAHI0ECHFwsHaLGD9oBQK3hLcPjDbXTb4eH2j5UmBVavUs%2BAz7QtkR3u3bE%2BGXTVttcXD7tSmRz3rD4a%2FapIqdS%2Fk9hXR0kijIzLR9rgHxF2gozuJZYeBcoTdRNQ46mEsQ4wW3Gw%3D"
+								},
+								{
+									"key": "X-Amz-Algorithm",
+									"value": "AWS4-HMAC-SHA256"
+								},
+								{
+									"key": "X-Amz-Date",
+									"value": "20240224T234225Z"
+								},
+								{
+									"key": "X-Amz-SignedHeaders",
+									"value": "content-type%3Bhost%3Bx-amz-checksum-sha256%3Bx-amz-meta-secret"
+								},
+								{
+									"key": "X-Amz-Expires",
+									"value": "3600"
+								},
+								{
+									"key": "X-Amz-Credential",
+									"value": "ASIARJ2KM6RB7TLQGWP3%2F20240224%2Feu-south-1%2Fs3%2Faws4_request"
+								},
+								{
+									"key": "X-Amz-Signature",
+									"value": "5eea6bd2bd8e06c7b14b122d921b62edbb98acf2e1ea72673f516b8db801b923"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "actTransactionManagement",
+			"item": [
+				{
+					"name": "startTransaction",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"versionToken\": \"OhfZOqqLm.jIRlknTduIbm4ZL_TW1Qyu\",\r\n    \"operationId\": \"99\",\r\n    \"recipientTaxId\": \"DRCGNN12A46A326K\",\r\n    \"recipientType\": \"PF\",\r\n    \"delegateTaxId\": \"RFRGRZ66E21H751B\",\r\n    \"fileKey\": \"PN_RADD_ALT_ATTACHMENT-67e66d12faa946568606ef4f8e126a7d.zip\",\r\n    \"checksum\": \"T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=\",\r\n    \"operationDate\": \"2024-02-13T11:44:28Z\",\r\n    \"qrCode\": \"\",\r\n    \"iun\":\"AQDE-DYDN-LMPT-202402-G-1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/act/transaction/start",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"act",
+										"transaction",
+										"start"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"versionToken\": \"OhfZOqqLm.jIRlknTduIbm4ZL_TW1Qyu\",\r\n    \"operationId\": \"45\",\r\n    \"recipientTaxId\": \"DRCGNN12A46A326K\",\r\n    \"recipientType\": \"PF\",\r\n    \"delegateTaxId\": \"RFRGRZ66E21H751B\",\r\n    \"fileKey\": \"PN_RADD_ALT_ATTACHMENT-67e66d12faa946568606ef4f8e126a7d.zip\",\r\n    \"checksum\": \"T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=\",\r\n    \"operationDate\": \"2024-02-13T11:44:28Z\",\r\n    \"qrCode\": \"\",\r\n    \"iun\":\"DAGJ-XZYR-UDUY-202402-H-1\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/act/transaction/start",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"act",
+										"transaction",
+										"start"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "completeTransaction",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									},
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"99\",\r\n          \"operationDate\": \"2022-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/act/transaction/complete",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"act",
+										"transaction",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"36\",\r\n          \"operationDate\": \"2022-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/act/transaction/complete",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"act",
+										"transaction",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "abortTransaction",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"35\",\r\n          \"reason\": \"abort\",\r\n          \"operationDate\": \"2024-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/act/transaction/abort",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"act",
+										"transaction",
+										"abort"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"35\",\r\n          \"reason\": \"abort\",\r\n          \"operationDate\": \"2024-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/act/transaction/abort",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"act",
+										"transaction",
+										"abort"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "aorTransactionManagement",
+			"item": [
+				{
+					"name": "startTransaction",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"versionToken\": \"OhfZOqqLm.jIRlknTduIbm4ZL_TW1Qyu\",\r\n  \"operationId\": \"43\",\r\n  \"recipientTaxId\": \"DRCGNN12A46A326K\",\r\n  \"recipientType\": \"PF\",\r\n  \"delegateTaxId\": \"RFRGRZ66E21H751B\",\r\n  \"fileKey\": \"PN_RADD_ALT_ATTACHMENT-67e66d12faa946568606ef4f8e126a7d.zip\",\r\n  \"checksum\": \"T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=\",\r\n  \"operationDate\": \"2024-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/aor/transaction/start",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"aor",
+										"transaction",
+										"start"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"versionToken\": \"OhfZOqqLm.jIRlknTduIbm4ZL_TW1Qyu\",\r\n  \"operationId\": \"43\",\r\n  \"recipientTaxId\": \"DRCGNN12A46A326K\",\r\n  \"recipientType\": \"PF\",\r\n  \"delegateTaxId\": \"RFRGRZ66E21H751B\",\r\n  \"fileKey\": \"PN_RADD_ALT_ATTACHMENT-67e66d12faa946568606ef4f8e126a7d.zip\",\r\n  \"checksum\": \"T0wv9INHYsCUJgnXIhBZCsBKfSE4HhIQ+Bdk/w0y1gU=\",\r\n  \"operationDate\": \"2024-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/aor/transaction/start",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"aor",
+										"transaction",
+										"start"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "completeTransaction",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"41\",\r\n          \"operationDate\": \"2022-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/aor/transaction/complete",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"aor",
+										"transaction",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"41\",\r\n          \"operationDate\": \"2022-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/aor/transaction/complete",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"aor",
+										"transaction",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "abortTransaction",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"42\",\r\n          \"reason\": \"abort\",\r\n          \"operationDate\": \"2022-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/aor/transaction/abort",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"aor",
+										"transaction",
+										"abort"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n          \"operationId\": \"42\",\r\n          \"reason\": \"abort\",\r\n          \"operationDate\": \"2022-06-21T11:44:28Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/aor/transaction/abort",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net",
+										"api",
+										"v1",
+										"aor",
+										"transaction",
+										"abort"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "DownloadDocument",
+			"item": [
+				{
+					"name": "200 OK",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-pagopa-pn-cx-id",
+								"value": "cxId",
+								"type": "text"
+							},
+							{
+								"key": "x-pagopa-pn-cx-type",
+								"value": "PF",
+								"type": "text"
+							},
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_PATH_DEV}}/radd-net/api/v1/download/ACT/36",
+							"host": [
+								"{{BASE_PATH_DEV}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"download",
+								"ACT",
+								"36"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 OK (load balancer)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "uid",
+								"value": "uid",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_PATH_LB}}/radd-net/api/v1/download/ACT/36",
+							"host": [
+								"{{BASE_PATH_LB}}"
+							],
+							"path": [
+								"radd-net",
+								"api",
+								"v1",
+								"download",
+								"ACT",
+								"36"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "notificationInquiry",
+			"item": [
+				{
+					"name": "operationAct",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net-private/api/v1/act/operations/by-id/PF%23cxId%236",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"act",
+										"operations",
+										"by-id",
+										"PF%23cxId%236"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net-private/api/v1/act/operations/by-id/PF%23cxId%236",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"act",
+										"operations",
+										"by-id",
+										"PF%23cxId%236"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "operationAor",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net-private/api/v1/aor/operations/by-id/PF%23cxId%238",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"aor",
+										"operations",
+										"by-id",
+										"PF%23cxId%238"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net-private/api/v1/aor/operations/by-id/PF%23cxId%238",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"aor",
+										"operations",
+										"by-id",
+										"PF%23cxId%238"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "operationsAct",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PG",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net-private/api/v1/act/operations/by-iun/GPDJ-UGUM-XHUR-202402-L-1",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"act",
+										"operations",
+										"by-iun",
+										"GPDJ-UGUM-XHUR-202402-L-1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net-private/api/v1/act/operations/by-iun/GPDJ-UGUM-XHUR-202402-L-1",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"act",
+										"operations",
+										"by-iun",
+										"GPDJ-UGUM-XHUR-202402-L-1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "operationsAor",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net-private/api/v1/aor/operations/by-iun/HQAD-YPYX-ZGNJ-202402-X-1",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"aor",
+										"operations",
+										"by-iun",
+										"HQAD-YPYX-ZGNJ-202402-X-1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net-private/api/v1/aor/operations/by-iun/HQAD-YPYX-ZGNJ-202402-X-1",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"aor",
+										"operations",
+										"by-iun",
+										"HQAD-YPYX-ZGNJ-202402-X-1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "operationsActDetails",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-type",
+										"value": "PG",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"from\": \"2024-02-13T10:15:30\",\r\n    \"to\": \"2024-06-29T10:15:30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net-private/api/v1/act/operations/by-internalId/PF-1a99fa13-e54d-4da1-a6ca-7e2cd60c5035",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"act",
+										"operations",
+										"by-internalId",
+										"PF-1a99fa13-e54d-4da1-a6ca-7e2cd60c5035"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"from\": \"2024-02-13T10:15:30\",\r\n    \"to\": \"2024-06-29T10:15:30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net-private/api/v1/act/operations/by-internalId/PF-1a99fa13-e54d-4da1-a6ca-7e2cd60c5035",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"act",
+										"operations",
+										"by-internalId",
+										"PF-1a99fa13-e54d-4da1-a6ca-7e2cd60c5035"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "operationsAorDetails",
+					"item": [
+						{
+							"name": "200 OK",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "cxId",
+										"type": "text"
+									},
+									{
+										"key": "x-pagopa-pn-cx-id",
+										"value": "PF",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"from\":\"2022-06-21T10:15:30\",\r\n    \"to\": \"2022-06-24T10:15:30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_DEV}}/radd-net-private/api/v1/aor/operations/by-internalId/PF-fc73f0a0-f046-4c82-929a-14b83c7671e8",
+									"host": [
+										"{{BASE_PATH_DEV}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"aor",
+										"operations",
+										"by-internalId",
+										"PF-fc73f0a0-f046-4c82-929a-14b83c7671e8"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 OK (load balancer)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2lkIn0.eyJhdWQiOiJodHRwczovL2FwaS5yYWRkLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImlzcyI6InRlc3QtaXNzdWVyLmRldi5ub3RpZmljaGVkaWdpdGFsaS5pdCIsImp0aSI6IjEyMzEyMzEyMzEyMzEyIiwiaWF0IjoxNzA4MzcyMjExfQ.dTn1XHCp2Pxh7Ez5IOX_cJUQOv3h6UPZxNamR7mW5S7LHru6DsI-9XtxlDhWOGn_FKr4jIkYOKH311NUHhf9Vm7bLRm2fIid1zW7vb1YnssrMPJTKc5YOj_yZqk6cACD_LnOWjWjDvHX0LEjtl8oUf4f7KqFqexTtQ_bKZkNKpmR1LBzKXQUK3ONY8taaVHIKBBfJiosgBpy_2sDLrnuDp6_VNpDtwIO9LAVgC3uLeqAEgRqZdU0yGIUQDKRVjfzrlanYEZAI7S8uPss-4QtzPXLek0pIH-ygJtphE1zZWSKtrjMFARCMHTttlNgBZgZ1Pp1P2w5oJSuy0E23gFDxsJNlBdyigJnXQtcBUMBaVbOlerjiIhhrL6dRUeYUcXJmcEh9w9V0Nhe8DMg8O7ttg_r_P3Qy-zW4tvQkg01YJeBFneZN4qD4xwBZupxCDWeiYmpr9-H2zFfNgvVkAhnSxdbNXna8ODIHL5AKXdBuymfcFvsl_iLoPfAmx8T9BtJbNeB5UcLdCVgs5JYlDan_MGVz3U5k7Z9lIvURv39MjzK2D_eg2xtry5ALjsidpr88xb0P9bxUCENWnngv6vscAeEas2wxFfP1lWiBGrmICp3GEvEE-Zfih3yFn4y-WgyGFjvoEwDu0527wmc9H-eHKnyAiMJnAq6PJxtkxpkdMY",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "uid",
+										"value": "uid",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"from\":\"2022-06-21T10:15:30\",\r\n    \"to\": \"2022-06-24T10:15:30\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_PATH_LB}}/radd-net-private/api/v1/aor/operations/by-internalId/PF-fc73f0a0-f046-4c82-929a-14b83c7671e8",
+									"host": [
+										"{{BASE_PATH_LB}}"
+									],
+									"path": [
+										"radd-net-private",
+										"api",
+										"v1",
+										"aor",
+										"operations",
+										"by-internalId",
+										"PF-fc73f0a0-f046-4c82-929a-14b83c7671e8"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

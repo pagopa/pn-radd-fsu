@@ -85,7 +85,7 @@ public class ActService extends BaseService {
                 .doOnNext(nothing -> log.trace("ACT INQUIRY TOCK {}", new Date().getTime()))
                 .map(item -> ActInquiryResponseMapper.fromResult())
                 .doOnNext(response -> {
-                    raddAltAuditLog.getContext().addResponseResult(response.getResult()).addResponseStatus(response.getStatus());
+                    raddAltAuditLog.getContext().addResponseResult(response.getResult()).addResponseStatus(response.getStatus().toString());
                     raddAltAuditLog.generateSuccessWithContext("Ending actInquiry ");
                 })
                 .onErrorResume(
@@ -164,7 +164,7 @@ public class ActService extends BaseService {
                 }, (in, out) -> in.getT2())
                 .map(response -> {
                     log.trace("START ACT TRANSACTION TOCK {}", new Date().getTime());
-                    pnRaddAltAuditLog.getContext().addDownloadFilekeys(response.getDownloadUrlList());
+                    pnRaddAltAuditLog.getContext().addDownloadFilekeys(response.getDownloadUrlList()).addResponseStatus(response.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending ACT transaction");
                     return response;
                 })
@@ -242,7 +242,7 @@ public class ActService extends BaseService {
                         Mono.just(CompleteTransactionResponseMapper.fromException(ex))
                                 .doOnError(throwable -> pnRaddAltAuditLog.generateFailure("End ACT completeTransaction with error {}", ex.getMessage(), ex))
                 ).doOnNext(completeTransactionResponse -> {
-                    pnRaddAltAuditLog.getContext().addResponseStatus(completeTransactionResponse.getStatus());
+                    pnRaddAltAuditLog.getContext().addResponseStatus(completeTransactionResponse.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext("End ACT completeTransaction");
                 });
     }
@@ -279,7 +279,7 @@ public class ActService extends BaseService {
                         Mono.just(AbortTransactionResponseMapper.fromException(ex))
                 ).doOnError(RaddGenericException.class, ex -> pnRaddAltAuditLog.generateFailure("End ACT abort transaction with error : {}", ex.getMessage(), ex))
                 .doOnNext(abortTransactionResponse -> {
-                    pnRaddAltAuditLog.getContext().addResponseStatus(abortTransactionResponse.getStatus());
+                    pnRaddAltAuditLog.getContext().addResponseStatus(abortTransactionResponse.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext("End ACT abortTransaction");
                 });
     }

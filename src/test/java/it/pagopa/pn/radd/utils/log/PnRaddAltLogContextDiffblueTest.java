@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.utils.log;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ActInquiryResponseStatus;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.TransactionResponseStatus;
@@ -142,6 +143,22 @@ class PnRaddAltLogContextDiffblueTest {
     }
 
     /**
+     * Method under test: {@link PnRaddAltLogContext#addAarFilekeys(List)}
+     */
+    @Test
+    void testAddAarFilekeys() {
+        // Arrange
+        PnRaddAltLogContext pnRaddAltLogContext = new PnRaddAltLogContext();
+
+        // Act
+        PnRaddAltLogContext actualAddAarFilekeysResult = pnRaddAltLogContext.addAarFilekeys(new ArrayList<>());
+
+        // Assert
+        assertEquals("aarFilekeys=[  ] ", actualAddAarFilekeysResult.logContext());
+        assertSame(pnRaddAltLogContext, actualAddAarFilekeysResult);
+    }
+
+    /**
      * Method under test: {@link PnRaddAltLogContext#addResponseResult(Boolean)}
      */
     @Test
@@ -168,7 +185,7 @@ class PnRaddAltLogContextDiffblueTest {
 
         // Act
         PnRaddAltLogContext actualAddResponseStatusResult = pnRaddAltLogContext
-                .addResponseStatus(new ActInquiryResponseStatus());
+                .addResponseStatus(new ActInquiryResponseStatus().toString());
 
         // Assert
         assertEquals("status=ActInquiryResponseStatus(code=null, message=null) ",
@@ -186,7 +203,8 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext pnRaddAltLogContext = new PnRaddAltLogContext();
 
         // Act
-        PnRaddAltLogContext actualAddResponseStatusResult = pnRaddAltLogContext.addResponseStatus(new ResponseStatus());
+        PnRaddAltLogContext actualAddResponseStatusResult = pnRaddAltLogContext
+                .addResponseStatus(new ResponseStatus().toString());
 
         // Assert
         assertEquals("status=ResponseStatus(code=null, message=null) ", actualAddResponseStatusResult.logContext());
@@ -204,7 +222,7 @@ class PnRaddAltLogContextDiffblueTest {
 
         // Act
         PnRaddAltLogContext actualAddResponseStatusResult = pnRaddAltLogContext
-                .addResponseStatus(new TransactionResponseStatus());
+                .addResponseStatus(new TransactionResponseStatus().toString());
 
         // Assert
         assertEquals("status=TransactionResponseStatus(code=null, message=null) ",
@@ -242,6 +260,22 @@ class PnRaddAltLogContextDiffblueTest {
         // Assert
         assertEquals("iun=Iun ", actualAddIunResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddIunResult);
+    }
+
+    /**
+     * Method under test: {@link PnRaddAltLogContext#addIuns(List)}
+     */
+    @Test
+    void testAddIuns() {
+        // Arrange
+        PnRaddAltLogContext pnRaddAltLogContext = new PnRaddAltLogContext();
+
+        // Act
+        PnRaddAltLogContext actualAddIunsResult = pnRaddAltLogContext.addIuns(new ArrayList<>());
+
+        // Assert
+        assertEquals("iuns=[  ] ", actualAddIunsResult.logContext());
+        assertSame(pnRaddAltLogContext, actualAddIunsResult);
     }
 
     /**

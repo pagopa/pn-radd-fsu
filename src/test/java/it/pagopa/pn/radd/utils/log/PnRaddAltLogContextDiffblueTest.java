@@ -173,10 +173,7 @@ class PnRaddAltLogContextDiffblueTest {
         assertSame(pnRaddAltLogContext, actualAddResponseResultResult);
     }
 
-    /**
-     * Method under test:
-     * {@link PnRaddAltLogContext#addResponseStatus(ActInquiryResponseStatus)}
-     */
+
     @Test
     void testAddResponseStatus() {
         // Arrange
@@ -192,10 +189,7 @@ class PnRaddAltLogContextDiffblueTest {
         assertSame(pnRaddAltLogContext, actualAddResponseStatusResult);
     }
 
-    /**
-     * Method under test:
-     * {@link PnRaddAltLogContext#addResponseStatus(ResponseStatus)}
-     */
+
     @Test
     void testAddResponseStatus2() {
         // Arrange
@@ -210,10 +204,7 @@ class PnRaddAltLogContextDiffblueTest {
         assertSame(pnRaddAltLogContext, actualAddResponseStatusResult);
     }
 
-    /**
-     * Method under test:
-     * {@link PnRaddAltLogContext#addResponseStatus(TransactionResponseStatus)}
-     */
+
     @Test
     void testAddResponseStatus3() {
         // Arrange

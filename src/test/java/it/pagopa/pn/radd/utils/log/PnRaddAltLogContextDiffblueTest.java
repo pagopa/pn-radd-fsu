@@ -3,7 +3,6 @@ package it.pagopa.pn.radd.utils.log;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ActInquiryResponseStatus;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.TransactionResponseStatus;

@@ -68,13 +68,14 @@ public class AorService extends BaseService {
                         this.getIunFromPaperNotificationFailed(ensureFiscalCode)
                                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF)))
                                 .collectList()
+                                .doOnNext(list -> pnRaddAltAuditLog.getContext().addIuns(list).addAarFilekeys(list))
                                 .doOnNext(list -> log.info("End of AORInquiry with documents list size {}", list.size()))
                                 .map(list -> AorInquiryResponseMapper.fromResult())
                 )
                 .doOnNext(aorInquiryResponse -> {
                     pnRaddAltAuditLog.getContext()
                             .addResponseResult(aorInquiryResponse.getResult())
-                            .addResponseStatus(aorInquiryResponse.getStatus());
+                            .addResponseStatus(aorInquiryResponse.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR inquiry");
                 })
                 .onErrorResume(RaddGenericException.class, ex -> {
@@ -109,7 +110,10 @@ public class AorService extends BaseService {
                 .map(entity -> CompleteTransactionResponseMapper.fromResult())
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(CompleteTransactionResponseMapper.fromException(ex)))
                 .doOnError(ex -> pnRaddAltAuditLog.generateFailure("[AOR complete transaction failed = {}]", ex.getMessage(), ex))
-                .doOnNext(entity -> pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR complete transaction")
+                .doOnNext(response -> {
+                            pnRaddAltAuditLog.getContext().addResponseStatus(response.getStatus().toString());
+                            pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR complete transaction");
+                        }
                 );
     }
 
@@ -131,7 +135,7 @@ public class AorService extends BaseService {
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> pnRaddAltAuditLog.getContext().addRecipientInternalId(transactionData.getEnsureRecipientId())
                         .addDelegateInternalId(transactionData.getEnsureDelegateId()))
-                .flatMap(this::setIunsOfNotificationFailed)
+                .flatMap(transactionData -> setIunsOfNotificationFailed(transactionData, pnRaddAltAuditLog))
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
                 .flatMap(this::verifyCheckSum)
                 .flatMap(transactionData ->
@@ -147,8 +151,11 @@ public class AorService extends BaseService {
                 .map(data -> {
                     List<DownloadUrl> downloadUrls = getDownloadUrls(data.getUrls());
                     pnRaddAltAuditLog.getContext().addTransactionId(data.getTransactionId()).addDownloadFilekeys(downloadUrls);
+                    return StartTransactionResponseMapper.fromResult(downloadUrls, AOR.name(), data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(), pnRaddFsuConfig.getDocumentTypeEnumFilter());
+                })
+                .doOnNext(startTransactionResponse -> {
+                    pnRaddAltAuditLog.getContext().addResponseStatus(startTransactionResponse.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR transaction");
-                    return StartTransactionResponseMapper.fromResult(downloadUrls, AOR.name(), data.getOperationId(), pnRaddFsuConfig.getApplicationBasepath(),pnRaddFsuConfig.getDocumentTypeEnumFilter());
                 })
                 .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
                     pnRaddAltAuditLog.generateFailure("[aor startTransaction failed = {}]", ex.getMessage(), ex);
@@ -228,7 +235,7 @@ public class AorService extends BaseService {
                 .onErrorResume(RaddGenericException.class, ex -> Mono.just(AbortTransactionResponseMapper.fromException(ex)))
                 .doOnError(ex -> pnRaddAltAuditLog.generateFailure("Error AOR Abort transaction {}", ex.getMessage(), ex))
                 .doOnNext(raddTransaction -> {
-                    pnRaddAltAuditLog.getContext().addResponseStatus(raddTransaction.getStatus());
+                    pnRaddAltAuditLog.getContext().addResponseStatus(raddTransaction.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext("Ending AOR abortTransaction");
                 });
     }
@@ -259,13 +266,14 @@ public class AorService extends BaseService {
     }
 
 
-    private Mono<TransactionData> setIunsOfNotificationFailed(TransactionData transaction) {
+    private Mono<TransactionData> setIunsOfNotificationFailed(TransactionData transaction, PnRaddAltAuditLog pnRaddAltAuditLog) {
         return this.getIunFromPaperNotificationFailed(transaction.getEnsureRecipientId())
                 .doOnNext(item -> {
                     log.debug("Retrieved IUN : {}", item.getIun());
                     transaction.getUrls().add(item.getAarUrl());
                     transaction.getIuns().add(item.getIun());
                 }).collectList()
+                .doOnNext(list -> pnRaddAltAuditLog.getContext().addIuns(list))
                 .map(item -> transaction);
     }
 

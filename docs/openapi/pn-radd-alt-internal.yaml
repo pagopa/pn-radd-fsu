@@ -713,13 +713,3 @@ components:
       description: Internal Server Error
     Unauthorized:
       description: Unauthorized
-
-
-  securitySchemes:
-    APIKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
-
-security:
-  - APIKeyAuth: []

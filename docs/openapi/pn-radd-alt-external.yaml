@@ -690,11 +690,11 @@ components:
       description: Unauthorized
 
 
-  securitySchemes: # ONLY EXTERNAL
-    bearerAuth: # ONLY EXTERNAL
-      type: http                                        # ONLY EXTERNAL
-      scheme: bearer                                    # ONLY EXTERNAL
-      bearerFormat: JWT                                 # ONLY EXTERNAL
+  securitySchemes:        # ONLY EXTERNAL
+    bearerAuth:           # ONLY EXTERNAL
+      type: http          # ONLY EXTERNAL
+      scheme: bearer      # ONLY EXTERNAL
+      bearerFormat: JWT   # ONLY EXTERNAL
 
-security: # ONLY EXTERNAL
-    - bearerAuth: [ ]
+security:                 # ONLY EXTERNAL
+    - bearerAuth: [ ]     # ONLY EXTERNAL

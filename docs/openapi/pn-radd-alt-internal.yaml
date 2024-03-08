@@ -713,3 +713,12 @@ components:
       description: Internal Server Error
     Unauthorized:
       description: Unauthorized
+
+#  securitySchemes: # ONLY EXTERNAL
+#    bearerAuth: # ONLY EXTERNAL
+#      type: http          # ONLY EXTERNAL
+#      scheme: bearer      # ONLY EXTERNAL
+#      bearerFormat: JWT   # ONLY EXTERNAL
+#
+#  security: # ONLY EXTERNAL
+#    - bearerAuth: [ ]     # ONLY EXTERNAL

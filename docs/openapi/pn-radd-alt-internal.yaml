@@ -960,12 +960,11 @@ components:
     Unauthorized:
       description: Unauthorized
 
-
-  securitySchemes:
-    APIKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
-
-security:
-  - APIKeyAuth: []
+#  securitySchemes: # ONLY EXTERNAL
+#    bearerAuth: # ONLY EXTERNAL
+#      type: http          # ONLY EXTERNAL
+#      scheme: bearer      # ONLY EXTERNAL
+#      bearerFormat: JWT   # ONLY EXTERNAL
+#
+#security: # ONLY EXTERNAL
+#  - bearerAuth: [ ]     # ONLY EXTERNAL

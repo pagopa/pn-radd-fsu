@@ -554,7 +554,7 @@ components:
                 * 3 -> Stampa già eseguita
                 * 4 -> Documenti non disponibili
                 * 5 -> Codice operationId già presente
-                * 10 -> AAR non disponibili
+                * 10 -> Input non valido
                 * 80 -> Notifica annullata dalla PA
                 * 99 -> KO
               type: number

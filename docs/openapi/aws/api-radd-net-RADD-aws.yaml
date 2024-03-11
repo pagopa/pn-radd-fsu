@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: lhtmEG5qa8MS+TUst6mXeDDRf68m/alDRwdNMSRFZtM=
+  version: WzqRLAbtF6qev/CDymPQIzTcsNlo+0Lc+yp0qyTL0eM=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -957,9 +957,11 @@ components:
 
                 * 3 -> Stampa già eseguita
 
+                * 4 -> Documenti non disponibili
+
                 * 5 -> Codice operationId già presente
 
-                * 10 -> AAR non disponibili
+                * 10 -> Input non valido
 
                 * 80 -> Notifica annullata dalla PA
 
@@ -969,6 +971,7 @@ components:
                 - 0
                 - 99
                 - 2
+                - 4
                 - 3
                 - 5
                 - 10
@@ -1013,20 +1016,27 @@ components:
         - type: object
           properties:
             code:
-              description: |
+              description: >
                 Return code.
+
                 * 0 -> OK
-                * 1 -> QrCode/CF non valido/i
-                * 2 -> Documenti non più disponibili
+
+                * 2 -> NotReady (documenti temporaneamente non disponibili per
+                ragioni tecniche, ritentare dopo il tempo specificato nel
+                retryAfter)
+
                 * 3 -> Stampa già eseguita
+
                 * 4 -> Documento non più disponibili
-                * 10 -> QrCode/CF non valido/i
+
+                * 10 -> Input non valido
+
                 * 80 -> Notifica annullata dalla PA
+
                 * 99 -> KO generico
               type: number
               enum:
                 - 0
-                - 1
                 - 2
                 - 3
                 - 4
@@ -1055,7 +1065,7 @@ components:
       x-amazon-apigateway-authorizer:
         authorizerUri: >-
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:pn-b2bAuthorizerLambda/invocations
-        authorizerResultTtlInSeconds: 300
+        authorizerResultTtlInSeconds: 60
         identitySource: method.request.header.Authorization
         type: request
 tags:

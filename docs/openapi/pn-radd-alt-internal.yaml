@@ -6,7 +6,253 @@ info:
   title: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
   x-summary: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
   version: '1.0.0'
-  description: Api per gli operatori RADD (Rete Assorbimento Divario Digitale)
+  description: > 
+    # Abstract
+  
+      API utilizzate dai soggetti abilitati (Operatori RADD) all’utilizzo dei
+      sistemi **RADD** (Rete di Assorbimento del Divario Digitale) per rendere
+      fruibile **SEND** anche a destinatari in condizione di Digital Divide,
+      intesi come non dotati di **SPID** o di **CIE**, che per questo non possono
+      accedere alla notifica tramite portale web o per mezzo di **app IO**. 
+  
+       
+      Esistono due casi d’uso **RADD**:  
+  
+  
+      - **ACT**: Richiesta degli atti e delle attestazioni opponibili di una
+      determinata notifica tramite i dati presenti nell’avviso di avvenuta
+      ricezione (**AAR**). 
+  
+  
+      - **AOR**: Richiesta degli avvisi di avvenuta ricezione (**AAR**) non
+      recapitati per irreperibilità.
+  
+  
+      # Autenticazione 
+  
+      L'ente che si integra con le API REST della RADD deve autenticarsi tramite
+      JSON Web Token (JWT) firmato con algoritmo a chiave asimmetrica RS256. Il
+      token deve essere passato sull'header Authorization della richiesta nella
+      forma: *Authorization: Bearer < token >*.
+      
+      # CASO D’USO ACT
+  
+      Cittadini in possesso della AAR (Avviso di Avvenuta Ricezione) che
+      richiedono la stampa degli atti della notifica. 
+  
+  
+      Operazioni utilizzate, in sequenza temporale: 
+  
+  
+      1. **Verifica della presenza della notifica:**
+        
+         Il software di gestione dello sportello RADD chiama l’operazione [actInquiry](#/actOperations/actInquiry)
+      per verificare l’esistenza della notifica tramite *iun* (identificativo della
+      notifica) o *qrCode*, entrambi presenti nell’AAR, e la disponibilità per la
+      stampa dei relativi documenti. Il servizio risponde con il campo *result*
+      valorizzato a true e *code* uguale a 0 se sono presenti documenti da stampare.
+  
+  
+      2. **Upload dei documenti di identificazione del destinatario ed eventuale
+      delegato:** 
+         
+         Se sono presenti documenti da stampare (*result* = true e *code* =  0) il software di gestione dello sportello RADD deve generare un file **ZIP**
+      (specifiche in appendice) contenente i documenti/metadati del destinatario
+      ed eventuale delegato da caricare sui sistemi PagoPA. Per caricare il file
+      ZIP utilizzare la **procedura di upload** specificata in appendice.
+  
+  
+      3. **Richiesta documenti da stampare:** 
+      
+         Se l'operazione di upload è stata
+      eseguita con successo (risposta http status 200 OK)  invocare l’operazione
+      [startActTransaction](#/actOperations/startActTransaction) per ottenere la lista dei documenti da stampare
+      (compreso il frontespizio*).
+      
+         Tra i parametri da passare in input ci sono:
+         
+         - *filekey*, che deve essere recuperato dalla risposta alla chiamata
+      dell’operazione [documentUpload](#/documentOperations/documentUpload).
+      
+         - [*checksum*](https://docs.pagopa.it/f.a.q.-per-integratori/knowledge-base-di-piattaforma-notifiche/focus-sullinserimento-della-notifica/inserimento-notifica-con-il-comando-curl#id-1-generare-il-checksum-sha256-codificato-in-base-64-del-contenuto-binario-dei-pdf-di-notifica.pdf-e), lo stesso valore inviato in input alla documentUpload. 
+         
+         L’operazione [startActTransaction](#/actOperations/startActTransaction) restituisce una lista di url dei documenti
+      degli avvisi di avvenuta ricezione da stampare (compreso il primo riferito
+      al frontespizio)*. 
+      
+         Per ogni documento vengono restituiti i seguenti campi:
+         
+         - *url*: La url che permette di scaricare il documento.
+         - *needAuthentication*: 
+      booleano. Se true all’invocazione della url deve essere passato il JWT
+      dell’autenticazione.
+         - *documentType*: stringa che rappresenta il tipo di
+      documento.
+      
+         ***Frontespizio**: Per questione di privacy SEND produrrà un frontespizio
+      per il plico dei documenti stampati dall’operatore RADD. Il frontespizio
+      riporterà semplicemente il nome e il cognome del destinatario.
+  
+  
+      4. **Download documenti**
+      
+         Per ogni url restituita dalla [startActTransaction](#/actOperations/startActTransaction), eseguire una richiesta in
+      GET per scaricare il documento. Se il campo *needAuthentication* è valorizzato
+      a true bisogna necessariamente inviare anche il JWT nell’header
+      Authorization, altrimenti non deve essere passato.
+  
+  
+      5. **Chiusura dell'operazione**
+      
+         - **5a** **Chiusura dell’operazione con successo**
+         
+           A fine operazione invocare  l’operazione [completeActTransaction](#/actOperations/completeActTransaction) per terminare il processo.
+           
+         - **5b** **Chiusura dell’operazione senza successo** 
+         
+           In caso di operazione di stampa conclusa senza successo o per un qualsiasi problema tecnico, invocare l’operazione [abortActTransaction](#/actOperations/abortActTransaction) per abortire il processo. 
+      
+      # CASO D’USO AOR
+   
+   
+      Cittadini irreperibili, muniti di Codice Fiscale, sprovvisti di accesso ad internet, SPID o CIE o senza competenze digitali, che richiedono la stampa di AAR (Avviso di Avvenuta Ricezione) non consegnate.
+      
+  
+      1. **Verifica della presenza della notifica** 
+  
+         Il software di gestione dello sportello RADD chiama l’operazione [aorInquiry](#/aorOperations/aorInquiry) per verificare l’esistenza della presenza a sistema di notifiche per il quale l’utente risulta totalmente irreperibile, non stampate in precedenza. 
+      Il servizio risponde con il campo *result* valorizzato a true e *code* uguale a 0 se sono presenti documenti da stampare. 
+      
+  
+      2. **Upload dei documenti di identificazione del destinatario ed eventuale delegato** 
+      
+         Se sono presenti documenti da stampare (*result* = true e *code* =  0) il software di gestione dello sportello RADD deve generare un file **ZIP** (specifiche in appendice) contenente i documenti/metadati del destinatario ed eventuale delegato da caricare sui sistemi PagoPA. 
+      Per caricare il file ZIP utilizzare la **procedura di upload** specificata in appendice. 
+  
+  
+      3.  **Richiesta documenti da stampare**
+      
+           Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK)  
+      invocare l’operazione [startAorTransaction](#/aorOperations/startAorTransaction) per ottenere l’elenco dei link degli AAR delle 
+      notifiche non consegnate da stampare (compreso il frontespizio*).
+      
+          Tra i parametri da passare in input ci sono:
+          
+          - *filekey*, che deve essere recuperato dalla risposta alla chiamata dell’operazione **documentUpload**.
+          
+          - [*checksum*](https://docs.pagopa.it/f.a.q.-per-integratori/knowledge-base-di-piattaforma-notifiche/focus-sullinserimento-della-notifica/inserimento-notifica-con-il-comando-curl#id-1-generare-il-checksum-sha256-codificato-in-base-64-del-contenuto-binario-dei-pdf-di-notifica.pdf-e), lo stesso valore inviato in input alla [documentUpload](#/documentOperations/documentUpload).
+          
+          L’operazione [startAorTransaction](#/aorOperations/startAorTransaction) restituisce una lista di url dei documenti degli avvisi di avvenuta ricezione da stampare (compreso il primo riferito al frontespizio)*.
+          
+          Per ogni documento vengono restituiti i seguenti campi:
+          
+          - *url*: La url che permette di scaricare il documento.
+          
+          - *needAuthentication*:  booleano. Se true all’invocazione della url deve essere passato il JWT dell’autenticazione.
+          
+          - *documentType*: stringa che rappresenta il tipo di documento da scaricare.
+          
+          ***Frontespizio**: Per questione di privacy SEND produrrà un frontespizio per il plico dei documenti stampati dall’operatore RADD. Il frontespizio riporterà semplicemente il nome e il cognome del destinatario.
+   
+   
+      4. **Download documenti**
+      
+         Per ogni url restituita dalla [startAorTransaction](#/aorOperations/startAorTransaction), eseguire una richiesta in GET per scaricare il documento. Se il campo *needAuthentication* è valorizzato a true bisogna necessariamente inviare anche il JWT, altrimenti non deve essere passato.
+   
+   
+       5. **Chiusura dell’operazione**
+       
+          - **5a Chiusura dell’operazione con successo**
+          
+            A fine operazione invocare  l’operazione [completeAorTransaction](#/aorOperations/completeAorTransaction) per terminare il processo.  
+      
+          - **5b Chiusura dell’operazione senza successo**
+          
+              In caso di operazione di stampa conclusa senza successo o per un qualsiasi problema tecnico invocare l’operazione [abortAorTransaction](#/aorOperations/abortAorTransaction) per abortire il processo. 
+               
+          NOTA BENE 
+          
+          Tutte le api sopra descritte richiedono il seguente parametro:
+          
+           -  *Uid* : Identificativo pseudo-anonimizzato dell’operatore dello sportello rete RADD. 
+  
+      
+  
+      # APPENDICE
+      ## FILE ZIP
+      L’allegato ad una operazione RADD deve essere un file ZIP avente i seguenti file:
+      
+      
+      -  **metadati_destinatario.json:** file JSON* degli estremi del documento di identità del destinatario.
+      
+      -  **metadati_delegato.json:** file JSON* degli estremi del documento di identità del delegato.
+      
+      -  **delega.pdf:** Scansione della delega (solo in caso di delega). File di tipo “PDF/A”.
+      
+      -  **visura.pdf:** Scansione della visura (solo in caso di destinatario persona giuridica). File di tipo “PDF/A”.
+      
+      I file JSON devono rispettare le specifiche dello schema: [https://github.com/pagopa/pn-radd-alt/blob/5ae3b1c5c8517b42795d64b78590e8ceacf6aee5/docs/openapi/json-schema-identity-doc-info.json.](https://github.com/pagopa/pn-radd-alt/blob/5ae3b1c5c8517b42795d64b78590e8ceacf6aee5/docs/openapi/json-schema-identity-doc-info.json)
+      
+      
+      Esempio di JSON con gli estremi della carta di identità:
+      
+          {
+          "operationId": "c3a139-ca1e-4d4e-8",
+          "docType": "CIE",
+          "docNumber":" GA99999LI",
+          "docIssuer": "Comune di Rho",
+          "issueDate": "2023-11-20",
+          "expireDate": "2033-11-20"
+          }
+  
+      # PROCEDURA DI UPLOAD
+      Per caricare il file ZIP sui sistemi PagoPA eseguire i seguenti step:
+      
+      1.  **Richiesta presigned Url**
+      
+          Invocare l'operazione documentUpload con cui prenotare il caricamento, passando i seguenti parametri:
+          
+          -  *operationId*: Identificativo univoco dell’operazione (generato dal software di gestione dello sportello RADD), da riportare nelle richieste successive.
+          
+          -  *checksum*: valorizzato con il checksum sha256, codificato in base 64, del contenuto binario del file zip.
+          
+          In risposta nel body si ottengono le seguenti informazioni:
+          
+          -  *url*: La presigned url che permette di caricare il file zip.
+          
+          -  *filekey*: Identificativo del file che verrà caricato.
+          
+          -  *secret*: chiave per l’upload.
+      
+      2.  **Upload del file ZIP**
+      
+          Per caricare il file Zip utilizzare una richiesta HTTP con metodo httpMethod PUT all'url restituito dall’operazione [documentUpload](#/documentOperations/documentUpload).
+          
+          In tale richiesta vanno aggiunti i seguenti header:
+          
+          -  *content-type*: valorizzato con “application/zip”.
+          
+          -  *x-amz-meta-secret*: valorizzato con il valore del campo secret della risposta di cui al punto 1.
+          
+          -  *x-amz-checksum-sha256*: valorizzato con il checksum sha256, codificato in base 64, del contenuto binario del file che verrà caricato.
+      
+      NOTA:
+      
+    -  Non va passato il JWT per l’autenticazione.
+      
+    -  Se l'operazione di upload è stata eseguita con successo, si otterrà come risposta http status 200 OK.
+      
+    -  Nell'header di questa risposta, si otterrà il campo *x-amz-version-id* che dovrà essere utilizzato per l’operazione seguente ([startActTransaction](#/actOperations/startActTransaction) / [startAorTransaction](#/aorOperations/startAorTransaction)), nel campo *versionToken* in corrispondenza del documento ad esso associato.
+      
+      # AMBIENTI
+    -  **Ambiente di produzione:** [https://api.radd.notifichedigitali.it]()
+      
+      
+    -  **Ambiente di collaudo(UAT):** [https://api.radd.uat.notifichedigitali.it]()
+    
+       Potrebbe subire modifiche/integrazioni in futuro, rimanendo comunque non-bloccante e rispettando il principio di retrocompatibilità
+          
+  
   contact:
     email: pn-supporto-enti@pagopa.it
   license:

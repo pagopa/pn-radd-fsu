@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: WzqRLAbtF6qev/CDymPQIzTcsNlo+0Lc+yp0qyTL0eM=
+  version: a9Hmm6kouco785wCPq/39ZCl8ot0yemQ+VAeXKJF194=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -19,7 +19,7 @@ paths:
         API utilizzata per la richiesta della presigned URL utilizzata per il
         caricamento della scansione dei documenti e metadati presentati a
         sportello dal cliente. Il file deve essere in formato ZIP e la struttura
-        dello zip deve seguire quanto specificato.
+        dello zip deve seguire quanto specificato in documentazione.
       operationId: documentUpload
       parameters:
         - $ref: '#/components/parameters/uid'
@@ -90,7 +90,7 @@ paths:
       description: API utilizzata per il download del frontespizio
       responses:
         '200':
-          description: Ritorna il frontespizio
+          description: Ritorna il PDF del frontespizio
           content:
             application/pdf:
               schema:
@@ -606,8 +606,8 @@ paths:
         - aorOperations
       operationId: abortAorTransaction
       description: >-
-        API utilizzata per la notifica  dell'annullamento dell'operazione       
-        di consegna del/degli avviso/i di avvenuta ricezione.
+        API utilizzata per la notifica dell'annullamento dell'operazione di
+        consegna del/degli avviso/i di avvenuta ricezione.
       requestBody:
         content:
           application/json:
@@ -668,7 +668,7 @@ components:
   parameters:
     uid:
       name: uid
-      description: Identificativo del client
+      description: Identificativo pseudo-anonimizzato dell'operatore RADD
       in: header
       required: true
       schema:
@@ -684,7 +684,7 @@ components:
       example: TNTGTR76E21H751S
     recipientType:
       name: recipientType
-      description: Sigla, Persona fisica o giuridica
+      description: Sigla, Persona Fisica o Persona Giuridica
       in: query
       required: true
       schema:
@@ -703,29 +703,34 @@ components:
     qrCode:
       name: qrCode
       description: >-
-        Qr Code presente sull'avviso di Avvenuta ricezione. Da usare in
+        QrCode presente sull'Avviso di Avvenuta Ricezione (AAR). Da usare in
         alternativa a "iun".
       in: query
       required: false
       schema:
         type: string
-      example: TBD
+      example: >-
+        UkdESC1BS01QLVFWWE4tMjAyMzA4LUctMV9QRi1lZjJkZWI0NS0zYzBlLTRiY2UtYWRjMC1hODFlN2Q2YjM1NGVfY2M5ZDkyMTktMWQxMi00ZTBhLWJlZDQtNmE1YWMyYzlhZmZh
     iun:
       name: iun
-      description: IUN da ricercare per il destinatario. Da usare in alternativa a qrCode.
+      description: >-
+        Identificativo Univoco della Notifica. Da usare in alternativa a
+        "qrCode".
       in: query
       required: false
       schema:
         type: string
-      example: TBD
+      example: RGDH-AKMP-QVXN-202308-G-1
     operationId:
       name: operationId
-      description: Id della pratica
+      description: >-
+        identificativo univoco dell'operazione all'interno del dominio
+        dell'operatore RADD
       in: path
       required: true
       schema:
         type: string
-      example: asd123
+      example: 5d2d53ad-6306-40fe-8126-51ccdd917cef
     operationType:
       name: operationType
       description: Tipo di operazione aor o act
@@ -769,7 +774,7 @@ components:
             https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host
         fileKey:
           type: string
-          example: PN_RADD_FSU
+          example: PN_RADD_ALT_ATTACHMENT-4958442ee6eb467abec049afa67e3899.zip
         secret:
           type: string
           example: alow22ddw
@@ -823,10 +828,10 @@ components:
       properties:
         url:
           type: string
-          description: url per il download
+          description: url per il download del documento
         needAuthentication:
           type: boolean
-          description: indica se inviare l'header di autenticazione
+          description: indica se inviare l'header di autenticazione con il token JWT
         documentType:
           type: string
           description: >-
@@ -845,8 +850,16 @@ components:
       properties:
         versionToken:
           type: string
+          description: >-
+            valore della versione del file restituito dall'operazione PUT di
+            updload.
+          example: OXSnS_28NF1sKiaZsniWHbqwX2LktjCd
         operationId:
           type: string
+          description: >-
+            identificativo univoco dell'operazione all'interno del dominio
+            dell'operatore RADD
+          example: 5d2d53ad-6306-40fe-8126-51ccdd917cef
         recipientTaxId:
           type: string
           example: TNTGTR76E21H751S
@@ -861,18 +874,17 @@ components:
           example: RFRGRZ66E21H751B
         fileKey:
           type: string
-          example: XXXXX
+          example: PN_RADD_ALT_ATTACHMENT-17a4d40e08d8498a9d78f495c6bfd56a.zip
         checksum:
           type: string
-          example: >-
-            YTlkZGRkNzgyZWM0NzkyODdjNmQ0NGE5ZDM2YTg4ZjQ5OTE1ZGM2NjliYjgzNzViMTZhMmE5ZmE3NmE4ZDQzNwo=
+          example: Kg2Uwyt7rYE4II1giJwh2MtaNtq6Obup2eDE0kAps+c=
           description: >-
             Checksum SHA256 del file caricato nella chiamata di documetUpload
             codificato in base64
         operationDate:
           type: string
           format: date-time
-          description: Data/ora di completamento della transazione in formato RFC3339.
+          description: Data/ora di inizio della transazione in formato RFC3339.
           example: '2022-06-21T11:44:28Z'
     CompleteTransactionRequest:
       description: Richiesta  di chiusura della transazione
@@ -883,7 +895,10 @@ components:
       properties:
         operationId:
           type: string
-          example: 2bb5c29e0cf411ed861d0242ac120002
+          description: >-
+            identificativo univoco dell'operazione all'interno del dominio
+            dell'operatore RADD
+          example: 5d2d53ad-6306-40fe-8126-51ccdd917cef
         operationDate:
           type: string
           format: date-time
@@ -906,7 +921,10 @@ components:
       properties:
         operationId:
           type: string
-          example: 2bb5c29e0cf411ed861d0242ac120002
+          description: >-
+            identificativo univoco dell'operazione all'interno del dominio
+            dell'operatore RADD
+          example: 5d2d53ad-6306-40fe-8126-51ccdd917cef
         reason:
           type: string
           default: abort
@@ -914,7 +932,7 @@ components:
           type: string
           format: date-time
           description: >-
-            Data/ora di annullamento della transazione,  espressa in formato
+            Data/ora di annullamento della transazione, espressa in formato
             RFC3339.
           example: '2022-06-21T11:44:28Z'
     AbortTransactionResponse:
@@ -924,7 +942,7 @@ components:
         status:
           $ref: '#/components/schemas/TransactionResponseStatus'
     ResponseStatus:
-      description: Stato della response
+      description: Risposta di stato restituita al chiamante
       type: object
       properties:
         code:
@@ -940,7 +958,7 @@ components:
           type: string
           example: OK
     StartTransactionResponseStatus:
-      description: Stato della response
+      description: Risposta di stato restituita al chiamante
       allOf:
         - $ref: '#/components/schemas/ResponseStatus'
         - type: object
@@ -984,7 +1002,7 @@ components:
               type: number
               example: 670
     TransactionResponseStatus:
-      description: Stato della response
+      description: Risposta di stato restituita al chiamante
       allOf:
         - $ref: '#/components/schemas/ResponseStatus'
         - type: object
@@ -1010,7 +1028,7 @@ components:
                 - 2
                 - 99
     ActInquiryResponseStatus:
-      description: Stato della response
+      description: Risposta di stato restituita al chiamante
       allOf:
         - $ref: '#/components/schemas/ResponseStatus'
         - type: object
@@ -1071,10 +1089,12 @@ components:
 tags:
   - name: actOperations
     description: >-
-      API di interrogazione per il recupero di  atti e attestazioni opponibili a
-      terzi.
+      API di interrogazione per il recupero dei documenti della notifica
+      dall'AAR.
   - name: aorOperations
-    description: API di interrogazione per il recupero di avvisi di avvenuta ricezione.
+    description: >-
+      API di interrogazione per il recupero di avvisi di avvenuta ricezione per
+      destinatari irreperibili.
   - name: documentOperations
     description: API gestione file.
 x-amazon-apigateway-gateway-responses:

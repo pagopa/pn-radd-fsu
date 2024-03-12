@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: a9Hmm6kouco785wCPq/39ZCl8ot0yemQ+VAeXKJF194=
+  version: A2lvLzzItbinNZKM2LXC4fJlJmP3Ns5oq18XAvWqSbw=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -93,8 +93,7 @@ paths:
           description: Ritorna il PDF del frontespizio
           content:
             application/pdf:
-              schema:
-                type: object
+              schema: null
         '400':
           $ref: '#/components/responses/Invalid'
         '401':

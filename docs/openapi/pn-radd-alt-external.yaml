@@ -45,7 +45,7 @@ info:
     
       # CASO D’USO ACT
     
-      Cittadini in possesso della AAR (Avviso di Avvenuta Ricezione) richiede allo
+      Cittadini in possesso della AAR (Avviso di Avvenuta Ricezione) richiedono allo
       sportello RADD la stampa degli atti della notifica. 
     
     
@@ -149,10 +149,7 @@ info:
     
       3.  **Richiesta documenti da stampare**
     
-          Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK)  
-      invocare l’operazione [startAorTransaction](#/aorOperations/startAorTransaction) 
-      per ottenere l’elenco di url degli AAR delle notifiche non consegnate da stampare 
-      (compreso l'url il frontespizio*).
+          Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK) invocare l’operazione [startAorTransaction](#/aorOperations/startAorTransaction) per ottenere l’elenco di url degli AAR delle notifiche non consegnate da stampare (compreso l'url il frontespizio*).
     
           Alcuni parametri da passare in input sono recuperati dalle chiamate di upload:
     
@@ -264,10 +261,10 @@ info:
     
       NOTA:
     
-        -  Non va passato il JWT per l’autenticazione.
-        -  Se l'operazione di upload è stata eseguita con successo, si otterrà come 
+      -  Non va passato il JWT per l’autenticazione.
+      -  Se l'operazione di upload è stata eseguita con successo, si otterrà come 
            risposta http status 200 OK.
-        -  Nell'header di questa risposta, si otterrà il campo *x-amz-version-id* che dovrà 
+      -  Nell'header di questa risposta, si otterrà il campo *x-amz-version-id* che dovrà 
            essere utilizzato per l’operazione seguente ([startActTransaction](#/actOperations/startActTransaction) / [startAorTransaction](#/aorOperations/startAorTransaction)), nel campo *versionToken* in corrispondenza del documento ad esso associato.
   
 

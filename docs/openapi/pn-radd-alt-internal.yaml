@@ -633,4 +633,361 @@ paths:
         401:
           $ref: '#/components/responses/Unauthorized'
         403:
-          $ref: '#/components/responses/Forbid
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    DocumentUploadRequest:
+      description: Richiesta di upload di un file zip contenente i documenti/metadati verso PagoPA
+      type: object
+      required:
+        - operationId
+        - checksum
+      properties:
+        operationId:
+          type: string
+        checksum:
+          type: string
+          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
+
+    DocumentUploadResponse:
+      description: Response della Richiesta di upload
+      type: object
+      properties:
+        url:
+          type: string
+          example: "https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host"
+        fileKey:
+          type: string
+          example: "PN_RADD_ALT_ATTACHMENT-4958442ee6eb467abec049afa67e3899.zip"
+        secret:
+          type: string
+          example: "alow22ddw"
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+
+    ActInquiryResponse:
+      description: Response di verifica presenza atto ed eventuali attestazione opponibili a terzi
+      type: object
+      properties:
+        result:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/ActInquiryResponseStatus'
+    AORInquiryResponse:
+      description: Response di verifica presenza AAR.
+      type: object
+      properties:
+        result:
+          type: boolean
+          example: true
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+
+
+    ActStartTransactionRequest:
+      description: Richiesta  di completamento operazione.
+      allOf:
+        - $ref: '#/components/schemas/AorStartTransactionRequest'
+      properties:
+        qrCode:
+          description: in alternativa allo iun
+          type: string
+        iun:
+          description: in alternativa al qrCode
+          type: string
+
+    StartTransactionResponse:
+      description: Response alla richiesta di avvio della transazione
+      type: object
+      properties:
+        downloadUrlList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownloadUrl'
+        status:
+          $ref: '#/components/schemas/StartTransactionResponseStatus'
+
+    DownloadUrl:
+      description: contiene l'url per il download e il meccanismo richiesto di autenticazione
+      type: object
+      properties:
+        url:
+          type: string
+          description: url per il download del documento
+        needAuthentication:
+          type: boolean
+          description: indica se inviare l'header di autenticazione con il token JWT
+        documentType:
+          type: string
+          description: categoria del documento, ATTO_NOTIFICATO oppure ATTESTAZIONE_OPPONIBILE_A_TERZI
+
+
+    AorStartTransactionRequest:
+      description: Richiesta  di completamento operazione
+      type: object
+      required:
+        - versionToken
+        - operationId
+        - recipientTaxId
+        - recipientType
+        - fileKey
+        - checksum
+      properties:
+        versionToken:
+          type: string
+          description: valore della versione del file restituito dall'operazione PUT di updload.
+          example: "OXSnS_28NF1sKiaZsniWHbqwX2LktjCd"
+        operationId:
+          type: string
+          description: identificativo univoco dell'operazione all'interno del dominio dell'operatore RADD
+          example: "5d2d53ad-6306-40fe-8126-51ccdd917cef"
+        recipientTaxId:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          type: string
+          example: "TNTGTR76E21H751S"
+        recipientType:
+          type: string
+          enum: ["PF", "PG"]
+          example: "PF"
+        delegateTaxId:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          type: string
+          example: "RFRGRZ66E21H751B"
+        fileKey:
+          type: string
+          example: "PN_RADD_ALT_ATTACHMENT-17a4d40e08d8498a9d78f495c6bfd56a.zip"
+        checksum:
+          type: string
+          example: "Kg2Uwyt7rYE4II1giJwh2MtaNtq6Obup2eDE0kAps+c="
+          description: Checksum SHA256 del file caricato nella chiamata di documetUpload codificato in base64
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di inizio della transazione in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+
+    CompleteTransactionRequest:
+      description: Richiesta  di chiusura della transazione
+      type: object
+      required:
+        - operationId
+        - operationDate
+      properties:
+        operationId:
+          type: string
+          description: identificativo univoco dell'operazione all'interno del dominio dell'operatore RADD
+          example: "5d2d53ad-6306-40fe-8126-51ccdd917cef"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di completamento della transazione,  espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+    CompleteTransactionResponse:
+      description: Response alla richiesta di chiusura della transazione
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionResponseStatus'
+
+    AbortTransactionRequest:
+      description: Richiesta  di cancellazione della transazione
+      type: object
+      required:
+        - operationId
+        - operationDate
+      properties:
+        operationId:
+          type: string
+          description: identificativo univoco dell'operazione all'interno del dominio dell'operatore RADD
+          example: "5d2d53ad-6306-40fe-8126-51ccdd917cef"
+        reason:
+          type: string
+          default: "abort"
+        operationDate:
+          type: string
+          format: date-time
+          description: Data/ora di annullamento della transazione, espressa in formato RFC3339.
+          example: "2022-06-21T11:44:28Z"
+    AbortTransactionResponse:
+      description: Response alla richiesta di chiusura della transazione
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionResponseStatus'
+
+    ResponseStatus:
+      description: Risposta di stato restituita al chiamante
+      type: object
+      properties:
+        code:
+          description: |
+            Return code.
+            * 0 -> OK
+            * 99 -> KO
+          type: number
+          enum: [0, 99]
+        message:
+          type: string
+          example: OK
+
+    StartTransactionResponseStatus:
+      description: Risposta di stato restituita al chiamante
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche, ritentare dopo il tempo specificato nel retryAfter con una nuova transaction)
+                * 3 -> Stampa già eseguita
+                * 4 -> Documenti non disponibili
+                * 5 -> Codice operationId già presente
+                * 10 -> Input non valido
+                * 80 -> Notifica annullata dalla PA
+                * 99 -> KO
+              type: number
+              enum: [0, 99, 2,4,3,5,10,80]
+            retryAfter:
+              description: Tempo, espresso in ms comunicato  al chiamante, trascorso il quale è possibile effettuare un nuovo tentativo di avvio della transazione.
+              type: number
+              example: 670
+
+    TransactionResponseStatus:
+      description: Risposta di stato restituita al chiamante
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK (Anche in caso di  chiamata successiva con identici parametri)
+                * 1 -> Transazione inesistente
+                * 2 -> Transazione già completata (Messaggio di errore differente se già completata per chiamata a complete piuttosto che abort)
+                * 99 -> KO
+              type: number
+              enum: [0,1,2,99]
+
+    ActInquiryResponseStatus:
+      description: Risposta di stato restituita al chiamante
+      allOf:
+        - $ref: '#/components/schemas/ResponseStatus'
+        - type: object
+          properties:
+            code:
+              description: |
+                Return code.
+                * 0 -> OK
+                * 2 -> NotReady (documenti temporaneamente non disponibili per ragioni tecniche, ritentare dopo il tempo specificato nel retryAfter)
+                * 3 -> Stampa già eseguita
+                * 4 -> Documento non più disponibili
+                * 10 -> Input non valido
+                * 80 -> Notifica annullata dalla PA
+                * 99 -> KO generico
+              type: number
+              enum: [0,2,3,4,10,80,99]
+
+
+  parameters:
+    uid:
+      name: uid
+      description: Identificativo pseudo-anonimizzato dell'operatore RADD
+      in: header
+      required: true
+      schema:
+        type: string
+      example: 00001-000-2024_02_02T00:00:00
+    recipientTaxId:
+      name: recipientTaxId
+      description: Codice Fiscale Destinatario
+      in: query
+      required: true
+      schema:
+        type: string
+      example: TNTGTR76E21H751S
+    recipientType:
+      name: recipientType
+      description: Sigla, Persona Fisica o Persona Giuridica
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: ["PF", "PG"]
+      example: PF
+    delegateTaxId:
+      name: delegateTaxId
+      description: Codice Fiscale Delegato
+      in: query
+      schema:
+        type: string
+      example: TNTGTR76E21H751S
+    qrCode:
+      name: qrCode
+      description: QrCode presente sull'Avviso di Avvenuta Ricezione (AAR). Da usare in alternativa a "iun".
+      in: query
+      required: false
+      schema:
+        type: string
+      example: "UkdESC1BS01QLVFWWE4tMjAyMzA4LUctMV9QRi1lZjJkZWI0NS0zYzBlLTRiY2UtYWRjMC1hODFlN2Q2YjM1NGVfY2M5ZDkyMTktMWQxMi00ZTBhLWJlZDQtNmE1YWMyYzlhZmZh"
+    iun:
+      name: iun
+      description: Identificativo Univoco della Notifica. Da usare in alternativa a "qrCode".
+      in: query
+      required: false
+      schema:
+        type: string
+      example: "RGDH-AKMP-QVXN-202308-G-1"
+    operationId:
+      name: operationId
+      description: identificativo univoco dell'operazione all'interno del dominio dell'operatore RADD
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "5d2d53ad-6306-40fe-8126-51ccdd917cef"
+    operationType:
+      name: operationType
+      description: Tipo di operazione aor o act
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: ["aor", "act"]
+      example: aor
+    attachmentId:
+      name: attachmentId
+      description: Identificativo file
+      in: query
+      required: false
+      schema:
+        type: string
+
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized
+
+#  securitySchemes: # ONLY EXTERNAL
+#    bearerAuth: # ONLY EXTERNAL
+#      type: http          # ONLY EXTERNAL
+#      scheme: bearer      # ONLY EXTERNAL
+#      bearerFormat: JWT   # ONLY EXTERNAL
+#
+#security: # ONLY EXTERNAL
+#  - bearerAuth: [ ]     # ONLY EXTERNAL

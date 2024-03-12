@@ -150,10 +150,7 @@ info:
     
       3.  **Richiesta documenti da stampare**
     
-          Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK)  
-      invocare l’operazione [startAorTransaction](#/aorOperations/startAorTransaction) 
-      per ottenere l’elenco di url degli AAR delle notifiche non consegnate da stampare 
-      (compreso l'url il frontespizio*).
+          Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK) invocare l’operazione [startAorTransaction](#/aorOperations/startAorTransaction) per ottenere l’elenco di url degli AAR delle notifiche non consegnate da stampare (compreso l'url il frontespizio*).
     
           Alcuni parametri da passare in input sono recuperati dalle chiamate di upload:
     

@@ -55,7 +55,7 @@ info:
   
       1. **Verifica della presenza della notifica**
         
-        Il software di gestione dello sportello RADD chiama l’operazione [actInquiry](#/actOperations/actInquiry)
+      Il software di gestione dello sportello RADD chiama l’operazione [actInquiry](#/actOperations/actInquiry)
       per verificare l’esistenza della notifica tramite *qrCode* o, in assenza 
       del lettore ottico, tramite lo *IUN* (identificativo univoco della  notifica), 
       entrambi presenti nell’AAR. 
@@ -87,7 +87,7 @@ info:
          - *versionToken*: valore ottenuto dall'operazione PUT di upload.
     
          
-         L’operazione [startActTransaction](#/actOperations/startActTransaction) 
+      L’operazione [startActTransaction](#/actOperations/startActTransaction) 
       restituisce una lista di url dei documenti da stampare (compreso il primo riferito
       al frontespizio)*. 
       
@@ -106,7 +106,7 @@ info:
   
       4. **Download documenti**
       
-         Per ogni url restituita dalla [startActTransaction](#/actOperations/startActTransaction), 
+      Per ogni url restituita dalla [startActTransaction](#/actOperations/startActTransaction), 
       eseguire una richiesta in GET per scaricare il documento. Se il campo *needAuthentication* è valorizzato
       a true bisogna necessariamente inviare anche il JWT nell’header Authorization, 
       altrimenti non deve essere spedito.
@@ -128,14 +128,14 @@ info:
       
       # CASO D’USO AOR
       
-        Cittadini risultati irreperibili nell'invio cartaceo dell'AAR, muniti di Codice Fiscale, 
+      Cittadini risultati irreperibili nell'invio cartaceo dell'AAR, muniti di Codice Fiscale, 
       sprovvisti di accesso ad internet, SPID o CIE o senza competenze digitali, richiedono 
       la stampa delle AAR (Avviso di Avvenuta Ricezione) non consegnate presso lo sportello RADD.
       
   
       1. **Verifica della presenza della notifica** 
   
-         Il software di gestione dello sportello RADD chiama l’operazione [aorInquiry](#/aorOperations/aorInquiry) 
+      Il software di gestione dello sportello RADD chiama l’operazione [aorInquiry](#/aorOperations/aorInquiry) 
       per verificare l’esistenza di notifiche per il quale l’utente è risultato irreperibile 
       e non stampate in precedenza. 
       Il servizio risponde con il campo *result* valorizzato a true e *code* uguale a 0 
@@ -144,7 +144,7 @@ info:
   
       2. **Upload dei documenti di identificazione del destinatario ed eventuale delegato** 
       
-          Se sono presenti documenti da stampare (*result* = true e *code* =  0) 
+      Se sono presenti documenti da stampare (*result* = true e *code* =  0) 
       il software di gestione dello sportello RADD deve generare un file *ZIP*
       (specifiche in appendice) contenente gli estremi dei documenti del destinatario
       e dell'eventuale delegato da caricare sui sistemi PagoPA. Per caricare il file
@@ -153,17 +153,17 @@ info:
   
       3.  **Richiesta documenti da stampare**
       
-           Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK)  
+      Se l'operazione di upload è stata eseguita con successo (risposta http status 200 OK)  
       invocare l’operazione [startAorTransaction](#/aorOperations/startAorTransaction) 
       per ottenere l’elenco di url degli AAR delle notifiche non consegnate da stampare 
       (compreso l'url il frontespizio*).
     
       Alcuni parametri da passare in input sono recuperati dalle chiamate di upload:
     
-         - *filekey*: recuperato dalla risposta alla chiamata
+      - *filekey*: recuperato dalla risposta alla chiamata
       dell’operazione [documentUpload](#/documentOperations/documentUpload).
-         - *checksum*: del file zip, lo valore inviato in input alla documentUpload. 
-         - *versionToken*: valore ottenuto dall'operazione PUT di upload.
+      - *checksum*: del file zip, lo valore inviato in input alla documentUpload. 
+      - *versionToken*: valore ottenuto dall'operazione PUT di upload.
           
       L’operazione [startActTransaction](#/actOperations/startActTransaction) 
       restituisce una lista di url dei documenti da stampare (compreso il primo riferito
@@ -182,7 +182,7 @@ info:
    
       4. **Download documenti**
       
-        Per ogni url restituita dalla [startAorTransaction](#/aorOperations/startActTransaction), 
+      Per ogni url restituita dalla [startAorTransaction](#/aorOperations/startActTransaction), 
       eseguire una richiesta in GET per scaricare il documento. Se il campo *needAuthentication* è valorizzato
       a true bisogna necessariamente inviare anche il JWT nell’header Authorization, 
       altrimenti non deve essere spedito.
@@ -256,7 +256,7 @@ info:
       
       2.  **Upload del file ZIP**
       
-          Per caricare il file Zip utilizzare una richiesta HTTP con metodo httpMethod PUT all'url 
+        Per caricare il file Zip utilizzare una richiesta HTTP con metodo httpMethod PUT all'url 
         restituito dall’operazione [documentUpload](#/documentOperations/documentUpload).
           
         In tale richiesta vanno aggiunti i seguenti header:

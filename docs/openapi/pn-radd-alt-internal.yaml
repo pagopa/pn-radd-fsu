@@ -264,6 +264,7 @@ info:
                del contenuto binario del file che verrà caricato.
     
       NOTA:
+    
         -  Non va passato il JWT per l’autenticazione.
         -  Se l'operazione di upload è stata eseguita con successo, si otterrà come 
            risposta http status 200 OK.

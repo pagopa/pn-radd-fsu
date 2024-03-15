@@ -347,7 +347,7 @@ paths:
           content:
             'application/pdf':
               schema:
-                #               type: object    # ONLY EXTERNAL
+#               type: object    # ONLY EXTERNAL
                 type: string    # NO EXTERNAL
                 format: byte    # NO EXTERNAL
         400:

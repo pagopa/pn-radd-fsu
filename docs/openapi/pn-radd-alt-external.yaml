@@ -342,7 +342,7 @@ paths:
           content:
             'application/pdf':
               schema:
-                #               type: object    # ONLY EXTERNAL
+               type: object    # ONLY EXTERNAL
         400:
           $ref: '#/components/responses/Invalid'
         401:

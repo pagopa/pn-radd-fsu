@@ -1,0 +1,507 @@
+openapi: 3.0.1
+info:
+  termsOfService: https://notifichedigitali.pagopa.it/radd/index.html
+  #  x-api-id: api-external-radd-net # ONLY EXTERNAL
+  title: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  x-summary: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  version: '1.0.0'
+  contact:
+    email: pn-supporto-radd@pagopa.it
+  license:
+    name: Licenza di PN
+    url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+
+servers:
+  - url: https://api.radd.notifichedigitali.it
+    description: Ambiente di produzione
+  - url: https://api.radd.uat.notifichedigitali.it
+    description: Ambiente di collaudo UAT
+
+tags:
+  - name: Registry
+
+paths:
+  /radd-alt/api/v1/registry:
+    post:
+      tags:
+        - Registry
+      description: >-
+        API utilizzata per la richiesta di attivazione nuova anagrafica RADD
+      operationId: addRegistry
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRegistryRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRegistryResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+    get:
+      tags:
+        - Registry
+      operationId: retrieveRegistries
+      description: API utilizzata per recuperare la lista paginata di anagrafiche RADD dato il cxId
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: lastKey
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistriesResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/registry/{registryId}:
+    patch:
+      tags:
+        - Registry
+      description: >-
+        API utilizzata per la modifica di un'anagrafica RADD
+      operationId: updateRegistry
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/registryId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRegistryRequest'
+        required: true
+      responses:
+        204:
+          description: OK
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/registry/{registryId}/dismiss:
+    patch:
+      tags:
+        - Registry
+      description: >-
+        API utilizzata per la cancellazione di un'anagrafica RADD
+      operationId: deleteRegistry
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/registryId'
+        - $ref: '#/components/parameters/endDate'
+      responses:
+        204:
+          description: OK
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/request/{requestId}/verify:
+    get:
+      tags:
+        - Request
+      description: >-
+        API utilizzata per la verifica dello stato di una richiesta di censimento indirizzi (CSV)
+      operationId: verifyRequest
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/requestId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyRequestResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/request/{requestId}:
+    get:
+      tags:
+        - Request
+      description: >-
+        API utilizzata per il recupero della lista paginata e filtrata di tutti gli sportelli associati alla richiesta di import
+      operationId: retrieveRequestItems
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/requestId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: lastKey
+          in: query
+          required: false
+          schema:
+            type: string  
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    CreateRegistryRequest:
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          type: object
+          properties:
+            latitude:
+              type: string
+              description: Latitudine della posizione geografica dello sportello.
+              example: "41.9028"
+            longitude:
+              type: string
+              description: Longitudine della posizione geografica dello sportello.
+              example: "12.4964"
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+        startValidity:
+          type: string
+          format: date-time
+          description: Data e ora di inizio di validità dello sportello.
+          example: "2024-03-21T09:00:00Z"
+        endValidity:
+          type: string
+          format: date-time
+          description: Data e ora di fine di validità dello sportello.
+          example: "2024-03-21T17:00:00Z"
+        
+    UpdateRegistryRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Descrizione aggiornata dello sportello.
+          example: "Registro aggiornato dello sportello."
+        openingTime:
+          type: string
+          description: Orario di apertura aggiornato dello sportello.
+          example: "09:30-13:30"
+        phoneNumber:
+          type: string
+          description: Numero di telefono della sede
+    CreateRegistryResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+    RegistriesResponse:
+      type: object
+      properties:
+        registries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Registry'
+        lastKey:
+          type: string
+        total:
+          type: integer
+            
+    Registry:
+      type: object
+      properties:
+        registryId:
+          type: string
+          description: identificativo univoco della sede RADD popolato solo in caso di record in stato ACCEPTED
+        requestId:
+          type: string
+          description: ID della richiesta di import.
+          example: "987654"
+        address:
+          $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          type: object
+          properties:
+            latitude:
+              type: string
+              description: Latitudine della posizione geografica dello sportello.
+              example: "41.9028"
+            longitude:
+              type: string
+              description: Longitudine della posizione geografica dello sportello.
+              example: "12.4964"
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "09:00-13:30"
+        startValidity:
+          type: string
+          format: date-time
+          description: Data e ora di inizio di validità dello sportello.
+          example: "2024-03-21T09:00:00Z"
+        endValidity:
+          type: string
+          format: date-time
+          description: Data e ora di fine di validità dello sportello.
+          example: "2024-03-21T17:00:00Z"
+    VerifyRequestResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Stato della richiesta
+          example: REJECTED
+        error:
+          type: string
+          description: Eventuale errore, popolato solo in caso di status = REJECTED.
+          example: "csv malformato"
+    RequestResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistryRequestResponse'
+        lastKey:
+          type: string
+        total:
+          type: integer
+    RegistryRequestResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: identificativo univoco della richiesta
+        registryId:
+          type: string
+          description: identificativo univoco della singola richiesta di censimento sportello
+        originalRequest:
+          $ref: '#/components/schemas/OriginalRequest'
+        address:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          description: data creazione del record
+        updatedAt:
+          type: string
+          description: data aggiornamento del record
+        status:
+          type: string
+          description: stato della richiesta
+          example: ACCEPTED
+        error:
+          type: string
+          description: eventuale motivazione di scarto, popolato solo in caso di stato REJECTED
+    OriginalRequest:
+      type: object
+      properties:
+        originalAddress:
+          $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          type: object
+          properties:
+            latitude:
+              type: string
+              description: Latitudine della posizione geografica dello sportello.
+              example: "41.9028"
+            longitude:
+              type: string
+              description: Longitudine della posizione geografica dello sportello.
+              example: "12.4964"
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+        startValidity:
+          type: string
+          format: date-time
+          description: Data e ora di inizio di validità dello sportello.
+          example: "2024-03-21T09:00:00Z"
+        endValidity:
+          type: string
+          format: date-time
+          description: Data e ora di fine di validità dello sportello.
+          example: "2024-03-21T17:00:00Z"    
+    Address:
+      type: object
+      properties:
+        addressRow:
+          type: string
+          description: Indirizzo completo
+          example: Via Roma 123
+        cap:
+          type: string
+          description: CAP (Codice di Avviamento Postale).
+          example: 00100
+        city:
+          type: string
+          description: Città.
+          example: Roma
+        pr:
+          type: string
+          description: Provincia.
+          example: RM
+        country:
+          type: string
+          description: Paese.
+          example: Italia
+  parameters:
+    status:
+      name: status
+      description: Identificativo dello sportello RADD
+      in: query
+      schema:
+        type: string
+        enum:
+          - ACTIVE
+          - REJECTED
+          - PENDING
+    registryId:
+      name: registryId
+      description: Identificativo dello sportello RADD
+      in: path
+      required: true
+      schema:
+        type: string
+      example: cxId#uuid
+    endDate:
+      name: endDate
+      description: Data fine validità sportello
+      in: query
+      required: true
+      schema:
+        type: string
+      example: 2024-06-21T05:47:26.853Z
+    uid:
+      name: uid
+      description: Identificativo pseudo-anonimizzato dell'operatore RADD
+      in: header
+      required: true
+      schema:
+        type: string
+    requestId:
+      name: requestId
+      description: Identificativo univoco della richiesta di censimento (CSV o CRUD)
+      in: header
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized
+
+  securitySchemes: # ONLY EXTERNAL
+    bearerAuth: # ONLY EXTERNAL
+      type: http          # ONLY EXTERNAL
+      scheme: bearer      # ONLY EXTERNAL
+      bearerFormat: JWT   # ONLY EXTERNAL
+#
+security: # ONLY EXTERNAL
+  - bearerAuth: [ ]     # ONLY EXTERNAL

@@ -28,6 +28,8 @@ paths:
         API utilizzata per la richiesta di attivazione nuova anagrafica RADD
       operationId: addRegistry
       parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -58,6 +60,8 @@ paths:
       operationId: retrieveRegistries
       description: API utilizzata per recuperare la lista paginata di anagrafiche RADD dato il cxId
       parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/lastKey'
@@ -86,6 +90,8 @@ paths:
         API utilizzata per la modifica di un'anagrafica RADD
       operationId: updateRegistry
       parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/registryId'
       requestBody:
@@ -115,6 +121,8 @@ paths:
         API utilizzata per la cancellazione di un'anagrafica RADD
       operationId: deleteRegistry
       parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/registryId'
         - $ref: '#/components/parameters/endDate'
@@ -425,11 +433,11 @@ components:
     Unauthorized:
       description: Unauthorized
 
-  securitySchemes: # ONLY EXTERNAL
-    bearerAuth: # ONLY EXTERNAL
-      type: http          # ONLY EXTERNAL
-      scheme: bearer      # ONLY EXTERNAL
-      bearerFormat: JWT   # ONLY EXTERNAL
+#  securitySchemes: # ONLY EXTERNAL
+#    bearerAuth: # ONLY EXTERNAL
+#      type: http          # ONLY EXTERNAL
+#      scheme: bearer      # ONLY EXTERNAL
+#      bearerFormat: JWT   # ONLY EXTERNAL
 #
-security: # ONLY EXTERNAL
-  - bearerAuth: [ ]     # ONLY EXTERNAL
+#security: # ONLY EXTERNAL
+#  - bearerAuth: [ ]     # ONLY EXTERNAL

@@ -17,23 +17,24 @@ servers:
     description: Ambiente di collaudo UAT
 
 tags:
-  - name: Registry
+  - name: Import
 
 paths:
-  /radd-alt/api/v1/registry:
+  /radd-alt/api/v1/registry/import/upload:
     post:
       tags:
-        - Registry
+        - Import
       description: >-
-        API utilizzata per la richiesta di attivazione nuova anagrafica RADD
-      operationId: addRegistry
+        API utilizzata per la richiesta della presigned URL utilizzata per il caricamento del file CSV contenente la lista
+        di sportelli di un soggetto RADD.
+      operationId: uploadRegistryRequests
       parameters:
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRegistryRequest'
+              $ref: '#/components/schemas/RegistryUploadRequest'
         required: true
       responses:
         200:
@@ -41,7 +42,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateRegistryResponse'
+                $ref: '#/components/schemas/RegistryUploadResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -52,22 +53,23 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/registry/import/{requestId}/verify:
     get:
       tags:
-        - Registry
-      operationId: retrieveRegistries
-      description: API utilizzata per recuperare la lista paginata di anagrafiche RADD dato il cxId
+        - Import
+      description: >-
+        API utilizzata per la verifica dello stato di una richiesta di censimento indirizzi (CSV)
+      operationId: verifyRequest
       parameters:
         - $ref: '#/components/parameters/uid'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/lastKey'
+        - $ref: '#/components/parameters/requestId'
       responses:
         200:
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegistriesResponse'
+                $ref: '#/components/schemas/VerifyRequestResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -78,49 +80,33 @@ paths:
           $ref: '#/components/responses/NotAllowed'
         500:
           $ref: '#/components/responses/InternalError'
-  /radd-alt/api/v1/registry/{registryId}:
-    patch:
+  /radd-alt/api/v1/registry/import/{requestId}:
+    get:
       tags:
-        - Registry
+        - Import
       description: >-
-        API utilizzata per la modifica di un'anagrafica RADD
-      operationId: updateRegistry
+        API utilizzata per il recupero della lista paginata e filtrata di tutti gli sportelli associati alla richiesta di import
+      operationId: retrieveRequestItems
       parameters:
         - $ref: '#/components/parameters/uid'
-        - $ref: '#/components/parameters/registryId'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRegistryRequest'
-        required: true
+        - $ref: '#/components/parameters/requestId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: lastKey
+          in: query
+          required: false
+          schema:
+            type: string  
       responses:
-        204:
+        200:
           description: OK
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
-  /radd-alt/api/v1/registry/{registryId}/dismiss:
-    patch:
-      tags:
-        - Registry
-      description: >-
-        API utilizzata per la cancellazione di un'anagrafica RADD
-      operationId: deleteRegistry
-      parameters:
-        - $ref: '#/components/parameters/uid'
-        - $ref: '#/components/parameters/registryId'
-        - $ref: '#/components/parameters/endDate'
-      responses:
-        204:
-          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
         400:
           $ref: '#/components/responses/Invalid'
         401:
@@ -133,75 +119,7 @@ paths:
           $ref: '#/components/responses/InternalError'
 components:
   schemas:
-    CreateRegistryRequest:
-      type: object
-      properties:
-        address:
-          $ref: '#/components/schemas/Address'
-        description:
-          type: string
-          description: Descrizione dello sportello.
-          example: Sportello ABC.
-        phoneNumber:
-          type: string
-          description: Numero di telefono dello sportello.
-          example: "+39 0123456789"
-        geoLocation:
-          type: object
-          properties:
-            latitude:
-              type: string
-              description: Latitudine della posizione geografica dello sportello.
-              example: "41.9028"
-            longitude:
-              type: string
-              description: Longitudine della posizione geografica dello sportello.
-              example: "12.4964"
-        openingTime:
-          type: string
-          description: Orario di apertura dello sportello.
-          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
-        startValidity:
-          type: string
-          format: date-time
-          description: Data e ora di inizio di validità dello sportello.
-          example: "2024-03-21T09:00:00Z"
-        endValidity:
-          type: string
-          format: date-time
-          description: Data e ora di fine di validità dello sportello.
-          example: "2024-03-21T17:00:00Z"
-        
-    UpdateRegistryRequest:
-      type: object
-      properties:
-        description:
-          type: string
-          description: Descrizione aggiornata dello sportello.
-          example: "Registro aggiornato dello sportello."
-        openingTime:
-          type: string
-          description: Orario di apertura aggiornato dello sportello.
-          example: "09:30-13:30"
-        phoneNumber:
-          type: string
-          description: Numero di telefono della sede
-    CreateRegistryResponse:
-      type: object
-      properties:
-        requestId:
-          type: string
-    RegistriesResponse:
-      type: object
-      properties:
-        registries:
-          type: array
-          items:
-            $ref: '#/components/schemas/Registry'
-        lastKey:
-          type: string
-        total:
-          type: integer
+
             
     Registry:
       type: object
@@ -357,33 +275,33 @@ components:
           type: string
           description: Paese.
           example: Italia
+    RegistryUploadRequest:
+      description: Richiesta di upload di un file csv contenente una lista di sportelli da censire
+      type: object
+      required:
+        - checksum
+      properties:
+        checksum:
+          type: string
+          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
+    RegistryUploadResponse:
+      description: Risposta alla richiesta di upload di un file csv contenente una lista di sportelli da censire
+      type: object
+      properties:
+          requestId:
+            description: Identificativo univoco della richiesta di censimento, da utilizzare in caso di verifica dello stato della richiesta o recupero degli sportelli associati.
+            type: string
+            example: "987654"
+          url:
+            type: string
+            example: "https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host"
+          fileKey:
+            type: string
+            example: "PN_RADD_ALT_ATTACHMENT-4958442ee6eb467abec049afa67e3899.zip"
+          secret:
+            type: string
+            example: "alow22ddw"
   parameters:
-    status:
-      name: status
-      description: Identificativo dello sportello RADD
-      in: query
-      schema:
-        type: string
-        enum:
-          - ACTIVE
-          - REJECTED
-          - PENDING
-    registryId:
-      name: registryId
-      description: Identificativo dello sportello RADD
-      in: path
-      required: true
-      schema:
-        type: string
-      example: cxId#uuid
-    endDate:
-      name: endDate
-      description: Data fine validità sportello
-      in: query
-      required: true
-      schema:
-        type: string
-      example: 2024-06-21T05:47:26.853Z
     uid:
       name: uid
       description: Identificativo pseudo-anonimizzato dell'operatore RADD
@@ -394,20 +312,8 @@ components:
     requestId:
       name: requestId
       description: Identificativo univoco della richiesta di censimento (CSV o CRUD)
-      in: header
+      in: path
       required: true
-      schema:
-        type: string
-    limit:
-      name: limit
-      in: query
-      schema:
-        type: integer
-        default: 10
-    lastKey:
-      name: lastKey
-      in: query
-      required: false
       schema:
         type: string
 

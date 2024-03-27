@@ -65,4 +65,51 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
             }
         }
     ]"
+
+echo "### CREATE PN ANAGRAFICHE RADD IMPORT TABLE ###"
+
+#status-index: pk su "status", projection ALL
+#filekey-index: pk su "fileKey", projection ALL
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name Pn-RaddRegistryImport \
+    --attribute-definitions \
+    AttributeName=fileKey,AttributeType=S \
+    AttributeName=cxId,AttributeType=S \
+    AttributeName=status,AttributeType=S \
+    AttributeName=requestId,AttributeType=S \
+    --key-schema \
+    AttributeName=cxId,KeyType=HASH \
+    AttributeName=requestId,KeyType=RANGE \
+    --provisioned-throughput \
+    ReadCapacityUnits=10,WriteCapacityUnits=5 \
+    --global-secondary-indexes \
+    "[
+        {
+            \"IndexName\":\"status-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"status\",\"KeyType\":\"HASH\"}
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        },{
+            \"IndexName\":\"fileKey-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"fileKey\",\"KeyType\":\"HASH\"}
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        }
+    ]"
 echo "Initialization terminated"

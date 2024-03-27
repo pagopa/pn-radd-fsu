@@ -65,4 +65,53 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
             }
         }
     ]"
+
+echo "### CREATE PN ANAGRAFICHE RADD TABLE ###"
+
+#zipCode-index: pk su "zipCode", projection ALL
+#cxId-requestId-index: pk su “cxId" e sk su "requestId" , projection ALL
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name Pn-RaddRegistry \
+    --attribute-definitions \
+    AttributeName=registryId,AttributeType=S \
+    AttributeName=cxId,AttributeType=S \
+    AttributeName=zipCode,AttributeType=S \
+    AttributeName=requestId,AttributeType=S \
+    --key-schema \
+    AttributeName=registryId,KeyType=HASH \
+    AttributeName=cxId,KeyType=RANGE \
+    --provisioned-throughput \
+    ReadCapacityUnits=10,WriteCapacityUnits=5 \
+    --global-secondary-indexes \
+    "[
+        {
+            \"IndexName\":\"zipCode-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"zipCode\",\"KeyType\":\"HASH\"},
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        },{
+            \"IndexName\":\"cxId-requestId-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"cxId\",\"KeyType\":\"HASH\"},
+                {\"AttributeName\":\"requestId\",\"KeyType\":\"RANGE\"}
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        }
+    ]"
+
 echo "Initialization terminated"

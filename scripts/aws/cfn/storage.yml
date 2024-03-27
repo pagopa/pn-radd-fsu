@@ -111,6 +111,49 @@ Resources:
         StreamViewType: NEW_IMAGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+
+  RaddRegistryDynamoTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-RaddRegistry'
+      AttributeDefinitions:
+        - AttributeName: "registryId"
+          AttributeType: "S"
+        - AttributeName: "cxId"
+          AttributeType: "S"
+        - AttributeName: "requestId"
+          AttributeType: "S"
+        - AttributeName: "zipCode"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "registryId"
+          KeyType: "HASH"
+        - AttributeName: "cxId"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: "cxId-requestId-index"
+          KeySchema:
+            - AttributeName: "cxId"
+              KeyType: "HASH"
+            - AttributeName: "requestId"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "zipCode-index"
+          KeySchema:
+            - AttributeName: "zipCode"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
         
   RaddLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -138,6 +181,14 @@ Outputs:
   OperationsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations
     Value: !Sub '${OperationsDynamoTable.Arn}'
+
+  RaddRegistryDynamoTableName:
+    Description: Name of dynamodb table containing radd registry
+    Value: !Ref RaddRegistryDynamoTable
+
+  RaddRegistryDynamoTableArn:
+    Description: ARN of dynamodb table containing radd registry
+    Value: !Sub '${RaddRegistryDynamoTable.Arn}'
 
   # Log group exports
   EcsLogGroup:

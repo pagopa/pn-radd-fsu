@@ -206,10 +206,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Registry'
-        lastKey:
-          type: string
-        total:
-          type: integer
+        moreResult:
+          description: Indica se sono presenti ulteriori pagine di risultati
+          type: boolean
+        nextPagesKey:
+          description: >-
+            Elenco, non esaustivo, delle chiavi da usare per richiedere le 
+            pagine di risultati successive a quella corrente. <br/>
+            Valorizzato solo se il campo __moreResult__ ha valore __true__.
+          type: array
+          items:
+            type: string
             
     Registry:
       type: object

@@ -90,16 +90,8 @@ paths:
       parameters:
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/requestId'
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
-        - name: lastKey
-          in: query
-          required: false
-          schema:
-            type: string  
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/lastKey'
       responses:
         200:
           description: OK
@@ -119,8 +111,6 @@ paths:
           $ref: '#/components/responses/InternalError'
 components:
   schemas:
-
-            
     Registry:
       type: object
       properties:
@@ -184,10 +174,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RegistryRequestResponse'
-        lastKey:
-          type: string
-        total:
-          type: integer
+        moreResult:
+          description: Indica se sono presenti ulteriori pagine di risultati
+          type: boolean
+        nextPagesKey:
+          description: >-
+            Elenco, non esaustivo, delle chiavi da usare per richiedere le 
+            pagine di risultati successive a quella corrente. <br/>
+            Valorizzato solo se il campo __moreResult__ ha valore __true__.
+          type: array
+          items:
+            type: string
     RegistryRequestResponse:
       type: object
       properties:
@@ -312,6 +309,18 @@ components:
       description: Identificativo univoco della richiesta di censimento (CSV o CRUD)
       in: path
       required: true
+      schema:
+        type: string
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 10
+    lastKey:
+      name: lastKey
+      in: query
+      required: false
       schema:
         type: string
 

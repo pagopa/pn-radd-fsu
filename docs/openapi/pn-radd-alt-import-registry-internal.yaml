@@ -200,11 +200,9 @@ components:
           description: identificativo univoco della richiesta
         registryId:
           type: string
-          description: identificativo univoco della singola richiesta di censimento sportello
+          description: identificativo univoco della sede RADD attivata a partire dalla richiesta
         originalRequest:
           $ref: '#/components/schemas/OriginalRequest'
-        address:
-          $ref: '#/components/schemas/Address'
         createdAt:
           type: string
           description: data creazione del record

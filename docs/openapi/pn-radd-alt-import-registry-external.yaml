@@ -85,7 +85,7 @@ paths:
       tags:
         - Import
       description: >-
-        API utilizzata per il recupero della lista paginata e filtrata di tutti gli sportelli associati alla richiesta di import
+        API utilizzata per il recupero della lista paginata di tutte le richieste di inserimento in anagrafica associate alla richiesta di import
       operationId: retrieveRequestItems
       parameters:
         - $ref: '#/components/parameters/uid'
@@ -196,11 +196,9 @@ components:
           description: identificativo univoco della richiesta
         registryId:
           type: string
-          description: identificativo univoco della singola richiesta di censimento sportello
+          description: identificativo univoco della sede RADD attivata a partire dalla richiesta
         originalRequest:
           $ref: '#/components/schemas/OriginalRequest'
-        address:
-          $ref: '#/components/schemas/Address'
         createdAt:
           type: string
           description: data creazione del record

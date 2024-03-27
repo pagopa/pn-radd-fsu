@@ -32,6 +32,8 @@ public class RaddRegistryRequestEntity {
     public static final String CORRELATIONID_INDEX = "correlationId-index";
     public static final String CXID_REGISTRYID_INDEX = "cxId-registryId-index";
 
+    private static final int CXID_POSITION = 0;
+    private static final int REQUESTID_POSITION = 1;
     private static final int INDEX_POSITION = 2;
 
 
@@ -58,6 +60,14 @@ public class RaddRegistryRequestEntity {
     @Getter(onMethod = @__({@DynamoDbSecondarySortKey(indexNames = CXID_REGISTRYID_INDEX), @DynamoDbAttribute(COL_REGISTRY_ID)}))
     private String registryId;
 
+    @DynamoDbIgnore
+    private String retrieveCxIdFromPk() {
+        return this.getPk().split(ITEMS_SEPARATOR).length == 2 ? this.getPk().split(ITEMS_SEPARATOR)[CXID_POSITION] : StringUtils.EMPTY;
+    }
+    @DynamoDbIgnore
+    private String retrieveRequestIdFromPk() {
+        return this.getPk().split(ITEMS_SEPARATOR).length == 2 ? this.getPk().split(ITEMS_SEPARATOR)[REQUESTID_POSITION] : StringUtils.EMPTY;
+    }
     @DynamoDbIgnore
     private String retrieveIndexFromPk() {
         return this.getPk().split(ITEMS_SEPARATOR).length == 2 ? this.getPk().split(ITEMS_SEPARATOR)[INDEX_POSITION] : StringUtils.EMPTY;

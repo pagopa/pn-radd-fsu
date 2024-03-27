@@ -9,6 +9,7 @@ import java.time.Instant;
 @Setter
 @ToString
 @EqualsAndHashCode
+@Builder
 public class RaddRegistryEntity {
 
     public static final String COL_REGISTRY_ID = "registryId";
@@ -36,9 +37,9 @@ public class RaddRegistryEntity {
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_NORMALIZED_ADDRESS)}))
     private String normalizedAddress;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_DESCRIPTION)}))
-    private Instant description;
+    private String description;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_PHONE_NUMBER)}))
-    private Instant phoneNumber;
+    private String phoneNumber;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_GEOLOCATION)}))
     private String geoLocation;
     @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = ZIPCODE_INDEX), @DynamoDbAttribute(COL_ZIP_CODE)}))

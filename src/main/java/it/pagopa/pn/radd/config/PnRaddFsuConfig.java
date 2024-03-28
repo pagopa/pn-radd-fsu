@@ -25,8 +25,8 @@ public class PnRaddFsuConfig {
     private String safeStorageCxId;
     private String safeStorageDocType;
     private String applicationBasepath;
-
     private Dao dao;
+
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
@@ -34,6 +34,8 @@ public class PnRaddFsuConfig {
     public static class Dao {
         private String raddTransactionTable;
         private String iunsOperationsTable;
+        private String raddRegistryRequestTable;
+        private String raddRegistryImportTable;
         private String raddRegistryTable;
     }
 }

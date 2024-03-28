@@ -1,17 +1,16 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 @DynamoDbBean
-@Getter
 @Setter
 @ToString
-@NoArgsConstructor
+@EqualsAndHashCode
 public class PnRaddRegistryImportEntity {
 
     public static final String COL_CX_ID = "cxId";

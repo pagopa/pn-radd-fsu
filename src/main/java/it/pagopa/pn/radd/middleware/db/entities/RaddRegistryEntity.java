@@ -1,18 +1,14 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.Instant;
 
 @DynamoDbBean
-@Getter
 @Setter
 @ToString
-@NoArgsConstructor
+@EqualsAndHashCode
 public class RaddRegistryEntity {
 
     public static final String COL_REGISTRY_ID = "registryId";

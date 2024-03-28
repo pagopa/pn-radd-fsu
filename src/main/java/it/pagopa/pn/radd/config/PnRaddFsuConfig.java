@@ -26,11 +26,17 @@ public class PnRaddFsuConfig {
     private String safeStorageDocType;
     private String applicationBasepath;
     private Sqs sqs;
+    private Dao dao;
 
-    private String dynamodbTable;
-    private String dynamodbIunsoperationsTable;
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
+
+    @Data
+    public static class Dao {
+        private String raddTransactionTable;
+        private String iunsOperationsTable;
+        private String raddRegistryImportTable;
+    }
 
     @Data
     public static class Sqs{

@@ -122,4 +122,66 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
             }
         }
     ]"
+
+echo "### CREATE PN RICHIESTE SEDI RADD TABLE ###"
+
+#cxId-requestId-index: pk su “cxId" e sk su "requestId" , projection ALL
+#correlationId-index: pk su “correlationId", projection ALL
+#cxId-registryId-index: pk su “cxId" e sk su "registryId" , projection ALL
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb create-table \
+    --table-name Pn-RaddRegistryRequest \
+    --attribute-definitions \
+    AttributeName=cxId,AttributeType=S \
+    AttributeName=requestId,AttributeType=S \
+    AttributeName=correlationId,AttributeType=S \
+    AttributeName=registryId,AttributeType=S \
+    AttributeName=pk,AttributeType=S \
+    --key-schema \
+    AttributeName=pk,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=10,WriteCapacityUnits=5 \
+    --global-secondary-indexes \
+    "[
+        {
+            \"IndexName\":\"cxId-requestId-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"cxId\",\"KeyType\":\"HASH\"},
+                {\"AttributeName\":\"requestId\",\"KeyType\":\"RANGE\"}
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        },{
+            \"IndexName\":\"correlationId-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"correlationId\",\"KeyType\":\"HASH\"}
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        },{
+            \"IndexName\":\"cxId-registryId-index\",
+            \"KeySchema\":[
+                {\"AttributeName\":\"cxId\",\"KeyType\":\"HASH\"},
+                {\"AttributeName\":\"registryId\",\"KeyType\":\"RANGE\"}
+            ],
+            \"Projection\":{
+                \"ProjectionType\":\"ALL\"
+            },
+            \"ProvisionedThroughput\":{
+                \"ReadCapacityUnits\":10,
+                \"WriteCapacityUnits\":5
+            }
+        }
+    ]"
+
 echo "Initialization terminated"

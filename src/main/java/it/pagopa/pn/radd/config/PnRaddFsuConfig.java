@@ -35,6 +35,7 @@ public class PnRaddFsuConfig {
     public static class Dao {
         private String raddTransactionTable;
         private String iunsOperationsTable;
+        private String raddRegistryRequestTable;
         private String raddRegistryImportTable;
     }
 

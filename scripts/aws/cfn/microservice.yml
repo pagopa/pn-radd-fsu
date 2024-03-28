@@ -92,6 +92,14 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing iuns and operations'
 
+  RaddRegistryRequestDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing radd registry requests'
+
+  RaddRegistryRequestDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing radd registry requests'
+
   RaddRegistryImportDynamoTableName:
     Type: String
     Description: 'Name of dynamodb table containing anagrafiche'
@@ -99,7 +107,7 @@ Parameters:
   RaddRegistryImportDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing anagrafiche'
-  
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -269,6 +277,7 @@ Resources:
         ContainerEnvEntry15: !Sub 'SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${FreeMarkerTemplateLoaderPath}'
         ContainerEnvEntry16: !Sub 'SPRING_FREEMARKER_SUFFIX=${FreeMarkerSuffix}'
         ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
+        ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
@@ -307,6 +316,8 @@ Resources:
               - !Sub "${RaddTransactionDynamoTableArn}/*"
               - !Sub "${OperationsDynamoTableArn}"
               - !Sub "${OperationsDynamoTableArn}/*"
+              - !Sub "${RaddRegistryRequestDynamoTableArn}"
+              - !Sub "${RaddRegistryRequestDynamoTableArn}/*"
               - !Sub "${RaddRegistryImportDynamoTableArn}"
               - !Sub "${RaddRegistryImportDynamoTableArn}/*"
 
@@ -349,6 +360,7 @@ Resources:
           - ','
           - - !Ref RaddTransactionDynamoTableName
             - !Ref OperationsDynamoTableName
+            - !Ref RaddRegistryRequestDynamoTableName
             - !Ref RaddRegistryImportDynamoTableName
         AlarmArns: !Join
           - ','

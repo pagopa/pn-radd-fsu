@@ -25,9 +25,16 @@ public class PnRaddFsuConfig {
     private String safeStorageCxId;
     private String safeStorageDocType;
     private String applicationBasepath;
+    private Sqs sqs;
 
     private String dynamodbTable;
     private String dynamodbIunsoperationsTable;
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
+
+    @Data
+    public static class Sqs{
+        private String raddInternalCapCheckerQueueName;
+        private String raddInternalCapCheckerDlqQueueName;
+    }
 }

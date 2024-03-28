@@ -41,7 +41,6 @@ public class PnRaddFsuConfig {
 
     @Data
     public static class Sqs{
-        private String raddInternalCapCheckerQueueName;
-        private String raddInternalCapCheckerDlqQueueName;
+        private String internalCapCheckerQueueName;
     }
 }

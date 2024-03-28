@@ -296,7 +296,7 @@ Resources:
         ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
         ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
-        ContainerEnvEntry21: !Sub 'PN_RADD_SQS_RADDINTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
+        ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -390,8 +390,10 @@ Resources:
           - - !Ref RaddTransactionDynamoTableName
             - !Ref OperationsDynamoTableName
             - !Ref RaddRegistryRequestDynamoTableName
-            - !Ref RaddInternalCapCheckerQueueName
             - !Ref RaddRegistryImportDynamoTableName
+        QueueArns: !Join
+          - ','
+          - - !Ref RaddInternalCapCheckerQueueName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

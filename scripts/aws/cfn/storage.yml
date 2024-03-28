@@ -221,7 +221,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
       Parameters:
-        QueueName: !Sub '${ProjectName}-radd-alt-internal-cap-checker'
+        QueueName: !Sub '${ProjectName}-radd_alt_internal_cap_checker'
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
         VisibilityTimeout: 60
         MaxReceiveCount: 10
@@ -271,13 +271,13 @@ Outputs:
     Value: !Sub '${RaddRegistryRequestDynamoTable.Arn}'
 
   # RaddInternalCapCheckerQueue Queue
-  RaddCapCheckerQueueName:
+  RaddInternalCapCheckerQueueName:
     Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.QueueName
-  RaddCapCheckerQueueARN:
+  RaddInternalCapCheckerQueueARN:
     Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.QueueARN
-  RaddCapCheckerDLQName:
+  RaddInternalCapCheckerDLQName:
     Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.DeadLetterQueueName
-  RaddCapCheckerDLQARN:
+  RaddInternalCapCheckerDLQARN:
     Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.DeadLetterQueueARN
 
   # Log group exports

@@ -25,7 +25,7 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
                                  PnRaddFsuConfig raddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
-                raddFsuConfig.getDynamodbIunsoperationsTable(),
+                raddFsuConfig.getDao().getIunsOperationsTable(),
                 raddFsuConfig,
                 OperationsIunsEntity.class
         );

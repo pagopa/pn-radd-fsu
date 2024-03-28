@@ -31,7 +31,7 @@ public class PnRaddFsuConfig {
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
     @Data
-    private static class Dao {
+    public static class Dao {
         private String raddTransactionTable;
         private String iunsOperationsTable;
         private String raddRegistryRequestTable;

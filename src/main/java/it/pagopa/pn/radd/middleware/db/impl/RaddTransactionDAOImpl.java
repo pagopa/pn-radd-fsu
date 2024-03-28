@@ -46,7 +46,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
                                   PnRaddFsuConfig pnRaddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
-                pnRaddFsuConfig.getDynamodbTable(),
+                pnRaddFsuConfig.getDao().getRaddTransactionTable(),
                 pnRaddFsuConfig,
                 RaddTransactionEntity.class);
         this.operationsIunsDAO = operationsIunsDAO;

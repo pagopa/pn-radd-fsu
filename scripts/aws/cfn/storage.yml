@@ -162,7 +162,7 @@ Resources:
         StreamViewType: NEW_IMAGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
-
+        
   RaddLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -178,13 +178,13 @@ Outputs:
     Description: Name of dynamodb table containing radd transaction
     Value: !Ref RaddTransactionDynamoTable
 
-  RaddTransactionDynamoTableArn:
-    Description: ARN of dynamodb table containing transaction
-    Value: !Sub '${RaddTransactionDynamoTable.Arn}'
-
   OperationsDynamoTableName:
     Description: Name of dynamodb table containing iuns and operations
     Value: !Ref OperationsDynamoTable
+
+  RaddTransactionDynamoTableArn:
+    Description: ARN of dynamodb table containing transaction
+    Value: !Sub '${RaddTransactionDynamoTable.Arn}'
 
   OperationsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations

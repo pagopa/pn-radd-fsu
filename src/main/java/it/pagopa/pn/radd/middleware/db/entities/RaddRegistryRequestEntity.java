@@ -7,9 +7,8 @@ import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
-/**
- * Questa entità mappa la tabella pn-richiesteRadd.
- */
+import java.time.Instant;
+
 @DynamoDbBean
 @Getter
 @Setter
@@ -44,9 +43,9 @@ public class RaddRegistryRequestEntity {
     @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = CORRELATIONID_INDEX), @DynamoDbAttribute(COL_CORRELATION_ID)}))
     private String correlationId;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_CREATED_AT)}))
-    private String createdAt;
+    private Instant createdAt;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_UPDATED_AT)}))
-    private String updatedAt;
+    private Instant updatedAt;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_ORIGINAL_REQUEST)}))
     private String originalRequest;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_ZIP_CODE)}))
@@ -55,9 +54,9 @@ public class RaddRegistryRequestEntity {
     private String status;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_ERROR)}))
     private String error;
-    @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = CXID_REQUESTID_INDEX), @DynamoDbSecondaryPartitionKey(indexNames = CXID_REGISTRYID_INDEX), @DynamoDbAttribute(COL_CX_ID)}))
+    @Getter(onMethod = @__({@DynamoDbSecondaryPartitionKey(indexNames = {CXID_REQUESTID_INDEX, CXID_REGISTRYID_INDEX}), @DynamoDbAttribute(COL_CX_ID)}))
     private String cxId;
-    @Getter(onMethod = @__({@DynamoDbSecondarySortKey(indexNames = CXID_REQUESTID_INDEX), @DynamoDbAttribute(COL_REGISTRY_ID)}))
+    @Getter(onMethod = @__({@DynamoDbSecondarySortKey(indexNames = CXID_REGISTRYID_INDEX), @DynamoDbAttribute(COL_REGISTRY_ID)}))
     private String registryId;
 
     @DynamoDbIgnore

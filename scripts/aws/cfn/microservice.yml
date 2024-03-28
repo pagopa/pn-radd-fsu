@@ -108,6 +108,15 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing anagrafiche'
 
+
+  RaddRegistryDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing radd registries'
+
+  RaddRegistryDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing radd registries'
+
   RaddInternalCapCheckerQueueName:
     Type: String
     Description: Name of Internal queue
@@ -296,6 +305,7 @@ Resources:
         ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
         ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
+        ContainerEnvEntry20: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLE=${RaddRegistryDynamoTableName}'
         ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
@@ -349,6 +359,8 @@ Resources:
               - !Sub "${RaddRegistryRequestDynamoTableArn}/*"
               - !Sub "${RaddRegistryImportDynamoTableArn}"
               - !Sub "${RaddRegistryImportDynamoTableArn}/*"
+              - !Sub "${RaddRegistryDynamoTableArn}"
+              - !Sub "${RaddRegistryDynamoTableArn}/*"
 
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:
@@ -391,6 +403,7 @@ Resources:
             - !Ref OperationsDynamoTableName
             - !Ref RaddRegistryRequestDynamoTableName
             - !Ref RaddRegistryImportDynamoTableName
+            - !Ref RaddRegistryDynamoTableName
         QueueArns: !Join
           - ','
           - - !Ref RaddInternalCapCheckerQueueName

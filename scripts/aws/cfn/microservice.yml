@@ -99,7 +99,15 @@ Parameters:
   RaddRegistryRequestDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing radd registry requests'
-  
+
+  RaddRegistryImportDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing anagrafiche'
+
+  RaddRegistryImportDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing anagrafiche'
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -270,6 +278,7 @@ Resources:
         ContainerEnvEntry16: !Sub 'SPRING_FREEMARKER_SUFFIX=${FreeMarkerSuffix}'
         ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
         ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
+        ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -309,6 +318,8 @@ Resources:
               - !Sub "${OperationsDynamoTableArn}/*"
               - !Sub "${RaddRegistryRequestDynamoTableArn}"
               - !Sub "${RaddRegistryRequestDynamoTableArn}/*"
+              - !Sub "${RaddRegistryImportDynamoTableArn}"
+              - !Sub "${RaddRegistryImportDynamoTableArn}/*"
 
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:
@@ -350,6 +361,7 @@ Resources:
           - - !Ref RaddTransactionDynamoTableName
             - !Ref OperationsDynamoTableName
             - !Ref RaddRegistryRequestDynamoTableName
+            - !Ref RaddRegistryImportDynamoTableName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

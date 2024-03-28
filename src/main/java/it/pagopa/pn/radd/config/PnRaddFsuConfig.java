@@ -35,5 +35,6 @@ public class PnRaddFsuConfig {
         private String raddTransactionTable;
         private String iunsOperationsTable;
         private String raddRegistryRequestTable;
+        private String raddRegistryImportTable;
     }
 }

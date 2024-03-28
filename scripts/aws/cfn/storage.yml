@@ -111,7 +111,51 @@ Resources:
         StreamViewType: NEW_IMAGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
-        
+
+  RaddRegistryImportDynamoTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-radd-registry-import'
+      AttributeDefinitions:
+        - AttributeName: "cxId"
+          AttributeType: "S"
+        - AttributeName: "requestId"
+          AttributeType: "S"
+        - AttributeName: "fileKey"
+          AttributeType: "S"
+        - AttributeName: "status"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "cxId"
+          KeyType: "HASH"
+        - AttributeName: "requestId"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: "fileKey-index"
+          KeySchema:
+            - AttributeName: "fileKey"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "status-index"
+          KeySchema:
+            - AttributeName: "status"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
   RaddLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -131,6 +175,10 @@ Outputs:
     Description: Name of dynamodb table containing iuns and operations
     Value: !Ref OperationsDynamoTable
 
+  RaddRegistryImportDynamoTableName:
+    Description: Name of dynamodb table containing anagrafiche
+    Value: !Ref RaddRegistryImportDynamoTable
+
   RaddTransactionDynamoTableArn:
     Description: ARN of dynamodb table containing transaction
     Value: !Sub '${RaddTransactionDynamoTable.Arn}'
@@ -138,6 +186,10 @@ Outputs:
   OperationsDynamoTableArn:
     Description: ARN of dynamodb table containing iuns and operations
     Value: !Sub '${OperationsDynamoTable.Arn}'
+
+  RaddRegistryImportDynamoTableArn:
+    Description: Name of dynamodb table containing anagrafiche
+    Value: !Sub '${RaddRegistryImportDynamoTable.Arn}'
 
   # Log group exports
   EcsLogGroup:

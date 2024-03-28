@@ -28,6 +28,9 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
+  AlarmSNSTopicName:
+    Type: String
+
 Resources:
 
   RaddTransactionDynamoTable:
@@ -252,6 +255,22 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+
+  # Coda per interna per valutazione cap
+  # NB: usati i valori di default per: DeadLetterQueueName, MessageRetentionPeriod, DeadLetterMessageRetentionPeriod
+  RaddInternalCapCheckerQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-radd_alt_internal_cap_checker'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
   RaddLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -302,6 +321,16 @@ Outputs:
   RaddRegistryDynamoTableArn:
     Description: ARN of dynamodb table containing radd registry
     Value: !Sub '${RaddRegistryDynamoTable.Arn}'
+
+  # RaddInternalCapCheckerQueue Queue
+  RaddInternalCapCheckerQueueName:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.QueueName
+  RaddInternalCapCheckerQueueARN:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.QueueARN
+  RaddInternalCapCheckerDLQName:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.DeadLetterQueueName
+  RaddInternalCapCheckerDLQARN:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.DeadLetterQueueARN
 
   # Log group exports
   EcsLogGroup:

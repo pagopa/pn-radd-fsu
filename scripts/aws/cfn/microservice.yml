@@ -117,6 +117,23 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing radd registries'
 
+  RaddInternalCapCheckerQueueName:
+    Type: String
+    Description: Name of Internal queue
+
+  RaddInternalCapCheckerQueueARN:
+    Type: String
+    Description: 'ARN for RaddInternalCapCheckerQueue'
+
+  RaddInternalCapCheckerDLQName:
+    Type: String
+    Description: Name of DLQ for RaddInternalCapChecker
+
+  RaddInternalCapCheckerDLQARN:
+    Type: String
+    Description: 'DLQ ARN for RaddInternalCapChecker'
+
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -289,6 +306,7 @@ Resources:
         ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
         ContainerEnvEntry20: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLE=${RaddRegistryDynamoTableName}'
+        ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -309,6 +327,17 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+              - sqs:GetQueueUrl
+              - sqs:ChangeMessageVisibility
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ReceiveMessage
+            Resource:
+              - !Ref RaddInternalCapCheckerDLQARN
+              - !Ref RaddInternalCapCheckerQueueARN
           - Effect: Allow
             Action:
               - dynamodb:BatchGetItem
@@ -375,6 +404,9 @@ Resources:
             - !Ref RaddRegistryRequestDynamoTableName
             - !Ref RaddRegistryImportDynamoTableName
             - !Ref RaddRegistryDynamoTableName
+        QueueArns: !Join
+          - ','
+          - - !Ref RaddInternalCapCheckerQueueName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

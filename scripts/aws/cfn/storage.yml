@@ -281,6 +281,21 @@ Resources:
         LogGroupName: !Sub '${ProjectName}-radd-alt'
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
+  # Coda interna per costruzione evento da inviare ad address manager
+  # NB: usati i valori di default per: DeadLetterQueueName, MessageRetentionPeriod, DeadLetterMessageRetentionPeriod
+  PnRaddAltInputQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-radd_alt_input'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
 Outputs:
   RaddTransactionDynamoTableName:
     Description: Name of dynamodb table containing radd transaction
@@ -335,3 +350,13 @@ Outputs:
   # Log group exports
   EcsLogGroup:
     Value: !GetAtt RaddLogGroup.Outputs.LogGroupName
+
+  # PnRaddAltInputQueue Queue
+  PnRaddAltInputQueueName:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.QueueName
+  PnRaddAltInputQueueARN:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.QueueARN
+  PnRaddAltInputQueueDLQName:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.DeadLetterQueueName
+  PnRaddAltInputQueueDLQARN:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.DeadLetterQueueARN

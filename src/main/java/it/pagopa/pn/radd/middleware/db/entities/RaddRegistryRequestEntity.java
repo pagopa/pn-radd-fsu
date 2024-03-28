@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
@@ -10,10 +10,9 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 import java.time.Instant;
 
 @DynamoDbBean
-@Getter
 @Setter
 @ToString
-@NoArgsConstructor
+@EqualsAndHashCode
 public class RaddRegistryRequestEntity {
     public static final String ITEMS_SEPARATOR = "#";
 

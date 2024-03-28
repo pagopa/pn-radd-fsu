@@ -1,7 +1,7 @@
 ## Quando viene aggiornato questo file, aggiornare anche il commitId presente nel file initsh-for-testcontainer-sh
 
 echo "### CREATE QUEUES FOR RADD-ALT ###"
-queues="local-radd-alt-to-paper-channel local-radd-alt-input local-radd-alt-cap-checker"
+queues="local-radd-alt-to-paper-channel local-radd-alt-input local-radd-alt-internal-cap-checker"
 for qn in $(echo $queues | tr " " "\n");do
   echo creating queue $qn ...
   aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \

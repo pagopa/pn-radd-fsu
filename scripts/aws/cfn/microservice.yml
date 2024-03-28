@@ -262,6 +262,22 @@ Parameters:
     Default: 600000
     Description: RADD waf limit
 
+  PnRaddAltInputQueueName:
+    Type: String
+    Description: 'Name of Internal queue'
+
+  PnRaddAltInputQueueARN:
+    Type: String
+    Description: 'ARN for PnRaddAltInputQueue'
+
+  PnRaddAltInputQueueDLQName:
+    Type: String
+    Description: 'Name of DLQ for PnRaddAltInputQueue'
+
+  PnRaddAltInputQueueDLQARN:
+    Type: String
+    Description: 'DLQ ARN for PnRaddAltInputQueue'
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -307,6 +323,7 @@ Resources:
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
         ContainerEnvEntry20: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLE=${RaddRegistryDynamoTableName}'
         ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
+        ContainerEnvEntry22: !Sub 'PN_RADD_SQS_INPUTQUEUENAME=${PnRaddAltInputQueueName}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -338,6 +355,8 @@ Resources:
             Resource:
               - !Ref RaddInternalCapCheckerDLQARN
               - !Ref RaddInternalCapCheckerQueueARN
+              - !Ref PnRaddAltInputQueueDLQARN
+              - !Ref PnRaddAltInputQueueARN
           - Effect: Allow
             Action:
               - dynamodb:BatchGetItem
@@ -406,7 +425,8 @@ Resources:
             - !Ref RaddRegistryDynamoTableName
         QueueArns: !Join
           - ','
-          - - !Ref RaddInternalCapCheckerQueueName
+          - - !Ref PnRaddAltInputQueueName
+            - !Ref RaddInternalCapCheckerQueueName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

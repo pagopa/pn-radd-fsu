@@ -279,6 +279,7 @@ Resources:
         ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
         ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
+        ContainerEnvEntry22: !Sub 'PN_RADD_CLIENT_ADDRESS_MANAGER_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName

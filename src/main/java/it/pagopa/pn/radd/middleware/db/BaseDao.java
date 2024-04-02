@@ -11,7 +11,6 @@ import software.amazon.awssdk.enhanced.dynamodb.*;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
-import software.amazon.awssdk.utils.ImmutableMap;
 
 import java.util.List;
 import java.util.Map;
@@ -126,5 +125,15 @@ public abstract class BaseDao<T> {
                             return Mono.error(new TransactionAlreadyExistsException());
                         }
                 );
+    }
+
+    protected Mono<Void> transactWriteItems(List<T> entityList, Class<T> entityClass) {
+        TransactWriteItemsEnhancedRequest.Builder transactionWriteRequest = TransactWriteItemsEnhancedRequest.builder();
+        entityList.forEach(entity ->
+            transactionWriteRequest.addUpdateItem(this.tableAsync,
+                    TransactUpdateItemEnhancedRequest.builder(entityClass).item(entity).build())
+        );
+
+        return Mono.fromFuture(this.dynamoDbEnhancedAsyncClient.transactWriteItems(transactionWriteRequest.build()));
     }
 }

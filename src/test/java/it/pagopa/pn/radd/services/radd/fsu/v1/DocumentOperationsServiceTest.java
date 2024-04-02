@@ -8,6 +8,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadReque
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
@@ -66,6 +67,9 @@ class DocumentOperationsServiceTest extends BaseTest {
 
     @Mock
     OperationsIunsDAO operationsIunsDAO;
+
+    @Mock
+    PnRaddFsuConfig pnRaddFsuConfig;
 
     @Test
     void documentDownloadACTTest() throws IOException {
@@ -289,6 +293,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
         Mockito.when(pnSafeStorageClient.createFile( any(), any())
         ).thenReturn(Mono.error( new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
+        when(pnRaddFsuConfig.getSafeStorageDocType()).thenReturn("test");
         Mono<DocumentUploadResponse> response = documentOperationsService.createFile(Mono.just(bundleId) );
         response.onErrorResume(ex ->{
             if (ex instanceof RaddGenericException){
@@ -309,6 +314,7 @@ class DocumentOperationsServiceTest extends BaseTest {
         DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
         FileCreationResponseDto fileCreationResponseDto = mock(FileCreationResponseDto.class);
         fileCreationResponseDto.setUploadUrl("testUrl");
+        when(pnRaddFsuConfig.getSafeStorageDocType()).thenReturn("test");
         Mockito.when(pnSafeStorageClient.createFile(Mockito.any(), Mockito.any())
         ).thenReturn( Mono.just(fileCreationResponseDto) );
         DocumentUploadResponse response = documentOperationsService.createFile(Mono.just(bundleId) ).block();

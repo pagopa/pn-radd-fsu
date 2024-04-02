@@ -5,10 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
 import it.pagopa.pn.common.rest.error.v1.dto.ProblemError;
-import it.pagopa.pn.radd.exception.PnException;
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.exception.PnSafeStorageException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.pojo.PnSafeStoreExModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -22,6 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 
@@ -64,6 +62,20 @@ public class RestExceptionHandler {
         log.error(ex.getWebClientEx().getResponseBodyAsString());
         return ResponseEntity.status(ex.getWebClientEx().getStatusCode())
                 .body(Mono.just(ex.getWebClientEx().getResponseBodyAsString()));
+    }
+
+    @ExceptionHandler(RaddGenericException.class)
+    public ResponseEntity<Mono<Problem>> pnRaddGenericException(RaddGenericException ex){
+        log.error(ex.getMessage());
+        Problem problem = new Problem();
+        problem.setType(ex.getStatus().getReasonPhrase());
+        problem.setStatus(ex.getStatus().value());
+        problem.setTitle(ex.getExceptionType().getTitle());
+        problem.setDetail(ex.getExceptionType().getMessage());
+        problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
+        problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
+        return ResponseEntity.status(ex.getStatus())
+                .body(Mono.just(problem));
     }
 
     @ExceptionHandler(PnSafeStorageException.class)

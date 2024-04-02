@@ -30,11 +30,11 @@ public class RegistryImportDAOImpl extends BaseDao<PnRaddRegistryImportEntity> i
     public Flux<PnRaddRegistryImportEntity> getRegistryImportByCxId(String xPagopaPnCxId) {
         Key key = Key.builder().partitionValue(xPagopaPnCxId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
-        return this.getByFilter(conditional, null, null, null, null);
+        return getByFilter(conditional, null, null, null, null);
     }
 
     @Override
     public Mono<PnRaddRegistryImportEntity> putRaddRegistryImportEntity(PnRaddRegistryImportEntity pnRaddRegistryImportEntity) {
-       return super.putItem(pnRaddRegistryImportEntity);
+       return putItem(pnRaddRegistryImportEntity);
     }
 }

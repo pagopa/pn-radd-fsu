@@ -2,10 +2,13 @@
   "Parameters" : {
     "SafeStorageCxId": "pn-radd-alt",
     "SafeStorageDocType": "PN_RADD_ALT_ATTACHMENT",
+    "RegistrySafeStorageDocType": "PN_RADD_ALT_IMPORT",
     "AttemptBatchWriter": "3",
     "SanitizeMode": "ESCAPING",
     "FreeMarkerTemplateLoaderPath": "documents_composition_templates",
     "FreeMarkerSuffix": ".html",
-    "DocumentTypeEnumFilter": ""
+    "DocumentTypeEnumFilter": "",
+    "RegistryDefaultEndValidity": 0,
+    "RegistryDefaultDeleteRule": "DUPLICATE"
   }
 }

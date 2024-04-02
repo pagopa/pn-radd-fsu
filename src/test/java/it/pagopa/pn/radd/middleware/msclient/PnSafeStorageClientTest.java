@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
@@ -15,7 +16,6 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PnSafeStorageClientTest extends BaseTest.WithMockServer {
@@ -25,8 +25,12 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
 
     @Test
     void testCreateFile() {
-        String contentType = "application/pdf", operationId = "operationId", checksumValue = "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560";
-        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, checksumValue);
+        String contentType = "application/pdf", checksumValue = "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560";
+        FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
+        fileCreationRequestDto.setContentType(contentType);
+        fileCreationRequestDto.setDocumentType("PN_RADD_ALT_ATTACHMENT");
+        fileCreationRequestDto.setStatus("PRELOADED");
+        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(fileCreationRequestDto, checksumValue);
         monoResponse.map(response -> {
             assertEquals("http://localhost:1080/safe-storage/storage/unFile", response.getUploadUrl());
             assertEquals("AZ23RF12", response.getSecret());
@@ -38,8 +42,10 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
 
     @Test
     void testCreateFileCode404() {
-        String contentType = "application/json", operationId = "operationId", checksumValue = "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560";
-        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(contentType, checksumValue);
+        String contentType = "application/json", checksumValue = "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560";
+        FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
+        fileCreationRequestDto.setContentType(contentType);
+        Mono<FileCreationResponseDto> monoResponse =  pnSafeStorageClient.createFile(fileCreationRequestDto, checksumValue);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof RaddGenericException){
                 assertNotNull(((RaddGenericException) exception).getExceptionType());

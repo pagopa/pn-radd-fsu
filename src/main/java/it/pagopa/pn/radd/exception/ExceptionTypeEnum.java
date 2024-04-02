@@ -30,7 +30,7 @@ public enum ExceptionTypeEnum {
     NO_NOTIFICATIONS_FAILED_FOR_CF("NO_NOTIFICATIONS_FAILED", "Non ci sono notifiche non consegnate per questo codice fiscale", 10),
     TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale", 99),
     DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili", 99),
-    DUPLICATE_REQUEST("DUPLICATE_REQUEST", "La richiesta di caricamento CSV è stata già effettuata per questo file", 99),
+    DUPLICATE_REQUEST("DUPLICATE_REQUEST", "Richiesta Duplicata. il file inviato è già stato importato", 99),
     PENDING_REQUEST("PENDING_REQUEST", "Una precedente richiesta di import è ancora in corso", 99)
     ;
     private final String title;

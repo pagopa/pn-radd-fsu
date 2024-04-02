@@ -24,11 +24,12 @@ public class PnRaddFsuConfig {
     private String clientSafeStorageBasepath;
     private String safeStorageCxId;
     private String safeStorageDocType;
+    public String registrySafeStorageDocType;
     private String applicationBasepath;
     private Sqs sqs;
     private Dao dao;
-    private int defaultEndValidity;
-    private String deleteRole;
+    private int registryDefaultEndValidity;
+    private String registryDefaultDeleteRule;
 
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();

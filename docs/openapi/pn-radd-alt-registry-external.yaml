@@ -61,6 +61,7 @@ paths:
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/lastKey'
+        - $ref: '#/components/parameters/externalCode'
       responses:
         200:
           description: OK
@@ -312,6 +313,10 @@ components:
           type: string
           description: Descrizione dello sportello.
           example: Sportello ABC.
+        externalCode:
+          type: string
+          description: Identificativo punto ritiro SEND
+          example: "123456"
         phoneNumber:
           type: string
           description: Numero di telefono dello sportello.
@@ -413,6 +418,13 @@ components:
         default: 10
     lastKey:
       name: lastKey
+      in: query
+      required: false
+      schema:
+        type: string
+    externalCode:
+      name: externalCode
+      description: Identificativo punto ritiro SEND indicato dal client
       in: query
       required: false
       schema:

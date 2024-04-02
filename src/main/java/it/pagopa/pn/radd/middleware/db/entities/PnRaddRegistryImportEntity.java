@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
+import java.time.Instant;
+
 @DynamoDbBean
 @Setter
 @ToString
@@ -21,6 +23,8 @@ public class PnRaddRegistryImportEntity {
     public static final String COL_ERROR = "error";
     public static final String COL_CONFIG = "config";
     public static final String COL_TTL = "ttl";
+    public static final String COL_CREATED_AT = "createdAt";
+    public static final String COL_UPDATED_AT = "updatedAt";
 
     public static final String STATUS_INDEX = "status-index";
     public static final String FILE_KEY_INDEX = "fileKey-index";
@@ -48,4 +52,10 @@ public class PnRaddRegistryImportEntity {
 
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_TTL)}))
     private Long ttl;
+
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_CREATED_AT)}))
+    private Instant createdAt;
+
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_UPDATED_AT)}))
+    private Instant updatedAt;
 }

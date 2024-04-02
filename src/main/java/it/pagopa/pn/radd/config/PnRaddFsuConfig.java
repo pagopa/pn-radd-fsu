@@ -27,6 +27,8 @@ public class PnRaddFsuConfig {
     private String applicationBasepath;
     private Sqs sqs;
     private Dao dao;
+    private int defaultEndValidity;
+    private String deleteRole;
 
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();

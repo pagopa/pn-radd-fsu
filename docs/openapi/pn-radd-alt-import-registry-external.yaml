@@ -1,0 +1,348 @@
+openapi: 3.0.1
+info:
+  termsOfService: https://notifichedigitali.pagopa.it/radd/index.html
+  title: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  x-summary: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  version: '1.0.0'
+  contact:
+    email: pn-supporto-radd@pagopa.it
+  license:
+    name: Licenza di PN
+    url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+
+servers:
+  - url: https://api.radd.notifichedigitali.it
+    description: Ambiente di produzione
+  - url: https://api.radd.uat.notifichedigitali.it
+    description: Ambiente di collaudo UAT
+
+tags:
+  - name: Import
+
+paths:
+  /radd-alt/api/v1/registry/import/upload:
+    post:
+      tags:
+        - Import
+      description: >-
+        API utilizzata per la richiesta della presigned URL utilizzata per il caricamento del file CSV contenente la lista
+        di sportelli di un soggetto RADD.
+      operationId: uploadRegistryRequests
+      parameters:
+        - $ref: '#/components/parameters/uid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryUploadRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryUploadResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/registry/import/{requestId}/verify:
+    get:
+      tags:
+        - Import
+      description: >-
+        API utilizzata per la verifica dello stato di una richiesta di censimento indirizzi (CSV)
+      operationId: verifyRequest
+      parameters:
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/requestId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyRequestResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+  /radd-alt/api/v1/registry/import/{requestId}:
+    get:
+      tags:
+        - Import
+      description: >-
+        API utilizzata per il recupero della lista paginata di tutte le richieste di inserimento in anagrafica associate alla richiesta di import
+      operationId: retrieveRequestItems
+      parameters:
+        - $ref: '#/components/parameters/uid'
+        - $ref: '#/components/parameters/requestId'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/lastKey'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    Registry:
+      type: object
+      properties:
+        registryId:
+          type: string
+          description: identificativo univoco della sede RADD popolato solo in caso di record in stato ACCEPTED
+        requestId:
+          type: string
+          description: ID della richiesta di import.
+          example: "987654"
+        address:
+          $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          type: object
+          properties:
+            latitude:
+              type: string
+              description: Latitudine della posizione geografica dello sportello.
+              example: "41.9028"
+            longitude:
+              type: string
+              description: Longitudine della posizione geografica dello sportello.
+              example: "12.4964"
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "09:00-13:30"
+        startValidity:
+          type: string
+          format: date-time
+          description: Data e ora di inizio di validità dello sportello.
+          example: "2024-03-21T09:00:00Z"
+        endValidity:
+          type: string
+          format: date-time
+          description: Data e ora di fine di validità dello sportello.
+          example: "2024-03-21T17:00:00Z"
+    VerifyRequestResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Stato della richiesta
+          example: REJECTED
+        error:
+          type: string
+          description: Eventuale errore, popolato solo in caso di status = REJECTED.
+          example: "csv malformato"
+    RequestResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistryRequestResponse'
+        moreResult:
+          description: Indica se sono presenti ulteriori pagine di risultati
+          type: boolean
+        nextPagesKey:
+          description: >-
+            Elenco, non esaustivo, delle chiavi da usare per richiedere le 
+            pagine di risultati successive a quella corrente. <br/>
+            Valorizzato solo se il campo __moreResult__ ha valore __true__.
+          type: array
+          items:
+            type: string
+    RegistryRequestResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: identificativo univoco della richiesta
+        registryId:
+          type: string
+          description: identificativo univoco della sede RADD attivata a partire dalla richiesta
+        originalRequest:
+          $ref: '#/components/schemas/OriginalRequest'
+        createdAt:
+          type: string
+          description: data creazione del record
+        updatedAt:
+          type: string
+          description: data aggiornamento del record
+        status:
+          type: string
+          description: stato della richiesta
+          example: ACCEPTED
+        error:
+          type: string
+          description: eventuale motivazione di scarto, popolato solo in caso di stato REJECTED
+    OriginalRequest:
+      type: object
+      properties:
+        originalAddress:
+          $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          type: object
+          properties:
+            latitude:
+              type: string
+              description: Latitudine della posizione geografica dello sportello.
+              example: "41.9028"
+            longitude:
+              type: string
+              description: Longitudine della posizione geografica dello sportello.
+              example: "12.4964"
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+        startValidity:
+          type: string
+          format: date-time
+          description: Data e ora di inizio di validità dello sportello.
+          example: "2024-03-21T09:00:00Z"
+        endValidity:
+          type: string
+          format: date-time
+          description: Data e ora di fine di validità dello sportello.
+          example: "2024-03-21T17:00:00Z"    
+    Address:
+      type: object
+      properties:
+        addressRow:
+          type: string
+          description: Indirizzo completo
+          example: Via Roma 123
+        cap:
+          type: string
+          description: CAP (Codice di Avviamento Postale).
+          example: 00100
+        city:
+          type: string
+          description: Città.
+          example: Roma
+        pr:
+          type: string
+          description: Provincia.
+          example: RM
+        country:
+          type: string
+          description: Paese.
+          example: Italia
+    RegistryUploadRequest:
+      description: Richiesta di upload di un file csv contenente una lista di sportelli da censire
+      type: object
+      required:
+        - checksum
+      properties:
+        checksum:
+          type: string
+          example: "708F4C8216F30FA6007F8E2F316ECC935D94057202FC5D8008BCCC118EA12560"
+    RegistryUploadResponse:
+      description: Risposta alla richiesta di upload di un file csv contenente una lista di sportelli da censire
+      type: object
+      properties:
+          requestId:
+            description: Identificativo univoco della richiesta di censimento, da utilizzare in caso di verifica dello stato della richiesta o recupero degli sportelli associati.
+            type: string
+            example: "987654"
+          url:
+            type: string
+            example: "https://presignedurldemo.s3.eu-west-2.amazonaws.com/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJJWZ7B6WCRGMKFGQ%2F20180210%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20180210T171315Z&X-Amz-Expires=1800&X-Amz-Signature=12b74b0788aa036bc7c3d03b3f20c61f1f91cc9ad8873e3314255dc479a25351&X-Amz-SignedHeaders=host"
+          fileKey:
+            type: string
+            example: "PN_RADD_ALT_ATTACHMENT-4958442ee6eb467abec049afa67e3899.zip"
+          secret:
+            type: string
+            example: "alow22ddw"
+  parameters:
+    uid:
+      name: uid
+      description: Identificativo pseudo-anonimizzato dell'operatore RADD
+      in: header
+      required: true
+      schema:
+        type: string
+    requestId:
+      name: requestId
+      description: Identificativo univoco della richiesta di censimento (CSV o CRUD)
+      in: path
+      required: true
+      schema:
+        type: string
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 10
+    lastKey:
+      name: lastKey
+      in: query
+      required: false
+      schema:
+        type: string
+
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized
+
+  securitySchemes: # ONLY EXTERNAL
+    bearerAuth: # ONLY EXTERNAL
+      type: http          # ONLY EXTERNAL
+      scheme: bearer      # ONLY EXTERNAL
+      bearerFormat: JWT   # ONLY EXTERNAL
+#
+security: # ONLY EXTERNAL
+  - bearerAuth: [ ]     # ONLY EXTERNAL

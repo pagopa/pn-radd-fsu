@@ -65,6 +65,9 @@ paths:
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/lastKey'
+        - $ref: '#/components/parameters/cap'
+        - $ref: '#/components/parameters/city'
+        - $ref: '#/components/parameters/pr'
         - $ref: '#/components/parameters/externalCode'
       responses:
         200:
@@ -426,6 +429,27 @@ components:
         default: 10
     lastKey:
       name: lastKey
+      in: query
+      required: false
+      schema:
+        type: string
+    cap:
+      name: cap
+      description: CAP
+      in: query
+      required: false
+      schema:
+        type: string
+    city:
+      name: city
+      description: Città
+      in: query
+      required: false
+      schema:
+        type: string
+    pr:
+      name: pr
+      description: Provincia
       in: query
       required: false
       schema:

@@ -278,6 +278,15 @@ Parameters:
     Type: String
     Description: 'DLQ ARN for PnRaddAltInputQueue'
 
+  SafeStorageToRaddAltQueueName:
+    Type: String
+    Description: 'Name of SafeStorage queue'
+
+  AddressManagerToRaddAltQueueName:
+    Type: String
+    Description: 'Name of AddressManager queue'
+
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -324,7 +333,9 @@ Resources:
         ContainerEnvEntry20: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLE=${RaddRegistryDynamoTableName}'
         ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
         ContainerEnvEntry22: !Sub 'PN_RADD_SQS_INPUTQUEUENAME=${PnRaddAltInputQueueName}'
-
+        ContainerEnvEntry23: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
+        ContainerEnvEntry24: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry25: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

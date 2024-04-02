@@ -11,12 +11,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
-import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +38,7 @@ public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEnt
     }
 
     @Override
-    public Flux<RaddRegistryRequestEntity> findWithStatus(String correlationId, ImportStatus status) throws IllegalArgumentException {
+    public Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String correlationId, ImportStatus status) throws IllegalArgumentException {
         if (correlationId == null)
             throw new IllegalArgumentException("Missing correlationId param");
         if (status == null)
@@ -51,7 +51,7 @@ public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEnt
         map.put(":status", AttributeValue.builder().s(status.name()).build());
         String query = PnRaddRegistryImportEntity.COL_STATUS + " = :status";
 
-        return this.getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, map, query, null);
+        return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, map, query, null);
     }
 
     @Override
@@ -61,10 +61,10 @@ public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEnt
         if (raddRegistryRequestEntity == null)
             throw new IllegalArgumentException("Missing RegistryRequest param");
 
-        Expression expression = createExpression(raddRegistryRequestEntity);
         raddRegistryRequestEntity.setStatus(importStatus.name());
         raddRegistryRequestEntity.setError(error);
-        return super.putItemWithConditions(raddRegistryRequestEntity, expression, RaddRegistryRequestEntity.class);
+        raddRegistryRequestEntity.setUpdatedAt(Instant.now());
+        return putItem(raddRegistryRequestEntity);
     }
 
     @Override
@@ -72,14 +72,8 @@ public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEnt
         if (importStatus == null)
             throw new IllegalArgumentException(MISSING_STATUS);
 
-        Expression expression = createExpression(entity);
         entity.setStatus(importStatus.name());
-        return super.putItemWithConditions(entity, expression, RaddRegistryRequestEntity.class);
-    }
-
-    private Expression createExpression(RaddRegistryRequestEntity entity) {
-        return  Expression.builder()
-                .putExpressionValue(":"+RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(entity.getPk()).build())
-                .build();
+        entity.setUpdatedAt(Instant.now());
+        return putItem(entity);
     }
 }

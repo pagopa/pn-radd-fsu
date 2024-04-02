@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 public interface PnRaddRegistryRequestDAO {
 
-    Flux<RaddRegistryRequestEntity> findWithStatus(String cxId, ImportStatus status) throws IllegalArgumentException;
+    Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String cxId, ImportStatus status) throws IllegalArgumentException;
 
     Mono<RaddRegistryRequestEntity> updateStatusAndError(RaddRegistryRequestEntity richiesteSediRaddItem, ImportStatus importStatus, String error) throws IllegalArgumentException;
 

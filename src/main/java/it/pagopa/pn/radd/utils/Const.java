@@ -56,6 +56,6 @@ public class Const {
     public static final String ATTO_NOTIFICATO = "ATTO_NOTIFICATO";
     public static final String ATTESTAZIONE_OPPONIBILE_A_TERZI = "ATTESTAZIONE_OPPONIBILE_A_TERZI";
 
-
+    public static final String ERROR_CODE_RADD_ALT_EVENTTYPENOTSUPPORTED = "ERROR_CODE_RADD_ALT_EVENTTYPENOTSUPPORTED";
 
 }

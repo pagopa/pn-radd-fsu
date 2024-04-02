@@ -1,8 +1,6 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.pn.radd.exception.CorrelationIdNotFoundException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.PnRaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.PnRaddRegistryRequestDAO;
@@ -10,21 +8,18 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.OriginalRequest;
-import it.pagopa.pn.radd.pojo.PnAddressManagerRequestDTO;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
-import java.time.Instant;
 import java.util.*;
-import java.util.function.Function;
 
 @Service
 @AllArgsConstructor
@@ -36,40 +31,43 @@ public class AddressManagerRequestHandler {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String ERROR_DUPLICATE = "Rifiutato in quanto duplicato";
-    private static final String ERROR_IMPORT = "Rifiutato in quanto errore di import";
 
 
-    private Mono<Void> processMessage(List<PnAddressManagerRequestDTO.ResultItem> resultItems, String correlationId) {
-        // 2
-        return pnRaddRegistryRequestDAO.findWithStatus(correlationId, ImportStatus.PENDING)  // Ottengo tutti gli elementi da processare
-                .switchIfEmpty(Flux.error(new CorrelationIdNotFoundException()))
-                .flatMap(richiesteSediRaddItem -> getRelativeItemFromMessage(resultItems, richiesteSediRaddItem.getPk())
-                        .flatMap(item -> {
-                            String error = item.getError();
-                            if (error != null && !error.isEmpty()) {
-                                log.warn("Id {} error not empty", item.getError());
-                                return pnRaddRegistryRequestDAO.updateStatusAndError(richiesteSediRaddItem, ImportStatus.REJECTED, ERROR_IMPORT);
-                            }
-                            return handleRegistryUpdate(richiesteSediRaddItem, item).then();
-                        }))
+    private Mono<Void> processMessage(List<PnAddressManagerEvent.ResultItem> resultItems, String correlationId) {
+        return pnRaddRegistryRequestDAO.findByCorrelationIdWithStatus(correlationId, ImportStatus.PENDING)
+                .switchIfEmpty(Flux.error(new RaddGenericException("No pending items found for correlationId " + correlationId)))
+                .flatMap(raddRegistryRequest -> processAddressForRegistryRequest(resultItems, raddRegistryRequest))
                 .doOnError(
-                        CorrelationIdNotFoundException.class,
+                        RaddGenericException.class,
                         exception -> log.warn("correlationId {} not found or not in PENDING", correlationId)
                 )
                 .then();
     }
 
     @NotNull
-    private Flux<RaddRegistryRequestEntity> handleRegistryUpdate(RaddRegistryRequestEntity richiesteSediRaddItem, PnAddressManagerRequestDTO.ResultItem resultItem) {
+    private Mono<RaddRegistryRequestEntity> processAddressForRegistryRequest(List<PnAddressManagerEvent.ResultItem> resultItems, RaddRegistryRequestEntity raddRegistryRequest) {
+        return getRelativeItemFromAddressManagerEvent(resultItems, raddRegistryRequest.getPk())
+                .flatMap(item -> {
+                    String error = item.getError();
+                    if (StringUtils.isNotBlank(error)) {
+                        log.warn("Id {} error not empty", item.getError());
+                        return pnRaddRegistryRequestDAO.updateStatusAndError(raddRegistryRequest, ImportStatus.REJECTED, error);
+                    }
+                    return handleRegistryUpdate(raddRegistryRequest, item);
+                });
+    }
+
+    @NotNull
+    private Mono<RaddRegistryRequestEntity> handleRegistryUpdate(RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
         UUID registryId = UUID.nameUUIDFromBytes(resultItem.getNormalizedAddress().toString().getBytes());
-        // 4
-        return pnRaddRegistryDAO.find(registryId.toString(), richiesteSediRaddItem.getCxId())
-                .switchIfEmpty(createNewRegistryEntity(richiesteSediRaddItem, resultItem))
-                .flatMap(entity -> updateRegistryEntity(richiesteSediRaddItem, entity))
+
+        return pnRaddRegistryDAO.find(registryId.toString(), raddRegistryRequestEntity.getCxId())
+                .flatMap(entity -> updateRegistryRequestEntity(raddRegistryRequestEntity, entity))
+                .switchIfEmpty(createNewRegistryEntity(raddRegistryRequestEntity, resultItem))
                 .onErrorResume(throwable -> {
                     if (throwable instanceof RaddGenericException ex && ERROR_DUPLICATE.equals(ex.getMessage())) {
                         return pnRaddRegistryRequestDAO.updateStatusAndError(
-                                richiesteSediRaddItem,
+                                raddRegistryRequestEntity,
                                 ImportStatus.REJECTED,
                                 ERROR_DUPLICATE
                         );
@@ -79,40 +77,39 @@ public class AddressManagerRequestHandler {
     }
 
     @NotNull
-    private Mono<RaddRegistryRequestEntity> updateRegistryEntity(RaddRegistryRequestEntity richiesteSediRaddItem, RaddRegistryEntity raddRegistryEntity) {
-            if (StringUtils.equals(raddRegistryEntity.getRequestId(), richiesteSediRaddItem.getRequestId())) {
-                return pnRaddRegistryRequestDAO.updateStatusAndError(richiesteSediRaddItem, ImportStatus.REJECTED, ERROR_DUPLICATE);
+    private Mono<RaddRegistryRequestEntity> updateRegistryRequestEntity(RaddRegistryRequestEntity newRegistryRequestEntity, RaddRegistryEntity preExistingRegistryEntity) {
+            if (StringUtils.equals(preExistingRegistryEntity.getRequestId(), newRegistryRequestEntity.getRequestId())) {
+                return pnRaddRegistryRequestDAO.updateStatusAndError(newRegistryRequestEntity, ImportStatus.REJECTED, ERROR_DUPLICATE);
             } else {
-                return mergeNewRegistryEntity(raddRegistryEntity, richiesteSediRaddItem)
+                return mergeNewRegistryEntity(preExistingRegistryEntity, newRegistryRequestEntity)
                         .flatMap(updatedEntity -> pnRaddRegistryDAO.updateRegistryEntity(updatedEntity)
-                                .flatMap(unused -> pnRaddRegistryRequestDAO.updateRichiesteSediRaddStatus(richiesteSediRaddItem, RegistryRequestStatus.ACCEPTED)));
+                                .flatMap(unused -> pnRaddRegistryRequestDAO.updateRichiesteSediRaddStatus(newRegistryRequestEntity, RegistryRequestStatus.ACCEPTED)));
             }
     }
 
     @NotNull
-    private Mono<RaddRegistryEntity> createNewRegistryEntity(RaddRegistryRequestEntity richiesteSediRaddItem, PnAddressManagerRequestDTO.ResultItem resultItem) {
-        return constructAnagraficheRaddItem(resultItem.getNormalizedAddress(), richiesteSediRaddItem.getCxId(), richiesteSediRaddItem)
-                .flatMap(item -> this.pnRaddRegistryDAO.createNewRegistryEntity(item)
-                            .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))));
+    private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
+        return constructRaddRegistryEntity(resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
+                .flatMap(item -> this.pnRaddRegistryDAO.putItemIfAbsent(item)
+                            .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
+                .flatMap(unused -> pnRaddRegistryRequestDAO.updateRichiesteSediRaddStatus(raddRegistryRequestEntity, RegistryRequestStatus.ACCEPTED));
 
     }
 
-    public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity raddRegistryEntity, RaddRegistryRequestEntity raddRegistryRequestEntity) {
+    public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
-            OriginalRequest originalRequest = objectMapper.readValue(raddRegistryRequestEntity.getOriginalRequest(), OriginalRequest.class);
+            OriginalRequest originalRequest = objectMapper.readValue(newRegistryRequestEntity.getOriginalRequest(), OriginalRequest.class);
 
             return RaddRegistryEntity.builder()
-                    .registryId(raddRegistryEntity.getRegistryId())
-                    .cxId(raddRegistryEntity.getCxId())
-                    .normalizedAddress(raddRegistryEntity.getNormalizedAddress())
-                    .description(raddRegistryEntity.getDescription())
-                    .phoneNumber(raddRegistryEntity.getPhoneNumber())
-                    .geoLocation(raddRegistryEntity.getGeoLocation())
+                    .registryId(preExistingRegistryEntity.getRegistryId())
+                    .cxId(preExistingRegistryEntity.getCxId())
+                    .normalizedAddress(preExistingRegistryEntity.getNormalizedAddress())
+                    .requestId(newRegistryRequestEntity.getRequestId())
                     // Metadata from originalRequest
                     .description(originalRequest.getDescription())
                     .phoneNumber(originalRequest.getPhoneNumber())
                     .geoLocation(originalRequest.getGeoLocation())
-                    .zipCode(raddRegistryRequestEntity.getZipCode())
+                    .zipCode(newRegistryRequestEntity.getZipCode())
                     .openingTime(originalRequest.getOpeningTime())
                     .startValidity(originalRequest.getStartValidity())
                     .endValidity(originalRequest.getEndValidity())
@@ -120,14 +117,14 @@ public class AddressManagerRequestHandler {
         });
     }
     
-    private Mono<RaddRegistryEntity> constructAnagraficheRaddItem(PnAddressManagerRequestDTO.NormalizedAddress normalizedAddress, String id, RaddRegistryRequestEntity registryRequest) {
+    private Mono<RaddRegistryEntity> constructRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
         return Mono.fromCallable(() -> {
             String normalizedAddressString = objectMapper.writeValueAsString(normalizedAddress);
             OriginalRequest originalRequest = objectMapper.readValue(registryRequest.getOriginalRequest(), OriginalRequest.class);
 
             return RaddRegistryEntity.builder()
                     .registryId(registryRequest.getRegistryId())
-                    .cxId(id)
+                    .cxId(registryRequest.getCxId())
                     .requestId(registryRequest.getRequestId())
                     .normalizedAddress(normalizedAddressString)
                     // Metadata from originalRequest
@@ -142,8 +139,8 @@ public class AddressManagerRequestHandler {
         });
     }
 
-    private Mono<PnAddressManagerRequestDTO.ResultItem> getRelativeItemFromMessage(List<PnAddressManagerRequestDTO.ResultItem> resultItems, String id) {
-        Optional<PnAddressManagerRequestDTO.ResultItem> resultItemOptional = resultItems.stream().filter(item -> StringUtils.equals(item.getId(), id)).findFirst();
+    private Mono<PnAddressManagerEvent.ResultItem> getRelativeItemFromAddressManagerEvent(List<PnAddressManagerEvent.ResultItem> resultItems, String id) {
+        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream().filter(item -> StringUtils.equals(item.getId(), id)).findFirst();
         if (resultItemOptional.isEmpty()) {
             log.warn("Item with id {} not found or not in event list", id);
             return Mono.empty();
@@ -151,8 +148,8 @@ public class AddressManagerRequestHandler {
         return Mono.just(resultItemOptional.get());
     }
 
-    public Mono<Void> handleMessage(PnAddressManagerRequestDTO message) {
-        return processMessage(message.getBody().getResultItems(), message.getBody().getCorrelationId());
+    public Mono<Void> handleMessage(PnAddressManagerEvent message) {
+        return processMessage(message.getPayload().getResultItems(), message.getPayload().getCorrelationId());
     }
 
 }

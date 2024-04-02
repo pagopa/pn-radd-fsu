@@ -108,6 +108,32 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing anagrafiche'
 
+
+  RaddRegistryDynamoTableName:
+    Type: String
+    Description: 'Name of dynamodb table containing radd registries'
+
+  RaddRegistryDynamoTableArn:
+    Type: String
+    Description: 'ARN of dynamodb table containing radd registries'
+
+  RaddInternalCapCheckerQueueName:
+    Type: String
+    Description: Name of Internal queue
+
+  RaddInternalCapCheckerQueueARN:
+    Type: String
+    Description: 'ARN for RaddInternalCapCheckerQueue'
+
+  RaddInternalCapCheckerDLQName:
+    Type: String
+    Description: Name of DLQ for RaddInternalCapChecker
+
+  RaddInternalCapCheckerDLQARN:
+    Type: String
+    Description: 'DLQ ARN for RaddInternalCapChecker'
+
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -236,6 +262,22 @@ Parameters:
     Default: 600000
     Description: RADD waf limit
 
+  PnRaddAltInputQueueName:
+    Type: String
+    Description: 'Name of Internal queue'
+
+  PnRaddAltInputQueueARN:
+    Type: String
+    Description: 'ARN for PnRaddAltInputQueue'
+
+  PnRaddAltInputQueueDLQName:
+    Type: String
+    Description: 'Name of DLQ for PnRaddAltInputQueue'
+
+  PnRaddAltInputQueueDLQARN:
+    Type: String
+    Description: 'DLQ ARN for PnRaddAltInputQueue'
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -279,7 +321,10 @@ Resources:
         ContainerEnvEntry17: !Sub 'PN_RADD_DOCUMENT_TYPE_ENUM_FILTER=${DocumentTypeEnumFilter}'
         ContainerEnvEntry18: !Sub 'PN_RADD_DAO_RADDREGISTRYREQUESTTABLE=${RaddRegistryRequestDynamoTableName}'
         ContainerEnvEntry19: !Sub 'PN_RADD_DAO_RADDREGISTRYIMPORTTABLE=${RaddRegistryImportDynamoTableName}'
-        ContainerEnvEntry22: !Sub 'PN_RADD_CLIENT_ADDRESS_MANAGER_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry20: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLE=${RaddRegistryDynamoTableName}'
+        ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
+        ContainerEnvEntry22: !Sub 'PN_RADD_SQS_INPUTQUEUENAME=${PnRaddAltInputQueueName}'
+        ContainerEnvEntry24: !Sub 'PN_RADD_CLIENT_ADDRESS_MANAGER_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
@@ -302,6 +347,19 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
+              - sqs:SendMessage
+              - sqs:GetQueueUrl
+              - sqs:ChangeMessageVisibility
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ReceiveMessage
+            Resource:
+              - !Ref RaddInternalCapCheckerDLQARN
+              - !Ref RaddInternalCapCheckerQueueARN
+              - !Ref PnRaddAltInputQueueDLQARN
+              - !Ref PnRaddAltInputQueueARN
+          - Effect: Allow
+            Action:
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
               - dynamodb:ExecuteTransaction
@@ -321,6 +379,8 @@ Resources:
               - !Sub "${RaddRegistryRequestDynamoTableArn}/*"
               - !Sub "${RaddRegistryImportDynamoTableArn}"
               - !Sub "${RaddRegistryImportDynamoTableArn}/*"
+              - !Sub "${RaddRegistryDynamoTableArn}"
+              - !Sub "${RaddRegistryDynamoTableArn}/*"
 
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:
@@ -363,6 +423,11 @@ Resources:
             - !Ref OperationsDynamoTableName
             - !Ref RaddRegistryRequestDynamoTableName
             - !Ref RaddRegistryImportDynamoTableName
+            - !Ref RaddRegistryDynamoTableName
+        QueueArns: !Join
+          - ','
+          - - !Ref PnRaddAltInputQueueName
+            - !Ref RaddInternalCapCheckerQueueName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

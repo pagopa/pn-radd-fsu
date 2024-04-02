@@ -26,6 +26,7 @@ public class PnRaddFsuConfig {
     private String safeStorageCxId;
     private String safeStorageDocType;
     private String applicationBasepath;
+    private Sqs sqs;
     private Dao dao;
 
     private HtmlSanitizer.SanitizeMode sanitizeMode;
@@ -37,5 +38,12 @@ public class PnRaddFsuConfig {
         private String iunsOperationsTable;
         private String raddRegistryRequestTable;
         private String raddRegistryImportTable;
+        private String raddRegistryTable;
+    }
+
+    @Data
+    public static class Sqs{
+        private String internalCapCheckerQueueName;
+        private String inputQueueName;
     }
 }

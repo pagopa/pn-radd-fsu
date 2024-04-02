@@ -28,6 +28,9 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
+  AlarmSNSTopicName:
+    Type: String
+
 Resources:
 
   RaddTransactionDynamoTable:
@@ -169,7 +172,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-radd-registry-import'
+      TableName: !Sub '${ProjectName}-RaddRegistryImport'
       AttributeDefinitions:
         - AttributeName: "cxId"
           AttributeType: "S"
@@ -208,6 +211,66 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+
+  RaddRegistryDynamoTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-RaddRegistry'
+      AttributeDefinitions:
+        - AttributeName: "registryId"
+          AttributeType: "S"
+        - AttributeName: "cxId"
+          AttributeType: "S"
+        - AttributeName: "requestId"
+          AttributeType: "S"
+        - AttributeName: "zipCode"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "registryId"
+          KeyType: "HASH"
+        - AttributeName: "cxId"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: "cxId-requestId-index"
+          KeySchema:
+            - AttributeName: "cxId"
+              KeyType: "HASH"
+            - AttributeName: "requestId"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+        - IndexName: "zipCode-index"
+          KeySchema:
+            - AttributeName: "zipCode"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+
+  # Coda per interna per valutazione cap
+  # NB: usati i valori di default per: DeadLetterQueueName, MessageRetentionPeriod, DeadLetterMessageRetentionPeriod
+  RaddInternalCapCheckerQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-radd_alt_internal_cap_checker'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
   RaddLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -217,6 +280,21 @@ Resources:
       Parameters:
         LogGroupName: !Sub '${ProjectName}-radd-alt'
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+
+  # Coda interna per costruzione evento da inviare ad address manager
+  # NB: usati i valori di default per: DeadLetterQueueName, MessageRetentionPeriod, DeadLetterMessageRetentionPeriod
+  PnRaddAltInputQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-radd_alt_input'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
 
 Outputs:
   RaddTransactionDynamoTableName:
@@ -251,6 +329,34 @@ Outputs:
     Description: ARN of dynamodb table containing requests
     Value: !Sub '${RaddRegistryRequestDynamoTable.Arn}'
 
+  RaddRegistryDynamoTableName:
+    Description: Name of dynamodb table containing radd registry
+    Value: !Ref RaddRegistryDynamoTable
+
+  RaddRegistryDynamoTableArn:
+    Description: ARN of dynamodb table containing radd registry
+    Value: !Sub '${RaddRegistryDynamoTable.Arn}'
+
+  # RaddInternalCapCheckerQueue Queue
+  RaddInternalCapCheckerQueueName:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.QueueName
+  RaddInternalCapCheckerQueueARN:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.QueueARN
+  RaddInternalCapCheckerDLQName:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.DeadLetterQueueName
+  RaddInternalCapCheckerDLQARN:
+    Value: !GetAtt RaddInternalCapCheckerQueue.Outputs.DeadLetterQueueARN
+
   # Log group exports
   EcsLogGroup:
     Value: !GetAtt RaddLogGroup.Outputs.LogGroupName
+
+  # PnRaddAltInputQueue Queue
+  PnRaddAltInputQueueName:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.QueueName
+  PnRaddAltInputQueueARN:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.QueueARN
+  PnRaddAltInputQueueDLQName:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.DeadLetterQueueName
+  PnRaddAltInputQueueDLQARN:
+    Value: !GetAtt PnRaddAltInputQueue.Outputs.DeadLetterQueueARN

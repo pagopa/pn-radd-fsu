@@ -172,7 +172,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-radd-registry-import'
+      TableName: !Sub '${ProjectName}-RaddRegistryImport'
       AttributeDefinitions:
         - AttributeName: "cxId"
           AttributeType: "S"

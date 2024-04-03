@@ -7,6 +7,8 @@ import it.pagopa.pn.radd.middleware.db.entities.PnRaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,7 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@Service
+@Repository
+@Slf4j
 public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntity> implements PnRaddRegistryRequestDAO {
 
     private static final String MISSING_STATUS = "Missing status param";
@@ -68,7 +71,7 @@ public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEnt
     }
 
     @Override
-    public Mono<RaddRegistryRequestEntity> updateRichiesteSediRaddStatus(RaddRegistryRequestEntity entity, RegistryRequestStatus importStatus) {
+    public Mono<RaddRegistryRequestEntity> updateRegistryRequestStatus(RaddRegistryRequestEntity entity, RegistryRequestStatus importStatus) {
         if (importStatus == null)
             throw new IllegalArgumentException(MISSING_STATUS);
 

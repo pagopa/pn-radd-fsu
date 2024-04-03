@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "pn.radd.event")
+@ConfigurationProperties(prefix = "pn.radd-alt.event")
 public class EventHandler {
     private Map<String, String> handler;
 }

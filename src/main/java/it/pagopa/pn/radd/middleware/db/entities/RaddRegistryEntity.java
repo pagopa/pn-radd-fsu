@@ -9,7 +9,6 @@ import java.time.Instant;
 @Setter
 @ToString
 @EqualsAndHashCode
-@Builder
 public class RaddRegistryEntity {
 
     public static final String COL_REGISTRY_ID = "registryId";

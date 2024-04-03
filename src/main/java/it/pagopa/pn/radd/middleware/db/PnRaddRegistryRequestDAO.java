@@ -12,5 +12,5 @@ public interface PnRaddRegistryRequestDAO {
 
     Mono<RaddRegistryRequestEntity> updateStatusAndError(RaddRegistryRequestEntity richiesteSediRaddItem, ImportStatus importStatus, String error) throws IllegalArgumentException;
 
-    Mono<RaddRegistryRequestEntity> updateRichiesteSediRaddStatus(RaddRegistryRequestEntity id, RegistryRequestStatus importStatus);
+    Mono<RaddRegistryRequestEntity> updateRegistryRequestStatus(RaddRegistryRequestEntity id, RegistryRequestStatus importStatus);
 }

@@ -58,4 +58,7 @@ public class Const {
 
     public static final String ERROR_CODE_RADD_ALT_EVENTTYPENOTSUPPORTED = "ERROR_CODE_RADD_ALT_EVENTTYPENOTSUPPORTED";
 
+    /* Registry costant */
+    public static final String ERROR_DUPLICATE = "Rifiutato in quanto duplicato";
+
 }

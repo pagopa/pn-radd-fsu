@@ -4,8 +4,10 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.PnRaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
@@ -13,7 +15,8 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 
-@Component
+@Repository
+@Slf4j
 public class PnRaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements PnRaddRegistryDAO {
 
     public PnRaddRegistryDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,

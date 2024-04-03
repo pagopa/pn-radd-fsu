@@ -11,6 +11,8 @@ public class Const {
     //Status document
     public static final String DOCUMENT_TYPE = "PN_RADD_ALT_ATTACHMENT";
     public static final String PRELOADED = "PRELOADED";
+
+    public static final String SAVED = "SAVED";
     public static final String ATTACHED = "ATTACHED";
 
     //Status transaction entity

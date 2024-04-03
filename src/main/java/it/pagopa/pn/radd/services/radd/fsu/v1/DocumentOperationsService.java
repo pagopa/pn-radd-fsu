@@ -2,9 +2,11 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationRecipientV23Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
@@ -18,6 +20,7 @@ import it.pagopa.pn.radd.middleware.msclient.DocumentDownloadClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.utils.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +38,7 @@ import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class DocumentOperationsService {
 
     private final PnDeliveryClient pnDeliveryClient;
@@ -43,15 +47,8 @@ public class DocumentOperationsService {
     private final DocumentDownloadClient documentDownloadClient;
     private final PdfGenerator pdfGenerator;
     private final OperationsIunsDAO operationsIunsDAO;
+    private final PnRaddFsuConfig pnRaddFsuConfig;
 
-    public DocumentOperationsService(PnDeliveryClient pnDeliveryClient, RaddTransactionDAO raddTransactionDAO, PdfGenerator pdfGenerator, PnSafeStorageClient pnSafeStorageClient, DocumentDownloadClient documentDownloadClient, OperationsIunsDAO operationsIunsDAO) {
-        this.pnDeliveryClient = pnDeliveryClient;
-        this.raddTransactionDAO = raddTransactionDAO;
-        this.pdfGenerator = pdfGenerator;
-        this.pnSafeStorageClient = pnSafeStorageClient;
-        this.documentDownloadClient = documentDownloadClient;
-        this.operationsIunsDAO = operationsIunsDAO;
-    }
 
     public Mono<byte[]> documentDownload(String operationType, String operationId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String attachmentId) {
         return validateOperationTypeAndOperationId(operationType, operationId)
@@ -146,12 +143,22 @@ public class DocumentOperationsService {
             log.error(MISSING_INPUT_PARAMETERS);
             return Mono.error(new PnInvalidInputException("Body non valido"));
         }
+        FileCreationRequestDto request = getFileCreationRequestDto();
         // retrieve presigned url
         return documentUploadRequest
-                .flatMap(value -> pnSafeStorageClient.createFile(CONTENT_TYPE_ZIP, value.getChecksum()))
+                .flatMap(value -> pnSafeStorageClient.createFile(request, value.getChecksum()))
                 .map(item -> {
                     log.info("Response presigned url : {}", item.getUploadUrl());
                     return DocumentUploadResponseMapper.fromResult(item);
                 }).onErrorResume(RaddGenericException.class, ex -> Mono.just(DocumentUploadResponseMapper.fromException(ex)));
+    }
+
+    @NotNull
+    private FileCreationRequestDto getFileCreationRequestDto() {
+        FileCreationRequestDto request = new FileCreationRequestDto();
+        request.setStatus(Const.PRELOADED);
+        request.setContentType(CONTENT_TYPE_ZIP);
+        request.setDocumentType(this.pnRaddFsuConfig.getSafeStorageDocType());
+        return request;
     }
 }

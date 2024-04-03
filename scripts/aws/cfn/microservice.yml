@@ -72,6 +72,10 @@ Parameters:
     Type: String
     Description: 'SafeStorage document-type'
 
+  RegistrySafeStorageDocType:
+    Type: String
+    Description: 'Radd registry SafeStorage document-type'
+
   NetworkLoadBalancerLink:
     Type: String
     Description: 'network load balancer link for API-GW'
@@ -133,6 +137,17 @@ Parameters:
     Type: String
     Description: 'DLQ ARN for RaddInternalCapChecker'
 
+  RegistryDefaultEndValidity:
+    Type: String
+    Description: 'Default end validity for radd registry'
+
+  RegistryDefaultDeleteRule:
+    Type: String
+    Description: 'Default delete role for radd registry'
+
+  RegitryImportUploadFileTtl:
+    Type: Number
+    Description: 'Time, expressed in seconds, within which it is possible to upload the csv (validity of safestorage url)'
 
   Version:
     Type: String
@@ -324,6 +339,10 @@ Resources:
         ContainerEnvEntry20: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLE=${RaddRegistryDynamoTableName}'
         ContainerEnvEntry21: !Sub 'PN_RADD_SQS_INTERNALCAPCHECKERQUEUENAME=${RaddInternalCapCheckerQueueName}'
         ContainerEnvEntry22: !Sub 'PN_RADD_SQS_INPUTQUEUENAME=${PnRaddAltInputQueueName}'
+        ContainerEnvEntry23: !Sub 'PN_RADD_REGISTRYSAFESTORAGEDOCTYPE=${RegistrySafeStorageDocType}'
+        ContainerEnvEntry24: !Sub 'PN_RADD_REGISTRYDEFAULTENDVALIDITY=${RegistryDefaultEndValidity}'
+        ContainerEnvEntry25: !Sub 'PN_RADD_REGISTRYDEFAULTDELETERULE=${RegistryDefaultDeleteRule}'
+        ContainerEnvEntry26: !Sub 'PN-RADD-REGISTRYIMPORTUPLOADFILETTL=${RegitryImportUploadFileTtl}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName

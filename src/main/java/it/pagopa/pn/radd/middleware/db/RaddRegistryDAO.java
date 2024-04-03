@@ -3,7 +3,7 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import reactor.core.publisher.Mono;
 
-public interface PnRaddRegistryDAO {
+public interface RaddRegistryDAO {
 
     Mono<RaddRegistryEntity> find(String registryId, String cxId);
 

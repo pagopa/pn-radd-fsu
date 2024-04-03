@@ -2,11 +2,10 @@ package it.pagopa.pn.radd.middleware.db.impl;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
-import it.pagopa.pn.radd.middleware.db.PnRaddRegistryDAO;
+import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -17,11 +16,11 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 @Repository
 @Slf4j
-public class PnRaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements PnRaddRegistryDAO {
+public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements RaddRegistryDAO {
 
-    public PnRaddRegistryDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                 DynamoDbAsyncClient dynamoDbAsyncClient,
-                                 PnRaddFsuConfig raddFsuConfig) {
+    public RaddRegistryDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
+                               DynamoDbAsyncClient dynamoDbAsyncClient,
+                               PnRaddFsuConfig raddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
                 raddFsuConfig.getDao().getRaddRegistryTable(),

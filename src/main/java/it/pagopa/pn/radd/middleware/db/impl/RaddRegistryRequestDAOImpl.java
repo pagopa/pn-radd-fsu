@@ -2,14 +2,13 @@ package it.pagopa.pn.radd.middleware.db.impl;
 
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
-import it.pagopa.pn.radd.middleware.db.PnRaddRegistryRequestDAO;
-import it.pagopa.pn.radd.middleware.db.entities.PnRaddRegistryImportEntity;
+import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -25,13 +24,13 @@ import java.util.Map;
 
 @Repository
 @Slf4j
-public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntity> implements PnRaddRegistryRequestDAO {
+public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntity> implements RaddRegistryRequestDAO {
 
     private static final String MISSING_STATUS = "Missing status param";
 
-    public PnRaddRegistryRequestDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                 DynamoDbAsyncClient dynamoDbAsyncClient,
-                                 PnRaddFsuConfig raddFsuConfig) {
+    public RaddRegistryRequestDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
+                                      DynamoDbAsyncClient dynamoDbAsyncClient,
+                                      PnRaddFsuConfig raddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
                 dynamoDbAsyncClient,
                 raddFsuConfig.getDao().getRaddRegistryRequestTable(),
@@ -52,7 +51,7 @@ public class PnRaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEnt
 
         Map<String, AttributeValue> map = new HashMap<>();
         map.put(":status", AttributeValue.builder().s(status.name()).build());
-        String query = PnRaddRegistryImportEntity.COL_STATUS + " = :status";
+        String query = RaddRegistryImportEntity.COL_STATUS + " = :status";
 
         return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, map, query, null);
     }

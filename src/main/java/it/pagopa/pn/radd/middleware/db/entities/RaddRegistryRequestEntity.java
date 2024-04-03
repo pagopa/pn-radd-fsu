@@ -62,15 +62,15 @@ public class RaddRegistryRequestEntity {
 
     @DynamoDbIgnore
     private String retrieveCxIdFromPk() {
-        return this.getPk().split(ITEMS_SEPARATOR).length == 2 ? this.getPk().split(ITEMS_SEPARATOR)[CXID_POSITION] : StringUtils.EMPTY;
+        return this.getPk().split(ITEMS_SEPARATOR).length == 3 ? this.getPk().split(ITEMS_SEPARATOR)[CXID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
     private String retrieveRequestIdFromPk() {
-        return this.getPk().split(ITEMS_SEPARATOR).length == 2 ? this.getPk().split(ITEMS_SEPARATOR)[REQUESTID_POSITION] : StringUtils.EMPTY;
+        return this.getPk().split(ITEMS_SEPARATOR).length == 3 ? this.getPk().split(ITEMS_SEPARATOR)[REQUESTID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
     private String retrieveIndexFromPk() {
-        return this.getPk().split(ITEMS_SEPARATOR).length == 2 ? this.getPk().split(ITEMS_SEPARATOR)[INDEX_POSITION] : StringUtils.EMPTY;
+        return this.getPk().split(ITEMS_SEPARATOR).length == 3 ? this.getPk().split(ITEMS_SEPARATOR)[INDEX_POSITION] : StringUtils.EMPTY;
     }
 
 }

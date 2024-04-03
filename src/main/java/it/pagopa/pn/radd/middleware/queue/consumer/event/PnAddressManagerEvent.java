@@ -37,16 +37,22 @@ public class PnAddressManagerEvent implements GenericEvent<StandardEventHeader, 
         private NormalizedAddress normalizedAddress;
         private String error;
 
+        public static String[] splitId(String id) {
+            return id.split(ITEMS_SEPARATOR);
+        }
         public static String retrieveCxIdFromId(String id) {
-            return id.split(ITEMS_SEPARATOR).length == 3 ? id.split(ITEMS_SEPARATOR)[CXID_POSITION] : StringUtils.EMPTY;
+            String[] idItems = splitId(id);
+            return idItems.length == 3 ? idItems[CXID_POSITION] : StringUtils.EMPTY;
         }
 
         public static String retrieveRequestIdFromId(String id) {
-            return id.split(ITEMS_SEPARATOR).length == 3 ? id.split(ITEMS_SEPARATOR)[REQUESTID_POSITION] : StringUtils.EMPTY;
+            String[] idItems = splitId(id);
+            return idItems.length == 3 ? idItems[REQUESTID_POSITION] : StringUtils.EMPTY;
         }
 
         public String retrieveIndexFromId(String id) {
-            return id.split(ITEMS_SEPARATOR).length == 3 ? id.split(ITEMS_SEPARATOR)[INDEX_POSITION] : StringUtils.EMPTY;
+            String[] idItems = splitId(id);
+            return idItems.length == 3 ? idItems[INDEX_POSITION] : StringUtils.EMPTY;
         }
     }
 

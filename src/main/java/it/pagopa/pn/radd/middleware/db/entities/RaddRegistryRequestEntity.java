@@ -60,17 +60,25 @@ public class RaddRegistryRequestEntity {
     @Getter(onMethod = @__({@DynamoDbSecondarySortKey(indexNames = CXID_REGISTRYID_INDEX), @DynamoDbAttribute(COL_REGISTRY_ID)}))
     private String registryId;
 
+
+    @DynamoDbIgnore
+    private String[] retrievePkItems() {
+        return this.getPk().split(ITEMS_SEPARATOR);
+    }
     @DynamoDbIgnore
     private String retrieveCxIdFromPk() {
-        return this.getPk().split(ITEMS_SEPARATOR).length == 3 ? this.getPk().split(ITEMS_SEPARATOR)[CXID_POSITION] : StringUtils.EMPTY;
+        String[] pkItems = retrievePkItems();
+        return pkItems.length == 3 ? pkItems[CXID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
     private String retrieveRequestIdFromPk() {
-        return this.getPk().split(ITEMS_SEPARATOR).length == 3 ? this.getPk().split(ITEMS_SEPARATOR)[REQUESTID_POSITION] : StringUtils.EMPTY;
+        String[] pkItems = retrievePkItems();
+        return pkItems.length == 3 ? pkItems[REQUESTID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
     private String retrieveIndexFromPk() {
-        return this.getPk().split(ITEMS_SEPARATOR).length == 3 ? this.getPk().split(ITEMS_SEPARATOR)[INDEX_POSITION] : StringUtils.EMPTY;
+        String[] pkItems = retrievePkItems();
+        return pkItems.length == 3 ? pkItems[INDEX_POSITION] : StringUtils.EMPTY;
     }
 
 }

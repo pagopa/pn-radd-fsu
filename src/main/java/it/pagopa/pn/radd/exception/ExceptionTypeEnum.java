@@ -31,7 +31,8 @@ public enum ExceptionTypeEnum {
     TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale", 99),
     DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili", 99),
     DUPLICATE_REQUEST("DUPLICATE_REQUEST", "Richiesta Duplicata. il file inviato è già in fase di elaborazione", 99),
-    PENDING_REQUEST("PENDING_REQUEST", "Una precedente richiesta di import è ancora in corso", 99)
+    PENDING_REQUEST("PENDING_REQUEST", "Una precedente richiesta di import è ancora in corso", 99),
+    MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "RequestId e CxId sono obbligatori", 99)
     ;
     private final String title;
     private final String message;

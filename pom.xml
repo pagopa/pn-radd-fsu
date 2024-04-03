@@ -87,12 +87,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb-enhanced -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>dynamodb-enhanced</artifactId>
-            <version>2.17.155</version>
-        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -146,10 +140,6 @@
             <artifactId>localstack</artifactId>
             <version>1.17.6</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>dynamodb-enhanced</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

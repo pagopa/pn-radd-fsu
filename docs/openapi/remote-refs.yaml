@@ -1,4 +1,10 @@
 components:
+  schemas:
+    ############################################################################################
+    ###                          STRUTTURE DATI DI PN-COMMONS                                ###
+    ############################################################################################
+    Problem:
+      $ref: 'https://raw.githubusercontent.com/pagopa/pn-commons/61cdf0712f133c8c69e056abfad6ce5223242ba0/docs/openapi/pn-errors.yaml#/components/schemas/Problem'
 
   parameters:
     ############################################################################################

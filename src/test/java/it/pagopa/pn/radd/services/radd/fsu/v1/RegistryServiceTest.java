@@ -1,15 +1,27 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.middleware.db.PnRaddRegistryDAO;
-import it.pagopa.pn.radd.middleware.db.PnRaddRegistryRequestDAO;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.middleware.db.RegistryImportDAO;
+import it.pagopa.pn.radd.middleware.db.entities.PnRaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.OriginalRequest;
+import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import reactor.core.publisher.Flux;
@@ -23,20 +35,49 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RegistryServiceTest {
+@ContextConfiguration(classes = {RegistryService.class, PnRaddFsuConfig.class})
+@ExtendWith(SpringExtension.class)
+@PropertySource("classpath:application-test.properties")
+@EnableConfigurationProperties
+class RegistryServiceTest {
+    @MockBean
+    private ObjectMapperUtil objectMapperUtil;
 
-    @Mock
-    private PnRaddRegistryDAO pnRaddRegistryDAO;
+    @MockBean
+    private PnRaddFsuConfig pnRaddFsuConfig;
 
-    @Mock
-    private PnRaddRegistryRequestDAO pnRaddRegistryRequestDAO;
+    @MockBean
+    private PnSafeStorageClient pnSafeStorageClient;
 
-    @Mock
-    private PnAddressManagerEvent.Payload payload;
+    @MockBean
+    private RegistryImportDAO registryImportDAO;
 
-    @Mock
-    private PnAddressManagerEvent message;
+    @Autowired
+    private RegistryService registryService;
 
+    @Test
+    void testUploadRegistryRequests() {
+        RegistryUploadRequest request = new RegistryUploadRequest();
+        request.setChecksum("checksum");
+        RegistryUploadResponse registryUploadResponse = new RegistryUploadResponse();
+        registryUploadResponse.setUrl("url");
+        registryUploadResponse.setFileKey("key");
+        registryUploadResponse.setSecret("secret");
+        PnRaddRegistryImportEntity pnRaddRegistryImportEntity = new PnRaddRegistryImportEntity();
+        FileCreationResponseDto fileCreationResponseDto = new FileCreationResponseDto();
+        fileCreationResponseDto.setKey("key");
+        fileCreationResponseDto.setSecret("secret");
+        fileCreationResponseDto.setUploadUrl("url");
+        when(registryImportDAO.getRegistryImportByCxId(any())).thenReturn(Flux.just(pnRaddRegistryImportEntity));
+        when(pnSafeStorageClient.createFile(any(), any())).thenReturn(Mono.just(fileCreationResponseDto));
+        when(objectMapperUtil.toJson(any())).thenReturn("string");
+        when(pnRaddFsuConfig.getRegistryDefaultEndValidity()).thenReturn(1);
+        when(pnRaddFsuConfig.getRegistryDefaultDeleteRule()).thenReturn("role");
+        when(registryImportDAO.putRaddRegistryImportEntity(any())).thenReturn(Mono.just(pnRaddRegistryImportEntity));
+
+        StepVerifier.create(registryService.uploadRegistryRequests("cxId", Mono.just(request)))
+                        .expectNextMatches(registryUploadResponse1 -> registryUploadResponse1.getFileKey().equals("key")).verifyComplete();
+    }
 
     @BeforeEach
     public void setup() {
@@ -156,5 +197,5 @@ public class RegistryServiceTest {
         pnAddressManagerEvent.setPayload(payload);
         return pnAddressManagerEvent;
     }
-
 }
+

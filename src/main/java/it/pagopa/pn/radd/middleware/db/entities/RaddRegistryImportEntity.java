@@ -13,7 +13,7 @@ import java.time.Instant;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class PnRaddRegistryImportEntity {
+public class RaddRegistryImportEntity {
 
     public static final String COL_CX_ID = "cxId";
     public static final String COL_REQUEST_ID = "requestId";

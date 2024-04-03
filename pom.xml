@@ -31,6 +31,12 @@
             <version>2.2.8</version>
         </dependency>
 
+        <dependency>
+            <groupId>it.pagopa.pn</groupId>
+            <artifactId>pn-model</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/io.swagger/swagger-annotations -->
         <dependency>
             <groupId>io.swagger</groupId>
@@ -80,12 +86,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb-enhanced -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>dynamodb-enhanced</artifactId>
-            <version>2.17.155</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -140,6 +140,10 @@
             <artifactId>localstack</artifactId>
             <version>1.17.6</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-function-context</artifactId>
         </dependency>
 
     </dependencies>

@@ -49,5 +49,7 @@ public class PnRaddFsuConfig {
     public static class Sqs{
         private String internalCapCheckerQueueName;
         private String inputQueueName;
+        private String safeStorageQueueName;
+        private String addressManagerQueueName;
     }
 }

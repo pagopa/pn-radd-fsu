@@ -301,6 +301,10 @@ Parameters:
     Type: String
     Description: 'Name of AddressManager queue'
 
+  AddressManagerBaseUrl:
+    Type: String
+    Description: 'Address manager base url'
+
 
 Resources:
 
@@ -355,7 +359,9 @@ Resources:
         ContainerEnvEntry27: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry28: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
-        ContainerEnvEntry30: !Sub 'PN_RADD_CLIENT_ADDRESS_MANAGER_BASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry30: !Sub 'PN_RADD_ADDRESSMANAGERBASEURL=${AddressManagerBaseUrl}'
+        ContainerSecret1: !Sub 'PN_RADD_ADDRESSMANAGERAPIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-RaddAlt-Secrets:AddressManagerApiKey:AWSCURRENT:'
+        MicroServiceSecretPrefix: pn-RaddAlt-Secrets
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName

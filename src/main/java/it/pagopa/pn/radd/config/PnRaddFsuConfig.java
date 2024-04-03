@@ -21,7 +21,6 @@ public class PnRaddFsuConfig {
     private String clientDeliveryPushBasepath;
     private String clientDeliveryPushInternalBasepath;
     private String clientDatavaultBasepath;
-    private String clientAddressManagerBasepath;
     private String clientSafeStorageBasepath;
     private String safeStorageCxId;
     private String safeStorageDocType;
@@ -31,6 +30,8 @@ public class PnRaddFsuConfig {
     private Dao dao;
     private int registryDefaultEndValidity;
     private String registryDefaultDeleteRule;
+    private String addressManagerApiKey;
+    private String addressManagerBaseUrl;
 
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();

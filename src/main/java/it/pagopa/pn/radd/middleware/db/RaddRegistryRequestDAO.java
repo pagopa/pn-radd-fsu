@@ -19,6 +19,6 @@ public interface RaddRegistryRequestDAO {
 
     Flux<RaddRegistryRequestEntity> getAllFromCorrelationId(String correlationId, String state);
 
-    Mono<Void> updateRecordsInPendig(List<RaddRegistryRequestEntity> addresses);
+    Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses);
 
 }

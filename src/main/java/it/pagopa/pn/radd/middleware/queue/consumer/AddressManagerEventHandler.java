@@ -23,7 +23,7 @@ public class AddressManagerEventHandler {
             log.debug("Handle message from {} with content {}", "Address Manager", message);
             PnAddressManagerEvent response = message.getPayload();
 
-            registryService.handleMessage(response)
+            registryService.handleAddressManagerEvent(response)
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                     .doOnError(throwable ->  {
                         log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());

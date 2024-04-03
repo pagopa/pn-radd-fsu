@@ -11,8 +11,11 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
@@ -42,6 +45,7 @@ public class RegistryService {
     private final RaddRegistryImportDAO raddRegistryImportDAO;
     private final PnSafeStorageClient pnSafeStorageClient;
     private final RaddRegistryUtils raddRegistryUtils;
+    private final PnAddressManagerClient pnAddressManagerClient;
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();
@@ -85,9 +89,7 @@ public class RegistryService {
         return raddRegistryImportDAO.putRaddRegistryImportEntity(pnRaddRegistryImportEntity);
     }
 
-
-
-    public Mono<Void> handleMessage(PnAddressManagerEvent message) {
+    public Mono<Void> handleAddressManagerEvent(PnAddressManagerEvent message) {
         return processMessage(message.getPayload().getResultItems(), message.getPayload().getCorrelationId());
     }
 
@@ -151,5 +153,19 @@ public class RegistryService {
                         .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
                 .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(raddRegistryRequestEntity, RegistryRequestStatus.ACCEPTED));
 
+    }
+
+    public Mono<Void> handleNormalizeRequestEvent(PnRaddAltNormalizeRequestEvent.Payload payload) {
+        AddressManagerRequest request = new AddressManagerRequest();
+        request.setCorrelationId(payload.getCorrelationId());
+
+        return raddRegistryRequestDAO.getAllFromCorrelationId(payload.getCorrelationId(), RegistryRequestStatus.NOT_WORKED.name())
+                .collectList()
+                .zipWhen(entities -> Mono.just(raddRegistryUtils.getRequestAddressFromOriginalRequest(entities)))
+                .flatMap(tuple -> {
+                    request.setAddresses(tuple.getT2());
+                    return pnAddressManagerClient.normalizeAddresses(request).thenReturn(tuple);
+                })
+                .flatMap(tuple -> raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1()));
     }
 }

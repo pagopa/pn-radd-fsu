@@ -8,12 +8,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AddressManagerConfigurator extends CommonBaseClient {
+public class AddressManagerApiClient extends CommonBaseClient {
 
     @Bean
-    public NormalizeAddressServiceApi normalizeAddressServiceApi(PnRaddFsuConfig config) {
-        ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder()));
-        apiClient.setBasePath(config.getClientAddressManagerBasepath());
-        return new NormalizeAddressServiceApi(apiClient);
+    public NormalizeAddressServiceApi normalizeAddressReactiveServiceApi(PnRaddFsuConfig cfg){
+        ApiClient newApiClient = new ApiClient( initWebClient(ApiClient.buildWebClientBuilder()) );
+        newApiClient.setBasePath( cfg.getAddressManagerBaseUrl() );
+        return new NormalizeAddressServiceApi(newApiClient);
     }
 }

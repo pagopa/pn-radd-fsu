@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,18 +9,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.messaging.Message;
 import reactor.core.publisher.Mono;
+
 import static org.mockito.Mockito.*;
 
-class AddressManagerEventHandlerTest {
+class RaddAltInputEventHandlerTest {
 
     @Mock
     private RegistryService registryService;
 
     @Mock
-    private Message<PnAddressManagerEvent> message;
+    private Message<PnRaddAltNormalizeRequestEvent.Payload> message;
 
     @InjectMocks
-    private AddressManagerEventHandler addressManagerEventHandler;
+    private RaddAltInputEventHandler raddAltInputEventHandler;
 
     @BeforeEach
     void setUp() {
@@ -29,12 +30,12 @@ class AddressManagerEventHandlerTest {
 
     @Test
     void shouldHandleMessageSuccessfully() {
-        PnAddressManagerEvent event = new PnAddressManagerEvent();
+        PnRaddAltNormalizeRequestEvent.Payload event = new PnRaddAltNormalizeRequestEvent.Payload();
         when(message.getPayload()).thenReturn(event);
-        when(registryService.handleAddressManagerEvent(event)).thenReturn(Mono.empty());
+        when(registryService.handleNormalizeRequestEvent(event)).thenReturn(Mono.empty());
 
-        addressManagerEventHandler.pnAddressManagerEventInboundConsumer().accept(message);
+        raddAltInputEventHandler.pnRaddAltInputNormalizeRequestConsumer().accept(message);
 
-        verify(registryService, times(1)).handleAddressManagerEvent(event);
+        verify(registryService, times(1)).handleNormalizeRequestEvent(event);
     }
 }

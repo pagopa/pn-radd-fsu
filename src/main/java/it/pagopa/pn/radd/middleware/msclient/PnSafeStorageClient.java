@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.msclient;
 
+import it.pagopa.pn.commons.log.PnLogger;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api.FileDownloadApi;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api.FileMetadataUpdateApi;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.api.FileUploadApi;
@@ -10,8 +11,8 @@ import it.pagopa.pn.radd.exception.PnSafeStorageException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.msclient.common.BaseClient;
 import it.pagopa.pn.radd.utils.Const;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -25,26 +26,25 @@ import java.util.concurrent.TimeoutException;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
 
-@Slf4j
+@CustomLog
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PnSafeStorageClient extends BaseClient {
-    private FileUploadApi fileUploadApi;
-    private FileDownloadApi fileDownloadApi;
-    private FileMetadataUpdateApi fileMetadataUpdateApi;
+
+    private final FileUploadApi fileUploadApi;
+    private final FileDownloadApi fileDownloadApi;
+    private final FileMetadataUpdateApi fileMetadataUpdateApi;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
 
-    public Mono<FileCreationResponseDto> createFile(String contentType, String checksum) {
-        log.debug(String.format("Req params: %s", contentType));
+    public Mono<FileCreationResponseDto> createFile(FileCreationRequestDto fileCreationRequestDto, String checksum) {
+        log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "createFile");
+
+        log.debug(String.format("Req params: %s", fileCreationRequestDto.getContentType()));
         log.debug(String.format("URL %s ", this.pnRaddFsuConfig.getClientSafeStorageBasepath()));
         log.debug(String.format("storage id %s ", this.pnRaddFsuConfig.getSafeStorageCxId()));
         log.trace("CREATE FILE TICK {}", new Date().getTime());
-        FileCreationRequestDto request = new FileCreationRequestDto();
-        request.setStatus(Const.PRELOADED);
-        request.setContentType(contentType);
-        request.setDocumentType(this.pnRaddFsuConfig.getSafeStorageDocType());
-        return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), Const.X_CHECKSUM, checksum, request)
+        return this.fileUploadApi.createFile(this.pnRaddFsuConfig.getSafeStorageCxId(), Const.X_CHECKSUM, checksum, fileCreationRequestDto)
                 .map(item -> {
                     log.trace("CREATE FILE TOCK {}", new Date().getTime());
                     return item;

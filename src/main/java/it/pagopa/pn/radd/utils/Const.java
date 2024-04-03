@@ -11,6 +11,8 @@ public class Const {
     //Status document
     public static final String DOCUMENT_TYPE = "PN_RADD_ALT_ATTACHMENT";
     public static final String PRELOADED = "PRELOADED";
+
+    public static final String SAVED = "SAVED";
     public static final String ATTACHED = "ATTACHED";
 
     //Status transaction entity
@@ -43,6 +45,8 @@ public class Const {
     public static final String ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED = "ERROR_CODE_RADD_DOCUMENTCOMPOSITIONFAILED";
     public static final String MISSING_INPUT_PARAMETERS = "Missing input parameters";
     public static final String CONTENT_TYPE_ZIP = "application/zip";
+
+    public static final String CONTENT_TYPE_TEXT_CSV = "text/csv";
     public static final String DOWNLOAD_COVER_FILE_PATH = "/radd-net/api/v1/download/{operationType}/{operationId}";
     public static final String ZIP_ATTACHMENT_URL_NOT_FOUND = "ZIP ATTACHMENT URL NOT FOUND";
 
@@ -56,6 +60,9 @@ public class Const {
     public static final String ATTO_NOTIFICATO = "ATTO_NOTIFICATO";
     public static final String ATTESTAZIONE_OPPONIBILE_A_TERZI = "ATTESTAZIONE_OPPONIBILE_A_TERZI";
 
+    public static final String ERROR_CODE_RADD_ALT_EVENTTYPENOTSUPPORTED = "ERROR_CODE_RADD_ALT_EVENTTYPENOTSUPPORTED";
 
+    /* Registry costant */
+    public static final String ERROR_DUPLICATE = "Rifiutato in quanto duplicato";
 
 }

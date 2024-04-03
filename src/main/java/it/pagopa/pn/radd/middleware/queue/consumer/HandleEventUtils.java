@@ -1,21 +1,20 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
+import lombok.CustomLog;
 import org.springframework.messaging.MessageHeaders;
 
-import static it.pagopa.pn.radd.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
-
-@lombok.CustomLog
+@CustomLog
 public class HandleEventUtils {
+    private static final String RADD_ALT_IMPORT_ASYNC = "RADD-ALT IMPORT - ";
+
     private HandleEventUtils() {
     }
 
     public static void handleException(MessageHeaders headers, Throwable t) {
         if (headers != null) {
-            log.error(ADDRESS_NORMALIZER_ASYNC + "Generic exception for correlationId={} ex={}", headers.get("correlationId"), t.getCause());
+            log.error(RADD_ALT_IMPORT_ASYNC + "Generic exception ex=", t.getCause());
         } else {
-            log.error(ADDRESS_NORMALIZER_ASYNC + "Generic exception ex ", t);
+            log.error(RADD_ALT_IMPORT_ASYNC + "Generic exception ex ", t);
         }
     }
-
-
 }

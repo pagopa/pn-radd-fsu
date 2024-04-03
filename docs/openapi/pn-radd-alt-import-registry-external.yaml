@@ -37,22 +37,48 @@ paths:
               $ref: '#/components/schemas/RegistryUploadRequest'
         required: true
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistryUploadResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '409':
+          description: Conflict - Non è permesso l'upload dello stesso file CSV più volte
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   /radd-alt/api/v1/registry/import/{requestId}/verify:
     get:
       tags:
@@ -64,22 +90,42 @@ paths:
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/requestId'
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/VerifyRequestResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   /radd-alt/api/v1/registry/import/{requestId}:
     get:
       tags:
@@ -93,22 +139,42 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/lastKey'
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RequestResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
 components:
   schemas:
     Registry:
@@ -161,7 +227,7 @@ components:
       properties:
         status:
           type: string
-          description: Stato della richiesta
+          description: Stato della richiesta (possibili valori = NOT_WORKED, PENDING, ACCEPTED, REJECTED, DELETED)
           example: REJECTED
         error:
           type: string
@@ -323,20 +389,6 @@ components:
       required: false
       schema:
         type: string
-
-  responses:
-    Forbidden:
-      description: Forbidden
-    NotFound:
-      description: Not found
-    Invalid:
-      description: Bad Request
-    NotAllowed:
-      description: Method not allowed
-    InternalError:
-      description: Internal Server Error
-    Unauthorized:
-      description: Unauthorized
 
   securitySchemes: # ONLY EXTERNAL
     bearerAuth: # ONLY EXTERNAL

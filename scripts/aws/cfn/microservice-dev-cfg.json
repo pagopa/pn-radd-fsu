@@ -2,14 +2,15 @@
   "Parameters" : {
     "SafeStorageCxId": "pn-radd-alt",
     "SafeStorageDocType": "PN_RADD_ALT_ATTACHMENT",
-    "RegistrySafeStorageDocType": "PN_RADD_ALT_IMPORT",
+    "RegistrySafeStorageDocType": "PN_RADD_REGISTRY",
     "MaxTasksNumber": "1",
     "AttemptBatchWriter": "3",
     "SanitizeMode": "ESCAPING",
     "FreeMarkerTemplateLoaderPath": "documents_composition_templates",
     "FreeMarkerSuffix": ".html",
     "DocumentTypeEnumFilter": "",
-    "RegistryDefaultEndValidity": 0,
-    "RegistryDefaultDeleteRule": "DUPLICATE"
+    "RegistryDefaultEndValidity": "0",
+    "RegistryDefaultDeleteRule": "DUPLICATE",
+    "RegitryImportUploadFileTtl": "43200"
   }
 }

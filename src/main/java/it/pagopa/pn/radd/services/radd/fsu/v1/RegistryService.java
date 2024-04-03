@@ -14,6 +14,7 @@ import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
 @Service
 @RequiredArgsConstructor
+@CustomLog
 public class RegistryService {
 
     public static final String TEXT_CSV = "text/csv";
@@ -48,7 +51,7 @@ public class RegistryService {
                         .flatMap(o -> pnSafeStorageClient.createFile(getFileCreationRequestDto(), request.getChecksum()))
                         .flatMap(fileCreationResponseDto -> saveImportRequest(xPagopaPnCxId, request, fileCreationResponseDto, requestId).thenReturn(fileCreationResponseDto))
                         .map(fileCreationResponseDto -> mapUploadResponse(fileCreationResponseDto, requestId))
-                        .doOnError(Mono::error)
+                        .doOnError(throwable -> log.error("Error uploading registry requests for cxId: {} ->", xPagopaPnCxId, throwable))
         );
     }
 
@@ -62,12 +65,15 @@ public class RegistryService {
     }
 
     private Mono<RegistryUploadRequest> checkImportRequest(RegistryUploadRequest request, List<PnRaddRegistryImportEntity> entities) {
-        for(PnRaddRegistryImportEntity entity : entities) {
-            if (request.getChecksum().equalsIgnoreCase(entity.getChecksum()))
+        for (PnRaddRegistryImportEntity entity : entities) {
+            if (request.getChecksum().equalsIgnoreCase(entity.getChecksum()) &&
+                    (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
+                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate())))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(DUPLICATE_REQUEST.name()), HttpStatus.CONFLICT));
-            else if (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus()) ||
-                    RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()))
+            } else if (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
+                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate()))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(PENDING_REQUEST.name()), HttpStatus.BAD_REQUEST));
+            }
         }
         return Mono.just(request);
     }
@@ -95,6 +101,7 @@ public class RegistryService {
         pnRaddRegistryImportEntity.setFileKey(fileCreationResponseDto.getKey());
         pnRaddRegistryImportEntity.setCreatedAt(Instant.now());
         pnRaddRegistryImportEntity.setUpdatedAt(Instant.now());
+        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(pnRaddFsuConfig.getRegitryImportUploadFileTtl(), ChronoUnit.SECONDS));
 
         RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
         raddRegistryImportConfig.setDeleteRole(pnRaddFsuConfig.getRegistryDefaultDeleteRule());

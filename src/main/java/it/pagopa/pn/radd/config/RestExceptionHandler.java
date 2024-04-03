@@ -33,7 +33,7 @@ public class RestExceptionHandler {
 
 
     @ExceptionHandler(PnException.class)
-    public ResponseEntity<Mono<Problem>> pnExceptionHandler(PnException ex){
+    public Mono<ResponseEntity<Problem>> pnExceptionHandler(PnException ex){
         Problem rs = new Problem();
         rs.setStatus(ex.getStatus());
         rs.setTitle(ex.getMessage());
@@ -41,31 +41,31 @@ public class RestExceptionHandler {
         rs.setTimestamp(OffsetDateTime.now());
         settingTraceId(rs);
         log.error(ex.getDescription());
-        return ResponseEntity.status(HttpStatus.valueOf(ex.getStatus()))
-                .body(Mono.just(rs));
+        return Mono.just(ResponseEntity.status(HttpStatus.valueOf(ex.getStatus()))
+                .body(rs));
     }
 
     @ExceptionHandler(PnInvalidInputException.class)
-    public ResponseEntity<Mono<Problem>> pnInvalidInputHandler(PnInvalidInputException ex){
+    public Mono<ResponseEntity<Problem>> pnInvalidInputHandler(PnInvalidInputException ex){
         log.error(ex.getReason());
         Problem rs = new Problem();
         rs.setStatus(HttpStatus.BAD_REQUEST.value());
         rs.setTitle(ex.getReason());
         rs.setTimestamp(OffsetDateTime.now());
         settingTraceId(rs);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Mono.just(rs));
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(rs));
     }
 
     @ExceptionHandler(PnRaddException.class)
-    public ResponseEntity<Mono<String>> pnInvalidInputHandler(PnRaddException ex){
+    public Mono<ResponseEntity<String>> pnInvalidInputHandler(PnRaddException ex){
         log.error(ex.getWebClientEx().getResponseBodyAsString());
-        return ResponseEntity.status(ex.getWebClientEx().getStatusCode())
-                .body(Mono.just(ex.getWebClientEx().getResponseBodyAsString()));
+        return Mono.just(ResponseEntity.status(ex.getWebClientEx().getStatusCode())
+                .body((ex.getWebClientEx().getResponseBodyAsString())));
     }
 
     @ExceptionHandler(RaddGenericException.class)
-    public ResponseEntity<Mono<Problem>> pnRaddGenericException(RaddGenericException ex){
+    public Mono<ResponseEntity<Problem>> pnRaddGenericException(RaddGenericException ex){
         log.error(ex.getMessage());
         Problem problem = new Problem();
         problem.setType(ex.getStatus().getReasonPhrase());
@@ -74,12 +74,12 @@ public class RestExceptionHandler {
         problem.setDetail(ex.getExceptionType().getMessage());
         problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
         problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
-        return ResponseEntity.status(ex.getStatus())
-                .body(Mono.just(problem));
+        return Mono.just(ResponseEntity.status(ex.getStatus())
+                .body(problem));
     }
 
     @ExceptionHandler(PnSafeStorageException.class)
-    public ResponseEntity<Mono<Problem>> webClientException(PnSafeStorageException ex) {
+    public Mono<ResponseEntity<Problem>> webClientException(PnSafeStorageException ex) {
         Problem rs = new Problem();
         try {
             PnSafeStoreExModel model = this.objectMapper.readValue(ex.getWebClientEx().getResponseBodyAsString(), PnSafeStoreExModel.class);
@@ -94,15 +94,15 @@ public class RestExceptionHandler {
             }
             settingTraceId(rs);
             rs.setTimestamp(OffsetDateTime.now());
-            return ResponseEntity.status(extractStatus(model.getResultCode()))
-                    .body(Mono.just(rs));
+            return Mono.just(ResponseEntity.status(extractStatus(model.getResultCode()))
+                    .body(rs));
         } catch (JsonProcessingException e) {
             rs.title("Errore generico");
             rs.detail("Qualcosa è andato storto, ritenta più tardi");
             log.error("exception catched", ex);
             rs.setStatus(500);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Mono.just(rs));
+            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(rs));
         }
 
     }

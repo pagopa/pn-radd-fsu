@@ -145,6 +145,9 @@ Parameters:
     Type: String
     Description: 'Default delete role for radd registry'
 
+  RegitryImportUploadFileTtl:
+    Type: Number
+    Description: 'Time, expressed in seconds, within which it is possible to upload the csv (validity of safestorage url)'
 
   Version:
     Type: String
@@ -339,6 +342,7 @@ Resources:
         ContainerEnvEntry23: !Sub 'PN_RADD_REGISTRYSAFESTORAGEDOCTYPE=${RegistrySafeStorageDocType}'
         ContainerEnvEntry24: !Sub 'PN_RADD_REGISTRYDEFAULTENDVALIDITY=${RegistryDefaultEndValidity}'
         ContainerEnvEntry25: !Sub 'PN_RADD_REGISTRYDEFAULTDELETERULE=${RegistryDefaultDeleteRule}'
+        ContainerEnvEntry26: !Sub 'PN-RADD-REGISTRYIMPORTUPLOADFILETTL=${RegitryImportUploadFileTtl}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName

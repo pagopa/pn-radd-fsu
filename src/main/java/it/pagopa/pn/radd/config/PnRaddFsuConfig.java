@@ -34,6 +34,8 @@ public class PnRaddFsuConfig {
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
+    private Long regitryImportUploadFileTtl;
+
     @Data
     public static class Dao {
         private String raddTransactionTable;

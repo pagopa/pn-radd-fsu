@@ -30,7 +30,7 @@ public class PnRaddFsuConfig {
     private Dao dao;
     private int registryDefaultEndValidity;
     private String registryDefaultDeleteRule;
-    private String addressManagerApiKeySecretId;
+    private String addressManagerApiKeySecret;
     private String addressManagerBaseUrl;
 
     private HtmlSanitizer.SanitizeMode sanitizeMode;

@@ -158,6 +158,6 @@ public class RaddRegistryUtils {
     }
 
     public String retrieveAddressManagerApiKey() {
-        return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecretId());
+        return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
 }

@@ -44,6 +44,13 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
     }
 
     @Override
+    public Mono<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestId(String xPagopaPnCxId, String requestId) {
+        Key key = Key.builder().partitionValue(xPagopaPnCxId).sortValue(requestId).build();
+        return findFromKey(key);
+    }
+
+
+    @Override
     public Flux<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestIdFilterByStatus(String cxId, String requestId, ImportStatus importStatus) {
         Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);

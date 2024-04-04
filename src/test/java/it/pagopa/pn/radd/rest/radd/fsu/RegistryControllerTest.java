@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.rest.radd.fsu;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,13 +11,16 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {RegistryController.class})
@@ -97,6 +101,25 @@ class RegistryControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk();
+    }
+    @Test
+    void testVerifyRequest() {
+        // Arrange
+        String xPagopaPnCxId = "cxId";
+        String requestId = "requestId";
+        VerifyRequestResponse expectedResponse = new VerifyRequestResponse();
+        when(registryService.verifyRegistriesImportRequest(xPagopaPnCxId, requestId))
+                .thenReturn(Mono.just(expectedResponse));
+
+        // Act
+        Mono<ResponseEntity<VerifyRequestResponse>> result = registryController.verifyRequest(CxTypeAuthFleet.PA, xPagopaPnCxId, "uid", requestId, null);
+
+        // Assert
+        ResponseEntity<VerifyRequestResponse> responseEntity = result.block();
+        assert responseEntity != null;
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(expectedResponse, responseEntity.getBody());
+        verify(registryService).verifyRegistriesImportRequest(xPagopaPnCxId, requestId);
     }
 }
 

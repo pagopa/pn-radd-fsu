@@ -231,6 +231,9 @@ components:
     VerifyRequestResponse:
       type: object
       properties:
+        requestId:
+          type: string
+          description: Identificativo univoco della richiesta di censimento
         status:
           type: string
           description: Stato della richiesta

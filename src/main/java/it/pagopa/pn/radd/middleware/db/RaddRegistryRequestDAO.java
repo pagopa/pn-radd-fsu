@@ -6,6 +6,9 @@ import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+
+import java.util.List;
+
 public interface RaddRegistryRequestDAO {
 
     Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String cxId, ImportStatus status) throws IllegalArgumentException;
@@ -13,4 +16,9 @@ public interface RaddRegistryRequestDAO {
     Mono<RaddRegistryRequestEntity> updateStatusAndError(RaddRegistryRequestEntity raddRegistryRequestEntity, ImportStatus importStatus, String error) throws IllegalArgumentException;
 
     Mono<RaddRegistryRequestEntity> updateRegistryRequestStatus(RaddRegistryRequestEntity id, RegistryRequestStatus importStatus);
+
+    Flux<RaddRegistryRequestEntity> getAllFromCorrelationId(String correlationId, String state);
+
+    Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses);
+
 }

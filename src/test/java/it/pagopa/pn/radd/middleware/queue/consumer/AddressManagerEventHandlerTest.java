@@ -30,11 +30,14 @@ class AddressManagerEventHandlerTest {
     @Test
     void shouldHandleMessageSuccessfully() {
         PnAddressManagerEvent event = new PnAddressManagerEvent();
+        PnAddressManagerEvent.Payload payload = mock(PnAddressManagerEvent.Payload.class);
+        when(payload.getCorrelationId()).thenReturn("correlationId");
+        event.setPayload(payload);
         when(message.getPayload()).thenReturn(event);
-        when(registryService.handleMessage(event)).thenReturn(Mono.empty());
+        when(registryService.handleAddressManagerEvent(event)).thenReturn(Mono.empty());
 
         addressManagerEventHandler.pnAddressManagerEventInboundConsumer().accept(message);
 
-        verify(registryService, times(1)).handleMessage(event);
+        verify(registryService, times(1)).handleAddressManagerEvent(event);
     }
 }

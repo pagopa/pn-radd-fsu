@@ -149,6 +149,11 @@ Parameters:
     Type: Number
     Description: 'Time, expressed in seconds, within which it is possible to upload the csv (validity of safestorage url)'
 
+  SecretAndSSMPrefix:
+    Type: String
+    Default: pn-radd-alt
+    Description: 'Secret and Parameter name prefix'
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -301,6 +306,14 @@ Parameters:
     Type: String
     Description: 'Name of AddressManager queue'
 
+  AddressManagerBaseUrl:
+    Type: String
+    Description: 'Address manager base url'
+
+  AddressManagerApiKeySecret:
+    Type: String
+    Description: 'Address manager api key secret'
+
 
 Resources:
 
@@ -355,6 +368,9 @@ Resources:
         ContainerEnvEntry27: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry28: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry30: !Sub 'PN_RADD_ADDRESSMANAGERBASEURL=${AddressManagerBaseUrl}'
+        ContainerEnvEntry31: !Sub 'PN_RADD_ADDRESSMANAGERAPIKEYSECRET=${AddressManagerApiKeySecret}'
+
         MappedPaths: '/radd-net/*,/radd-net-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -374,6 +390,11 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
+            Resource:
+             - !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretAndSSMPrefix}*'
           - Effect: Allow
             Action:
               - sqs:SendMessage

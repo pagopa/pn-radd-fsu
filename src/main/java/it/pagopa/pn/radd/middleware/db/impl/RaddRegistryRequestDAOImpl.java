@@ -1,9 +1,9 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -45,13 +46,12 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
             throw new IllegalArgumentException("Missing correlationId param");
         if (status == null)
             throw new IllegalArgumentException(MISSING_STATUS);
-        
+
         Key key = Key.builder().partitionValue(correlationId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
 
         Map<String, AttributeValue> map = new HashMap<>();
-        map.put(":status", AttributeValue.builder().s(status.name()).build());
-        String query = RaddRegistryImportEntity.COL_STATUS + " = :status";
+        String query = getQueryAndPopulateMapForStatusFilter(status.name(), map);
 
         return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, map, query, null);
     }
@@ -77,5 +77,32 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         entity.setStatus(importStatus.name());
         entity.setUpdatedAt(Instant.now());
         return putItem(entity);
+    }
+
+    @Override
+    public Flux<RaddRegistryRequestEntity> getAllFromCorrelationId(String correlationId, String state) {
+        Key key = Key.builder().partitionValue(correlationId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        Map<String, AttributeValue> map = new HashMap<>();
+        String query = getQueryAndPopulateMapForStatusFilter(state, map);
+
+        return this.getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, map, query, null);
+
+    }
+
+    @Override
+    public Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses) {
+        addresses.forEach(address -> address.setStatus(RegistryRequestStatus.PENDING.name()));
+        return this.transactWriteItems(addresses, RaddRegistryRequestEntity.class);
+    }
+
+    private String getQueryAndPopulateMapForStatusFilter(String status, Map<String, AttributeValue> map) {
+        String query = "";
+        if (StringUtils.isNotEmpty(status)) {
+            map.put(":status", AttributeValue.builder().s(status).build());
+            query = RaddRegistryRequestEntity.COL_STATUS + " = :status";
+        }
+        return query;
     }
 }

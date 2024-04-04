@@ -18,13 +18,12 @@ import reactor.core.publisher.Mono;
 @CustomLog
 public class PnAddressManagerClient extends BaseClient {
 
-    private final NormalizeAddressServiceApi normalizeAddressServiceApi;
-    private final PnRaddFsuConfig pnRaddFsuConfig;
+    private final NormalizeAddressServiceApi normalizeAddressServiceApi;;
     private final RaddRegistryUtils raddRegistryUtils;
     protected static final String PN_ADDRESS_MANAGER_CX_ID_VALUE = "pn-radd-alt";
-    public Mono<AcceptedResponseDto> normalizeAddresses(AddressManagerRequest request) {
+    public Mono<AcceptedResponseDto> normalizeAddresses(AddressManagerRequest request, String apiKey) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_ADDRESS_MANAGER, "normalize");
-        return normalizeAddressServiceApi.normalize(PN_ADDRESS_MANAGER_CX_ID_VALUE, pnRaddFsuConfig.getAddressManagerApiKey(), raddRegistryUtils.getNormalizeRequestDtoFromAddressManagerRequest(request))
+        return normalizeAddressServiceApi.normalize(PN_ADDRESS_MANAGER_CX_ID_VALUE, apiKey, raddRegistryUtils.getNormalizeRequestDtoFromAddressManagerRequest(request))
                 .doOnError(ex -> log.logInvokationResultDownstreamFailed(PnLogger.EXTERNAL_SERVICES.PN_ADDRESS_MANAGER, ex.getMessage()));
     }
 }

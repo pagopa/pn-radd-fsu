@@ -15,6 +15,7 @@ import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
+import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,7 @@ public class RaddRegistryUtils {
 
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
+    private final SecretService secretService;
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -155,4 +157,7 @@ public class RaddRegistryUtils {
         return requestDto;
     }
 
+    public String retrieveAddressManagerApiKey() {
+        return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecretId());
+    }
 }

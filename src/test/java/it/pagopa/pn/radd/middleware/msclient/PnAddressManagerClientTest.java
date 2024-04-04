@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.Ac
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
+import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +29,15 @@ public class PnAddressManagerClientTest {
     @Mock
     private PnRaddFsuConfig pnRaddFsuConfig;
 
+    @Mock
+    private SecretService secretService;
+
     private PnAddressManagerClient pnAddressManagerClient;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        pnAddressManagerClient = new PnAddressManagerClient(normalizeAddressServiceApi, pnRaddFsuConfig, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig));
+        pnAddressManagerClient = new PnAddressManagerClient(normalizeAddressServiceApi, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService));
     }
 
     @Test
@@ -43,9 +47,9 @@ public class PnAddressManagerClientTest {
         address.setId("id");
         request.setAddresses(List.of(address));
         when(normalizeAddressServiceApi.normalize(any(), any(), any())).thenReturn(Mono.just(new AcceptedResponseDto()));
-        when(pnRaddFsuConfig.getAddressManagerApiKey()).thenReturn("testApiKey");
 
-        Mono<AcceptedResponseDto> result = pnAddressManagerClient.normalizeAddresses(request);
+
+        Mono<AcceptedResponseDto> result = pnAddressManagerClient.normalizeAddresses(request, "apiKey");
 
         StepVerifier.create(result)
                 .expectNextMatches(Objects::nonNull)
@@ -58,10 +62,9 @@ public class PnAddressManagerClientTest {
         AddressManagerRequestAddress address = new AddressManagerRequestAddress();
         address.setId("id");
         request.setAddresses(List.of(address));
-        when(pnRaddFsuConfig.getAddressManagerApiKey()).thenReturn("testApiKey");
         when(normalizeAddressServiceApi.normalize(any(), any(), any())).thenReturn(Mono.error(new RuntimeException("Test exception")));
 
-        Mono<AcceptedResponseDto> result = pnAddressManagerClient.normalizeAddresses(request);
+        Mono<AcceptedResponseDto> result = pnAddressManagerClient.normalizeAddresses(request, "apiKey");
 
         StepVerifier.create(result)
                 .verifyError(RuntimeException.class);

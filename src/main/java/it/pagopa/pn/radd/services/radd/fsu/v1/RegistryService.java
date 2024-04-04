@@ -179,7 +179,8 @@ public class RegistryService {
                 .zipWhen(entities -> Mono.just(raddRegistryUtils.getRequestAddressFromOriginalRequest(entities)))
                 .flatMap(tuple -> {
                     request.setAddresses(tuple.getT2());
-                    return pnAddressManagerClient.normalizeAddresses(request).thenReturn(tuple);
+                    String addressManagerApiKey = raddRegistryUtils.retrieveAddressManagerApiKey();
+                    return pnAddressManagerClient.normalizeAddresses(request, addressManagerApiKey).thenReturn(tuple);
                 })
                 .flatMap(tuple -> raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1()));
     }

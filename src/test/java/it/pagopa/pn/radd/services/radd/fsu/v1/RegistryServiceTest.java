@@ -66,12 +66,15 @@ class RegistryServiceTest {
     @Mock
     private PnRaddAltNormalizeRequestEvent.Payload payload;
 
+    @Mock
+    private SecretService secretService;
+
 
     private RegistryService registryService;
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig), pnAddressManagerClient);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient);
     }
 
     @Test
@@ -282,7 +285,7 @@ class RegistryServiceTest {
         raddRegistryOriginalRequest.setPr("RM");
         when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
         when(raddRegistryRequestDAO.getAllFromCorrelationId(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
-        when(pnAddressManagerClient.normalizeAddresses(any())).thenReturn(Mono.just(new AcceptedResponseDto()));
+        when(pnAddressManagerClient.normalizeAddresses(any(), any())).thenReturn(Mono.just(new AcceptedResponseDto()));
         when(raddRegistryRequestDAO.updateRecordsInPending(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();

@@ -12,6 +12,7 @@
     "RegistryDefaultEndValidity": "0",
     "RegistryDefaultDeleteRule": "DUPLICATE",
     "RegitryImportUploadFileTtl": "43200",
-    "AddressManagerBaseUrl": "http://alb.confidential.pn.internal:8080"
+    "AddressManagerBaseUrl": "http://alb.confidential.pn.internal:8080",
+    "AddressManagerApiKeySecretName": "pn-radd-alt/address-manager/apikey"
   }
 }

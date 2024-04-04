@@ -393,8 +393,6 @@ Resources:
           - Effect: Allow
             Action:
               - secretsmanager:GetSecretValue
-              - secretsmanager:CreateSecret
-              - secretsmanager:UpdateSecret
             Resource:
              - !Sub 'arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${SecretAndSSMPrefix}*'
           - Effect: Allow

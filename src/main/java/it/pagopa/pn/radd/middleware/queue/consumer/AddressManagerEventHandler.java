@@ -1,9 +1,11 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
+import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
@@ -22,14 +24,15 @@ public class AddressManagerEventHandler {
         return message -> {
             log.debug("Handle message from {} with content {}", "Address Manager", message);
             PnAddressManagerEvent response = message.getPayload();
-
-            registryService.handleAddressManagerEvent(response)
+            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, response.getPayload().getCorrelationId());
+            var monoResult = registryService.handleAddressManagerEvent(response)
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                     .doOnError(throwable ->  {
                         log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
                         HandleEventUtils.handleException(message.getHeaders(), throwable);
-                    })
-                    .block();
+                    });
+
+            MDCUtils.addMDCToContextAndExecute(monoResult).block();
         };
     }
    

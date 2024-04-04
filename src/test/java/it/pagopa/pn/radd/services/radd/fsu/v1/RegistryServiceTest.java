@@ -164,7 +164,6 @@ class RegistryServiceTest {
 
     @Test
     void testVerifyRegistryRequests_ValidCase() {
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig));
 
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus("DONE");
@@ -177,7 +176,6 @@ class RegistryServiceTest {
 
     @Test
     void testVerifyRegistryRequests_ValidCaseWithError() {
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig));
 
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus("REJECTED");
@@ -192,7 +190,6 @@ class RegistryServiceTest {
 
     @Test
     void testVerifyRegistryRequests_ExceptionCase() {
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig));
 
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(any(), any())).thenReturn(Mono.empty());
 

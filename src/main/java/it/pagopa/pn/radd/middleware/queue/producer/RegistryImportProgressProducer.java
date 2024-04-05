@@ -17,7 +17,7 @@ public interface RegistryImportProgressProducer extends MomProducer<RegistryImpo
                 .header(GenericEventHeader.builder()
                         .publisher("RADD_ALT") //FIXME: update when the correct value is available in EventPublisher enum
                         .createdAt(Instant.now())
-                        .eventId("registry_import_completed_" + cxId + "_" + requestId)
+                        .eventId("registry_import_completed_" + requestId)
                         .eventType("IMPORT_COMPLETED")
                         .build()
                 )

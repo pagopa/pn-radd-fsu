@@ -111,7 +111,7 @@ public class RaddRegistryUtils {
         pnRaddRegistryImportEntity.setFileKey(fileCreationResponseDto.getKey());
         pnRaddRegistryImportEntity.setCreatedAt(Instant.now());
         pnRaddRegistryImportEntity.setUpdatedAt(Instant.now());
-        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(pnRaddFsuConfig.getRegitryImportUploadFileTtl(), ChronoUnit.SECONDS));
+        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(pnRaddFsuConfig.getRegistryImportUploadFileTtl(), ChronoUnit.SECONDS));
 
         RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
         raddRegistryImportConfig.setDeleteRole(pnRaddFsuConfig.getRegistryDefaultDeleteRule());

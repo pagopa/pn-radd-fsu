@@ -36,7 +36,7 @@ public class PnRaddFsuConfig {
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
-    private Long regitryImportUploadFileTtl;
+    private Long registryImportUploadFileTtl;
 
     @Data
     public static class Dao {

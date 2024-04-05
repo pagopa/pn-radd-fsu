@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.queue.consumer.event;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
+import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import lombok.*;
 
@@ -12,9 +13,9 @@ import javax.validation.constraints.NotEmpty;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class PnRaddAltNormalizeRequestEvent implements GenericEvent<StandardEventHeader, PnRaddAltNormalizeRequestEvent.Payload> {
+public class ImportCompletedRequestEvent implements GenericEvent<GenericEventHeader, ImportCompletedRequestEvent.Payload> {
 
-    private StandardEventHeader header;
+    private GenericEventHeader header;
 
     private Payload payload;
 
@@ -27,7 +28,9 @@ public class PnRaddAltNormalizeRequestEvent implements GenericEvent<StandardEven
     public static class Payload {
 
         @NotEmpty
-        private String correlationId;
+        private String cxId;
 
+        @NotEmpty
+        private String requestId;
     }
 }

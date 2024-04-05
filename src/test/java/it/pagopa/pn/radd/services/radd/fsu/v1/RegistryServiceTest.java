@@ -12,9 +12,12 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
+import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,8 +38,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static it.pagopa.pn.radd.pojo.ImportStatus.PENDING;
-import static it.pagopa.pn.radd.pojo.ImportStatus.TO_PROCESS;
+import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.PENDING;
+import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,6 +67,9 @@ class RegistryServiceTest {
     private PnAddressManagerClient pnAddressManagerClient;
 
     @Mock
+    private RaddAltCapCheckerProducer raddAltCapCheckerProducer;
+
+    @Mock
     private PnRaddAltNormalizeRequestEvent.Payload payload;
 
     @Mock
@@ -74,7 +80,7 @@ class RegistryServiceTest {
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, raddAltCapCheckerProducer);
     }
 
     @Test
@@ -103,7 +109,7 @@ class RegistryServiceTest {
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus(TO_PROCESS.name());
         pnRaddRegistryImportEntity.setChecksum("checksum");
-        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(10, ChronoUnit.DAYS));
+        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().minus(10, ChronoUnit.DAYS));
         when(raddRegistryImportDAO.getRegistryImportByCxId(any())).thenReturn(Flux.just(pnRaddRegistryImportEntity));
 
         StepVerifier.create(registryService.uploadRegistryRequests("cxId", Mono.just(request)))
@@ -289,5 +295,13 @@ class RegistryServiceTest {
         when(raddRegistryRequestDAO.updateRecordsInPending(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
+    }
+
+    @Test
+    void handleImportCompletedRequest() {
+        ImportCompletedRequestEvent.Payload payload = ImportCompletedRequestEvent.Payload.builder().cxId("cxId").requestId("requestId").build();
+        when(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState("cxId", "requestId", RegistryRequestStatus.ACCEPTED.name()))
+                .thenReturn(Flux.just(mock(RaddRegistryRequestEntity.class)));
+        StepVerifier.create(registryService.handleImportCompletedRequest(payload)).expectComplete();
     }
 }

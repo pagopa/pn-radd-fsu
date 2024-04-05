@@ -1,8 +1,6 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
@@ -12,7 +10,6 @@ import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.OperationsIunsEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.RaddTransactionStatusEnum;
-import it.pagopa.pn.radd.pojo.TransactionData;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -20,11 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.*;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
-import software.amazon.awssdk.utils.ImmutableMap;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -217,7 +215,7 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
         Key key = Key.builder().partitionValue(iun).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
         String index = RaddTransactionEntity.IUN_SECONDARY_INDEX;
-        return this.getByFilter(conditional, index, null, null, null);
+        return this.getByFilter(conditional, index, null, null, null,null);
     }
 
     @Override
@@ -244,8 +242,8 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
         String indexRecipient = RaddTransactionEntity.RECIPIENT_SECONDARY_INDEX;
         String indexDelegate = RaddTransactionEntity.DELEGATE_SECONDARY_INDEX;
 
-        return this.getByFilter(conditional, indexRecipient, map, query, null)
-                .concatWith(this.getByFilter(conditional, indexDelegate, map, query, null))
+        return this.getByFilter(conditional, indexRecipient, query,map, null,null)
+                .concatWith(this.getByFilter(conditional, indexDelegate, query,map, null,null))
                 .distinct(RaddTransactionEntity::getOperationId);
     }
     @Override

@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
@@ -12,8 +13,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Slf4j
@@ -31,7 +31,7 @@ public abstract class BaseDao<T> {
             String tableName,
             PnRaddFsuConfig raddFsuConfig,
             Class<T> tClass
-    ){
+    ) {
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
         this.tableAsync = dynamoDbEnhancedAsyncClient.table(tableName, TableSchema.fromBean(tClass));
         this.dynamoDbAsyncClient = dynamoDbAsyncClient;
@@ -97,20 +97,60 @@ public abstract class BaseDao<T> {
         return Mono.fromFuture(dynamoDbAsyncClient.query(qeRequest.build()).thenApply(QueryResponse::count));
     }
 
-    protected Flux<T> getByFilter(QueryConditional conditional, String index, Map<String, AttributeValue> values, String filterExpression, Integer maxElements){
+    protected Flux<T> getByFilter(QueryConditional conditional, String index, String expression, Map<String, AttributeValue> expressionValues, Map<String, String> expressionNames, Integer maxElements) {
         QueryEnhancedRequest.Builder qeRequest = QueryEnhancedRequest
                 .builder()
                 .queryConditional(conditional);
         if (maxElements != null) {
             qeRequest.limit(maxElements);
         }
-        if (!StringUtils.isBlank(filterExpression)){
-            qeRequest.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).build());
+        if (!StringUtils.isBlank(expression)){
+            qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
         }
         if (StringUtils.isNotBlank(index)){
             return Flux.from(this.tableAsync.index(index).query(qeRequest.build()).flatMapIterable(Page::items));
         }
         return Flux.from(this.tableAsync.query(qeRequest.build()).flatMapIterable(Page::items));
+    }
+
+    public Mono<List<T>> getAllPaginatedItems(QueryConditional conditional, String index, String expression, Map<String, AttributeValue> expressionValues, Map<String, String> expressionNames, Integer maxElements) {
+        List<T> items = new ArrayList<>();
+
+        QueryEnhancedRequest.Builder qeRequest = QueryEnhancedRequest
+                .builder()
+                .queryConditional(conditional);
+
+        if (maxElements != null) {
+            qeRequest.limit(maxElements);
+        }
+        if (!StringUtils.isBlank(expression)){
+            qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
+        }
+
+        return Mono.defer(() -> processPage(Objects.requireNonNull(constructAndExecuteQuery(qeRequest, new HashMap<>(), index)), items, qeRequest, index));
+    }
+
+    private Mono<List<T>> processPage(Mono<Page<T>> pageMono, List<T> items, QueryEnhancedRequest.Builder qeRequest, String index) {
+        return pageMono.flatMap(page -> {
+            items.addAll(page.items());
+            if (page.lastEvaluatedKey() != null) {
+                return processPage(constructAndExecuteQuery(qeRequest, page.lastEvaluatedKey(), index), items, qeRequest, index);
+            } else {
+                return Mono.just(items);
+            }
+        });
+    }
+
+    private Mono<Page<T>> constructAndExecuteQuery(QueryEnhancedRequest.Builder qeRequest, Map<String, AttributeValue> lastKey, String index) {
+        if (!CollectionUtils.isEmpty(lastKey)) {
+            qeRequest.exclusiveStartKey(lastKey);
+        }
+
+        if (StringUtils.isNotBlank(index)) {
+            return Mono.from(tableAsync.index(index).query(qeRequest.build()));
+        } else {
+            return Mono.from(tableAsync.query(qeRequest.build()));
+        }
     }
 
     protected Mono<T> putItemWithConditions(T entity, Expression expression, Class<T> entityClass) {

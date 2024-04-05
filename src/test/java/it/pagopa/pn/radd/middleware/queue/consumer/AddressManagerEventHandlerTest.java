@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.handler.AddressManagerEventHandler;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

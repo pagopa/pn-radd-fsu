@@ -33,8 +33,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DUPLICATE_REQUEST;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.PENDING_REQUEST;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 
 @Service
@@ -158,7 +157,7 @@ public class RegistryService {
     public Mono<VerifyRequestResponse> verifyRegistriesImportRequest(String xPagopaPnCxId, String requestId) {
         log.info("start verifyRegistriesImportRequest for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
         return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(xPagopaPnCxId, requestId)
-                .switchIfEmpty(Mono.error(new RaddGenericException(String.format("No import request found for cxId: [%s] and requestId: [%s] ", xPagopaPnCxId, requestId))))
+                .switchIfEmpty(Mono.error(new RaddGenericException(IMPORT_REQUEST_NOT_FOUND, HttpStatus.NOT_FOUND)))
                 .map(this::createVerifyRequestResponse)
                 .doOnError(throwable -> log.error("Error during verify registries import request for cxId: [{}] and requestId: [{}]", xPagopaPnCxId, requestId, throwable));
     }

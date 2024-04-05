@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
 import it.pagopa.pn.commons.utils.MDCUtils;
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;

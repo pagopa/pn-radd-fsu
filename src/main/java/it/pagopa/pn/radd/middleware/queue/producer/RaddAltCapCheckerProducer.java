@@ -20,8 +20,8 @@ public interface RaddAltCapCheckerProducer extends MomProducer<RaddAltCapChecker
         return RaddAltCapCheckerEvent.builder()
                 .header( GenericEventHeader.builder()
                         .eventType( "CAP_CHECKER_EVENT" ) //Creare
-                        .publisher( "RADD_ALT") //F
-                        .eventId(UUID.randomUUID() + "_zipcode_checker")// IXME create RADD_ALT on EventPublisher
+                        .publisher( "RADD_ALT") //FIXME create RADD_ALT on EventPublisher
+                        .eventId(UUID.randomUUID() + "_cap_checker")
                         .createdAt( Instant.now() )
                         .build()
                 )

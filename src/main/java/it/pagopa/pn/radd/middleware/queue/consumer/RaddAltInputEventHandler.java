@@ -2,7 +2,7 @@ package it.pagopa.pn.radd.middleware.queue.consumer;
 
 import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
+import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryImportService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class RaddAltInputEventHandler {
 
-    private final RegistryService registryService;
+    private final RegistryImportService registryImportService;
 
     private static final String HANDLER_NORMALIZE_REQUEST = "pnRaddAltInputNormalizeRequestConsumer";
 
@@ -26,7 +26,7 @@ public class RaddAltInputEventHandler {
             log.logStartingProcess(HANDLER_NORMALIZE_REQUEST);
             log.debug(HANDLER_NORMALIZE_REQUEST + "- message: {}", message);
             MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, message.getPayload().getCorrelationId());
-            var monoResult = registryService.handleNormalizeRequestEvent(message.getPayload())
+            var monoResult = registryImportService.handleNormalizeRequestEvent(message.getPayload())
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_NORMALIZE_REQUEST))
                     .doOnError(throwable ->  {
                         log.logEndingProcess(HANDLER_NORMALIZE_REQUEST, false, throwable.getMessage());

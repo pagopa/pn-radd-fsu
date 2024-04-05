@@ -1,54 +1,35 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.ImportApi;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.RegistryApi;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
+import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryImportService;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-public class RegistryController implements ImportApi {
+public class RegistryController implements RegistryApi {
 
     private final RegistryService registryService;
 
     /**
-     * POST /radd-alt/api/v1/registry/import/upload
-     * API utilizzata per la richiesta della presigned URL utilizzata per il caricamento del file CSV contenente la lista di sportelli di un soggetto RADD.
-     *
-     * @param xPagopaPnCxType       Customer/Receiver Type (required)
-     * @param xPagopaPnCxId         Customer/Receiver Identifier (required)
-     * @param uid                   Identificativo pseudo-anonimizzato dell&#39;operatore RADD (required)
-     * @param registryUploadRequest (required)
-     * @return OK (status code 200)
-     * or Bad Request (status code 400)
-     * or Unauthorized (status code 401)
-     * or Forbidden (status code 403)
-     * or Method not allowed (status code 405)
-     * or Internal Server Error (status code 500)
-     */
-    @Override
-    public Mono<ResponseEntity<RegistryUploadResponse>> uploadRegistryRequests(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Mono<RegistryUploadRequest> registryUploadRequest, final ServerWebExchange exchange) {
-        return registryService.uploadRegistryRequests(xPagopaPnCxId, registryUploadRequest)
-                .map(registryUploadResponse -> ResponseEntity.status(HttpStatus.OK).body(registryUploadResponse));
-    }
-    /**
-     * GET /radd-alt/api/v1/registry/import/{requestId}/verify
-     * L’API di verifica stato richiesta import restituisce lo stato di tale richiesta di import
+     * PATCH /radd-alt/api/v1/registry/{registryId}
+     * API utilizzata per la modifica di un&#39;anagrafica RADD
      *
      * @param xPagopaPnCxType Customer/Receiver Type (required)
      * @param xPagopaPnCxId Customer/Receiver Identifier (required)
      * @param uid Identificativo pseudo-anonimizzato dell&#39;operatore RADD (required)
-     * @param requestId Identificativo univoco della richiesta di censimento (CSV o CRUD) (required)
-     * @return OK (status code 200)
+     * @param registryId Identificativo dello sportello RADD (required)
+     * @param updateRegistryRequest  (required)
+     * @return OK (status code 204)
      *         or Bad Request (status code 400)
      *         or Unauthorized (status code 401)
      *         or Forbidden (status code 403)
@@ -56,8 +37,16 @@ public class RegistryController implements ImportApi {
      *         or Internal Server Error (status code 500)
      */
     @Override
-    public Mono<ResponseEntity<VerifyRequestResponse>> verifyRequest(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String requestId, final ServerWebExchange exchange) {
-        return registryService.verifyRegistriesImportRequest(xPagopaPnCxId, requestId)
-                .map(verifyRequestResponse -> ResponseEntity.status(HttpStatus.OK).body(verifyRequestResponse));
+    public Mono<ResponseEntity<Void>> updateRegistry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String registryId, Mono<UpdateRegistryRequest> updateRegistryRequest,  final ServerWebExchange exchange) {
+        return updateRegistryRequest.map(request -> registryService.updateRegistry(registryId, request))
+                .map(verifyRequestResponse -> {
+                    if ( verifyRequestResponse != null ) {
+                        //FIXME caso 204
+                        return ResponseEntity.noContent().build();
+                    } else {
+                        //FIXME caso 404
+                        return ResponseEntity.noContent().build();
+                    }
+                });
     }
 }

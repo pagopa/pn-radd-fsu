@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
+import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryImportService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 class RaddAltInputEventHandlerTest {
 
     @Mock
-    private RegistryService registryService;
+    private RegistryImportService registryImportService;
 
     @Mock
     private Message<PnRaddAltNormalizeRequestEvent.Payload> message;
@@ -32,10 +32,10 @@ class RaddAltInputEventHandlerTest {
     void shouldHandleMessageSuccessfully() {
         PnRaddAltNormalizeRequestEvent.Payload event = new PnRaddAltNormalizeRequestEvent.Payload();
         when(message.getPayload()).thenReturn(event);
-        when(registryService.handleNormalizeRequestEvent(event)).thenReturn(Mono.empty());
+        when(registryImportService.handleNormalizeRequestEvent(event)).thenReturn(Mono.empty());
 
         raddAltInputEventHandler.pnRaddAltInputNormalizeRequestConsumer().accept(message);
 
-        verify(registryService, times(1)).handleNormalizeRequestEvent(event);
+        verify(registryImportService, times(1)).handleNormalizeRequestEvent(event);
     }
 }

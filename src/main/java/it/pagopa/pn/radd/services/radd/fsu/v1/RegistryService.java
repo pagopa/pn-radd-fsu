@@ -65,10 +65,10 @@ public class RegistryService {
         for (RaddRegistryImportEntity entity : entities) {
             if (request.getChecksum().equalsIgnoreCase(entity.getChecksum()) &&
                     (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
-                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isAfter(entity.getFileUploadDueDate())))) {
+                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate())))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(DUPLICATE_REQUEST.name()), HttpStatus.CONFLICT));
             } else if (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
-                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isAfter(entity.getFileUploadDueDate()))) {
+                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate()))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(PENDING_REQUEST.name()), HttpStatus.BAD_REQUEST));
             }
         }

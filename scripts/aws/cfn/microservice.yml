@@ -371,7 +371,7 @@ Resources:
         ContainerEnvEntry30: !Sub 'PN_RADD_ADDRESSMANAGERBASEURL=${AddressManagerBaseUrl}'
         ContainerEnvEntry31: !Sub 'PN_RADD_ADDRESSMANAGERAPIKEYSECRET=${AddressManagerApiKeySecret}'
 
-        MappedPaths: '/radd-net/*,/radd-net-private/*'
+        MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId

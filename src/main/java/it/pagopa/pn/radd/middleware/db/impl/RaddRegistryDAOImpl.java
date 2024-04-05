@@ -9,10 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.MISSING_REQUIRED_PARAMETER;
@@ -59,5 +61,13 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
                 .build();
 
         return this.putItemWithConditions(newRegistry, condition, RaddRegistryEntity.class);
+    }
+
+    @Override
+    public Flux<RaddRegistryEntity> getRegistriesByZipCode(String zipCode) {
+        Key key = Key.builder().partitionValue(zipCode).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+        String index = RaddRegistryEntity.ZIPCODE_INDEX;
+        return this.getByFilter(conditional, index, null, null, null);
     }
 }

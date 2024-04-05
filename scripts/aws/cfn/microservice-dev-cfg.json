@@ -13,6 +13,8 @@
     "RegistryDefaultDeleteRule": "DUPLICATE",
     "RegistryImportUploadFileTtl": "43200",
     "AddressManagerBaseUrl": "http://alb.confidential.pn.internal:8080",
-    "AddressManagerApiKeySecret": "pn-radd-alt/address-manager/apikey"
+    "AddressManagerApiKeySecret": "pn-radd-alt/address-manager/apikey",
+    "EvaluetedZipCodeConfigType": "",
+    "EvaluetedZipCodeConfigNumber": ""
   }
 }

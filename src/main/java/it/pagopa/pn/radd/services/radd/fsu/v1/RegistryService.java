@@ -12,14 +12,13 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.ImportStatus;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
-import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +45,7 @@ public class RegistryService {
     private final PnSafeStorageClient pnSafeStorageClient;
     private final RaddRegistryUtils raddRegistryUtils;
     private final PnAddressManagerClient pnAddressManagerClient;
+    private final EventBridgeProducer<EvaluatedZipCodeEvent> eventBridgeProducer;
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();
@@ -182,5 +182,15 @@ public class RegistryService {
                     return pnAddressManagerClient.normalizeAddresses(request, addressManagerApiKey).thenReturn(tuple);
                 })
                 .flatMap(tuple -> raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1()));
+    }
+
+    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
+        return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())
+                .collectList()
+                .map(raddRegistryUtils::getOfficeIntervals)
+                .map(raddRegistryUtils::findActiveIntervals)
+                .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
+                        response.getPayload().getZipCode())))
+                .then();
     }
 }

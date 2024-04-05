@@ -314,6 +314,20 @@ Parameters:
     Type: String
     Description: 'Address manager api key secret'
 
+  EvaluatedZipCodeConfigType:
+    Type: String
+    Default: ZIPCODE
+    Description: 'Config type for zipCode to paper channel'
+
+  EvaluatedZipCodeConfigNumber:
+    Type: Number
+    Default: 1
+    Description: 'Config number for zipCode to paper channel'
+
+  RaddEventBusName:
+    Type: String
+    Description: Name of the radd event bus
+
 
 Resources:
 
@@ -370,6 +384,13 @@ Resources:
         ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry30: !Sub 'PN_RADD_ADDRESSMANAGERBASEURL=${AddressManagerBaseUrl}'
         ContainerEnvEntry31: !Sub 'PN_RADD_ADDRESSMANAGERAPIKEYSECRET=${AddressManagerApiKeySecret}'
+        ContainerEnvEntry32: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
+        ContainerEnvEntry33: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry34: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry35: !Sub 'PN_RADD_EVALUETED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
+        ContainerEnvEntry36: !Sub 'PN_RADD_EVALUETED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
+        ContainerEnvEntry37: !Sub 'PN_RADD_EVENTBUS=${RaddEventBusName}'
+
 
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName

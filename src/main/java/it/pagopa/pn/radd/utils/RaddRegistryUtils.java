@@ -11,10 +11,7 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
@@ -160,4 +156,91 @@ public class RaddRegistryUtils {
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
+    public EvaluatedZipCodeEvent mapToEventMessage(List<TimeInterval> timeIntervals, String zipCode) {
+        return EvaluatedZipCodeEvent.builder().detail(
+                EvaluatedZipCodeEvent.Detail
+                        .builder()
+                        .configKey(zipCode)
+                        .configType(pnRaddFsuConfig.getEvaluatedZipCodeConfigType())
+                        .configs(getConfigEntries(timeIntervals))
+                        .build()
+        ).build();
+    }
+
+    private List<ConfigEntry> getConfigEntries(List<TimeInterval> timeIntervals) {
+        return timeIntervals.stream()
+                .map(timeInterval -> {
+                    ConfigEntry configEntry = new ConfigEntry();
+                    configEntry.setStartValidity(timeInterval.getStart());
+                    if (timeInterval.getEnd() == Instant.MAX) {
+                        configEntry.setEndValidity(null);
+                    } else {
+                        configEntry.setEndValidity(timeInterval.getEnd());
+                    }
+                    return configEntry;
+                }).toList();
+    }
+
+    public List<TimeInterval> getOfficeIntervals(List<RaddRegistryEntity> raddRegistryEntities) {
+        return raddRegistryEntities.stream()
+                .map(raddRegistryEntity -> {
+                    if (raddRegistryEntity.getEndValidity() == null) {
+                        return new TimeInterval(raddRegistryEntity.getStartValidity(), Instant.MAX);
+                    } else {
+                        return new TimeInterval(raddRegistryEntity.getStartValidity(), raddRegistryEntity.getEndValidity());
+                    }
+                }).toList();
+    }
+
+    public List<TimeInterval> findActiveIntervals(List<TimeInterval> timeIntervals) {
+
+        TimeInterval[] timeIntervalArray = timeIntervals.toArray(new TimeInterval[0]);
+        Set<Set<TimeInterval>> result = new HashSet<>();
+
+        combinations(timeIntervalArray, new ArrayList<>(), result, pnRaddFsuConfig.getEvaluatedZipCodeConfigNumber(), 0);
+
+        List<TimeInterval> activeIntervals = new ArrayList<>();
+
+        for (Set<TimeInterval> intervalSet : result) {
+            TimeInterval timeInterval = findIntersection(intervalSet.stream().toList());
+            if (timeInterval != null) {
+                activeIntervals.add(timeInterval);
+            }
+        }
+        return activeIntervals;
+    }
+
+    public static void combinations(TimeInterval[] values, List<TimeInterval> current, Set<Set<TimeInterval>> accumulator, int size, int pos) {
+        if (current.size() == size) {
+            Set<TimeInterval> toAdd = new HashSet<>(current);
+            if (accumulator.contains(toAdd)) {
+                throw new RuntimeException("Duplicated value " + current);
+            }
+            accumulator.add(toAdd);
+            return;
+        }
+        for (int i = pos; i <= values.length - size + current.size(); i++) {
+            current.add(values[i]);
+            combinations(values, current, accumulator, size, i + 1);
+            current.remove(current.size() - 1);
+        }
+    }
+
+    static TimeInterval findIntersection(List<TimeInterval> intervals) {
+        Instant start = intervals.get(0).getStart();
+        Instant end = intervals.get(0).getEnd();
+
+        for (int i = 1; i < intervals.size(); i++) {
+            if (intervals.get(i).getStart().isAfter(end) || intervals.get(i).getEnd().isBefore(start)) {
+                return null;
+            } else {
+                if (start.isBefore(intervals.get(i).getStart()))
+                    start = intervals.get(i).getStart();
+                if (end.isAfter(intervals.get(i).getEnd()))
+                    end = intervals.get(i).getEnd();
+            }
+        }
+        return new TimeInterval(start, end);
+    }
+
 }

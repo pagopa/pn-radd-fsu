@@ -10,15 +10,18 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.pojo.EvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -69,14 +72,16 @@ class RegistryServiceTest {
     @Mock
     private SecretService secretService;
 
+    @Mock
+    private EventBridgeProducer<EvaluatedZipCodeEvent> eventBridgeProducer;
+
 
     private RegistryService registryService;
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, eventBridgeProducer);
     }
-
     @Test
     void testUploadRegistryRequests() {
         RegistryUploadRequest request = new RegistryUploadRequest();
@@ -290,4 +295,21 @@ class RegistryServiceTest {
 
         StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
     }
+
+    @Test
+    public void handleInternalCapCheckerMessageTest() {
+        PnInternalCapCheckerEvent event = new PnInternalCapCheckerEvent();
+        PnInternalCapCheckerEvent.Payload payload = new PnInternalCapCheckerEvent.Payload("zipCode");
+        event.setPayload(payload);
+        Instant start = Instant.now();
+        Instant end = Instant.now();
+        RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
+        raddRegistryEntity.setZipCode("zipCode");
+        raddRegistryEntity.setStartValidity(start);
+        raddRegistryEntity.setEndValidity(end);
+        when(raddRegistryDAO.getRegistriesByZipCode(any())).thenReturn(Flux.just(raddRegistryEntity));
+
+        StepVerifier.create(registryService.handleInternalCapCheckerMessage(event)).expectComplete();
+    }
+
 }

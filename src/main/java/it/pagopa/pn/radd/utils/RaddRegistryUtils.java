@@ -5,6 +5,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.No
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OriginalRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
@@ -159,5 +160,9 @@ public class RaddRegistryUtils {
 
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
+    }
+
+    public String constructOriginalRequest(OriginalRequest originalRequest) {
+        return objectMapperUtil.toJson(originalRequest);
     }
 }

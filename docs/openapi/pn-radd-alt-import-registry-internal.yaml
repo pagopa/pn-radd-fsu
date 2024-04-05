@@ -20,6 +20,40 @@ tags:
   - name: Import
 
 paths:
+  /radd-alt/api/v1/registry:
+    post:
+      tags:
+        - Registry
+      description: >-
+        API utilizzata per la richiesta di attivazione nuova anagrafica RADD
+      operationId: addRegistry
+      parameters:
+        - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: '#/components/parameters/uid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRegistryRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRegistryResponse'
+        400:
+          $ref: '#/components/responses/Invalid'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        405:
+          $ref: '#/components/responses/NotAllowed'
+        500:
+          $ref: '#/components/responses/InternalError'
   /radd-alt/api/v1/registry/import/upload:
     post:
       tags:
@@ -183,6 +217,49 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
 components:
   schemas:
+    CreateRegistryRequest:
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          type: object
+          properties:
+            latitude:
+              type: string
+              description: Latitudine della posizione geografica dello sportello.
+              example: "41.9028"
+            longitude:
+              type: string
+              description: Longitudine della posizione geografica dello sportello.
+              example: "12.4964"
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+        startValidity:
+          type: string
+          format: date-time
+          description: Data e ora di inizio di validità dello sportello.
+          example: "2024-03-21T09:00:00Z"
+        endValidity:
+          type: string
+          format: date-time
+          description: Data e ora di fine di validità dello sportello.
+          example: "2024-03-21T17:00:00Z"
+    CreateRegistryResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
     Registry:
       type: object
       properties:

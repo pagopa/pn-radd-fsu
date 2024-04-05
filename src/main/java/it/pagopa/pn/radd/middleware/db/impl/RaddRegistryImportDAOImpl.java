@@ -61,4 +61,11 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
 
         return getByFilter(conditional, null, map, filterExpression, null);
     }
+
+    @Override
+    public Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, ImportStatus status) {
+        entity.setStatus(status.name());
+        entity.setTtl(ttl);
+        return this.updateItem(entity);
+    }
 }

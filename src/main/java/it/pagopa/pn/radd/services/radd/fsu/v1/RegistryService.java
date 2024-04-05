@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.Fil
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
@@ -23,12 +24,15 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DUPLICATE_REQUEST;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.PENDING_REQUEST;
@@ -43,6 +47,9 @@ public class RegistryService {
     private final RaddRegistryImportDAO raddRegistryImportDAO;
     private final PnSafeStorageClient pnSafeStorageClient;
     private final RaddRegistryUtils raddRegistryUtils;
+    private final PnRaddFsuConfig pnRaddFsuConfig;
+
+    private final String SK_PREFIX = "PREFIX";
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();
@@ -85,7 +92,6 @@ public class RegistryService {
         RaddRegistryImportEntity pnRaddRegistryImportEntity = raddRegistryUtils.getPnRaddRegistryImportEntity(xPagopaPnCxId, request, fileCreationResponseDto, requestId);
         return raddRegistryImportDAO.putRaddRegistryImportEntity(pnRaddRegistryImportEntity);
     }
-
 
 
     public Mono<Void> handleMessage(PnAddressManagerEvent message) {
@@ -153,6 +159,7 @@ public class RegistryService {
                 .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(raddRegistryRequestEntity, RegistryRequestStatus.ACCEPTED));
 
     }
+
     public Mono<VerifyRequestResponse> verifyRegistriesImportRequest(String xPagopaPnCxId, String requestId) {
         log.info("start verifyRegistriesImportRequest for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
         return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(xPagopaPnCxId, requestId)
@@ -160,6 +167,7 @@ public class RegistryService {
                 .map(this::createVerifyRequestResponse)
                 .doOnError(throwable -> log.error("Error during verify registries import request for cxId: [{}] and requestId: [{}]", xPagopaPnCxId, requestId, throwable));
     }
+
     private VerifyRequestResponse createVerifyRequestResponse(RaddRegistryImportEntity entity) {
         VerifyRequestResponse response = new VerifyRequestResponse();
         response.setRequestId(entity.getRequestId());
@@ -167,4 +175,59 @@ public class RegistryService {
         response.setError(entity.getError());
         return response;
     }
+
+    public Flux<String> getCapListByCxIdAndRequestId(String xPagopaPnCxId, String requestId) {
+        log.info("start getCapListByCxIdAndRequestId for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
+        return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, ImportStatus.DONE)
+                .collectList().flatMapMany(raddRegistryImportEntities -> {
+                    if (raddRegistryImportEntities.size() == 1) {
+                        return getCapList(xPagopaPnCxId, SK_PREFIX)
+                                .collectList()
+                                .flatMap(raddRegistryEntities -> getCapListByRegistryImport(raddRegistryEntities, raddRegistryImportEntities.get(0))
+                                        .thenReturn(raddRegistryEntities))
+                                .flatMapMany(Flux::fromIterable)
+                                .map(RaddRegistryEntity::getZipCode);
+                    }
+                    if (raddRegistryImportEntities.size() > 1) {
+                        RaddRegistryImportEntity raddRegistryImportEntityOld = filterByRequestId(requestId, raddRegistryImportEntities, getRaddRegistryImportEntityPredicate(requestId));
+                        RaddRegistryImportEntity raddRegistryImportEntity = filterByRequestId(requestId, raddRegistryImportEntities, getRaddRegistryImportEntityPredicatePos(requestId));
+                        return getCapList(xPagopaPnCxId, raddRegistryImportEntityOld.getRequestId())
+                                .concatWith(getCapList(xPagopaPnCxId, SK_PREFIX))
+                                .collectList().flatMap(raddRegistryEntities -> getCapListByRegistryImport(raddRegistryEntities, raddRegistryImportEntity)
+                                        .thenReturn(raddRegistryEntities))
+                                .flatMap(raddRegistryEntities -> raddRegistryImportDAO.updateStatusAndTtl(raddRegistryImportEntityOld, getTtl(), ImportStatus.REPLACED)
+                                        .thenReturn(raddRegistryEntities))
+                                .flatMapMany(Flux::fromIterable)
+                                .map(RaddRegistryEntity::getZipCode);
+
+                    }
+                    return Flux.error(new RaddGenericException("No import request found for cxId: " + xPagopaPnCxId + " and requestId: " + requestId));
+                });
+    }
+
+    private long getTtl() {
+        return Instant.now().plus(pnRaddFsuConfig.getRegistryImportReplacedTtl(), ChronoUnit.HOURS).getEpochSecond();
+    }
+
+    private Predicate<RaddRegistryImportEntity> getRaddRegistryImportEntityPredicate(String requestId) {
+        return raddRegistryImportEntity -> !raddRegistryImportEntity.getRequestId().equals(requestId);
+    }
+
+    private Predicate<RaddRegistryImportEntity> getRaddRegistryImportEntityPredicatePos(String requestId) {
+        return raddRegistryImportEntity -> raddRegistryImportEntity.getRequestId().equals(requestId);
+    }
+
+    private Flux<RaddRegistryEntity> getCapList(String xPagopaPnCxId, String requestId) {
+        return raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, requestId);
+    }
+
+    private RaddRegistryImportEntity filterByRequestId(String requestId, List<RaddRegistryImportEntity> raddRegistryImportEntities, Predicate<RaddRegistryImportEntity> predicate) {
+        return raddRegistryImportEntities.stream().filter(predicate)
+                .findFirst().get();
+    }
+
+    private Mono<Void> getCapListByRegistryImport(List<RaddRegistryEntity> raddRegistryEntities, RaddRegistryImportEntity raddRegistryImportEntity) {
+        return Mono.empty();
+    }
+
 }

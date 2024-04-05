@@ -35,6 +35,7 @@ public class PnRaddFsuConfig {
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
     private Long regitryImportUploadFileTtl;
+    private Long registryImportReplacedTtl;
 
     @Data
     public static class Dao {

@@ -413,8 +413,8 @@ Resources:
         ContainerEnvEntry37: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry38: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry39: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
-        ContainerEnvEntry40: !Sub 'PN_RADD_EVALUETED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
-        ContainerEnvEntry41: !Sub 'PN_RADD_EVALUETED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
+        ContainerEnvEntry40: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
+        ContainerEnvEntry41: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
         ContainerEnvEntry42: !Sub 'PN_RADD_EVENTBUS=${RaddEventBusName}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName

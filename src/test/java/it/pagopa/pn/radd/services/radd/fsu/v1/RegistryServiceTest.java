@@ -17,7 +17,6 @@ import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.ImportStatus;
-import it.pagopa.pn.radd.pojo.OriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +77,7 @@ class RegistryServiceTest {
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, pnRaddFsuConfig);
     }
 
     @Test
@@ -246,7 +245,7 @@ class RegistryServiceTest {
 
 
     @Test
-    public void shouldProcessMessageSuccessfullyWithRelatedRegistryNotFount() throws JsonProcessingException {
+    public void shouldProcessMessageSuccessfullyWithRelatedRegistryNotFount() {
 
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
@@ -296,10 +295,6 @@ class RegistryServiceTest {
     }
     @Test
     void testDeleteOlderRequestRegistriesAndGetCapListForFirstImportRequest() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
-
-
         String xPagopaPnCxId = "testCxId";
         String requestId = "testRequestId";
 
@@ -324,10 +319,6 @@ class RegistryServiceTest {
 
     @Test
     void testDeleteOlderRequestRegistriesAndGetCapListForSubsequentImportRequest() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
-
-
         String xPagopaPnCxId = "testCxId";
         String requestId = "testNewRequestId";
         String oldRequestId = "testOldRequestId";
@@ -373,9 +364,6 @@ class RegistryServiceTest {
 
     @Test
     void testDeleteOlderRequestRegistriesAndGetCapListFails() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
-
         String xPagopaPnCxId = "testCxId";
         String requestId = "testNewRequestId";
 

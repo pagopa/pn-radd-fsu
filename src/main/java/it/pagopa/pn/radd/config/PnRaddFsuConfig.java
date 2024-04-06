@@ -30,11 +30,22 @@ public class PnRaddFsuConfig {
     private Dao dao;
     private int registryDefaultEndValidity;
     private String registryDefaultDeleteRule;
+    private String addressManagerApiKeySecret;
+    private String addressManagerBaseUrl;
 
     private HtmlSanitizer.SanitizeMode sanitizeMode;
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
-    private Long regitryImportUploadFileTtl;
+    private Long registryImportUploadFileTtl;
+
+    private RegistryImportProgress registryImportProgress;
+
+    @Data
+    public static class RegistryImportProgress {
+        private Integer delay;
+        private Integer lockAtMost;
+        private Integer lockAtLeast;
+    }
     private Long registryImportReplacedTtl;
 
     @Data
@@ -44,10 +55,11 @@ public class PnRaddFsuConfig {
         private String raddRegistryRequestTable;
         private String raddRegistryImportTable;
         private String raddRegistryTable;
+        private String shedlockTableName;
     }
 
     @Data
-    public static class Sqs{
+    public static class Sqs {
         private String internalCapCheckerQueueName;
         private String inputQueueName;
         private String safeStorageQueueName;

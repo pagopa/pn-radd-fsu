@@ -13,8 +13,11 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
@@ -36,8 +39,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DUPLICATE_REQUEST;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.PENDING_REQUEST;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.utils.Const.CRUD_REGISTRY_REQUEST_ID_PREFIX;
 import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 
@@ -50,6 +52,7 @@ public class RegistryService {
     private final RaddRegistryImportDAO raddRegistryImportDAO;
     private final PnSafeStorageClient pnSafeStorageClient;
     private final RaddRegistryUtils raddRegistryUtils;
+    private final PnAddressManagerClient pnAddressManagerClient;
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
 
@@ -71,10 +74,10 @@ public class RegistryService {
         for (RaddRegistryImportEntity entity : entities) {
             if (request.getChecksum().equalsIgnoreCase(entity.getChecksum()) &&
                     (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
-                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isAfter(entity.getFileUploadDueDate())))) {
+                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate())))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(DUPLICATE_REQUEST.name()), HttpStatus.CONFLICT));
             } else if (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
-                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isAfter(entity.getFileUploadDueDate()))) {
+                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate()))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(PENDING_REQUEST.name()), HttpStatus.BAD_REQUEST));
             }
         }
@@ -95,8 +98,7 @@ public class RegistryService {
         return raddRegistryImportDAO.putRaddRegistryImportEntity(pnRaddRegistryImportEntity);
     }
 
-
-    public Mono<Void> handleMessage(PnAddressManagerEvent message) {
+    public Mono<Void> handleAddressManagerEvent(PnAddressManagerEvent message) {
         return processMessage(message.getPayload().getResultItems(), message.getPayload().getCorrelationId());
     }
 
@@ -161,21 +163,34 @@ public class RegistryService {
                 .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(raddRegistryRequestEntity, RegistryRequestStatus.ACCEPTED));
 
     }
-
     public Mono<VerifyRequestResponse> verifyRegistriesImportRequest(String xPagopaPnCxId, String requestId) {
         log.info("start verifyRegistriesImportRequest for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
         return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(xPagopaPnCxId, requestId)
-                .switchIfEmpty(Mono.error(new RaddGenericException(String.format("No import request found for cxId: [%s] and requestId: [%s] ", xPagopaPnCxId, requestId))))
+                .switchIfEmpty(Mono.error(new RaddGenericException(IMPORT_REQUEST_NOT_FOUND, HttpStatus.NOT_FOUND)))
                 .map(this::createVerifyRequestResponse)
                 .doOnError(throwable -> log.error("Error during verify registries import request for cxId: [{}] and requestId: [{}]", xPagopaPnCxId, requestId, throwable));
     }
-
     private VerifyRequestResponse createVerifyRequestResponse(RaddRegistryImportEntity entity) {
         VerifyRequestResponse response = new VerifyRequestResponse();
         response.setRequestId(entity.getRequestId());
         response.setStatus(entity.getStatus());
         response.setError(entity.getError());
         return response;
+    }
+
+    public Mono<Void> handleNormalizeRequestEvent(PnRaddAltNormalizeRequestEvent.Payload payload) {
+        AddressManagerRequest request = new AddressManagerRequest();
+        request.setCorrelationId(payload.getCorrelationId());
+
+        return raddRegistryRequestDAO.getAllFromCorrelationId(payload.getCorrelationId(), RegistryRequestStatus.NOT_WORKED.name())
+                .collectList()
+                .zipWhen(entities -> Mono.just(raddRegistryUtils.getRequestAddressFromOriginalRequest(entities)))
+                .flatMap(tuple -> {
+                    request.setAddresses(tuple.getT2());
+                    String addressManagerApiKey = raddRegistryUtils.retrieveAddressManagerApiKey();
+                    return pnAddressManagerClient.normalizeAddresses(request, addressManagerApiKey).thenReturn(tuple);
+                })
+                .flatMap(tuple -> raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1()));
     }
 
     /**

@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.utils;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeItemsRequestDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
@@ -8,8 +11,11 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.pojo.OriginalRequest;
+import it.pagopa.pn.radd.pojo.AddressManagerRequest;
+import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
+import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
+import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -30,16 +36,17 @@ public class RaddRegistryUtils {
 
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
+    private final SecretService secretService;
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
-            OriginalRequest originalRequest = objectMapperUtil.toObject(newRegistryRequestEntity.getOriginalRequest(), OriginalRequest.class);
+            RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(newRegistryRequestEntity.getOriginalRequest(), RaddRegistryOriginalRequest.class);
 
-            return getRaddRegistryEntity(preExistingRegistryEntity, newRegistryRequestEntity, originalRequest);
+            return getRaddRegistryEntity(preExistingRegistryEntity, newRegistryRequestEntity, raddRegistryOriginalRequest);
         });
     }
 
-    private static RaddRegistryEntity getRaddRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity, OriginalRequest originalRequest) {
+    private static RaddRegistryEntity getRaddRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         RaddRegistryEntity registryEntity = new RaddRegistryEntity();
 
         registryEntity.setRegistryId(preExistingRegistryEntity.getRegistryId());
@@ -47,13 +54,13 @@ public class RaddRegistryUtils {
         registryEntity.setNormalizedAddress(preExistingRegistryEntity.getNormalizedAddress());
         registryEntity.setRequestId(newRegistryRequestEntity.getRequestId());
         // Metadata from originalRequest
-        registryEntity.setDescription(originalRequest.getDescription());
-        registryEntity.setPhoneNumber(originalRequest.getPhoneNumber());
-        registryEntity.setGeoLocation(originalRequest.getGeoLocation());
+        registryEntity.setDescription(raddRegistryOriginalRequest.getDescription());
+        registryEntity.setPhoneNumber(raddRegistryOriginalRequest.getPhoneNumber());
+        registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(newRegistryRequestEntity.getZipCode());
-        registryEntity.setOpeningTime(originalRequest.getOpeningTime());
-        registryEntity.setStartValidity(originalRequest.getStartValidity());
-        registryEntity.setEndValidity(originalRequest.getEndValidity());
+        registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
+        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
+        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
 
         return registryEntity;
     }
@@ -61,13 +68,13 @@ public class RaddRegistryUtils {
     public Mono<RaddRegistryEntity> constructRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
         return Mono.fromCallable(() -> {
             String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
-            OriginalRequest originalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), OriginalRequest.class);
+            RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
 
-            return getRaddRegistryEntity(normalizedAddress, registryRequest, normalizedAddressString, originalRequest);
+            return getRaddRegistryEntity(normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest);
         });
     }
 
-    private static RaddRegistryEntity getRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, OriginalRequest originalRequest) {
+    private static RaddRegistryEntity getRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         RaddRegistryEntity registryEntity = new RaddRegistryEntity();
 
         registryEntity.setRegistryId(registryRequest.getRegistryId());
@@ -75,13 +82,13 @@ public class RaddRegistryUtils {
         registryEntity.setNormalizedAddress(normalizedAddressString);
         registryEntity.setRequestId(registryRequest.getRequestId());
         // Metadata from originalRequest
-        registryEntity.setDescription(originalRequest.getDescription());
-        registryEntity.setPhoneNumber(originalRequest.getPhoneNumber());
-        registryEntity.setGeoLocation(originalRequest.getGeoLocation());
+        registryEntity.setDescription(raddRegistryOriginalRequest.getDescription());
+        registryEntity.setPhoneNumber(raddRegistryOriginalRequest.getPhoneNumber());
+        registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(normalizedAddress.getCap());
-        registryEntity.setOpeningTime(originalRequest.getOpeningTime());
-        registryEntity.setStartValidity(originalRequest.getStartValidity());
-        registryEntity.setEndValidity(originalRequest.getEndValidity());
+        registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
+        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
+        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
 
         return registryEntity;
     }
@@ -104,7 +111,7 @@ public class RaddRegistryUtils {
         pnRaddRegistryImportEntity.setFileKey(fileCreationResponseDto.getKey());
         pnRaddRegistryImportEntity.setCreatedAt(Instant.now());
         pnRaddRegistryImportEntity.setUpdatedAt(Instant.now());
-        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(pnRaddFsuConfig.getRegitryImportUploadFileTtl(), ChronoUnit.SECONDS));
+        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(pnRaddFsuConfig.getRegistryImportUploadFileTtl(), ChronoUnit.SECONDS));
 
         RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
         raddRegistryImportConfig.setDeleteRole(pnRaddFsuConfig.getRegistryDefaultDeleteRule());
@@ -122,4 +129,35 @@ public class RaddRegistryUtils {
         return request;
     }
 
+    public List<AddressManagerRequestAddress> getRequestAddressFromOriginalRequest(List<RaddRegistryRequestEntity> entities) {
+        return entities.stream().map(entity -> {
+            AddressManagerRequestAddress request = objectMapperUtil.toObject(entity.getOriginalRequest(), AddressManagerRequestAddress.class);
+            request.setId(entity.getPk());
+            return request;
+        }).toList();
+    }
+
+    public NormalizeItemsRequestDto getNormalizeRequestDtoFromAddressManagerRequest(AddressManagerRequest request) {
+        NormalizeItemsRequestDto requestDto = new NormalizeItemsRequestDto();
+        requestDto.setCorrelationId(request.getCorrelationId());
+        List<NormalizeRequestDto> listDto = request.getAddresses().stream().map(address -> {
+            NormalizeRequestDto dto = new NormalizeRequestDto();
+            dto.setId(address.getId());
+            AnalogAddressDto addressDto = new AnalogAddressDto();
+            addressDto.setAddressRow(address.getAddressRow());
+            addressDto.setCap(address.getCap());
+            addressDto.setCity(address.getCity());
+            addressDto.setPr(address.getPr());
+            addressDto.setCountry(address.getCountry());
+            dto.setAddress(addressDto);
+            return dto;
+        }).toList();
+        requestDto.setRequestItems(listDto);
+
+        return requestDto;
+    }
+
+    public String retrieveAddressManagerApiKey() {
+        return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
+    }
 }

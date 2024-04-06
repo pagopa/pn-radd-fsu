@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.Instant;
 
 @Data
-public class OriginalRequest {
+public class RaddRegistryOriginalRequest {
     private String addressRow;
     private String cap;
     private String city;

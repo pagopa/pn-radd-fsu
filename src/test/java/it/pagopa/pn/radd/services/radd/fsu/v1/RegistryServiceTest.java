@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AcceptedResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
@@ -10,12 +11,16 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.OriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,13 +61,28 @@ class RegistryServiceTest {
     private PnSafeStorageClient pnSafeStorageClient;
     @Mock
     private RaddRegistryImportDAO raddRegistryImportDAO;
+
     @Mock
     private PnAddressManagerEvent message;
+    @Mock
+    private PnAddressManagerClient pnAddressManagerClient;
+
+    @Mock
+    private PnRaddAltNormalizeRequestEvent.Payload payload;
+
+    @Mock
+    private SecretService secretService;
+
+
+    private RegistryService registryService;
+
+    @BeforeEach
+    void setUp() {
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient);
+    }
 
     @Test
     void testUploadRegistryRequests() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
         RegistryUploadRequest request = new RegistryUploadRequest();
         request.setChecksum("checksum");
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
@@ -82,14 +102,12 @@ class RegistryServiceTest {
 
     @Test
     void testUploadRegistryRequestsNotValid() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
         RegistryUploadRequest request = new RegistryUploadRequest();
         request.setChecksum("checksum");
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus(TO_PROCESS.name());
         pnRaddRegistryImportEntity.setChecksum("checksum");
-        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().minus(10, ChronoUnit.DAYS));
+        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(10, ChronoUnit.DAYS));
         when(raddRegistryImportDAO.getRegistryImportByCxId(any())).thenReturn(Flux.just(pnRaddRegistryImportEntity));
 
         StepVerifier.create(registryService.uploadRegistryRequests("cxId", Mono.just(request)))
@@ -98,8 +116,6 @@ class RegistryServiceTest {
 
     @Test
     void testUploadRegistryRequestsNotValid2() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
         RegistryUploadRequest request = new RegistryUploadRequest();
         request.setChecksum("checksum");
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
@@ -112,30 +128,26 @@ class RegistryServiceTest {
 
     @Test
     public void shouldProcessMessageSuccessfully() throws JsonProcessingException {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
 
-        OriginalRequest originalRequest = new OriginalRequest();
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
         ObjectMapper objectMapper = new ObjectMapper();
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
         RaddRegistryEntity raddRegistryEntity = mock(RaddRegistryEntity.class);
-        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(originalRequest));
+        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
         when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
-        Mono<Void> result = registryService.handleMessage(pnAddressManagerEvent);
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();
     }
 
     @Test
     public void shouldProcessMessageSuccessfullyWithError() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
 
         PnAddressManagerEvent.ResultItem resultItem = new PnAddressManagerEvent.ResultItem();
         resultItem.setError("error");
@@ -151,7 +163,7 @@ class RegistryServiceTest {
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
 
-        Mono<Void> result = registryService.handleMessage(message);
+        Mono<Void> result = registryService.handleAddressManagerEvent(message);
 
         StepVerifier.create(result)
                 .verifyComplete();
@@ -159,8 +171,6 @@ class RegistryServiceTest {
 
     @Test
     void testVerifyRegistryRequests_ValidCase() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
 
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus("DONE");
@@ -173,8 +183,6 @@ class RegistryServiceTest {
 
     @Test
     void testVerifyRegistryRequests_ValidCaseWithError() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
 
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus("REJECTED");
@@ -189,21 +197,16 @@ class RegistryServiceTest {
 
     @Test
     void testVerifyRegistryRequests_ExceptionCase() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
 
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(any(), any())).thenReturn(Mono.empty());
 
         StepVerifier.create(registryService.verifyRegistriesImportRequest("cxId", "requestId"))
-                .expectErrorMessage("No import request found for cxId: [cxId] and requestId: [requestId] ")
+                .expectErrorMessage("No import request found for given value")
                 .verify();
     }
 
     @Test
     public void shouldProcessMessageSuccessfullyWithDuplicate() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
-
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
         RaddRegistryEntity raddRegistryEntity = mock(RaddRegistryEntity.class);
@@ -214,7 +217,7 @@ class RegistryServiceTest {
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
-        Mono<Void> result = registryService.handleMessage(pnAddressManagerEvent);
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();
     }
@@ -222,13 +225,11 @@ class RegistryServiceTest {
     @Test
     public void shouldProcessMessageSuccessfullyWithExistingOldRegistry() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
         RaddRegistryEntity raddRegistryEntity = mock(RaddRegistryEntity.class);
-        OriginalRequest originalRequest = new OriginalRequest();
-        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(originalRequest));
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
+        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
         when(raddRegistryEntity.getRequestId()).thenReturn("requestIdOld");
         when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
         when(raddRegistryRequestEntity.getRequestId()).thenReturn("requestId");
@@ -238,34 +239,30 @@ class RegistryServiceTest {
         when(raddRegistryDAO.updateRegistryEntity(any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
-        Mono<Void> result = registryService.handleMessage(pnAddressManagerEvent);
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();
     }
 
 
     @Test
-    public void shouldProcessMessageSuccessfullyWithRelatedRegistryNotFount() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
+    public void shouldProcessMessageSuccessfullyWithRelatedRegistryNotFount() throws JsonProcessingException {
 
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
         when(raddRegistryRequestEntity.getPk()).thenReturn("id2");
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
-        Mono<Void> result = registryService.handleMessage(pnAddressManagerEvent);
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();
     }
 
     @Test
     public void shouldProcessMessageSuccessfullyWithImportNotFound() {
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);
-        RegistryService registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, raddRegistryUtils, pnRaddFsuConfig);
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.empty());
-        Mono<Void> result = registryService.handleMessage(pnAddressManagerEvent);
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
         StepVerifier.create(result).verifyComplete();
     }
 
@@ -282,6 +279,21 @@ class RegistryServiceTest {
         return pnAddressManagerEvent;
     }
 
+    @Test
+    public void shouldHandleRequestSuccessfully() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        when(payload.getCorrelationId()).thenReturn("correlationId");
+        RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
+        raddRegistryOriginalRequest.setGeoLocation("test");
+        raddRegistryOriginalRequest.setPr("RM");
+        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
+        when(raddRegistryRequestDAO.getAllFromCorrelationId(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
+        when(pnAddressManagerClient.normalizeAddresses(any(), any())).thenReturn(Mono.just(new AcceptedResponseDto()));
+        when(raddRegistryRequestDAO.updateRecordsInPending(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
+    }
     @Test
     void testDeleteOlderRequestRegistriesAndGetCapListForFirstImportRequest() {
         RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig);

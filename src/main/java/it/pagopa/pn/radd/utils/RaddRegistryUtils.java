@@ -156,7 +156,7 @@ public class RaddRegistryUtils {
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
-    public EvaluatedZipCodeEvent mapToEventMessage(List<TimeInterval> timeIntervals, String zipCode) {
+    public EvaluatedZipCodeEvent mapToEventMessage(Set<TimeInterval> timeIntervals, String zipCode) {
         return EvaluatedZipCodeEvent.builder().detail(
                 EvaluatedZipCodeEvent.Detail
                         .builder()
@@ -167,7 +167,7 @@ public class RaddRegistryUtils {
         ).build();
     }
 
-    private List<ConfigEntry> getConfigEntries(List<TimeInterval> timeIntervals) {
+    private List<ConfigEntry> getConfigEntries(Set<TimeInterval> timeIntervals) {
         return timeIntervals.stream()
                 .map(timeInterval -> {
                     ConfigEntry configEntry = new ConfigEntry();
@@ -192,14 +192,14 @@ public class RaddRegistryUtils {
                 }).toList();
     }
 
-    public List<TimeInterval> findActiveIntervals(List<TimeInterval> timeIntervals) {
+    public Set<TimeInterval> findActiveIntervals(List<TimeInterval> timeIntervals) {
 
         TimeInterval[] timeIntervalArray = timeIntervals.toArray(new TimeInterval[0]);
         Set<Set<TimeInterval>> result = new HashSet<>();
 
         combinations(timeIntervalArray, new ArrayList<>(), result, pnRaddFsuConfig.getEvaluatedZipCodeConfigNumber(), 0);
 
-        List<TimeInterval> activeIntervals = new ArrayList<>();
+        Set<TimeInterval> activeIntervals = new HashSet<>();
 
         for (Set<TimeInterval> intervalSet : result) {
             TimeInterval timeInterval = findIntersection(intervalSet.stream().toList());

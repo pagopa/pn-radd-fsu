@@ -16,7 +16,6 @@ import java.util.List;
 @ConfigurationProperties(prefix = "pn.radd")
 @Import(SharedAutoConfiguration.class)
 public class PnRaddFsuConfig {
-
     private Integer attemptBatchWriter;
     private String clientDeliveryBasepath;
     private String clientDeliveryPushBasepath;
@@ -43,6 +42,15 @@ public class PnRaddFsuConfig {
     private String evaluatedZipCodeConfigType;
     private Integer evaluatedZipCodeConfigNumber;
 
+    private RegistryImportProgress registryImportProgress;
+
+    @Data
+    public static class RegistryImportProgress {
+        private Integer delay;
+        private Integer lockAtMost;
+        private Integer lockAtLeast;
+    }
+
     @Data
     public static class Dao {
         private String raddTransactionTable;
@@ -50,10 +58,11 @@ public class PnRaddFsuConfig {
         private String raddRegistryRequestTable;
         private String raddRegistryImportTable;
         private String raddRegistryTable;
+        private String shedlockTableName;
     }
 
     @Data
-    public static class Sqs{
+    public static class Sqs {
         private String internalCapCheckerQueueName;
         private String inputQueueName;
         private String safeStorageQueueName;

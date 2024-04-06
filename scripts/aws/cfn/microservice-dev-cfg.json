@@ -14,7 +14,10 @@
     "RegistryImportUploadFileTtl": "43200",
     "AddressManagerBaseUrl": "http://alb.confidential.pn.internal:8080",
     "AddressManagerApiKeySecret": "pn-radd-alt/address-manager/apikey",
-    "EvaluetedZipCodeConfigType": "",
-    "EvaluetedZipCodeConfigNumber": ""
+    "VerifyRaddRegistryImportLockAtMost": "120000",
+    "VerifyRaddRegistryImportLockAtLeast": "1000",
+    "VerifyRaddRegistryImportDelay": "12000"
+    "EvaluatedZipCodeConfigType": "",
+    "EvaluatedZipCodeConfigNumber": ""
   }
 }

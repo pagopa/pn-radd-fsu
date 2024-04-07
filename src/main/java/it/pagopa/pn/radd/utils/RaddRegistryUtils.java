@@ -207,7 +207,9 @@ public class RaddRegistryUtils {
                 activeIntervals.add(timeInterval);
             }
         }
-        return activeIntervals;
+
+        TimeInterval[] activeIntervalsArray = new TimeInterval[0];
+        return mergeIntervals(activeIntervals.toArray(activeIntervalsArray));
     }
 
     public static void combinations(TimeInterval[] values, List<TimeInterval> current, Set<Set<TimeInterval>> accumulator, int size, int pos) {
@@ -242,5 +244,32 @@ public class RaddRegistryUtils {
         }
         return new TimeInterval(start, end);
     }
+
+    public static Set<TimeInterval> mergeIntervals(TimeInterval[] timeIntervals)
+    {
+        if (timeIntervals.length <= 0) {
+            return Set.of();
+        }
+        Arrays.sort(timeIntervals, Comparator.comparing(TimeInterval::getStart));
+
+        Stack<TimeInterval> stack = new Stack<>();
+        stack.push(timeIntervals[0]);
+
+        for (int i = 1; i < timeIntervals.length; i++) {
+            TimeInterval top = stack.peek();
+
+            if (top.getEnd().isBefore(timeIntervals[i].getStart()))
+                stack.push(timeIntervals[i]);
+            else if (top.getEnd().isBefore(timeIntervals[i].getEnd())) {
+                top.setEnd(timeIntervals[i].getEnd());
+                stack.pop();
+                stack.push(top);
+            }
+        }
+
+        TimeInterval[] activeIntervals = new TimeInterval[0];
+        return Set.of(stack.toArray(activeIntervals));
+    }
+
 
 }

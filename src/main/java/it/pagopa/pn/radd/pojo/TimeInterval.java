@@ -1,11 +1,13 @@
 package it.pagopa.pn.radd.pojo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.Instant;
 
 @Data
+@AllArgsConstructor
 public class TimeInterval {
-    private final Instant start;
-    private final Instant end;
+    private Instant start;
+    private Instant end;
 }

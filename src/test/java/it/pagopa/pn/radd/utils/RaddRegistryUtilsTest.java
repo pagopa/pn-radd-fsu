@@ -1,16 +1,5 @@
 package it.pagopa.pn.radd.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
@@ -25,12 +14,17 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
-import it.pagopa.pn.radd.pojo.ConfigEntry;
-import it.pagopa.pn.radd.pojo.EvaluatedZipCodeEvent;
-import it.pagopa.pn.radd.pojo.TimeInterval;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,14 +34,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import static it.pagopa.pn.radd.utils.RaddRegistryUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration(classes = {RaddRegistryUtils.class, PnRaddFsuConfig.class})
 @ExtendWith(SpringExtension.class)
@@ -1019,7 +1008,7 @@ class RaddRegistryUtilsTest {
         HashSet<Set<TimeInterval>> accumulator = new HashSet<>();
 
         // Act
-        RaddRegistryUtils.combinations(
+        combinations(
                 new TimeInterval[]{
                         new TimeInterval(start, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant())},
                 current, accumulator, 3, 2);
@@ -1053,7 +1042,7 @@ class RaddRegistryUtilsTest {
         HashSet<Set<TimeInterval>> accumulator = new HashSet<>();
 
         // Act
-        RaddRegistryUtils.combinations(
+        combinations(
                 new TimeInterval[]{timeInterval, timeInterval2,
                         new TimeInterval(start3, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant())},
                 current, accumulator, 3, 2);
@@ -1084,7 +1073,7 @@ class RaddRegistryUtilsTest {
         accumulator.add(new HashSet<>());
 
         // Act
-        RaddRegistryUtils.combinations(
+        combinations(
                 new TimeInterval[]{
                         new TimeInterval(start, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant())},
                 current, accumulator, 3, 2);
@@ -1104,7 +1093,7 @@ class RaddRegistryUtilsTest {
         intervals.add(new TimeInterval(start, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
 
         // Act
-        TimeInterval actualFindIntersectionResult = RaddRegistryUtils.findIntersection(intervals);
+        TimeInterval actualFindIntersectionResult = findIntersection(intervals);
 
         // Assert
         Instant expectedStart = actualFindIntersectionResult.getEnd();
@@ -1124,7 +1113,7 @@ class RaddRegistryUtilsTest {
         intervals.add(new TimeInterval(start2, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
 
         // Act
-        TimeInterval actualFindIntersectionResult = RaddRegistryUtils.findIntersection(intervals);
+        TimeInterval actualFindIntersectionResult = findIntersection(intervals);
 
         // Assert
         Instant expectedStart = actualFindIntersectionResult.getEnd();
@@ -1146,7 +1135,7 @@ class RaddRegistryUtilsTest {
         intervals.add(timeInterval);
 
         // Act
-        TimeInterval actualFindIntersectionResult = RaddRegistryUtils.findIntersection(intervals);
+        TimeInterval actualFindIntersectionResult = findIntersection(intervals);
 
         // Assert
         verify(timeInterval).getEnd();
@@ -1170,7 +1159,7 @@ class RaddRegistryUtilsTest {
         intervals.add(timeInterval);
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> RaddRegistryUtils.findIntersection(intervals));
+        assertThrows(RuntimeException.class, () -> findIntersection(intervals));
         verify(timeInterval).getStart();
     }
 
@@ -1194,7 +1183,7 @@ class RaddRegistryUtilsTest {
         intervals.add(timeInterval);
 
         // Act
-        TimeInterval actualFindIntersectionResult = RaddRegistryUtils.findIntersection(intervals);
+        TimeInterval actualFindIntersectionResult = findIntersection(intervals);
 
         // Assert
         verify(timeInterval2).getEnd();
@@ -1203,5 +1192,43 @@ class RaddRegistryUtilsTest {
         verify(timeInterval, atLeast(1)).getStart();
         Instant expectedStart = actualFindIntersectionResult.getEnd();
         assertSame(expectedStart, actualFindIntersectionResult.getStart());
+    }
+
+    @Test
+    void findIntervalsTest() {
+        List<TimeInterval> timeIntervals = new ArrayList<>();
+
+        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-01T00:00:00Z"), Instant.parse("2024-05-08T00:00:00Z")));
+        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-06T00:00:00Z"), Instant.parse("2024-05-12T00:00:00Z"))); // Intersects with first interval
+        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-15T00:00:00Z"), Instant.parse("2024-05-22T00:00:00Z")));
+        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-18T00:00:00Z"), Instant.parse("2024-05-25T00:00:00Z"))); // Intersects with third interval
+        TimeInterval[] timeIntervalArray = timeIntervals.toArray(new TimeInterval[0]);
+
+        Set<Set<TimeInterval>> result = new HashSet<>();
+        combinations(timeIntervalArray, new ArrayList<>(), result, 1, 0);
+
+        List<TimeInterval> activeIntervals = new ArrayList<>();
+
+        for (Set<TimeInterval> intervalSet : result) {
+            TimeInterval timeInterval = findIntersection(intervalSet.stream().toList());
+            if(timeInterval != null) {
+                activeIntervals.add(timeInterval);
+            }
+        }
+
+
+        Instant instant1Start = Instant.parse("2024-05-15T00:00:00Z");
+        Instant instant1End = Instant.parse("2024-05-25T00:00:00Z");
+        Instant instant2Start = Instant.parse("2024-05-01T00:00:00Z");
+        Instant instant2End = Instant.parse("2024-05-12T00:00:00Z");
+
+        // Create TimeInterval objects from the Instant objects
+        TimeInterval interval1 = new TimeInterval(instant1Start, instant1End);
+        TimeInterval interval2 = new TimeInterval(instant2Start, instant2End);
+
+        Set<TimeInterval> verify = Set.of(interval1, interval2);
+        TimeInterval[] timeIntervals1 = new TimeInterval[0];
+
+        Assertions.assertEquals(verify, mergeIntervals(activeIntervals.toArray(timeIntervals1)));
     }
 }

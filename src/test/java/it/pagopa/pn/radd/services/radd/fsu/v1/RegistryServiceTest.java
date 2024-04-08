@@ -17,6 +17,8 @@ import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
@@ -82,6 +84,7 @@ class RegistryServiceTest {
     void setUp() {
         registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, eventBridgeProducer);
     }
+
     @Test
     void testUploadRegistryRequests() {
         RegistryUploadRequest request = new RegistryUploadRequest();

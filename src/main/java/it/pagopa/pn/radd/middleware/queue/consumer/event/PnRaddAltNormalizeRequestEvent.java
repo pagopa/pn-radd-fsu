@@ -1,4 +1,4 @@
-package it.pagopa.pn.radd.middleware.queue.consumer.event;
+package it.pagopa.pn.radd.middleware.queue.event;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
 import it.pagopa.pn.api.dto.events.StandardEventHeader;

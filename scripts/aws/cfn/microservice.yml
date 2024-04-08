@@ -156,6 +156,10 @@ Parameters:
     Type: Number
     Description: 'Time, expressed in seconds, within which it is possible to upload the csv (validity of safestorage url)'
 
+  MaxQuerySize:
+    Type: Number
+    Description: 'Max query size'
+
   SecretAndSSMPrefix:
     Type: String
     Default: pn-radd-alt
@@ -416,6 +420,7 @@ Resources:
         ContainerEnvEntry40: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
         ContainerEnvEntry41: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
         ContainerEnvEntry42: !Sub 'PN_RADD_EVENTBUS=${RaddEventBusName}'
+        ContainerEnvEntry43: !Sub 'PN_RADD_MAXQUERYSIZE=${MaxQuerySize}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

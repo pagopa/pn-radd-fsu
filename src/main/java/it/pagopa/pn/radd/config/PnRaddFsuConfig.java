@@ -51,6 +51,8 @@ public class PnRaddFsuConfig {
         private Integer lockAtLeast;
     }
 
+    private Integer maxQuerySize;
+
     @Data
     public static class Dao {
         private String raddTransactionTable;

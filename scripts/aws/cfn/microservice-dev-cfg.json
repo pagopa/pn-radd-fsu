@@ -17,6 +17,7 @@
     "VerifyRaddRegistryImportLockAtMost": "120000",
     "VerifyRaddRegistryImportLockAtLeast": "1000",
     "VerifyRaddRegistryImportDelay": "12000",
+    "MaxQuerySize": "1000",
     "EvaluatedZipCodeConfigType": "",
     "EvaluatedZipCodeConfigNumber": ""
   }

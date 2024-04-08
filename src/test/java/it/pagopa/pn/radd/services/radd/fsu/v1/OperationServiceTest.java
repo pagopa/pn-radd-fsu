@@ -5,7 +5,6 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationActRespons
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationAorResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationResponseStatus;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OperationsResponse;
-import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddTransactionEntityNotificationResponse;
@@ -18,11 +17,12 @@ import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -35,7 +35,8 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.TRANSACTIONS_NOT_FOU
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-class OperationServiceTest extends BaseTest {
+@ExtendWith(MockitoExtension.class)
+class OperationServiceTest{
     private final Duration d = Duration.ofMillis(3000);
     @InjectMocks
     private OperationService operationService;
@@ -43,7 +44,6 @@ class OperationServiceTest extends BaseTest {
     private RaddTransactionDAOImpl transactionDAO;
     @Mock
     private OperationsIunsDAO operationsIunsDAO;
-    @Autowired
     @Spy
     private RaddTransactionEntityNotificationResponse mapperToNotificationResponse;
 
@@ -185,7 +185,6 @@ class OperationServiceTest extends BaseTest {
         entity.setOperationEndDate(DateUtils.formatDate(new Date()));
         entity.setVersionToken("VersionTokenOK");
         entity.setErrorReason("errorReason");
-        Mockito.when(transactionDAO.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(entity));
         OperationsIunsEntity operationsIunsEntity = new OperationsIunsEntity();
         operationsIunsEntity.setIun("[iunTest, testIun]");
         operationsIunsEntity.setTransactionId("testTransactionId");

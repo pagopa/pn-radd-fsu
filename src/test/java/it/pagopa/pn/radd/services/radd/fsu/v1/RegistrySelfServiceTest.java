@@ -54,10 +54,11 @@ class RegistrySelfServiceTest {
     @Mock
     private PnRaddFsuConfig pnRaddFsuConfig;
 
+
     @BeforeEach
     void setUp() {
-        registrySelfService = new RegistrySelfService(raddRegistryDAO,raddAltCapCheckerProducer,pnRaddFsuConfig);
-        registrySelfService = new RegistrySelfService(raddRegistryDAO, registryRequestDAO, raddRegistryRequestEntityMapper, correlationIdEventsProducer);
+        registrySelfService = new RegistrySelfService(raddRegistryDAO, registryRequestDAO, raddRegistryRequestEntityMapper,
+                correlationIdEventsProducer, raddAltCapCheckerProducer, pnRaddFsuConfig);
     }
 
     @Test

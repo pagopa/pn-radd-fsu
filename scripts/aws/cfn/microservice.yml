@@ -139,7 +139,7 @@ Parameters:
 
   RegistryDefaultEndValidity:
     Type: String
-    Description: 'Default end validity for radd registry'
+    Description: 'Default end validity for radd registry in days'
 
   RegistryDefaultDeleteRule:
     Type: String
@@ -435,7 +435,7 @@ Resources:
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:
     Type: AWS::CloudFormation::Stack
-    Properties:
+   Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service-openapi.yaml"
       Parameters:
         MicroServiceUniqueName: !Sub '${ProjectName}-radd-alt'

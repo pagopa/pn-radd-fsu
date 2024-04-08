@@ -4,6 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ExceptionTypeEnum {
+    REGISTRY_NOT_FOUND("REGISTRY_NOT_FOUND", "Registry not found with given id and cxId", 99),
+    DATE_NOTICE_ERROR("DATE_NOTICE_ERROR","Not enough notice time for cancellation date", 99),
+    DATE_INVALID_ERROR("DATE_INVALID_ERROR","formato della data non valido", 99),
     IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params", 99),
     TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata", 99),
     TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente", 99),

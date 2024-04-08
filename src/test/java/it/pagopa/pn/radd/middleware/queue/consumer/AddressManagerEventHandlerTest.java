@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryImportService;
+import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 class AddressManagerEventHandlerTest {
 
     @Mock
-    private RegistryImportService registryImportService;
+    private RegistryService registryService;
 
     @Mock
     private Message<PnAddressManagerEvent> message;
@@ -34,10 +34,10 @@ class AddressManagerEventHandlerTest {
         when(payload.getCorrelationId()).thenReturn("correlationId");
         event.setPayload(payload);
         when(message.getPayload()).thenReturn(event);
-        when(registryImportService.handleAddressManagerEvent(event)).thenReturn(Mono.empty());
+        when(registryService.handleAddressManagerEvent(event)).thenReturn(Mono.empty());
 
         addressManagerEventHandler.pnAddressManagerEventInboundConsumer().accept(message);
 
-        verify(registryImportService, times(1)).handleAddressManagerEvent(event);
+        verify(registryService, times(1)).handleAddressManagerEvent(event);
     }
 }

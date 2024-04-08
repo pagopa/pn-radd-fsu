@@ -10,7 +10,7 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;

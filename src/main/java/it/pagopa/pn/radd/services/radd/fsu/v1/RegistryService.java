@@ -14,6 +14,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.producer.RegistryImportProgressEventProducer;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
@@ -34,8 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DUPLICATE_REQUEST;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.PENDING_REQUEST;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.pojo.RegistryRequestStatus.NOT_WORKED;
 import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 
@@ -49,8 +49,9 @@ public class RegistryService {
     private final PnSafeStorageClient pnSafeStorageClient;
     private final RaddRegistryUtils raddRegistryUtils;
     private final PnAddressManagerClient pnAddressManagerClient;
+    private final RegistryImportProgressEventProducer importProgressEventProducer;
 
-    private static final String PREFIX = "prefix";
+    private static final String REQUEST_ID_PREFIX = "prefix";
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();
@@ -194,7 +195,15 @@ public class RegistryService {
     public Mono<CreateRegistryResponse> addRegistry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Mono<CreateRegistryRequest> createRegistryRequestMono) {
         return createRegistryRequestMono.flatMap(request -> this.createRaddRegistryRequestEntity(request, xPagopaPnCxId))
                 .flatMap(raddRegistryRequestDAO::createEntity)
+                .flatMap(this::sendStartEvent)
                 .flatMap(this::createRegistryResponse);
+    }
+
+    private Mono<RaddRegistryRequestEntity> sendStartEvent(RaddRegistryRequestEntity entity) {
+        return Mono.fromCallable(() -> {
+            importProgressEventProducer.sendRegistryImportStartEvent(entity.getCorrelationId());
+            return entity;
+        });
     }
 
     private Mono<CreateRegistryResponse> createRegistryResponse(RaddRegistryRequestEntity entity) {
@@ -207,7 +216,7 @@ public class RegistryService {
 
     private Mono<RaddRegistryRequestEntity> createRaddRegistryRequestEntity(CreateRegistryRequest createRegistryRequest, String cxId) {
         return Mono.fromCallable(() -> {
-            String requestId = PREFIX + UUID.randomUUID();
+            String requestId = REQUEST_ID_PREFIX + UUID.randomUUID();
             String pk = generatePk(createRegistryRequest, cxId, requestId);
             String correlationId = UUID.randomUUID().toString();
 

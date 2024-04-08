@@ -14,6 +14,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.producer.RegistryImportProgressEventProducer;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
@@ -43,6 +44,7 @@ import static it.pagopa.pn.radd.pojo.ImportStatus.PENDING;
 import static it.pagopa.pn.radd.pojo.ImportStatus.TO_PROCESS;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -78,6 +80,8 @@ class RegistryServiceTest {
 
     @Mock
     private PnRaddAltNormalizeRequestEvent.Payload payload;
+    @Mock
+    private RegistryImportProgressEventProducer progressEventProducer;
 
     @Mock
     private SecretService secretService;
@@ -90,7 +94,7 @@ class RegistryServiceTest {
                 pnSafeStorageClient,
                 new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig,
                         secretService),
-                pnAddressManagerClient);
+                pnAddressManagerClient, progressEventProducer);
     }
 
     @Test
@@ -381,6 +385,7 @@ class RegistryServiceTest {
         RaddRegistryRequestEntity entity = new RaddRegistryRequestEntity();
         entity.setRequestId("RequestId");
         when(raddRegistryRequestDAO.createEntity(any())).thenReturn(Mono.just(entity));
+        //when(progressEventProducer.sendRegistryImportStartEvent(anyString()));
         // Act and Assert
         StepVerifier
                 .create(registryService.addRegistry(CxTypeAuthFleet.PA, "42", "1234", monoRequest))

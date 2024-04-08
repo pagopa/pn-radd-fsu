@@ -25,5 +25,7 @@ public class RegistryImportProgressEvent implements GenericEvent<GenericEventHea
     public static class Payload {
         private String cxId;
         private String requestId;
+
+        private String correlationId;
     }
 }

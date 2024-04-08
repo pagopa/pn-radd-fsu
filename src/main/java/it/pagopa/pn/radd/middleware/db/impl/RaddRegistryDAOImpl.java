@@ -16,6 +16,13 @@ import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.MISSING_REQUIRED_PARAMETER;
 
@@ -68,6 +75,17 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         Key key = Key.builder().partitionValue(zipCode).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
         String index = RaddRegistryEntity.ZIPCODE_INDEX;
-        return this.getByFilter(conditional, index, null, null, null);
+
+        Map<String, String> names = new HashMap<>();
+        names.put("#endValidity", RaddRegistryEntity.COL_END_VALIDITY);
+        Map<String, AttributeValue> values = new HashMap<>();
+        values.put(":today", AttributeValue.builder().s(String.valueOf(startOfTodayInstant())).build());
+        String expression = "attribute_not_exists(#endValidity) OR #endValidity > :today";
+
+        return this.getByFilter(conditional, index, expression, values, names, null);
+    }
+
+    private Instant startOfTodayInstant() {
+        return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
 }

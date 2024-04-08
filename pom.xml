@@ -28,13 +28,13 @@
         <dependency>
             <groupId>it.pagopa.pn</groupId>
             <artifactId>pn-commons</artifactId>
-            <version>2.2.8</version>
+            <version>2.2.8-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>it.pagopa.pn</groupId>
             <artifactId>pn-model</artifactId>
-            <version>2.2.0</version>
+            <version>2.1.2-SNAPSHOT</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.swagger/swagger-annotations -->
@@ -142,12 +142,6 @@
         </dependency>
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
-            <artifactId>shedlock-core</artifactId>
-            <version>4.42.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-spring</artifactId>
             <version>4.42.0</version>
             <scope>compile</scope>
@@ -228,6 +222,37 @@
                         <configuration>
                             <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
                             <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-internal.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <library>spring-boot</library>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <configOptions>
+                                <dateLibrary>java11</dateLibrary>
+                                <delegatePattern>true</delegatePattern>
+                                <interfaceOnly>true</interfaceOnly>
+                                <annotationLibrary>none</annotationLibrary>
+                                <documentationProvider>source</documentationProvider>
+                                <openApiNullable>false</openApiNullable>
+                                <reactive>true</reactive>
+                                <skipDefaultInterface>false</skipDefaultInterface>
+                                <useTags>true</useTags>
+                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v1</basePackage>
+                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.dto</modelPackage>
+                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.api</apiPackage>
+                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.config</configPackage>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-radd-registry-server-internal</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
+                            <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-registry-internal.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
                             <generateApiDocumentation>false</generateApiDocumentation>

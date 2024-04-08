@@ -1,8 +1,10 @@
 package it.pagopa.pn.radd.middleware.queue.event;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
-import it.pagopa.pn.api.dto.events.GenericEventHeader;
+import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import lombok.*;
+
+import javax.validation.constraints.NotEmpty;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,10 +12,8 @@ import lombok.*;
 @Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
-public class RegistryImportProgressEvent implements GenericEvent<GenericEventHeader, RegistryImportProgressEvent.Payload> {
-
-    private GenericEventHeader header;
-
+public class CorrelationIdEvent implements GenericEvent<StandardEventHeader, CorrelationIdEvent.Payload> {
+    private StandardEventHeader header;
     private Payload payload;
 
     @NoArgsConstructor
@@ -23,7 +23,9 @@ public class RegistryImportProgressEvent implements GenericEvent<GenericEventHea
     @EqualsAndHashCode
     @ToString
     public static class Payload {
-        private String cxId;
-        private String requestId;
+
+        @NotEmpty
+        private String correlationId;
+
     }
 }

@@ -1,23 +1,26 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.utils.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ENSURE_FISCAL_CODE_EMPTY;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
 @Slf4j
-class BaseServiceTest extends BaseTest {
+@ExtendWith(MockitoExtension.class)
+class BaseServiceTest{
 
     @InjectMocks
     BaseService baseService;

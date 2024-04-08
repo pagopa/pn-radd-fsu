@@ -146,7 +146,7 @@ Parameters:
 
   RegistryDefaultEndValidity:
     Type: String
-    Description: 'Default end validity for radd registry'
+    Description: 'Default end validity for radd registry in days'
 
   RegistryDefaultDeleteRule:
     Type: String

@@ -60,8 +60,12 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(newRegistryRequestEntity.getZipCode());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
-        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
-        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
+        }
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
+        }
 
         return registryEntity;
     }
@@ -88,8 +92,12 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(normalizedAddress.getCap());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
-        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
-        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
+        }
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
+        }
 
         return registryEntity;
     }

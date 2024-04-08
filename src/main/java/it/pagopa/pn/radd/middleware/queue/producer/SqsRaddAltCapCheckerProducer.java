@@ -3,7 +3,7 @@ package it.pagopa.pn.radd.middleware.queue.producer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.api.dto.events.AbstractSqsMomProducer;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.pojo.RaddAltCapCheckerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.RaddAltCapCheckerEvent;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.sqs.SqsClient;
 

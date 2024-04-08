@@ -22,4 +22,6 @@ public interface RaddRegistryRequestDAO {
     Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses);
 
     Flux<RaddRegistryRequestEntity> findByCxIdAndRequestIdAndStatusNotIn(String cxId, String requestId, List<RegistryRequestStatus> statusList);
+
+    Mono<RaddRegistryRequestEntity> createEntity(RaddRegistryRequestEntity entity);
 }

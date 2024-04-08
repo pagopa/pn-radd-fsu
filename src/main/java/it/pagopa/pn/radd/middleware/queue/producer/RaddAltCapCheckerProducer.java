@@ -2,8 +2,7 @@ package it.pagopa.pn.radd.middleware.queue.producer;
 
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
-import it.pagopa.pn.radd.pojo.RaddAltCapCheckerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.RaddAltCapCheckerEvent;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;

@@ -6,7 +6,6 @@ import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-
 import java.util.List;
 
 public interface RaddRegistryRequestDAO {
@@ -21,4 +20,5 @@ public interface RaddRegistryRequestDAO {
 
     Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses);
 
+    Flux<RaddRegistryRequestEntity> findByCxIdAndRequestIdAndStatusNotIn(String cxId, String requestId, List<RegistryRequestStatus> statusList);
 }

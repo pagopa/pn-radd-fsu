@@ -340,6 +340,9 @@ Parameters:
     Description: It defines the time interval between each batch of clean expires working requests (milliseconds)
     Default: '120000'
 
+  RegistryImportReplacedTtl:
+    Type: Number
+    Description: 'Time, expressed in hours, in which the record persists on the table'
 
 Resources:
 
@@ -401,7 +404,7 @@ Resources:
         ContainerEnvEntry35: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_LOCKATLEAST=${VerifyRaddRegistryImportLockAtLeast}'
         ContainerEnvEntry36: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_DELAY=${VerifyRaddRegistryImportDelay}'
         ContainerEnvEntry37: !Sub 'PN_RADD_MAXQUERYSIZE=${MaxQuerySize}'
-
+        ContainerEnvEntry38: !Sub 'PN_RADD_REGISTRYIMPORTREPLACEDTTL=${RegistryImportReplacedTtl}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

@@ -46,6 +46,7 @@ public class PnRaddFsuConfig {
         private Integer lockAtMost;
         private Integer lockAtLeast;
     }
+    private Long registryImportReplacedTtl;
 
     private Integer maxQuerySize;
 

@@ -65,4 +65,6 @@ public class Const {
     /* Registry costant */
     public static final String ERROR_DUPLICATE = "Rifiutato in quanto duplicato";
 
+    public static final String REQUEST_ID_PREFIX = "SELF_";
+
 }

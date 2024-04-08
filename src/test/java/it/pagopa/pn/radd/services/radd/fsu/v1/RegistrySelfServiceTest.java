@@ -1,8 +1,10 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
+import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,11 +22,19 @@ class RegistrySelfServiceTest {
 
     @Mock
     private RaddRegistryDAO raddRegistryDAO;
+
+
     private RegistrySelfService registrySelfService;
+
+    @Mock
+    private RaddAltCapCheckerProducer raddAltCapCheckerProducer;
+
+    @Mock
+    private PnRaddFsuConfig pnRaddFsuConfig;
 
     @BeforeEach
     void setUp() {
-        registrySelfService = new RegistrySelfService(raddRegistryDAO);
+        registrySelfService = new RegistrySelfService(raddRegistryDAO,raddAltCapCheckerProducer,pnRaddFsuConfig);
     }
 
     @Test

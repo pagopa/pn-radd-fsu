@@ -38,4 +38,26 @@ public class RegistrySelfController implements RegistryApi {
         return updateRegistryRequest.flatMap(request -> registrySelfService.updateRegistry(registryId, xPagopaPnCxId, request))
                 .map(raddRegistryEntityMono -> ResponseEntity.noContent().build());
     }
+
+    /**
+     * PATCH /radd-alt/api/v1/registry/{registryId}/dismiss
+     * L'API di eliminazione sportello permette a un soggetto RADD di rimuovere un'anagrafica fornendo l'identificativo univoco dello sportello e la data in cui tale sportello sarà disattivato.
+     *
+     * @param xPagopaPnCxType Customer/Receiver Type (required)
+     * @param xPagopaPnCxId Customer/Receiver Identifier (required)
+     * @param uid Identificativo pseudo-anonimizzato dell'operatore RADD (required)
+     * @param registryId Identificativo univoco dello sportello (required)
+     * @param endDate Data in cui tale sportello sarà disattivato (required)
+     * @return OK (status code 204)
+     *         or Bad Request (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Method not allowed (status code 405)
+     *         or Internal Server Error (status code 500)
+     */
+    @Override
+    public Mono<ResponseEntity<Void>> deleteRegistry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String registryId,String endDate ,final ServerWebExchange exchange) {
+        return registrySelfService.deleteRegistry(xPagopaPnCxId, registryId, endDate)
+                .map(registryUploadResponse -> ResponseEntity.noContent().build());
+    }
 }

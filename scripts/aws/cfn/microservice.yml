@@ -112,7 +112,6 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing anagrafiche'
 
-
   RaddRegistryDynamoTableName:
     Type: String
     Description: 'Name of dynamodb table containing radd registries'
@@ -137,6 +136,14 @@ Parameters:
     Type: String
     Description: 'DLQ ARN for RaddInternalCapChecker'
 
+  ShedLockTableName:
+    Type: String
+    Description: Name of DynamoDB table used for implementing distributed locks.
+
+  ShedLockTableArn:
+    Type: String
+    Description: ARN of DynamoDB table for distributed locks.
+
   RegistryDefaultEndValidity:
     Type: String
     Description: 'Default end validity for radd registry in days'
@@ -148,6 +155,10 @@ Parameters:
   RegistryImportUploadFileTtl:
     Type: Number
     Description: 'Time, expressed in seconds, within which it is possible to upload the csv (validity of safestorage url)'
+
+  MaxQuerySize:
+    Type: Number
+    Description: 'Max query size'
 
   SecretAndSSMPrefix:
     Type: String
@@ -314,6 +325,21 @@ Parameters:
     Type: String
     Description: 'Address manager api key secret'
 
+  VerifyRaddRegistryImportLockAtMost:
+    Type: String
+    Description: It specifies how long the lock should be kept in case the executing node dies for Recovery batches (milliseconds)
+    Default: '120000'
+
+  VerifyRaddRegistryImportLockAtLeast:
+    Type: String
+    Description: It specifies minimum amount of time for which the lock should be kept (milliseconds)
+    Default: '1000'
+
+  VerifyRaddRegistryImportDelay:
+    Type: Number
+    Description: It defines the time interval between each batch of clean expires working requests (milliseconds)
+    Default: '120000'
+
 
 Resources:
 
@@ -364,12 +390,17 @@ Resources:
         ContainerEnvEntry23: !Sub 'PN_RADD_REGISTRYSAFESTORAGEDOCTYPE=${RegistrySafeStorageDocType}'
         ContainerEnvEntry24: !Sub 'PN_RADD_REGISTRYDEFAULTENDVALIDITY=${RegistryDefaultEndValidity}'
         ContainerEnvEntry25: !Sub 'PN_RADD_REGISTRYDEFAULTDELETERULE=${RegistryDefaultDeleteRule}'
-        ContainerEnvEntry26: !Sub 'PN_RADD_REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
+        ContainerEnvEntry26: !Sub 'PN-RADD-REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
         ContainerEnvEntry27: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry28: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry30: !Sub 'PN_RADD_ADDRESSMANAGERBASEURL=${AddressManagerBaseUrl}'
         ContainerEnvEntry31: !Sub 'PN_RADD_ADDRESSMANAGERAPIKEYSECRET=${AddressManagerApiKeySecret}'
+        ContainerEnvEntry32: !Sub 'PN_RADD_DAO_SHEDLOCKTABLENAME=${ShedLockTableName}'
+        ContainerEnvEntry34: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_LOCKATMOST=${VerifyRaddRegistryImportLockAtMost}'
+        ContainerEnvEntry35: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_LOCKATLEAST=${VerifyRaddRegistryImportLockAtLeast}'
+        ContainerEnvEntry36: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_DELAY=${VerifyRaddRegistryImportDelay}'
+        ContainerEnvEntry37: !Sub 'PN_RADD_MAXQUERYSIZE=${MaxQuerySize}'
 
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
@@ -431,6 +462,7 @@ Resources:
               - !Sub "${RaddRegistryImportDynamoTableArn}/*"
               - !Sub "${RaddRegistryDynamoTableArn}"
               - !Sub "${RaddRegistryDynamoTableArn}/*"
+              - !Sub "${ShedLockTableArn}"
 
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:

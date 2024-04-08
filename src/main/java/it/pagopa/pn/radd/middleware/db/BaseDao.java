@@ -97,15 +97,15 @@ public abstract class BaseDao<T> {
         return Mono.fromFuture(dynamoDbAsyncClient.query(qeRequest.build()).thenApply(QueryResponse::count));
     }
 
-    protected Flux<T> getByFilter(QueryConditional conditional, String index, Map<String, AttributeValue> values, String filterExpression, Integer maxElements){
+    protected Flux<T> getByFilter(QueryConditional conditional, String index, String expression, Map<String, AttributeValue> expressionValues, Map<String, String> expressionNames, Integer maxElements) {
         QueryEnhancedRequest.Builder qeRequest = QueryEnhancedRequest
                 .builder()
                 .queryConditional(conditional);
         if (maxElements != null) {
             qeRequest.limit(maxElements);
         }
-        if (!StringUtils.isBlank(filterExpression)){
-            qeRequest.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).build());
+        if (!StringUtils.isBlank(expression)){
+            qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
         }
         if (StringUtils.isNotBlank(index)){
             return Flux.from(this.tableAsync.index(index).query(qeRequest.build()).flatMapIterable(Page::items));

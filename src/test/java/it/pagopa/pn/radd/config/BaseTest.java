@@ -28,7 +28,7 @@ public abstract class BaseTest {
     @Slf4j
     @SpringBootTest
     @ActiveProfiles("test")
-    public static class WithMockServer {
+    public static class WithMockServer extends MockAWSObjectsTestConfig {
         @Autowired
         private MockServerBean mockServer;
         @BeforeEach

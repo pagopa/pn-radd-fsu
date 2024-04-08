@@ -38,6 +38,17 @@ public class PnRaddFsuConfig {
 
     private Long registryImportUploadFileTtl;
 
+    private RegistryImportProgress registryImportProgress;
+
+    @Data
+    public static class RegistryImportProgress {
+        private Integer delay;
+        private Integer lockAtMost;
+        private Integer lockAtLeast;
+    }
+
+    private Integer maxQuerySize;
+
     @Data
     public static class Dao {
         private String raddTransactionTable;
@@ -45,10 +56,11 @@ public class PnRaddFsuConfig {
         private String raddRegistryRequestTable;
         private String raddRegistryImportTable;
         private String raddRegistryTable;
+        private String shedlockTableName;
     }
 
     @Data
-    public static class Sqs{
+    public static class Sqs {
         private String internalCapCheckerQueueName;
         private String inputQueueName;
         private String safeStorageQueueName;

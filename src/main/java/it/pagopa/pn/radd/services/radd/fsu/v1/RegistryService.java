@@ -40,7 +40,7 @@ import java.util.UUID;
 import java.util.function.BiPredicate;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-import static it.pagopa.pn.radd.utils.Const.CRUD_REGISTRY_REQUEST_ID_PREFIX;
+import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 
 @Service
@@ -249,9 +249,9 @@ public class RegistryService {
     @NotNull
     private Flux<String> handleFirstImportRequest(String xPagopaPnCxId, RaddRegistryImportEntity newRaddRegistryImportEntity) {
         // Even if is the first import request for a cxId, we need to check if there are any previous requests with the same CxId made using CRUD API
-        return raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX)
+        return raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX)
                 .collectList()
-                .doOnNext(raddRegistryEntities -> log.info("Found {} registries for cxId: {} and requestId starting with: {}", raddRegistryEntities.size(), xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX))
+                .doOnNext(raddRegistryEntities -> log.info("Found {} registries for cxId: {} and requestId starting with: {}", raddRegistryEntities.size(), xPagopaPnCxId, REQUEST_ID_PREFIX))
                 .flatMap(raddRegistryEntity -> deleteOldRegistries(raddRegistryEntity, newRaddRegistryImportEntity)
                         .thenReturn(raddRegistryEntity))
                 .flatMapMany(Flux::fromIterable)
@@ -278,7 +278,7 @@ public class RegistryService {
         RaddRegistryImportEntity oldRegistryImportEntity = filterByRequestId(newImportRequestId, raddRegistryImportEntities, registryImportWithDifferentRequestId);
         RaddRegistryImportEntity newRegistryImportEntity = filterByRequestId(newImportRequestId, raddRegistryImportEntities, registryImportWithSameRequestId);
         return raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, oldRegistryImportEntity.getRequestId())
-                .concatWith(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX))
+                .concatWith(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX))
                 .collectList()
                 .doOnNext(raddRegistryEntities -> log.info("Found {} registries created using CRUD API and relative to older import request for cxId: {}", raddRegistryEntities.size(), xPagopaPnCxId))
                 .flatMap(raddRegistryEntities -> deleteOldRegistries(raddRegistryEntities, newRegistryImportEntity)

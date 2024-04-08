@@ -39,7 +39,7 @@ import java.util.List;
 
 import static it.pagopa.pn.radd.pojo.ImportStatus.PENDING;
 import static it.pagopa.pn.radd.pojo.ImportStatus.TO_PROCESS;
-import static it.pagopa.pn.radd.utils.Const.CRUD_REGISTRY_REQUEST_ID_PREFIX;
+import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
@@ -304,7 +304,7 @@ class RegistryServiceTest {
 
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, ImportStatus.DONE))
                 .thenReturn(Flux.just(new RaddRegistryImportEntity()));
-        when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX))
+        when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX))
                 .thenReturn(Flux.just(raddRegistryEntity));
 
         Flux<String> result = registryService.deleteOlderRegistriesAndGetZipCodeList(xPagopaPnCxId, requestId);
@@ -314,7 +314,7 @@ class RegistryServiceTest {
                 .verifyComplete();
 
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, ImportStatus.DONE);
-        verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX);
+        verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
     }
 
     @Test
@@ -334,7 +334,7 @@ class RegistryServiceTest {
         oldRaddRegistryImportEntity.setStatus(ImportStatus.DONE.name());
 
         RaddRegistryEntity raddRegistryEntityMadeByCrud = new RaddRegistryEntity();
-        raddRegistryEntityMadeByCrud.setRegistryId(CRUD_REGISTRY_REQUEST_ID_PREFIX + "registryId");
+        raddRegistryEntityMadeByCrud.setRegistryId(REQUEST_ID_PREFIX + "registryId");
         raddRegistryEntityMadeByCrud.setZipCode("00100");
 
         RaddRegistryEntity raddRegistryEntityMadeByOldImport = new RaddRegistryEntity();
@@ -345,7 +345,7 @@ class RegistryServiceTest {
                 .thenReturn(Flux.just(newRaddRegistryImportEntity, oldRaddRegistryImportEntity));
         when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, oldRequestId))
                 .thenReturn(Flux.just(raddRegistryEntityMadeByOldImport));
-        when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX))
+        when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX))
                 .thenReturn(Flux.just(raddRegistryEntityMadeByCrud));
         when(raddRegistryImportDAO.updateStatusAndTtl(any(), any(), any()))
                 .thenReturn(Mono.just(newRaddRegistryImportEntity));
@@ -358,7 +358,7 @@ class RegistryServiceTest {
                 .verifyComplete();
 
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, ImportStatus.DONE);
-        verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX);
+        verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
         verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, oldRequestId);
     }
 
@@ -377,7 +377,7 @@ class RegistryServiceTest {
                 .verify();
 
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, ImportStatus.DONE);
-        verify(raddRegistryDAO, times(0)).findByCxIdAndRequestId(xPagopaPnCxId, CRUD_REGISTRY_REQUEST_ID_PREFIX);
+        verify(raddRegistryDAO, times(0)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
     }
 
 }

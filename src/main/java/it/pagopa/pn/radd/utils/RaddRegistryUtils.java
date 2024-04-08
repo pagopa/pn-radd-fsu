@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -265,7 +267,24 @@ public class RaddRegistryUtils {
         }
 
         TimeInterval[] activeIntervals = new TimeInterval[0];
-        return Set.of(stack.toArray(activeIntervals));
+        return actualizePastIntervals(Set.of(stack.toArray(activeIntervals)));
+    }
+
+    private static Set<TimeInterval> actualizePastIntervals(Set<TimeInterval> timeIntervals) {
+        /* arrivati a questo punto dovremmo avere solo intervalli attivi che vanno da prima di oggi fino ad un tempo futuro indefinito.
+         Se l'intervallo ha un inizio precedente ad oggi, lo aggiorniamo con la data odierna. */
+        Instant now = getStartOfTodayInstant();
+        for (TimeInterval timeInterval : timeIntervals) {
+            if (timeInterval.getStart().isBefore(now)) {
+                timeInterval.setStart(now);
+            }
+        }
+
+        return timeIntervals;
+    }
+
+    private static Instant getStartOfTodayInstant() {
+        return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
 
 

@@ -25,23 +25,49 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = {RegistrySelfService.class, RaddRegistryRequestEntityMapper.class})
+@ContextConfiguration(classes = {RegistrySelfService.class})
 class RegistrySelfServiceTest {
 
     @Mock
-    private RaddRegistryRequestDAO registryRequestDAO;
+    private RaddRegistryDAO raddRegistryDAO;
 
     @Mock
     private CorrelationIdEventsProducer correlationIdEventsProducer;
 
-    private RegistrySelfService registrySelfService;
     private final RaddRegistryRequestEntityMapper raddRegistryRequestEntityMapper = new RaddRegistryRequestEntityMapper(new ObjectMapperUtil(new ObjectMapper()));
+
+    private RegistrySelfService registrySelfService;
+
 
     @BeforeEach
     void setUp() {
         registrySelfService = new RegistrySelfService(registryRequestDAO, raddRegistryRequestEntityMapper, correlationIdEventsProducer);
     }
 
+    @Test
+    void updateRegistryNotFound() {
+        UpdateRegistryRequest updateRegistryRequest = new UpdateRegistryRequest();
+        when(raddRegistryDAO.find("registryId", "cxId")).thenReturn(Mono.empty());
+        StepVerifier.create(registrySelfService.updateRegistry("registryId", "cxId", updateRegistryRequest))
+                .verifyErrorMessage("Punto di ritiro SEND non trovato");
+    }
+
+    @Test
+    void updateRegistry() {
+        UpdateRegistryRequest updateRegistryRequest = new UpdateRegistryRequest();
+        updateRegistryRequest.setDescription("description");
+        updateRegistryRequest.setOpeningTime("openingTime");
+        updateRegistryRequest.setPhoneNumber("phoneNumber");
+        RaddRegistryEntity entity = new RaddRegistryEntity();
+        entity.setRegistryId("registryId");
+        when(raddRegistryDAO.find("registryId", "cxId")).thenReturn(Mono.just(entity));
+        when(raddRegistryDAO.updateRegistryEntity(entity)).thenReturn(Mono.just(entity));
+        StepVerifier.create(registrySelfService.updateRegistry("registryId", "cxId", updateRegistryRequest))
+                .expectNextMatches(raddRegistryEntity -> entity.getDescription().equalsIgnoreCase("description")
+                        && entity.getOpeningTime().equalsIgnoreCase("openingTime")
+                        && entity.getPhoneNumber().equalsIgnoreCase("phoneNumber"))
+                .verifyComplete();
+    }
 
     @Test
     public void shouldAddRegistrySuccessfully() {
@@ -60,5 +86,4 @@ class RegistrySelfServiceTest {
                 })
                 .verifyComplete();
     }
-
 }

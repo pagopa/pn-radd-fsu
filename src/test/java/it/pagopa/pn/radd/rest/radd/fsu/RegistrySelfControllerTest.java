@@ -5,7 +5,6 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRespo
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistrySelfService;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,24 @@ class RegistrySelfControllerTest {
     public static final String PN_PAGOPA_CX_ID = "x-pagopa-pn-cx-id";
     public static final String PN_PAGOPA_CX_TYPE = "x-pagopa-pn-cx-type";
     public static final String PN_PAGOPA_UID = "uid";
+
+    @Test
+    void updateRegistry() {
+        String path = "/radd-alt/api/v1/registry/{registryId}";
+
+        UpdateRegistryRequest request = new UpdateRegistryRequest();
+        when(registrySelfService.updateRegistry(any(), any(), any())).thenReturn(Mono.just(mock(RaddRegistryEntity.class)));
+
+        webTestClient.patch()
+                .uri(path, "registryId")
+                .header(PN_PAGOPA_UID, "myUid")
+                .header( PN_PAGOPA_CX_ID, "cxId")
+                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .body(Mono.just(request), UpdateRegistryRequest.class)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNoContent();
+    }
 
     @Test
     void createReqistry() {

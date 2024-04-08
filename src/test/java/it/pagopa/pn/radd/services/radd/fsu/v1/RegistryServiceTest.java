@@ -197,7 +197,7 @@ class RegistryServiceTest {
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(any(), any())).thenReturn(Mono.empty());
 
         StepVerifier.create(registryService.verifyRegistriesImportRequest("cxId", "requestId"))
-                .expectErrorMessage("No import request found for given value")
+                .expectErrorMessage("Richiesta di import non trovata")
                 .verify();
     }
 

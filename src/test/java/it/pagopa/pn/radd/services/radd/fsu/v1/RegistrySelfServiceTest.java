@@ -5,12 +5,14 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryReque
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.producer.CorrelationIdEventsProducer;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
+import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,12 +43,22 @@ class RegistrySelfServiceTest {
 
     private final RaddRegistryRequestEntityMapper raddRegistryRequestEntityMapper = new RaddRegistryRequestEntityMapper(new ObjectMapperUtil(new ObjectMapper()));
 
+
+
     private RegistrySelfService registrySelfService;
+
+
+    @Mock
+    private RaddAltCapCheckerProducer raddAltCapCheckerProducer;
+
+    @Mock
+    private PnRaddFsuConfig pnRaddFsuConfig;
 
 
     @BeforeEach
     void setUp() {
-        registrySelfService = new RegistrySelfService(raddRegistryDAO, registryRequestDAO, raddRegistryRequestEntityMapper, correlationIdEventsProducer);
+        registrySelfService = new RegistrySelfService(raddRegistryDAO, registryRequestDAO, raddRegistryRequestEntityMapper,
+                correlationIdEventsProducer, raddAltCapCheckerProducer, pnRaddFsuConfig);
     }
 
     @Test

@@ -37,7 +37,7 @@ public class RaddRegistryRequestEntityMapper {
         }
 
         if(StringUtils.isNotBlank(request.getEndValidity())) {
-            LocalDate date = LocalDate.parse(request.getStartValidity());
+            LocalDate date = LocalDate.parse(request.getEndValidity());
             Instant instant = date.atStartOfDay().toInstant(ZoneOffset.UTC);
             originalRequest.setEndValidity(instant.toString());
         }

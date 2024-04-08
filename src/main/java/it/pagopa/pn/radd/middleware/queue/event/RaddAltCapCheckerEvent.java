@@ -12,8 +12,10 @@ import javax.validation.constraints.NotEmpty;
 @Builder(toBuilder = true)
 @EqualsAndHashCode
 @ToString
-public class CorrelationIdEvent implements GenericEvent<GenericEventHeader, CorrelationIdEvent.Payload> {
+public class RaddAltCapCheckerEvent implements GenericEvent<GenericEventHeader, RaddAltCapCheckerEvent.Payload> {
+
     private GenericEventHeader header;
+
     private Payload payload;
 
     @NoArgsConstructor
@@ -25,7 +27,6 @@ public class CorrelationIdEvent implements GenericEvent<GenericEventHeader, Corr
     public static class Payload {
 
         @NotEmpty
-        private String correlationId;
-
+        private String zipCode;
     }
 }

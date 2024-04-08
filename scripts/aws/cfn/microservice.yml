@@ -146,7 +146,7 @@ Parameters:
 
   RegistryDefaultEndValidity:
     Type: String
-    Description: 'Default end validity for radd registry'
+    Description: 'Default end validity for radd registry in days'
 
   RegistryDefaultDeleteRule:
     Type: String
@@ -155,6 +155,10 @@ Parameters:
   RegistryImportUploadFileTtl:
     Type: Number
     Description: 'Time, expressed in seconds, within which it is possible to upload the csv (validity of safestorage url)'
+
+  MaxQuerySize:
+    Type: Number
+    Description: 'Max query size'
 
   SecretAndSSMPrefix:
     Type: String
@@ -399,7 +403,8 @@ Resources:
         ContainerEnvEntry34: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_LOCKATMOST=${VerifyRaddRegistryImportLockAtMost}'
         ContainerEnvEntry35: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_LOCKATLEAST=${VerifyRaddRegistryImportLockAtLeast}'
         ContainerEnvEntry36: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_DELAY=${VerifyRaddRegistryImportDelay}'
-        ContainerEnvEntry37: !Sub 'PN_RADD_REGISTRYIMPORTREPLACEDTTL=${RegistryImportReplacedTtl}'
+        ContainerEnvEntry37: !Sub 'PN_RADD_MAXQUERYSIZE=${MaxQuerySize}'
+        ContainerEnvEntry38: !Sub 'PN_RADD_REGISTRYIMPORTREPLACEDTTL=${RegistryImportReplacedTtl}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

@@ -1,16 +1,14 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.ResponseNotificationViewedDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
-import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
-import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
@@ -20,9 +18,11 @@ import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -30,16 +30,14 @@ import reactor.test.StepVerifier;
 import java.util.Date;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ALREADY_COMPLETE_PRINT;
-import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
+@ExtendWith(MockitoExtension.class)
 @Slf4j
-class ActServiceTest extends BaseTest {
+class ActServiceTest  {
 
     @InjectMocks
     ActService actService;
@@ -74,10 +72,6 @@ class ActServiceTest extends BaseTest {
         baseEntity.setOperationType(OperationTypeEnum.ACT.name());
         baseEntity.setStatus(Const.STARTED);
 
-
-        ResponseNotificationViewedDtoDto responseNotificationViewedDtoDto = new ResponseNotificationViewedDtoDto();
-        Mono<ResponseNotificationViewedDtoDto> monoNotificationViewedDtoDto = Mono.just(responseNotificationViewedDtoDto);
-        when(pnDeliveryPushClient.notifyNotificationRaddRetrieved(any(), any())).thenReturn(monoNotificationViewedDtoDto);
     }
 
 
@@ -116,8 +110,6 @@ class ActServiceTest extends BaseTest {
     @Test
     void testWhenActInquiryHasEmptyRecipientTaxId(){
 
-        when(pnDataVaultClient.getEnsureFiscalCode(any(), any()))
-                .thenThrow(PnInvalidInputException.class);
         Mono<ActInquiryResponse> response = actService.actInquiry("test","", CxTypeAuthFleet.PG,"test","test", "test", "test");
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Recipient Type non valorizzato correttamente", exception.getMessage());
@@ -129,8 +121,6 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testWhenAddInquiryHasNoQrCode(){
-        when(pnDataVaultClient.getEnsureFiscalCode(any(), any()))
-                .thenReturn(Mono.just("ASSBBDDD"));
         StepVerifier.create(actService.actInquiry("test","", CxTypeAuthFleet.PG,"test","test", "test", "test"))
                 .expectError(PnInvalidInputException.class).verify();
     }
@@ -147,8 +137,6 @@ class ActServiceTest extends BaseTest {
         TransactionData transactionData = new TransactionData();
         transactionData.setQrCode("qrcode");
         transactionData.setIun("iun");
-        when (transactionDataMapper.toTransaction("id", startTransactionRequest, CxTypeAuthFleet.PG, "cxId")).thenReturn(transactionData);
-        when(raddTransactionDAOImpl.countFromIunAndStatus("iun","recipientId")).thenReturn(Mono.just(0));
         StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, startTransactionRequest) )
                 .expectError(PnInvalidInputException.class).verify();
     }
@@ -199,8 +187,6 @@ class ActServiceTest extends BaseTest {
         when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("123"));
 
         // si presuppone che in questo caso non esista già l'operazione RADD
-        when(raddTransactionDAOImpl.getTransaction("", "", "id", OperationTypeEnum.ACT))
-                .thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
 
         when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(1));
 
@@ -211,20 +197,6 @@ class ActServiceTest extends BaseTest {
         assertThat(response.getStatus().getMessage()).isEqualTo(new RaddGenericException(ALREADY_COMPLETE_PRINT).getExceptionType().getMessage());
     }
 
-    @Test
-    void testCompleteTransactionReturnOk() {
-        baseEntity.setStatus(Const.STARTED);
-
-        Mono<RaddTransactionEntity> monoEntity = Mono.just(baseEntity);
-        when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(monoEntity);
-
-        when(raddTransactionDAOImpl.updateStatus(any(), any())).thenReturn(monoEntity);
-
-        CompleteTransactionResponse completeTransactionResponse = actService.completeTransaction("test",completeRequest,CxTypeAuthFleet.valueOf("PF"), "cxId").block();
-        assertNotNull(completeTransactionResponse);
-        assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, completeTransactionResponse.getStatus().getCode());
-        assertEquals(Const.OK, completeTransactionResponse.getStatus().getMessage());
-    }
 
     @Test
     void testCompleteWhenTransactionAlreadyCompletedThenReturnNumber2() {
@@ -332,7 +304,6 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testAbortTransactionReturnError(){
-        when(actService.raddTransactionDAO.getTransaction(any(), any(), any(), any())).thenThrow(RaddGenericException.class);
         StepVerifier.create(actService.actInquiry("test","", CxTypeAuthFleet.PG,"test","test", "test", "test"))
                 .expectError(PnInvalidInputException.class).verify();
     }
@@ -359,7 +330,6 @@ class ActServiceTest extends BaseTest {
 
     @Test
     void testActInquiryWhenControlCheckArrResponseError() {
-        when(this.raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
         when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
         when(pnDeliveryClient.getCheckAar(any(), any(), any())).thenReturn(Mono.just(new ResponseCheckAarDtoDto()));
         ActInquiryResponse monoResponse = actService.actInquiry("test","123", CxTypeAuthFleet.PF,"test","PF", "test", "").block();

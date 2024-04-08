@@ -1,29 +1,27 @@
 package it.pagopa.pn.radd.middleware.queue.event;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
+import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
 
-@Getter
-@Builder
-@ToString
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class PnRaddAltNormalizeRequestEvent implements GenericEvent<StandardEventHeader, PnRaddAltNormalizeRequestEvent.Payload> {
-
-    private StandardEventHeader header;
-
+@Getter
+@Builder(toBuilder = true)
+@EqualsAndHashCode
+@ToString
+public class CorrelationIdEvent implements GenericEvent<GenericEventHeader, CorrelationIdEvent.Payload> {
+    private GenericEventHeader header;
     private Payload payload;
 
-    @Getter
-    @Builder
-    @ToString
-    @EqualsAndHashCode
     @NoArgsConstructor
     @AllArgsConstructor
+    @Getter
+    @Builder(toBuilder = true)
+    @EqualsAndHashCode
+    @ToString
     public static class Payload {
 
         @NotEmpty

@@ -48,6 +48,8 @@ public class PnRaddFsuConfig {
     }
     private Long registryImportReplacedTtl;
 
+    private Integer maxQuerySize;
+
     @Data
     public static class Dao {
         private String raddTransactionTable;

@@ -10,7 +10,7 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
@@ -59,8 +59,12 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(newRegistryRequestEntity.getZipCode());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
-        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
-        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
+        }
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
+        }
 
         return registryEntity;
     }
@@ -87,8 +91,12 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(normalizedAddress.getCap());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
-        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
-        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
+        }
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
+        }
 
         return registryEntity;
     }

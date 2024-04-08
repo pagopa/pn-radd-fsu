@@ -3,15 +3,17 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
+import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.producer.CorrelationIdEventsProducer;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,6 +34,9 @@ class RegistrySelfServiceTest {
     private RaddRegistryDAO raddRegistryDAO;
 
     @Mock
+    private RaddRegistryRequestDAO registryRequestDAO;
+
+    @Mock
     private CorrelationIdEventsProducer correlationIdEventsProducer;
 
     private final RaddRegistryRequestEntityMapper raddRegistryRequestEntityMapper = new RaddRegistryRequestEntityMapper(new ObjectMapperUtil(new ObjectMapper()));
@@ -41,7 +46,7 @@ class RegistrySelfServiceTest {
 
     @BeforeEach
     void setUp() {
-        registrySelfService = new RegistrySelfService(registryRequestDAO, raddRegistryRequestEntityMapper, correlationIdEventsProducer);
+        registrySelfService = new RegistrySelfService(raddRegistryDAO, registryRequestDAO, raddRegistryRequestEntityMapper, correlationIdEventsProducer);
     }
 
     @Test

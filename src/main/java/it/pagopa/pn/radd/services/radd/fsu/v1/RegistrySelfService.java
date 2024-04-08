@@ -1,26 +1,21 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
-import lombok.CustomLog;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
-
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
+import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.producer.CorrelationIdEventsProducer;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -34,6 +29,7 @@ import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 public class RegistrySelfService {
 
     private final RaddRegistryDAO raddRegistryDAO;
+    private final RaddRegistryRequestDAO registryRequestDAO;
     private final RaddRegistryRequestEntityMapper raddRegistryRequestEntityMapper;
     private final CorrelationIdEventsProducer correlationIdEventsProducer;
 

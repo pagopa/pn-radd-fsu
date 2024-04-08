@@ -4,8 +4,8 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.RegistryApi;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistrySelfService;
-import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +58,7 @@ public class RegistrySelfController implements RegistryApi {
      */
     @Override
     public Mono<ResponseEntity<CreateRegistryResponse>> addRegistry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Mono<CreateRegistryRequest> createRegistryRequest, final ServerWebExchange exchange) {
-        return createRegistryRequest.flatMap(request -> registryService.addRegistry(xPagopaPnCxId, request))
+        return createRegistryRequest.flatMap(request -> registrySelfService.addRegistry(xPagopaPnCxId, request))
                 .map(createRegistryResponse -> ResponseEntity.status(HttpStatus.OK).body(createRegistryResponse));
     }
 }

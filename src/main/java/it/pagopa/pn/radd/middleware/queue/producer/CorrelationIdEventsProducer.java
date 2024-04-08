@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.middleware.queue.producer;
 
+import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import it.pagopa.pn.api.dto.events.MomProducer;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import it.pagopa.pn.radd.middleware.queue.event.CorrelationIdEvent;
 
 import java.time.Instant;
@@ -15,8 +15,9 @@ public interface CorrelationIdEventsProducer extends MomProducer<CorrelationIdEv
 
     default CorrelationIdEvent buildCorrelationIdEvent(String correlationId) {
         return CorrelationIdEvent.builder()
-                .header(StandardEventHeader.builder()
+                .header(GenericEventHeader.builder()
                         .eventType("RADD_NORMALIZE_REQUEST")
+                        .eventId(correlationId)
                         .publisher("RADD_ALT") //TODO replace with EventPublisher.RADD_ALT.name() when it will be available
                         .createdAt(Instant.now())
                         .build()

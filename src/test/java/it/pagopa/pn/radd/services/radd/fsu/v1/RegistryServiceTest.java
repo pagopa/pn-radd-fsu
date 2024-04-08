@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AcceptedResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
@@ -16,7 +17,6 @@ import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.pojo.EvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
@@ -73,7 +73,7 @@ class RegistryServiceTest {
     private SecretService secretService;
 
     @Mock
-    private EventBridgeProducer<EvaluatedZipCodeEvent> eventBridgeProducer;
+    private EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
 
 
     private RegistryService registryService;

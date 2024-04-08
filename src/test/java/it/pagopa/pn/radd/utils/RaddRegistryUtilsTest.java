@@ -2,6 +2,9 @@ package it.pagopa.pn.radd.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventItem;
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventPayload;
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeItemsRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
@@ -690,7 +693,7 @@ class RaddRegistryUtilsTest {
     @Test
     void testMapToEventMessage() {
         // Arrange, Act and Assert
-        EvaluatedZipCodeEvent.Detail detail = raddRegistryUtils.mapToEventMessage(new HashSet<>(), "21654").getDetail();
+        PnAttachmentsConfigEventPayload detail = raddRegistryUtils.mapToEventMessage(new HashSet<>(), "21654").getDetail();
         assertEquals("21654", detail.getConfigKey());
         assertNull(detail.getConfigType());
         assertTrue(detail.getConfigs().isEmpty());
@@ -708,12 +711,12 @@ class RaddRegistryUtilsTest {
                 .add(new TimeInterval(start, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
 
         // Act and Assert
-        EvaluatedZipCodeEvent.Detail detail = raddRegistryUtils.mapToEventMessage(timeIntervals, "21654").getDetail();
+        PnAttachmentsConfigEventPayload detail = raddRegistryUtils.mapToEventMessage(timeIntervals, "21654").getDetail();
         assertEquals("21654", detail.getConfigKey());
         assertNull(detail.getConfigType());
-        List<ConfigEntry> configs = detail.getConfigs();
+        List<PnAttachmentsConfigEventItem> configs = detail.getConfigs();
         assertEquals(1, configs.size());
-        ConfigEntry getResult = configs.get(0);
+        PnAttachmentsConfigEventItem getResult = configs.get(0);
         Instant expectedStartValidity = getResult.getEndValidity();
         assertSame(expectedStartValidity, getResult.getStartValidity());
     }
@@ -733,12 +736,12 @@ class RaddRegistryUtilsTest {
                 .add(new TimeInterval(start2, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
 
         // Act and Assert
-        EvaluatedZipCodeEvent.Detail detail = raddRegistryUtils.mapToEventMessage(timeIntervals, "21654").getDetail();
+        PnAttachmentsConfigEventPayload detail = raddRegistryUtils.mapToEventMessage(timeIntervals, "21654").getDetail();
         assertEquals("21654", detail.getConfigKey());
         assertNull(detail.getConfigType());
-        List<ConfigEntry> configs = detail.getConfigs();
+        List<PnAttachmentsConfigEventItem> configs = detail.getConfigs();
         assertEquals(1, configs.size());
-        ConfigEntry getResult = configs.get(0);
+        PnAttachmentsConfigEventItem getResult = configs.get(0);
         Instant startValidity = getResult.getStartValidity();
         assertSame(startValidity, getResult.getEndValidity());
         assertSame(startValidity, configs.get(0).getEndValidity());
@@ -759,17 +762,17 @@ class RaddRegistryUtilsTest {
         timeIntervals.add(timeInterval);
 
         // Act
-        EvaluatedZipCodeEvent actualMapToEventMessageResult = raddRegistryUtils.mapToEventMessage(timeIntervals, "21654");
+        PnEvaluatedZipCodeEvent actualMapToEventMessageResult = raddRegistryUtils.mapToEventMessage(timeIntervals, "21654");
 
         // Assert
         verify(timeInterval, atLeast(1)).getEnd();
         verify(timeInterval).getStart();
-        EvaluatedZipCodeEvent.Detail detail = actualMapToEventMessageResult.getDetail();
+        PnAttachmentsConfigEventPayload detail = actualMapToEventMessageResult.getDetail();
         assertEquals("21654", detail.getConfigKey());
         assertNull(detail.getConfigType());
-        List<ConfigEntry> configs = detail.getConfigs();
+        List<PnAttachmentsConfigEventItem> configs = detail.getConfigs();
         assertEquals(1, configs.size());
-        ConfigEntry getResult = configs.get(0);
+        PnAttachmentsConfigEventItem getResult = configs.get(0);
         Instant expectedStartValidity = getResult.getEndValidity();
         assertSame(expectedStartValidity, getResult.getStartValidity());
     }

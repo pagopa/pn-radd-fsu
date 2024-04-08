@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
@@ -45,7 +46,7 @@ public class RegistryService {
     private final PnSafeStorageClient pnSafeStorageClient;
     private final RaddRegistryUtils raddRegistryUtils;
     private final PnAddressManagerClient pnAddressManagerClient;
-    private final EventBridgeProducer<EvaluatedZipCodeEvent> eventBridgeProducer;
+    private final EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();

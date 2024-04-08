@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.pojo;
 
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventItem;
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventPayload;
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -10,13 +13,13 @@ class EvaluatedZipCodeEventTest {
 
     @Test
     void testConstructorAndGetters() {
-        EvaluatedZipCodeEvent.Detail detail = EvaluatedZipCodeEvent.Detail.builder()
+        PnAttachmentsConfigEventPayload detail = PnAttachmentsConfigEventPayload.builder()
                 .configKey("testKey")
                 .configType("ZIPCODE")
-                .configs(Collections.singletonList(new ConfigEntry()))
+                .configs(Collections.singletonList(PnAttachmentsConfigEventItem.builder().build()))
                 .build();
 
-        EvaluatedZipCodeEvent event = EvaluatedZipCodeEvent.builder()
+        PnEvaluatedZipCodeEvent event = PnEvaluatedZipCodeEvent.builder()
                 .detail(detail)
                 .build();
 

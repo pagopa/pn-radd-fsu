@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.utils;
 
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventItem;
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventPayload;
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeItemsRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
@@ -156,9 +159,9 @@ public class RaddRegistryUtils {
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
-    public EvaluatedZipCodeEvent mapToEventMessage(Set<TimeInterval> timeIntervals, String zipCode) {
-        return EvaluatedZipCodeEvent.builder().detail(
-                EvaluatedZipCodeEvent.Detail
+    public PnEvaluatedZipCodeEvent mapToEventMessage(Set<TimeInterval> timeIntervals, String zipCode) {
+        return PnEvaluatedZipCodeEvent.builder().detail(
+                PnAttachmentsConfigEventPayload
                         .builder()
                         .configKey(zipCode)
                         .configType(pnRaddFsuConfig.getEvaluatedZipCodeConfigType())
@@ -167,18 +170,12 @@ public class RaddRegistryUtils {
         ).build();
     }
 
-    private List<ConfigEntry> getConfigEntries(Set<TimeInterval> timeIntervals) {
+    private List<PnAttachmentsConfigEventItem> getConfigEntries(Set<TimeInterval> timeIntervals) {
         return timeIntervals.stream()
-                .map(timeInterval -> {
-                    ConfigEntry configEntry = new ConfigEntry();
-                    configEntry.setStartValidity(timeInterval.getStart());
-                    if (timeInterval.getEnd() == Instant.MAX) {
-                        configEntry.setEndValidity(null);
-                    } else {
-                        configEntry.setEndValidity(timeInterval.getEnd());
-                    }
-                    return configEntry;
-                }).toList();
+                .map(timeInterval -> PnAttachmentsConfigEventItem.builder()
+                        .startValidity(timeInterval.getStart())
+                        .endValidity(timeInterval.getEnd() == Instant.MAX ? null : timeInterval.getEnd())
+                        .build()).toList();
     }
 
     public List<TimeInterval> getOfficeIntervals(List<RaddRegistryEntity> raddRegistryEntities) {

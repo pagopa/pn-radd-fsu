@@ -76,8 +76,11 @@ public class RegistrySelfService {
 
     private boolean isValidDate(Instant endDate) {
         try {
-            Instant minimumCancellationTime = Instant.now().plus(pnRaddFsuConfig.getRegistryDefaultEndValidity(), ChronoUnit.DAYS);
-            return endDate.isAfter(minimumCancellationTime);
+            if(pnRaddFsuConfig.getRegistryDefaultEndValidity() != 0) {
+                Instant minimumCancellationTime = Instant.now().plus(pnRaddFsuConfig.getRegistryDefaultEndValidity(), ChronoUnit.DAYS);
+                return endDate.isAfter(minimumCancellationTime);
+            }
+            return true;
         } catch (DateTimeParseException e) {
             throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR,HttpStatus.BAD_REQUEST);
         }

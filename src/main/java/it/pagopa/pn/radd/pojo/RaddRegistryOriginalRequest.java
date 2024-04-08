@@ -11,10 +11,11 @@ public class RaddRegistryOriginalRequest {
     private String city;
     private String pr;
     private String country;
-    private Instant startValidity;
-    private Instant endValidity;
+    private String startValidity;
+    private String endValidity;
     private String openingTime;
     private String description;
     private String geoLocation;
     private String phoneNumber;
+    private String externalCode;
 }

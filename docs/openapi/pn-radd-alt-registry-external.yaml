@@ -167,14 +167,15 @@ components:
           example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
         startValidity:
           type: string
-          format: date-time
           description: Data e ora di inizio di validità dello sportello.
-          example: "2024-03-21T09:00:00Z"
+          example: "2024-03-21"
         endValidity:
           type: string
-          format: date-time
           description: Data e ora di fine di validità dello sportello.
-          example: "2024-03-21T17:00:00Z"
+          example: "2024-03-21"
+        externalCode:
+          type: string
+          description: Identificativo punto ritiro SEND
         
     UpdateRegistryRequest:
       type: object

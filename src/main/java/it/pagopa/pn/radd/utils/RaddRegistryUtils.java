@@ -8,23 +8,23 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.No
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OriginalRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryRequestResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.*;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -300,4 +300,54 @@ public class RaddRegistryUtils {
     }
 
 
+
+    public RequestResponse prepareGlobalResult(List<RaddRegistryRequestEntity> queryResult,
+                                               boolean moreResults,
+                                               int limit) {
+        RequestResponse result = new RequestResponse();
+        result.setNextPagesKey(new ArrayList<>());
+
+        if(queryResult != null) {
+            result.setItems(queryResult.stream()
+                    .limit(limit)
+                    .map(raddRegistryRequestEntity -> {
+                        RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
+                        registryRequestResponse.setRegistryId(raddRegistryRequestEntity.getRegistryId());
+                        registryRequestResponse.setRequestId(raddRegistryRequestEntity.getRequestId());
+                        registryRequestResponse.setError(raddRegistryRequestEntity.getError());
+                        registryRequestResponse.setCreatedAt(raddRegistryRequestEntity.getCreatedAt().toString());
+                        registryRequestResponse.setUpdatedAt(raddRegistryRequestEntity.getUpdatedAt().toString());
+                        registryRequestResponse.setStatus(raddRegistryRequestEntity.getStatus());
+                        OriginalRequest originalRequest = objectMapperUtil.toObject(raddRegistryRequestEntity.getOriginalRequest(), OriginalRequest.class);
+                        registryRequestResponse.setOriginalRequest(originalRequest);
+
+                        return registryRequestResponse;
+                    })
+                    .toList());
+        }
+        result.setMoreResult(moreResults);
+
+        for (int i = 1; i <= pnRaddFsuConfig.getMaxPageNumber(); i++){
+            int index = limit * i;
+            if (queryResult.size() <= index) {
+                break;
+            }
+            RaddRegistryRequestEntity keyEntity = queryResult.get(index - 1);
+            PnLastEvaluatedKey pageLastEvaluatedKey = computeLastEvaluatedKey(keyEntity);
+            result.getNextPagesKey().add(pageLastEvaluatedKey.serializeInternalLastEvaluatedKey());
+        }
+
+        return result;
+    }
+
+    private PnLastEvaluatedKey computeLastEvaluatedKey(RaddRegistryRequestEntity keyEntity) {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getCxId());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(keyEntity.getPk()).build(),
+                RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
+                RaddRegistryRequestEntity.COL_REGISTRY_ID, AttributeValue.builder().s(keyEntity.getRegistryId()).build()
+        ));
+        return pageLastEvaluatedKey;
+    }
 }

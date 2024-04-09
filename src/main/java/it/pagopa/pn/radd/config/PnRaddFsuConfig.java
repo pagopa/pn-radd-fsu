@@ -38,6 +38,9 @@ public class PnRaddFsuConfig {
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
     private Long registryImportUploadFileTtl;
+    private Integer maxDynamoDBQuerySize;
+    private Integer maxPageNumber;
+
 
     private String evaluatedZipCodeConfigType;
     private Integer evaluatedZipCodeConfigNumber;

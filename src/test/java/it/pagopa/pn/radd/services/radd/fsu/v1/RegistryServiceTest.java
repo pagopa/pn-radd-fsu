@@ -3,7 +3,10 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AcceptedResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OriginalRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryRequestResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
@@ -15,22 +18,22 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
-import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
-import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,17 +46,22 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.PENDING;
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
+import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
+import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 
+@PropertySource("classpath:application-test.properties")
+@EnableConfigurationProperties
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = {RegistryService.class})
 class RegistryServiceTest {
+
+    @Mock
+    private RaddRegistryUtils raddRegistryUtils;
 
     @Mock
     private PnRaddFsuConfig pnRaddFsuConfig;
@@ -137,7 +145,6 @@ class RegistryServiceTest {
         StepVerifier.create(registryService.uploadRegistryRequests("cxId", Mono.just(request)))
                 .expectErrorMessage("Una precedente richiesta di import è ancora in corso").verify();
     }
-
     @Test
     public void shouldProcessMessageSuccessfully() throws JsonProcessingException {
 
@@ -437,4 +444,41 @@ class RegistryServiceTest {
         StepVerifier.create(registryService.handleInternalCapCheckerMessage(event)).expectComplete();
     }
 
+
+    @Test
+    void testRetrieveRequestItems() {
+        Instant now = Instant.MIN;
+        RequestResponse requestResponse = new RequestResponse();
+        RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
+        registryRequestResponse.setRegistryId("");
+        registryRequestResponse.setRequestId("");
+        registryRequestResponse.setError("");
+        registryRequestResponse.setCreatedAt(now.toString());
+        registryRequestResponse.setUpdatedAt(now.toString());
+        registryRequestResponse.setStatus("");
+        registryRequestResponse.setOriginalRequest(new OriginalRequest());
+
+        RaddRegistryRequestEntity raddRegistryRequestEntity = new RaddRegistryRequestEntity();
+        raddRegistryRequestEntity.setRegistryId("");
+        raddRegistryRequestEntity.setRequestId("");
+        raddRegistryRequestEntity.setError("");
+        raddRegistryRequestEntity.setCreatedAt(now);
+        raddRegistryRequestEntity.setUpdatedAt(now);
+        raddRegistryRequestEntity.setStatus("");
+        raddRegistryRequestEntity.setOriginalRequest("{}");
+
+
+        requestResponse.setMoreResult(false);
+        requestResponse.setNextPagesKey(List.of());
+        requestResponse.setItems(List.of(registryRequestResponse));
+        ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey> resultPaginationDto = new ResultPaginationDto();
+        resultPaginationDto.setResultsPage(List.of(raddRegistryRequestEntity));
+        when(raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(any(), any(), any(), any()))
+                .thenReturn(Mono.just(resultPaginationDto));
+
+
+        StepVerifier.create(registryService.retrieveRequestItems("cxId", "requestId", 10, null))
+                .expectNext(requestResponse)
+                .verifyComplete();
+    }
 }

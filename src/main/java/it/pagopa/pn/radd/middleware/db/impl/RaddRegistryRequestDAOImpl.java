@@ -1,11 +1,15 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -20,6 +24,8 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 
 
 @Repository
@@ -80,7 +86,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         Map<String,String> expressionName = new HashMap<>();
         expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
 
-        return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, query,map,expressionName, null);
+        return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, query, map, expressionName, null);
     }
 
     @Override
@@ -151,5 +157,25 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     public Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId) {
         raddRegistryRequestEntities.forEach(raddRegistryRequestEntity -> raddRegistryRequestEntity.setCorrelationId(correlationId));
         return batchWriter(raddRegistryRequestEntities, 0, true);
+    }
+
+    @Override
+    public Mono<ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey) {
+        PnLastEvaluatedKey lastKey = null;
+        if (lastEvaluatedKey != null) {
+            try {
+                lastKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastEvaluatedKey);
+            } catch (JsonProcessingException e) {
+                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        e);
+            }
+        } else {
+            log.debug("First page search");
+        }
+
+        Key key = Key.builder().partitionValue(xPagopaPnCxId).sortValue(requestId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+        return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey());
     }
 }

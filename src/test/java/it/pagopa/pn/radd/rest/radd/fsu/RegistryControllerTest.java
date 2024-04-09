@@ -1,10 +1,8 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -120,6 +118,26 @@ class RegistryControllerTest {
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(expectedResponse, responseEntity.getBody());
         verify(registryService).verifyRegistriesImportRequest(xPagopaPnCxId, requestId);
+    }
+
+    @Test
+    void testRetrieveRequestItems() {
+        // Arrange
+        String xPagopaPnCxId = "cxId";
+        String requestId = "requestId";
+        RequestResponse expectedResponse = new RequestResponse();
+        when(registryService.retrieveRequestItems(any(), any(), any(), any()))
+                .thenReturn(Mono.just(expectedResponse));
+
+        // Act
+        Mono<ResponseEntity<RequestResponse>> result = registryController.retrieveRequestItems(CxTypeAuthFleet.PA, xPagopaPnCxId, "uid", requestId, 10, "lastKey", null);
+
+        // Assert
+        ResponseEntity<RequestResponse> responseEntity = result.block();
+        assert responseEntity != null;
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals(expectedResponse, responseEntity.getBody());
+        verify(registryService).retrieveRequestItems(xPagopaPnCxId, requestId, 10, "lastKey");
     }
 }
 

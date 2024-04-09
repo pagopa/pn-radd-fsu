@@ -1,7 +1,9 @@
 package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,6 +24,9 @@ public interface RaddRegistryRequestDAO {
     Mono<RaddRegistryRequestEntity> updateRegistryRequestStatus(RaddRegistryRequestEntity id, RegistryRequestStatus importStatus);
 
     Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses);
+
+    Mono<ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey);
+
 
     Flux<RaddRegistryRequestEntity> findByCxIdAndRequestIdAndStatusNotIn(String cxId, String requestId, List<RegistryRequestStatus> statusList);
 

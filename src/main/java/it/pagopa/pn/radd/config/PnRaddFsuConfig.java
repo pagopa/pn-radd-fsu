@@ -30,6 +30,7 @@ public class PnRaddFsuConfig {
     private Dao dao;
     private int registryDefaultEndValidity;
     private String registryDefaultDeleteRule;
+    private EventBus eventBus;
     private String addressManagerApiKeySecret;
     private String addressManagerBaseUrl;
 
@@ -37,6 +38,9 @@ public class PnRaddFsuConfig {
     private List<DocumentTypeEnum> documentTypeEnumFilter = new ArrayList<>();
 
     private Long registryImportUploadFileTtl;
+
+    private String evaluatedZipCodeConfigType;
+    private Integer evaluatedZipCodeConfigNumber;
 
     private RegistryImportProgress registryImportProgress;
 
@@ -66,5 +70,12 @@ public class PnRaddFsuConfig {
         private String inputQueueName;
         private String safeStorageQueueName;
         private String addressManagerQueueName;
+    }
+
+    @Data
+    public static class EventBus {
+        private String name;
+        private String detailType;
+        private String source;
     }
 }

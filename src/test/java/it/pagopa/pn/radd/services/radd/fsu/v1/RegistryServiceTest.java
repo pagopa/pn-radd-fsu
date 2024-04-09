@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AcceptedResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
@@ -11,10 +12,12 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
@@ -78,12 +81,15 @@ class RegistryServiceTest {
     @Mock
     private SecretService secretService;
 
+    @Mock
+    private EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
+
 
     private RegistryService registryService;
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, raddAltCapCheckerProducer, pnRaddFsuConfig);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, raddAltCapCheckerProducer, pnRaddFsuConfig, eventBridgeProducer);
     }
 
     @Test
@@ -392,6 +398,23 @@ class RegistryServiceTest {
 
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE);
         verify(raddRegistryDAO, times(0)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
+    }
+
+
+    @Test
+    public void handleInternalCapCheckerMessageTest() {
+        PnInternalCapCheckerEvent event = new PnInternalCapCheckerEvent();
+        PnInternalCapCheckerEvent.Payload payload = new PnInternalCapCheckerEvent.Payload("zipCode");
+        event.setPayload(payload);
+        Instant start = Instant.now();
+        Instant end = Instant.now();
+        RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
+        raddRegistryEntity.setZipCode("zipCode");
+        raddRegistryEntity.setStartValidity(start);
+        raddRegistryEntity.setEndValidity(end);
+        when(raddRegistryDAO.getRegistriesByZipCode(any())).thenReturn(Flux.just(raddRegistryEntity));
+
+        StepVerifier.create(registryService.handleInternalCapCheckerMessage(event)).expectComplete();
     }
 
 }

@@ -14,6 +14,13 @@ import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
@@ -63,5 +70,24 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         QueryConditional conditional = requestId.startsWith(REQUEST_ID_PREFIX) ? QueryConditional.sortBeginsWith(key) : QueryConditional.keyEqualTo(key);
 
         return getByFilter(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, null, null, null, null);
+    }
+
+    @Override
+    public Flux<RaddRegistryEntity> getRegistriesByZipCode(String zipCode) {
+        Key key = Key.builder().partitionValue(zipCode).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+        String index = RaddRegistryEntity.ZIPCODE_INDEX;
+
+        Map<String, String> names = new HashMap<>();
+        names.put("#endValidity", RaddRegistryEntity.COL_END_VALIDITY);
+        Map<String, AttributeValue> values = new HashMap<>();
+        values.put(":today", AttributeValue.builder().s(String.valueOf(startOfTodayInstant())).build());
+        String expression = "attribute_not_exists(#endValidity) OR #endValidity > :today";
+
+        return this.getByFilter(conditional, index, expression, values, names, null);
+    }
+
+    private Instant startOfTodayInstant() {
+        return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
 }

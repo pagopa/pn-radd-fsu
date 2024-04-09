@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
@@ -13,9 +14,11 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
+import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
@@ -59,7 +62,7 @@ public class RegistryService {
     private final PnAddressManagerClient pnAddressManagerClient;
     private final RaddAltCapCheckerProducer raddAltCapCheckerProducer;
     private final PnRaddFsuConfig pnRaddFsuConfig;
-
+    private final EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();
@@ -323,4 +326,14 @@ public class RegistryService {
         return Mono.empty();
     }
 
+
+    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
+        return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())
+                .collectList()
+                .map(raddRegistryUtils::getOfficeIntervals)
+                .map(raddRegistryUtils::findActiveIntervals)
+                .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
+                        response.getPayload().getZipCode())))
+                .then();
+    }
 }

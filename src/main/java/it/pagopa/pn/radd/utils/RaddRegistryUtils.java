@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.utils;
 
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventItem;
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventPayload;
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeItemsRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
@@ -11,10 +14,7 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +23,10 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
@@ -168,4 +169,131 @@ public class RaddRegistryUtils {
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
+    public PnEvaluatedZipCodeEvent mapToEventMessage(Set<TimeInterval> timeIntervals, String zipCode) {
+        return PnEvaluatedZipCodeEvent.builder().detail(
+                PnAttachmentsConfigEventPayload
+                        .builder()
+                        .configKey(zipCode)
+                        .configType(pnRaddFsuConfig.getEvaluatedZipCodeConfigType())
+                        .configs(getConfigEntries(timeIntervals))
+                        .build()
+        ).build();
+    }
+
+    private List<PnAttachmentsConfigEventItem> getConfigEntries(Set<TimeInterval> timeIntervals) {
+        return timeIntervals.stream()
+                .map(timeInterval -> PnAttachmentsConfigEventItem.builder()
+                        .startValidity(timeInterval.getStart())
+                        .endValidity(timeInterval.getEnd() == Instant.MAX ? null : timeInterval.getEnd())
+                        .build()).toList();
+    }
+
+    public List<TimeInterval> getOfficeIntervals(List<RaddRegistryEntity> raddRegistryEntities) {
+        return raddRegistryEntities.stream()
+                .map(raddRegistryEntity -> {
+                    if (raddRegistryEntity.getEndValidity() == null) {
+                        return new TimeInterval(raddRegistryEntity.getStartValidity(), Instant.MAX);
+                    } else {
+                        return new TimeInterval(raddRegistryEntity.getStartValidity(), raddRegistryEntity.getEndValidity());
+                    }
+                }).toList();
+    }
+
+    public Set<TimeInterval> findActiveIntervals(List<TimeInterval> timeIntervals) {
+
+        TimeInterval[] timeIntervalArray = timeIntervals.toArray(new TimeInterval[0]);
+        Set<Set<TimeInterval>> result = new HashSet<>();
+
+        combinations(timeIntervalArray, new ArrayList<>(), result, pnRaddFsuConfig.getEvaluatedZipCodeConfigNumber(), 0);
+
+        Set<TimeInterval> activeIntervals = new HashSet<>();
+
+        for (Set<TimeInterval> intervalSet : result) {
+            TimeInterval timeInterval = findIntersection(intervalSet.stream().toList());
+            if (timeInterval != null) {
+                activeIntervals.add(timeInterval);
+            }
+        }
+
+        TimeInterval[] activeIntervalsArray = new TimeInterval[0];
+        return mergeIntervals(activeIntervals.toArray(activeIntervalsArray));
+    }
+
+    public static void combinations(TimeInterval[] values, List<TimeInterval> current, Set<Set<TimeInterval>> accumulator, int size, int pos) {
+        if (current.size() == size) {
+            Set<TimeInterval> toAdd = new HashSet<>(current);
+            if (accumulator.contains(toAdd)) {
+                throw new RuntimeException("Duplicated value " + current);
+            }
+            accumulator.add(toAdd);
+            return;
+        }
+        for (int i = pos; i <= values.length - size + current.size(); i++) {
+            current.add(values[i]);
+            combinations(values, current, accumulator, size, i + 1);
+            current.remove(current.size() - 1);
+        }
+    }
+
+    static TimeInterval findIntersection(List<TimeInterval> intervals) {
+        Instant start = intervals.get(0).getStart();
+        Instant end = intervals.get(0).getEnd();
+
+        for (int i = 1; i < intervals.size(); i++) {
+            if (intervals.get(i).getStart().isAfter(end) || intervals.get(i).getEnd().isBefore(start)) {
+                return null;
+            } else {
+                if (start.isBefore(intervals.get(i).getStart()))
+                    start = intervals.get(i).getStart();
+                if (end.isAfter(intervals.get(i).getEnd()))
+                    end = intervals.get(i).getEnd();
+            }
+        }
+        return new TimeInterval(start, end);
+    }
+
+    public static Set<TimeInterval> mergeIntervals(TimeInterval[] timeIntervals)
+    {
+        if (timeIntervals.length <= 0) {
+            return Set.of();
+        }
+        Arrays.sort(timeIntervals, Comparator.comparing(TimeInterval::getStart));
+
+        Stack<TimeInterval> stack = new Stack<>();
+        stack.push(timeIntervals[0]);
+
+        for (int i = 1; i < timeIntervals.length; i++) {
+            TimeInterval top = stack.peek();
+
+            if (top.getEnd().isBefore(timeIntervals[i].getStart()))
+                stack.push(timeIntervals[i]);
+            else if (top.getEnd().isBefore(timeIntervals[i].getEnd())) {
+                top.setEnd(timeIntervals[i].getEnd());
+                stack.pop();
+                stack.push(top);
+            }
+        }
+
+        TimeInterval[] activeIntervals = new TimeInterval[0];
+        return actualizePastIntervals(Set.of(stack.toArray(activeIntervals)));
+    }
+
+    private static Set<TimeInterval> actualizePastIntervals(Set<TimeInterval> timeIntervals) {
+        /* arrivati a questo punto dovremmo avere solo intervalli attivi che vanno da prima di oggi fino ad un tempo futuro indefinito.
+         Se l'intervallo ha un inizio precedente ad oggi, lo aggiorniamo con la data odierna. */
+        Instant now = getStartOfTodayInstant();
+        for (TimeInterval timeInterval : timeIntervals) {
+            if (timeInterval.getStart().isBefore(now)) {
+                timeInterval.setStart(now);
+            }
+        }
+
+        return timeIntervals;
+    }
+
+    private static Instant getStartOfTodayInstant() {
+        return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+
 }

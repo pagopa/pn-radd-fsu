@@ -13,4 +13,6 @@ public interface RaddRegistryDAO {
     Mono<RaddRegistryEntity> putItemIfAbsent(RaddRegistryEntity newItem);
 
     Flux<RaddRegistryEntity> findByCxIdAndRequestId(String cxId, String requestId);
+
+    Flux<RaddRegistryEntity> getRegistriesByZipCode(String zipCode);
 }

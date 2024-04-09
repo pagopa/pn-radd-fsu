@@ -108,7 +108,7 @@ public class SafeStorageEventService {
     private Mono<Void> persistItemsAndSendEvent(Map.Entry<String, List<RaddRegistryRequestEntity>> entry) {
         return raddRegistryRequestDAO.writeCsvAddresses(entry.getValue(), entry.getKey())
                 .thenReturn(entry.getKey())
-                .flatMap(correlationId -> Mono.from(subscriber -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)));
+                .flatMap(correlationId -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)));
     }
 
     private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {

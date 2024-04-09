@@ -80,4 +80,11 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
         return getByFilter(conditional, RaddRegistryImportEntity.STATUS_INDEX, null, null, null, null);
     }
+
+    @Override
+    public Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, ImportStatus status) {
+        entity.setStatus(status.name());
+        entity.setTtl(ttl);
+        return this.updateItem(entity);
+    }
 }

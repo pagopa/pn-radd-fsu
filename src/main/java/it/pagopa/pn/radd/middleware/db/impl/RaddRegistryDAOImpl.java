@@ -7,11 +7,15 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+
+import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 
 @Repository
@@ -51,5 +55,13 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
                 .build();
 
         return this.putItemWithConditions(newRegistry, condition, RaddRegistryEntity.class);
+    }
+
+    @Override
+    public Flux<RaddRegistryEntity> findByCxIdAndRequestId(String cxId, String requestId) {
+        Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
+        QueryConditional conditional = requestId.startsWith(REQUEST_ID_PREFIX) ? QueryConditional.sortBeginsWith(key) : QueryConditional.keyEqualTo(key);
+
+        return getByFilter(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, null, null, null, null);
     }
 }

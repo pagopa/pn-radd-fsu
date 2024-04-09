@@ -5,7 +5,6 @@ import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
-import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -54,19 +53,16 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
 
 
     @Override
-    public Flux<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestIdFilterByStatus(String cxId, String requestId, ImportStatus importStatus) {
+    public Flux<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus) {
         Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
 
         Map<String, AttributeValue> map = new HashMap<>();
         map.put(":status", AttributeValue.builder().s(importStatus.name()).build());
-        String filterExpression = RaddRegistryImportEntity.COL_STATUS + " = :status";
-
-
+        String filterExpression = "#status = :status";
         Map<String,String> expressionName = new HashMap<>();
-        expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
-
-        return getByFilter(conditional, null, filterExpression, map, expressionName, null);
+        expressionName.put("#status", RaddRegistryImportEntity.COL_STATUS);
+        return getByFilter(conditional, null, filterExpression,map,expressionName, null);
     }
 
     @Override
@@ -80,13 +76,13 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
 
     @Override
     public Flux<RaddRegistryImportEntity> findWithStatusPending() {
-        Key key = Key.builder().partitionValue(ImportStatus.PENDING.name()).build();
+        Key key = Key.builder().partitionValue(RaddRegistryImportStatus.PENDING.name()).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
         return getByFilter(conditional, RaddRegistryImportEntity.STATUS_INDEX, null, null, null, null);
     }
 
     @Override
-    public Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, ImportStatus status) {
+    public Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, RaddRegistryImportStatus status) {
         entity.setStatus(status.name());
         entity.setTtl(ttl);
         return this.updateItem(entity);

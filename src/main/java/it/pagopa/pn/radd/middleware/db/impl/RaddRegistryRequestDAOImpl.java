@@ -5,7 +5,6 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
-import it.pagopa.pn.radd.pojo.ImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import lombok.CustomLog;
 import org.springframework.stereotype.Repository;
@@ -27,6 +26,7 @@ import java.util.Map;
 @CustomLog
 public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntity> implements RaddRegistryRequestDAO {
 
+    private final PnRaddFsuConfig pnRaddFsuConfig;
     public RaddRegistryRequestDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                       DynamoDbAsyncClient dynamoDbAsyncClient,
                                       PnRaddFsuConfig raddFsuConfig) {
@@ -36,10 +36,11 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
                 raddFsuConfig,
                 RaddRegistryRequestEntity.class
         );
+        pnRaddFsuConfig = raddFsuConfig;
     }
 
     @Override
-    public Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String correlationId, ImportStatus status) throws IllegalArgumentException {
+    public Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String correlationId, RegistryRequestStatus status) throws IllegalArgumentException {
         Key key = Key.builder().partitionValue(correlationId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
 
@@ -54,7 +55,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     }
 
     @Override
-    public Mono<RaddRegistryRequestEntity> updateStatusAndError(RaddRegistryRequestEntity raddRegistryRequestEntity, ImportStatus importStatus, String error) throws IllegalArgumentException {
+    public Mono<RaddRegistryRequestEntity> updateStatusAndError(RaddRegistryRequestEntity raddRegistryRequestEntity, RegistryRequestStatus importStatus, String error) throws IllegalArgumentException {
         raddRegistryRequestEntity.setStatus(importStatus.name());
         raddRegistryRequestEntity.setError(error);
         raddRegistryRequestEntity.setUpdatedAt(Instant.now());
@@ -102,6 +103,23 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
 
         return getByFilter(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, query, valueMap, expressionName, null);
     }
+
+    @Override
+    public Flux<RaddRegistryRequestEntity> getAllFromCxidAndRequestIdWithState(String cxId, String requestId, String state) {
+        Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        Map<String, AttributeValue> map = new HashMap<>();
+
+        Map<String,String> expressionName = new HashMap<>();
+        expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
+
+        String query = getQueryAndPopulateMapForStatusFilter(state, map);
+
+        return getAllPaginatedItems(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, query,map,expressionName, pnRaddFsuConfig.getMaxQuerySize())
+                .flatMapIterable(page -> page);
+    }
+
 
     private String addStatusFilterExpression(Map<String, AttributeValue> valueMap, List<RegistryRequestStatus> status) {
         List<String> statusPlaceHolders = status.stream().map(registryRequestStatus -> {

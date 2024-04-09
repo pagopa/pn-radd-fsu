@@ -2,8 +2,6 @@ package it.pagopa.pn.radd.pojo;
 
 import lombok.Data;
 
-import java.time.Instant;
-
 @Data
 public class RaddRegistryOriginalRequest {
     private String addressRow;
@@ -18,4 +16,5 @@ public class RaddRegistryOriginalRequest {
     private String geoLocation;
     private String phoneNumber;
     private String externalCode;
+    private String capacity;
 }

@@ -1,8 +1,11 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
@@ -16,10 +19,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.ImportStatus;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
-import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
+import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 
 @Service
@@ -154,6 +155,7 @@ public class RegistryService {
                 .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(raddRegistryRequestEntity, RegistryRequestStatus.ACCEPTED));
 
     }
+
     public Mono<VerifyRequestResponse> verifyRegistriesImportRequest(String xPagopaPnCxId, String requestId) {
         log.info("start verifyRegistriesImportRequest for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
         return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestId(xPagopaPnCxId, requestId)
@@ -161,9 +163,11 @@ public class RegistryService {
                 .map(this::createVerifyRequestResponse)
                 .doOnError(throwable -> log.error("Error during verify registries import request for cxId: [{}] and requestId: [{}]", xPagopaPnCxId, requestId, throwable));
     }
+
     private VerifyRequestResponse createVerifyRequestResponse(RaddRegistryImportEntity entity) {
         VerifyRequestResponse response = new VerifyRequestResponse();
-        response.setRequestId(entity.getRequestId());
+        //FIXME ripristinare
+        /*response.setRequestId(entity.getRequestId());*/
         response.setStatus(entity.getStatus());
         response.setError(entity.getError());
         return response;
@@ -183,4 +187,25 @@ public class RegistryService {
                 })
                 .flatMap(tuple -> raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1()));
     }
+
+    public Mono<RequestResponse> retrieveRequestItems(String xPagopaPnCxId, String requestId, Integer limit, String lastKey) {
+
+        PnLastEvaluatedKey lastEvaluatedKey = null;
+        if (lastKey != null) {
+            try {
+                lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
+            } catch (JsonProcessingException e) {
+                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        e);
+            }
+        } else {
+            log.debug("First page search");
+        }
+
+        return raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(xPagopaPnCxId, requestId, limit, lastEvaluatedKey)
+                .map(resultPaginationDto -> raddRegistryUtils.prepareGlobalResult(resultPaginationDto.getResultsPage(), resultPaginationDto.isMoreResult(), limit));
+    }
+
+
 }

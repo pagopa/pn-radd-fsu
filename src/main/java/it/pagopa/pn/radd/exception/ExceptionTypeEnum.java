@@ -33,8 +33,10 @@ public enum ExceptionTypeEnum {
     DUPLICATE_REQUEST("DUPLICATE_REQUEST", "Richiesta Duplicata. il file inviato è già in fase di elaborazione", 99),
     PENDING_REQUEST("PENDING_REQUEST", "Una precedente richiesta di import è ancora in corso", 99),
     MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "RequestId e CxId sono obbligatori", 99),
-    IMPORT_REQUEST_NOT_FOUND("IMPORT_REQUEST_NOT_FOUND", "No import request found for given value", 99)
-    ;
+    IMPORT_REQUEST_NOT_FOUND("IMPORT_REQUEST_NOT_FOUND", "No import request found for given value", 99),
+    RADD_REGISTRY_NOT_FOUND("RADD_REGISTRY_NOT_FOUND","Punto di ritiro SEND non trovato",99 ),
+    RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY("RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY", "Ultima chiave di paginazione non supportata.", 99);
+
     private final String title;
     private final String message;
     private final Integer code;

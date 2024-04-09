@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +26,8 @@ public abstract class BaseDao<T> {
     private final String tableName;
     private final Class<T> tClass;
     private final PnRaddFsuConfig raddFsuConfig;
+
+    public static final int FILTER_EXPRESSION_APPLIED_MULTIPLIER = 4;
 
     protected BaseDao(
             DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
@@ -113,6 +117,48 @@ public abstract class BaseDao<T> {
         return Flux.from(this.tableAsync.query(qeRequest.build()).flatMapIterable(Page::items));
     }
 
+    protected <T, K> Mono<ResultPaginationDto<T, K>> getByFilterPaginated(QueryConditional conditional, String index, Map<String, AttributeValue> values, String filterExpression, Integer pageSize, Map<String, AttributeValue> lastEvaluatedKey) {
+        QueryEnhancedRequest.Builder query = QueryEnhancedRequest
+                .builder()
+                .queryConditional(conditional);
+
+        int totalElements = pageSize * raddFsuConfig.getMaxPageNumber();
+        if (!StringUtils.isBlank(filterExpression)) {
+            query.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).build());
+            totalElements *= (values.size() + 1) * 2;
+        }
+        if (totalElements > raddFsuConfig.getMaxDynamoDBQuerySize()) {
+            totalElements = raddFsuConfig.getMaxDynamoDBQuerySize();
+        }
+        query.limit(totalElements);
+
+        return query(index, query, new ResultPaginationDto<T, K>(), totalElements, lastEvaluatedKey);
+    }
+
+    private <T, K> Mono<ResultPaginationDto<T, K>> query(String index,
+                              QueryEnhancedRequest.Builder queryEnhancedRequestBuilder,
+                              ResultPaginationDto<T, K> resultPaginationDto,
+                              int limit,
+                              Map<String, AttributeValue> lastEvaluatedKey) {
+        if (lastEvaluatedKey != null) {
+            queryEnhancedRequestBuilder.exclusiveStartKey(lastEvaluatedKey);
+        }
+
+        return Mono.from(this.tableAsync.index(index).query(queryEnhancedRequestBuilder.build()))
+                .flatMap(tPage -> {
+                    Map<String, AttributeValue> lastKey = tPage.lastEvaluatedKey();
+
+                    resultPaginationDto.getResultsPage().addAll((Collection<? extends T>) tPage.items());
+
+                    if (resultPaginationDto.getResultsPage().size() >= limit || lastKey == null) {
+                        resultPaginationDto.setMoreResult(lastKey != null);
+                        return Mono.just(resultPaginationDto);
+                    }
+
+                    return query(index, queryEnhancedRequestBuilder, resultPaginationDto, limit, tPage.lastEvaluatedKey());
+                });
+    }
+
     protected Mono<T> putItemWithConditions(T entity, Expression expression, Class<T> entityClass) {
         PutItemEnhancedRequest<T> putItemEnhancedRequest = PutItemEnhancedRequest.builder(entityClass)
                 .item(entity)
@@ -136,4 +182,5 @@ public abstract class BaseDao<T> {
 
         return Mono.fromFuture(this.dynamoDbEnhancedAsyncClient.transactWriteItems(transactionWriteRequest.build()));
     }
+
 }

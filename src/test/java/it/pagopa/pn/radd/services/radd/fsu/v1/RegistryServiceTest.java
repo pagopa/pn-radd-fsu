@@ -2,7 +2,9 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AcceptedResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryRequestResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
@@ -14,7 +16,9 @@ import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,9 +47,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@PropertySource("classpath:application-test.properties")
+@EnableConfigurationProperties
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = {RegistryService.class})
 class RegistryServiceTest {
+
+    @Mock
+    private RaddRegistryUtils raddRegistryUtils;
 
     @Mock
     private PnRaddFsuConfig pnRaddFsuConfig;
@@ -289,5 +300,42 @@ class RegistryServiceTest {
         when(raddRegistryRequestDAO.updateRecordsInPending(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
+    }
+
+    @Test
+    void testRetrieveRequestItems() {
+        RequestResponse requestResponse = new RequestResponse();
+        RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
+        registryRequestResponse.setRegistryId("");
+        registryRequestResponse.setRequestId("");
+        registryRequestResponse.setError("");
+        registryRequestResponse.setCreatedAt(null);
+        registryRequestResponse.setUpdatedAt(null);
+        registryRequestResponse.setStatus("");
+        registryRequestResponse.setOriginalRequest(null);
+
+        RaddRegistryRequestEntity raddRegistryRequestEntity = new RaddRegistryRequestEntity();
+        raddRegistryRequestEntity.setRegistryId("");
+        raddRegistryRequestEntity.setRequestId("");
+        raddRegistryRequestEntity.setError("");
+        raddRegistryRequestEntity.setCreatedAt(null);
+        raddRegistryRequestEntity.setUpdatedAt(null);
+        raddRegistryRequestEntity.setStatus("");
+        raddRegistryRequestEntity.setOriginalRequest(null);
+
+
+        requestResponse.setMoreResult(true);
+        requestResponse.setNextPagesKey(List.of());
+        requestResponse.setItems(List.of(registryRequestResponse));
+        ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey> resultPaginationDto = new ResultPaginationDto();
+        resultPaginationDto.setResultsPage(List.of(raddRegistryRequestEntity));
+        when(raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(any(), any(), any(), any()))
+                .thenReturn(Mono.just(resultPaginationDto));
+        when(raddRegistryUtils.prepareGlobalResult(List.of(), true, 10)).thenReturn(requestResponse);
+
+
+        StepVerifier.create(registryService.retrieveRequestItems("cxId", "requestId", 10, null))
+                .expectNext(requestResponse)
+                .verifyComplete();
     }
 }

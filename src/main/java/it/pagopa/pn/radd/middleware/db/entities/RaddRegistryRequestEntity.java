@@ -66,17 +66,17 @@ public class RaddRegistryRequestEntity {
         return this.getPk().split(ITEMS_SEPARATOR);
     }
     @DynamoDbIgnore
-    private String retrieveCxIdFromPk() {
+    public String retrieveCxIdFromPk() {
         String[] pkItems = retrievePkItems();
         return pkItems.length == 3 ? pkItems[CXID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
-    private String retrieveRequestIdFromPk() {
+    public String retrieveRequestIdFromPk() {
         String[] pkItems = retrievePkItems();
         return pkItems.length == 3 ? pkItems[REQUESTID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
-    private String retrieveIndexFromPk() {
+    public String retrieveIndexFromPk() {
         String[] pkItems = retrievePkItems();
         return pkItems.length == 3 ? pkItems[INDEX_POSITION] : StringUtils.EMPTY;
     }

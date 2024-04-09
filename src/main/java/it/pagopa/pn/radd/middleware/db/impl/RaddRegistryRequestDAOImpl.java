@@ -152,4 +152,17 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         raddRegistryRequestEntities.forEach(raddRegistryRequestEntity -> raddRegistryRequestEntity.setCorrelationId(correlationId));
         return batchWriter(raddRegistryRequestEntities, 0, true);
     }
+
+    @Override
+    public Flux<RaddRegistryRequestEntity> findByCxIdAndRegistryId(String cxId, String registryId) {
+        Key key = Key.builder().partitionValue(cxId).sortValue(registryId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        return getByFilter(conditional, RaddRegistryRequestEntity.CXID_REGISTRYID_INDEX, null, null, null, null);
+    }
+
+    @Override
+    public Mono<RaddRegistryRequestEntity> putRaddRegistryRequestEntity(RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        return putItem(raddRegistryRequestEntity);
+    }
 }

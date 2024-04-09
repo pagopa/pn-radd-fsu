@@ -30,10 +30,11 @@ public class RegistrySelfController implements RegistryApi {
      * @param updateRegistryRequest  (required)
      * @return OK (status code 204)
      *         or Bad Request (status code 400)
+     *         or Not found - Punto di ritiro SEND non trovato (status code 404)
      *         or Unauthorized (status code 401)
      *         or Forbidden (status code 403)
-     *         or Method not allowed (status code 405)
-     *         or Internal Server Error (status code 500)
+     *         or Not Allowed (status code 405)
+     *         or Internal error (status code 500)
      */
     @Override
     public Mono<ResponseEntity<Void>> updateRegistry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String registryId, Mono<UpdateRegistryRequest> updateRegistryRequest,  final ServerWebExchange exchange) {

@@ -354,10 +354,6 @@ Parameters:
     Default: 1
     Description: 'Config number for zipCode to paper channel'
 
-  RaddEventBusName:
-    Type: String
-    Description: Name of the radd event bus
-
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -424,7 +420,7 @@ Resources:
         ContainerEnvEntry41: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry42: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
         ContainerEnvEntry43: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
-        ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS=${RaddEventBusName}'
+        ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

@@ -9,6 +9,17 @@ info:
   license:
     name: Licenza di PN
     url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+  description: >-
+    #Abstract
+    API per la gestione delle richieste di censimento e modifica dei punti di ritiro SEND da parte
+    degli operatori RADD.
+
+    Le API permettono di:
+    - richiedere l'attivazione di un nuovo punto di ritiro SEND
+    - modificare un punto di ritiro SEND
+    - cancellare un punto di ritiro SEND
+    - recuperare la lista di punti di ritiro SEND attivi
+    
 
 servers:
   - url: https://api.radd.notifichedigitali.it
@@ -42,16 +53,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateRegistryResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
     get:
       tags:
         - Registry
@@ -72,16 +103,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistriesResponse'
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   /radd-alt/api/v1/registry/{registryId}:
     patch:
       tags:
@@ -101,16 +152,42 @@ paths:
       responses:
         204:
           description: OK
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '404':
+          description: Not found - Punto di ritiro SEND non trovato
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   /radd-alt/api/v1/registry/{registryId}/dismiss:
     patch:
       tags:
@@ -125,20 +202,48 @@ paths:
       responses:
         204:
           description: OK
-        400:
-          $ref: '#/components/responses/Invalid'
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        405:
-          $ref: '#/components/responses/NotAllowed'
-        500:
-          $ref: '#/components/responses/InternalError'
+        '400':
+          description: Bad Request - Data di fine validità non valida, in quanto non rispetta il preavviso di cancellazione
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '404':
+          description: Not found - Punto di ritiro SEND non trovato
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
 components:
   schemas:
     CreateRegistryRequest:
       type: object
+      required:
+        - address
       properties:
         address:
           $ref: '#/components/schemas/Address'
@@ -167,7 +272,7 @@ components:
           example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
         startValidity:
           type: string
-          description: Data e ora di inizio di validità dello sportello.
+          description: Data e ora di inizio di validità dello sportello, se non inviata viene considerata la data corrente.
           example: "2024-03-21"
         endValidity:
           type: string
@@ -187,10 +292,11 @@ components:
         openingTime:
           type: string
           description: Orario di apertura aggiornato dello sportello.
-          example: "09:30-13:30"
+          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
         phoneNumber:
           type: string
           description: Numero di telefono della sede
+          example: "+39 0123456789"
     CreateRegistryResponse:
       type: object
       properties:
@@ -203,10 +309,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Registry'
-        lastKey:
-          type: string
-        total:
-          type: integer
+        moreResult:
+          description: Indica se sono presenti ulteriori pagine di risultati
+          type: boolean
+        nextPagesKey:
+          description: >-
+            Elenco, non esaustivo, delle chiavi da usare per richiedere le 
+            pagine di risultati successive a quella corrente. <br/>
+            Valorizzato solo se il campo __moreResult__ ha valore __true__.
+          type: array
+          items:
+            type: string
             
     Registry:
       type: object
@@ -253,6 +366,10 @@ components:
           format: date-time
           description: Data e ora di fine di validità dello sportello.
           example: "2024-03-21T17:00:00Z"
+        externalCode:
+          type: string
+          description: Identificativo punto ritiro SEND
+          example: "123456"
     VerifyRequestResponse:
       type: object
       properties:
@@ -352,6 +469,11 @@ components:
           example: "2024-03-21T17:00:00Z"    
     Address:
       type: object
+      required:
+        - addressRow
+        - cap
+        - city
+        - pr
       properties:
         addressRow:
           type: string
@@ -432,7 +554,7 @@ components:
       in: query
       required: false
       schema:
-          type: string
+        type: string
     city:
       name: city
       description: Città
@@ -446,7 +568,7 @@ components:
       in: query
       required: false
       schema:
-          type: string
+        type: string
     externalCode:
       name: externalCode
       description: Identificativo punto ritiro SEND indicato dal client

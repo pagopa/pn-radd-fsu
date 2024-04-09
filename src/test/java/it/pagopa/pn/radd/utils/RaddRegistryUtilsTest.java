@@ -964,9 +964,9 @@ class RaddRegistryUtilsTest {
         // Assert
         assertEquals(1, actualFindActiveIntervalsResult.size());
         TimeInterval getResult = actualFindActiveIntervalsResult.iterator().next();
-        Instant expectedStart = getResult.getEnd();
+        Instant expectedStart = getResult.getStart();
         Instant startOfToday = LocalDate.now().atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
-        assertSame(expectedStart, startOfToday);
+        assertEquals(expectedStart, startOfToday);
     }
 
     /**

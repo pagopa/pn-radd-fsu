@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class CsvService {
             csvToBeanBuilder.withQuoteChar(DEFAULT_QUOTE_CHARACTER);
             csvToBeanBuilder.withSkipLines(skipLines);
             csvToBeanBuilder.withOrderedResults(true);
+            csvToBeanBuilder.withFieldAsNull(CSVReaderNullFieldIndicator.EMPTY_SEPARATORS);
             csvToBeanBuilder.withType(csvClass);
 
             List<T> parsedItems = csvToBeanBuilder.build().parse();

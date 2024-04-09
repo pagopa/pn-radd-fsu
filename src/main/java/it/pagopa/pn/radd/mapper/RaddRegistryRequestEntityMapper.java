@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.mapper;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequestGeoLocation;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
@@ -37,8 +38,8 @@ public class RaddRegistryRequestEntityMapper {
             LocalDate date = LocalDate.parse(request.getStartValidity());
             Instant instant = date.atStartOfDay().toInstant(ZoneOffset.UTC);
             originalRequest.setStartValidity(instant.toString());
-        }else{
-            originalRequest.setStartValidity(Instant.now().toString());
+        } else {
+            originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
         }
 
         if(StringUtils.isNotBlank(request.getEndValidity())) {
@@ -86,16 +87,40 @@ public class RaddRegistryRequestEntityMapper {
                     originalRequest.setCity(request.getCitta());
                     originalRequest.setPr(request.getProvincia());
                     originalRequest.setCountry(request.getPaese());
-                    originalRequest.setStartValidity(request.getDataInizioValidita());
-                    originalRequest.setEndValidity(request.getDataFineValidita());
+
+                    if (StringUtils.isNotBlank(request.getDataInizioValidita())) {
+                        originalRequest.setStartValidity(request.getDataInizioValidita());
+                    } else {
+                        originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
+                    }
+
+                    if (StringUtils.isNotBlank(request.getDataFineValidita())) {
+                        originalRequest.setEndValidity(request.getDataFineValidita());
+                    }
+
                     originalRequest.setOpeningTime(request.getOrariApertura());
                     originalRequest.setDescription(request.getDescrizione());
-                    originalRequest.setGeoLocation(request.getCoordinateGeoReferenziali());
+
+                    if (StringUtils.isNotBlank(request.getCoordinateGeoReferenziali())) {
+                        originalRequest.setGeoLocation(objectMapperUtil.toJson(retrieveGeoLocationObject(request.getCoordinateGeoReferenziali())));
+                    }
+
                     originalRequest.setPhoneNumber(request.getTelefono());
                     originalRequest.setExternalCode(request.getExternalCode());
                     return originalRequest;
                 })
                 .toList();
+    }
+
+    private CreateRegistryRequestGeoLocation retrieveGeoLocationObject(String coordinateGeoReferenziali) {
+        String[] coordinates = coordinateGeoReferenziali.split(",");
+        if (coordinates.length != 2) {
+            return null;
+        }
+        CreateRegistryRequestGeoLocation geoLocation = new CreateRegistryRequestGeoLocation();
+        geoLocation.setLatitude(coordinates[0]);
+        geoLocation.setLongitude(coordinates[1]);
+        return geoLocation;
     }
 
     public List<RaddRegistryRequestEntity> retrieveRaddRegistryRequestEntity(List<RaddRegistryOriginalRequest> originalRequests, RaddRegistryImportEntity importEntity) {

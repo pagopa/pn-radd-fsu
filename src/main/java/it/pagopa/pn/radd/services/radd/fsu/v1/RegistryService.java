@@ -220,7 +220,7 @@ public class RegistryService {
      */
     public Flux<String> deleteOlderRegistriesAndGetZipCodeList(String xPagopaPnCxId, String requestId) {
         log.info("start getCapListByCxIdAndRequestId for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
-        return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, ImportStatus.DONE)
+        return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
                 .collectList().flatMapMany(raddRegistryImportEntities -> processRegistryImportsInStatusDone(xPagopaPnCxId, requestId, raddRegistryImportEntities));
     }
 
@@ -299,7 +299,7 @@ public class RegistryService {
                 .doOnNext(raddRegistryEntities -> log.info("Found {} registries created using CRUD API and relative to older import request for cxId: {}", raddRegistryEntities.size(), xPagopaPnCxId))
                 .flatMap(raddRegistryEntities -> deleteOldRegistries(raddRegistryEntities, newRegistryImportEntity)
                         .thenReturn(raddRegistryEntities))
-                .flatMap(raddRegistryEntities -> raddRegistryImportDAO.updateStatusAndTtl(oldRegistryImportEntity, getTtlForImportToReplace(), ImportStatus.REPLACED)
+                .flatMap(raddRegistryEntities -> raddRegistryImportDAO.updateStatusAndTtl(oldRegistryImportEntity, getTtlForImportToReplace(), RaddRegistryImportStatus.REPLACED)
                         .thenReturn(raddRegistryEntities))
                 .flatMapMany(Flux::fromIterable)
                 .map(RaddRegistryEntity::getZipCode)

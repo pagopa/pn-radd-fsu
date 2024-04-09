@@ -12,5 +12,5 @@ public interface RaddRegistryImportDAO {
     Flux<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus);
     Mono<RaddRegistryImportEntity> updateStatus(RaddRegistryImportEntity entity, RaddRegistryImportStatus status, String error);
     Flux<RaddRegistryImportEntity> findWithStatusPending();
-    Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, ImportStatus status);
+    Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, RaddRegistryImportStatus status);
 }

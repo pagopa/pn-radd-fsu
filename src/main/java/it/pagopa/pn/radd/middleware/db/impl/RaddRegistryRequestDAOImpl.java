@@ -146,4 +146,10 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         }
         return query;
     }
+
+    @Override
+    public Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId) {
+        raddRegistryRequestEntities.forEach(raddRegistryRequestEntity -> raddRegistryRequestEntity.setCorrelationId(correlationId));
+        return batchWriter(raddRegistryRequestEntities, 0, true);
+    }
 }

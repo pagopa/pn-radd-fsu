@@ -18,9 +18,9 @@ import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
+import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
@@ -43,6 +43,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.PENDING;
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 import static org.mockito.ArgumentMatchers.any;
@@ -152,6 +153,25 @@ class RegistryServiceTest {
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
+
+        StepVerifier.create(result).verifyComplete();
+    }
+
+    @Test
+    public void shouldProcessMessageWithDuplicate() throws JsonProcessingException {
+
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
+        ObjectMapper objectMapper = new ObjectMapper();
+        PnAddressManagerEvent pnAddressManagerEvent = getMessage();
+        RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
+        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
+        when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
+        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
+        when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
+        when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.empty());
+        when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.error(new RaddGenericException(ERROR_DUPLICATE)));
+        when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
         Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();

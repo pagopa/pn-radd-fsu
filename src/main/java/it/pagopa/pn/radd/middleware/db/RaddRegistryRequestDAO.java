@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface RaddRegistryRequestDAO {
 
+    Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId);
+
     Flux<RaddRegistryRequestEntity> getAllFromCorrelationId(String correlationId, String state);
 
     Flux<RaddRegistryRequestEntity> getAllFromCxidAndRequestIdWithState(String cxId, String requestId, String state);

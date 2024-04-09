@@ -87,4 +87,13 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
         entity.setTtl(ttl);
         return this.updateItem(entity);
     }
+
+    @Override
+    public Mono<RaddRegistryImportEntity> getItemByFileKey(String fileKey) {
+        Key key = Key.builder().partitionValue(fileKey).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        return getByFilter(conditional, RaddRegistryImportEntity.FILE_KEY_INDEX, null, null, null, null)
+                .next();
+    }
 }

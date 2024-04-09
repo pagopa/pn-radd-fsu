@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
-import it.pagopa.pn.radd.middleware.queue.consumer.event.PnInternalCapCheckerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;

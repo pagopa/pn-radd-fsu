@@ -1,14 +1,22 @@
 openapi: 3.0.1
 info:
   termsOfService: https://notifichedigitali.pagopa.it/radd/index.html
-  title: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
-  x-summary: 'Piattaforma Notifiche: API B2B per gli operatori RADD'
+  title: 'Piattaforma Notifiche: API per il BO di Pago PA'
+  x-summary: 'Piattaforma Notifiche: API per il BO di Pago PA'
   version: '1.0.0'
   contact:
     email: pn-supporto-radd@pagopa.it
   license:
     name: Licenza di PN
     url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+  description: >-
+    #Abstract
+    API per la gestione delle richieste di import dei punti di ritiro SEND.
+    
+    Le API permettono di:
+    - richiedere la presigned URL per l'upload del file CSV contenente la lista di sportelli di un soggetto RADD
+    - verificare lo stato di una richiesta di censimento indirizzi (CSV)
+    - recuperare la lista paginata di tutte le richieste di inserimento in anagrafica associate alla richiesta di import
 
 servers:
   - url: https://api.radd.notifichedigitali.it
@@ -46,7 +54,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RegistryUploadResponse'
         '400':
-          description: Bad Request
+          description: Bad Request - Non è permesso l'upload di un nuovo file CSV se esiste già una richiesta di import in corso
           content:
             application/problem+json:
               schema:
@@ -118,6 +126,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '404':
+          description: Not Found - Richiesta di import non trovata
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
         '405':
           description: Not Allowed
           content:
@@ -135,7 +149,7 @@ paths:
       tags:
         - Import
       description: >-
-        API utilizzata per il recupero della lista paginata e filtrata di tutti gli sportelli associati alla richiesta di import
+        API utilizzata per il recupero della lista paginata di tutte le richieste di inserimento in anagrafica associate alla richiesta di import
       operationId: retrieveRequestItems
       parameters:
         - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
@@ -165,6 +179,12 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
         '403':
           description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '404':
+          description: Not Found - Richiesta di import non trovata
           content:
             application/problem+json:
               schema:
@@ -236,7 +256,7 @@ components:
           description: Identificativo univoco della richiesta di censimento
         status:
           type: string
-          description: Stato della richiesta
+          description: Stato della richiesta (possibili valori = NOT_WORKED, PENDING, ACCEPTED, REJECTED, DELETED)
           example: REJECTED
         error:
           type: string
@@ -398,20 +418,6 @@ components:
       required: false
       schema:
         type: string
-
-  responses:
-    Forbidden:
-      description: Forbidden
-    NotFound:
-      description: Not found
-    Invalid:
-      description: Bad Request
-    NotAllowed:
-      description: Method not allowed
-    InternalError:
-      description: Internal Server Error
-    Unauthorized:
-      description: Unauthorized
 
 #  securitySchemes: # ONLY EXTERNAL
 #    bearerAuth: # ONLY EXTERNAL

@@ -1,0 +1,9 @@
+paese; citta; provincia; cap; via; dataInizioValidita; dataFineValidita; descrizione; orariApertura;coordinateGeoReferenziali; telefono; capacita; externalCode;
+Italia; Roma; RM; 00178; via al quartomiglio 70; null; null; descrizione; null; null; 007025462; null; null;
+Italia; Roma; RM; 00178; via appia 20; 2024-03-27; 2024-12-27; descrizione; null; null; 007025445; null; null;
+Italia; Roma; RM; 00178; via appia 100; 2024-03-27; null; descrizione; null; null; 007025462; null; null;
+Italia; Roma; RM; 00178; via appia 70; null; null; descrizione; null; null; 007025462; null; null;
+Italia; Roma; RM; 00178; via appia 40; 2024-03-27; 2024-12-27; descrizione; null; null; 007025462; null; null;
+Italia; Roma; RM; 00178; via appia 60; null; null; descrizione; null; null; 007025462; null; null;
+Italia; Roma; RM; 00178; via appia 80//";
+

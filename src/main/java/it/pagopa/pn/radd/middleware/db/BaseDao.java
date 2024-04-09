@@ -55,7 +55,7 @@ public abstract class BaseDao<T> {
         return Mono.fromFuture(tableAsync.getItem(request));
     }
 
-    protected Mono<Void> batchWriter(List<T> entities, int attempt){
+    protected Mono<Void> batchWriter(List<T> entities, int attempt, boolean conditionalCheck){
         if (attempt >= raddFsuConfig.getAttemptBatchWriter()) return Mono.error(new RaddGenericException("Ended attempt for batch writer"));
         if (entities == null || entities.isEmpty()) return Mono.just("").then();
         if (entities.size() > 25) {
@@ -64,8 +64,14 @@ public abstract class BaseDao<T> {
         WriteBatch.Builder<T> writerBuilder = WriteBatch.builder(tClass)
                 .mappedTableResource(this.tableAsync);
 
-        entities.parallelStream()
-                .forEach(item -> writerBuilder.addPutItem(builder -> builder.item(item)));
+        if(conditionalCheck){
+            entities.parallelStream()
+                    .forEach(item -> writerBuilder.addPutItem(builder -> builder.item(item)
+                            .conditionExpression(Expression.builder().expression("attribute_not_exists(pk)").build())));
+        } else {
+            entities.parallelStream()
+                    .forEach(item -> writerBuilder.addPutItem(builder -> builder.item(item)));
+        }
 
         BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder()
                 .writeBatches(writerBuilder.build()).build();
@@ -74,7 +80,7 @@ public abstract class BaseDao<T> {
                 .flatMap(result -> {
                     List<T> unprocesseds = result.unprocessedPutItemsForTable(tableAsync);
                     if (unprocesseds.isEmpty()) return Mono.just("").then();
-                    return this.batchWriter(entities, attempt+1);
+                    return this.batchWriter(entities, attempt+1, conditionalCheck);
                 });
     }
 

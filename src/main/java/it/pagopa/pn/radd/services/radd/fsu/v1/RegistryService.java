@@ -17,10 +17,11 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
-import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
-import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,12 +43,9 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 
-import static it.pagopa.pn.radd.constant.ProcessStatus.PROCESS_SERVICE_IMPORT_COMPLETE;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DUPLICATE_REQUEST;
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.PENDING_REQUEST;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
+import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +60,8 @@ public class RegistryService {
     private final RaddAltCapCheckerProducer raddAltCapCheckerProducer;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
+
+    public static final String PROCESS_SERVICE_IMPORT_COMPLETE = "[IMPORT_COMPLETE] import complete request service";
 
     public Mono<RegistryUploadResponse> uploadRegistryRequests(String xPagopaPnCxId, Mono<RegistryUploadRequest> registryUploadRequest) {
         String requestId = UUID.randomUUID().toString();

@@ -1,8 +1,10 @@
 package it.pagopa.pn.radd.middleware.queue.consumer;
 
 import it.pagopa.pn.radd.middleware.queue.consumer.handler.AddressManagerEventHandler;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -40,5 +42,18 @@ class AddressManagerEventHandlerTest {
         addressManagerEventHandler.pnAddressManagerEventInboundConsumer().accept(message);
 
         verify(registryService, times(1)).handleAddressManagerEvent(event);
+    }
+
+    @Test
+    void shouldHandleMessageError() {
+        PnAddressManagerEvent event = new PnAddressManagerEvent();
+        PnAddressManagerEvent.Payload payload = mock(PnAddressManagerEvent.Payload.class);
+        when(payload.getCorrelationId()).thenReturn("correlationId");
+        event.setPayload(payload);
+        when(message.getPayload()).thenReturn(event);
+        when(registryService.handleAddressManagerEvent(event)).thenReturn(Mono.error(mock(RaddGenericException.class)));
+
+        Assertions.assertThrows(RaddGenericException.class, () -> addressManagerEventHandler.pnAddressManagerEventInboundConsumer().accept(message));
+
     }
 }

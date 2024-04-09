@@ -13,4 +13,5 @@ public interface RaddRegistryImportDAO {
     Mono<RaddRegistryImportEntity> updateStatus(RaddRegistryImportEntity entity, RaddRegistryImportStatus status, String error);
     Flux<RaddRegistryImportEntity> findWithStatusPending();
     Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, RaddRegistryImportStatus status);
+    Mono<RaddRegistryImportEntity> getItemByFileKey(String fileKey);
 }

@@ -38,7 +38,7 @@ public class OperationsIunsDAOImpl extends BaseDao<OperationsIunsEntity> impleme
 
         Flux<OperationsIunsEntity> fluxIuns = Flux.fromStream(operations.stream());
         return fluxIuns.buffer(24)
-                .flatMap(list -> batchWriter(list, 0))
+                .flatMap(list -> batchWriter(list, 0, false))
                 .then();
     }
 

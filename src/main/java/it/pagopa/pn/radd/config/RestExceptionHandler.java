@@ -78,6 +78,20 @@ public class RestExceptionHandler {
                 .body(problem));
     }
 
+    @ExceptionHandler(RaddImportException.class)
+    public Mono<ResponseEntity<Problem>> pnRaddImportException(RaddImportException ex){
+        log.error(ex.getMessage());
+        Problem problem = new Problem();
+        problem.setType(ex.getStatus().getReasonPhrase());
+        problem.setStatus(ex.getStatus().value());
+        problem.setTitle(ex.getExceptionType().getTitle());
+        problem.setDetail(ex.getExceptionType().getMessage());
+        problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
+        problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
+        return Mono.just(ResponseEntity.status(ex.getStatus())
+                .body(problem));
+    }
+
     @ExceptionHandler(PnSafeStorageException.class)
     public Mono<ResponseEntity<Problem>> webClientException(PnSafeStorageException ex) {
         Problem rs = new Problem();

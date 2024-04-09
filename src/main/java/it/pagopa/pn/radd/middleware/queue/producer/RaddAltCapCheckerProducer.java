@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.queue.producer;
 
+import it.pagopa.pn.api.dto.events.EventPublisher;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.radd.middleware.queue.event.RaddAltCapCheckerEvent;
@@ -7,6 +8,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import static it.pagopa.pn.radd.utils.Const.CAP_CHECKER_EVENT;
 
 public interface RaddAltCapCheckerProducer extends MomProducer<RaddAltCapCheckerEvent>  {
 
@@ -18,9 +21,9 @@ public interface RaddAltCapCheckerProducer extends MomProducer<RaddAltCapChecker
     default RaddAltCapCheckerEvent buildCapCheckerEvent(String zipCode) {
         return RaddAltCapCheckerEvent.builder()
                 .header( GenericEventHeader.builder()
-                        .eventType( "CAP_CHECKER_EVENT" ) //Creare
-                        .publisher( "RADD_ALT") //FIXME create RADD_ALT on EventPublisher
-                        .eventId(UUID.randomUUID() + "_cap_checker")
+                        .eventType(CAP_CHECKER_EVENT) //Creare
+                        .publisher(EventPublisher.RADD_ALT.name())
+                        .eventId(UUID.randomUUID().toString())
                         .createdAt( Instant.now() )
                         .build()
                 )

@@ -19,7 +19,7 @@
     "VerifyRaddRegistryImportDelay": "12000",
     "MaxQuerySize": "1000",
     "RegistryImportReplacedTtl": "8766",
-    "EvaluatedZipCodeConfigType": "",
-    "EvaluatedZipCodeConfigNumber": ""
+    "EvaluatedZipCodeConfigType": "ZIPCODE",
+    "EvaluatedZipCodeConfigNumber": "1"
   }
 }

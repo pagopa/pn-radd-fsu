@@ -356,7 +356,7 @@ public class RaddRegistryUtils {
         pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
                 RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(keyEntity.getPk()).build(),
                 RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
-                RaddRegistryRequestEntity.COL_REGISTRY_ID, AttributeValue.builder().s(keyEntity.getRegistryId()).build()
+                RaddRegistryRequestEntity.COL_REQUEST_ID, AttributeValue.builder().s(keyEntity.getRequestId()).build()
         ));
         return pageLastEvaluatedKey;
     }

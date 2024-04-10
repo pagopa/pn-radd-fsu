@@ -23,14 +23,6 @@ import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
-import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
-import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
-import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
-import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
-import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
@@ -491,7 +483,7 @@ class RegistryServiceTest {
         requestResponse.setMoreResult(false);
         requestResponse.setNextPagesKey(List.of());
         requestResponse.setItems(List.of(registryRequestResponse));
-        ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey> resultPaginationDto = new ResultPaginationDto();
+        ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey> resultPaginationDto = new ResultPaginationDto<>();
         resultPaginationDto.setResultsPage(List.of(raddRegistryRequestEntity));
         when(raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(any(), any(), any(), any()))
                 .thenReturn(Mono.just(resultPaginationDto));

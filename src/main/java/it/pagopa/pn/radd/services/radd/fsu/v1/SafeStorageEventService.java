@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import static it.pagopa.pn.radd.pojo.RegistryRequestStatus.REJECTED;
 import static it.pagopa.pn.radd.services.radd.fsu.v1.CsvService.ERROR_RADD_ALT_READING_CSV;
+import static it.pagopa.pn.radd.utils.RaddRegistryUtils.buildCorrelationIdForImport;
 
 @Service
 @CustomLog
@@ -58,7 +59,7 @@ public class SafeStorageEventService {
                     } else {
                         List<RaddRegistryOriginalRequest> originalRequests = raddRegistryRequestEntityMapper.retrieveOriginalRequest(tuple.getT2());
                         List<RaddRegistryRequestEntity> raddRegistryRequestEntities = raddRegistryRequestEntityMapper.retrieveRaddRegistryRequestEntity(originalRequests, tuple.getT1());
-                        Map<String, List<RaddRegistryRequestEntity>> map = groupingRaddRegistryRequest(raddRegistryRequestEntities, 20);
+                        Map<String, List<RaddRegistryRequestEntity>> map = groupingRaddRegistryRequest(tuple.getT1().getCxId(), tuple.getT1().getRequestId(), raddRegistryRequestEntities, 20);
                         return persistRaddRegistryRequest(map)
                                 .thenReturn(tuple.getT1());
                     }
@@ -111,7 +112,7 @@ public class SafeStorageEventService {
                 .flatMap(correlationId -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)));
     }
 
-    private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {
+    private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(String cxId, String requestId, List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {
         final AtomicInteger counter = new AtomicInteger();
 
         Map<String, List<RaddRegistryRequestEntity>> map = raddRegistryRequestEntities.stream()
@@ -119,7 +120,7 @@ public class SafeStorageEventService {
                 .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numberOfElements))
                 .values()
                 .stream()
-                .collect(Collectors.toMap(item -> UUID.randomUUID().toString(), Function.identity()));
+                .collect(Collectors.toMap(item -> buildCorrelationIdForImport(cxId, requestId), Function.identity()));
 
         log.info("groupingRaddRegistryRequest size: {}", map.size());
 

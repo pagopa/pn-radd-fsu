@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
@@ -153,7 +154,12 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     @Override
     public Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId) {
         raddRegistryRequestEntities.forEach(raddRegistryRequestEntity -> raddRegistryRequestEntity.setCorrelationId(correlationId));
-        return batchWriter(raddRegistryRequestEntities, 0, true);
+
+        Expression condition = Expression.builder()
+                .expression("attribute_not_exists(pk)")
+                .build();
+
+        return putItemsWithConditions(raddRegistryRequestEntities, condition, RaddRegistryRequestEntity.class);
     }
 
     @Override

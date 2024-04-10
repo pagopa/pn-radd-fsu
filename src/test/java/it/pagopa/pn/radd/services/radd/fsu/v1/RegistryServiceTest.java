@@ -152,7 +152,6 @@ class RegistryServiceTest {
         RaddRegistryEntity raddRegistryEntity = mock(RaddRegistryEntity.class);
         when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
         when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
@@ -171,7 +170,6 @@ class RegistryServiceTest {
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
         when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn(objectMapper.writeValueAsString(raddRegistryOriginalRequest));
         when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.error(new RaddGenericException(ERROR_DUPLICATE)));
@@ -240,7 +238,6 @@ class RegistryServiceTest {
         when(raddRegistryRequestEntity.getRequestId()).thenReturn("requestId");
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.just(raddRegistryEntity));
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
         Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
@@ -260,7 +257,6 @@ class RegistryServiceTest {
         when(raddRegistryRequestEntity.getRequestId()).thenReturn("requestId");
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.just(raddRegistryEntity));
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         when(raddRegistryDAO.updateRegistryEntity(any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
@@ -277,17 +273,8 @@ class RegistryServiceTest {
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
         when(raddRegistryRequestEntity.getPk()).thenReturn("id2");
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
         Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
-        StepVerifier.create(result).verifyComplete();
-    }
-
-    @Test
-    public void shouldProcessMessageSuccessfullyWithImportNotFound() {
-        PnAddressManagerEvent pnAddressManagerEvent = getMessage();
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.empty());
-        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
         StepVerifier.create(result).verifyComplete();
     }
 

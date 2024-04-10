@@ -107,9 +107,16 @@ public class SafeStorageEventService {
     }
 
     private Mono<Void> persistItemsAndSendEvent(Map.Entry<String, List<RaddRegistryRequestEntity>> entry) {
+        String correlationId = entry.getKey();
         return raddRegistryRequestDAO.writeCsvAddresses(entry.getValue(), entry.getKey())
-                .thenReturn(entry.getKey())
-                .flatMap(correlationId -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)));
+                .thenReturn(correlationId)
+                .flatMap(s -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)))
+                .onErrorResume(throwable -> {
+                    log.error("Error during persistItemsAndSendEvent --> ", throwable);
+                    return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId))
+                            .then(Mono.error(throwable));
+                })
+                .then();
     }
 
     private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(String cxId, String requestId, List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {

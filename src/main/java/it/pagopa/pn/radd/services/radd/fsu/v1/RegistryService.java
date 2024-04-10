@@ -112,14 +112,10 @@ public class RegistryService {
     }
 
     private Mono<Void> processMessage(List<PnAddressManagerEvent.ResultItem> resultItems, String correlationId) {
-        if(!resultItems.isEmpty()) {
-            String cxId = PnAddressManagerEvent.retrieveCxIdFromCorrelationId(correlationId);
-            String requestId = PnAddressManagerEvent.retrieveRequestIdFromCorrelationId(correlationId);
-            return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(cxId, requestId, RaddRegistryImportStatus.PENDING)
-                    .switchIfEmpty(Mono.error(new RaddGenericException(String.format("No pending import request found for cxId: [%s] and requestId: [%s] ", cxId, requestId))))
-                    .flatMap(registryImport -> raddRegistryRequestDAO.findByCorrelationIdWithStatus(correlationId, RegistryRequestStatus.PENDING)
-                            .switchIfEmpty(Mono.error(new RaddGenericException("No pending items found for correlationId " + correlationId)))
-                            .flatMap(raddRegistryRequest -> processAddressForRegistryRequest(resultItems, raddRegistryRequest)))
+        if (!resultItems.isEmpty()) {
+            return raddRegistryRequestDAO.findByCorrelationIdWithStatus(correlationId, RegistryRequestStatus.PENDING)
+                    .switchIfEmpty(Mono.error(new RaddGenericException("No pending items found for correlationId " + correlationId)))
+                    .flatMap(raddRegistryRequest -> processAddressForRegistryRequest(resultItems, raddRegistryRequest))
                     .doOnError(throwable -> log.error("Error processing addressManager event: {}", throwable.getMessage(), throwable))
                     .onErrorResume(RaddGenericException.class, e -> Mono.empty())
                     .then();
@@ -344,7 +340,7 @@ public class RegistryService {
     }
 
     private RaddRegistryRequestEntity setDeletedStatusAndUpdatePk(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryRequestEntity raddRegistryRequestEntity) {
-        raddRegistryRequestEntity.setPk(raddRegistryRequestEntity.getCxId()+"#"+raddRegistryImportEntity.getRequestId()+"#"+RaddRegistryRequestEntity.retrieveIndexFromPk(raddRegistryRequestEntity.getPk()));
+        raddRegistryRequestEntity.setPk(raddRegistryRequestEntity.getCxId() + "#" + raddRegistryImportEntity.getRequestId() + "#" + RaddRegistryRequestEntity.retrieveIndexFromPk(raddRegistryRequestEntity.getPk()));
         raddRegistryRequestEntity.setRequestId(raddRegistryImportEntity.getRequestId());
         raddRegistryRequestEntity.setStatus(RegistryRequestStatus.DELETED.name());
         raddRegistryRequestEntity.setError(REMOVED_FROM_LATEST_IMPORT);

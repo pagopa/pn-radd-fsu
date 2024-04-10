@@ -94,7 +94,9 @@ class RegistryServiceTest {
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, raddAltCapCheckerProducer, pnRaddFsuConfig, eventBridgeProducer, objectMapperUtil);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient,
+                new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient,
+                raddAltCapCheckerProducer, pnRaddFsuConfig, eventBridgeProducer, new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()));
     }
 
     @Test
@@ -155,7 +157,7 @@ class RegistryServiceTest {
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
-        when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
+        when(raddRegistryRequestDAO.updateRegistryRequestData(any())).thenReturn(Mono.empty());
         Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();
@@ -236,6 +238,7 @@ class RegistryServiceTest {
         when(raddRegistryEntity.getRequestId()).thenReturn("requestId");
         when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
         when(raddRegistryRequestEntity.getRequestId()).thenReturn("requestId");
+        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn("{}");
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
@@ -260,6 +263,8 @@ class RegistryServiceTest {
         when(raddRegistryDAO.updateRegistryEntity(any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
+        when(raddRegistryRequestDAO.updateRegistryRequestData(any())).thenReturn(Mono.empty());
+
         Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
 
         StepVerifier.create(result).verifyComplete();
@@ -283,7 +288,9 @@ class RegistryServiceTest {
         PnAddressManagerEvent.ResultItem resultItem = new PnAddressManagerEvent.ResultItem();
         resultItem.setError(null);
         resultItem.setId("addressId");
-        resultItem.setNormalizedAddress(new PnAddressManagerEvent.NormalizedAddress());
+        PnAddressManagerEvent.NormalizedAddress normalizedAddress = new PnAddressManagerEvent.NormalizedAddress();
+        normalizedAddress.setCity("city");
+        resultItem.setNormalizedAddress(normalizedAddress);
         List<PnAddressManagerEvent.ResultItem> resultItems = Collections.singletonList(resultItem);
         PnAddressManagerEvent payload = new PnAddressManagerEvent();
         payload.setCorrelationId("cxId_requestId_id");
@@ -322,7 +329,7 @@ class RegistryServiceTest {
         String requestId = "testRequestId";
 
         RaddRegistryImportEntity raddRegistryImportEntity = new RaddRegistryImportEntity();
-        raddRegistryImportEntity.setConfig("json");
+        raddRegistryImportEntity.setConfig("{}");
 
         RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
         raddRegistryEntity.setRegistryId("testRegistryId");
@@ -339,14 +346,8 @@ class RegistryServiceTest {
                 .thenReturn(Flux.just(raddRegistryImportEntity));
         when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX))
                 .thenReturn(Flux.just(raddRegistryEntity));
-        when(objectMapperUtil.toObject(raddRegistryImportEntity.getConfig(), RaddRegistryImportConfig.class))
-                .thenReturn(raddRegistryImportConfig);
         when(raddRegistryDAO.updateRegistryEntity(raddRegistryEntity))
                 .thenReturn(Mono.just(raddRegistryEntity));
-        when(raddRegistryRequestDAO.findByCxIdAndRegistryId(raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId()))
-                .thenReturn(Flux.just(raddRegistryRequestEntity));
-        when(raddRegistryRequestDAO.putRaddRegistryRequestEntity(any()))
-                .thenReturn(Mono.just(raddRegistryRequestEntity));
 
         Flux<String> result = registryService.deleteOlderRegistriesAndGetZipCodeList(xPagopaPnCxId, requestId);
 
@@ -357,8 +358,6 @@ class RegistryServiceTest {
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE);
         verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
         verify(raddRegistryDAO, times(1)).updateRegistryEntity(raddRegistryEntity);
-        verify(raddRegistryRequestDAO, times(1)).findByCxIdAndRegistryId(raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId());
-        verify(raddRegistryRequestDAO, times(1)).putRaddRegistryRequestEntity(any());
     }
 
     @Test
@@ -371,11 +370,13 @@ class RegistryServiceTest {
         newRaddRegistryImportEntity.setRequestId(requestId);
         newRaddRegistryImportEntity.setCxId(xPagopaPnCxId);
         newRaddRegistryImportEntity.setStatus(RaddRegistryImportStatus.DONE.name());
+        newRaddRegistryImportEntity.setConfig("{}");
 
         RaddRegistryImportEntity oldRaddRegistryImportEntity = new RaddRegistryImportEntity();
         oldRaddRegistryImportEntity.setRequestId(oldRequestId);
         oldRaddRegistryImportEntity.setCxId(xPagopaPnCxId);
         oldRaddRegistryImportEntity.setStatus(RaddRegistryImportStatus.DONE.name());
+        oldRaddRegistryImportEntity.setConfig("{}");
 
         RaddRegistryEntity raddRegistryEntityMadeByCrud = new RaddRegistryEntity();
         raddRegistryEntityMadeByCrud.setRegistryId(REQUEST_ID_PREFIX + "registryId");
@@ -397,8 +398,6 @@ class RegistryServiceTest {
                 .thenReturn(Flux.just(raddRegistryEntityMadeByCrud));
         when(raddRegistryImportDAO.updateStatusAndTtl(any(), any(), any()))
                 .thenReturn(Mono.just(newRaddRegistryImportEntity));
-        when(objectMapperUtil.toObject(newRaddRegistryImportEntity.getConfig(), RaddRegistryImportConfig.class))
-                .thenReturn(raddRegistryImportConfig);
         when(raddRegistryDAO.updateRegistryEntity(any()))
                 .thenReturn(Mono.just(new RaddRegistryEntity()));
 

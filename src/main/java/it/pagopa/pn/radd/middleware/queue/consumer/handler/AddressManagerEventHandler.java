@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.queue.consumer.handler;
 
 import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.radd.middleware.queue.consumer.HandleEventUtils;
+import it.pagopa.pn.radd.middleware.queue.event.AddressManagerBodyEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
 import lombok.AllArgsConstructor;
@@ -21,10 +22,10 @@ public class AddressManagerEventHandler {
     private RegistryService registryService;
     private static final String HANDLER_REQUEST = "pnAddressManagerEventInboundConsumer";
     @Bean
-    public Consumer<Message<PnAddressManagerEvent>> pnAddressManagerEventInboundConsumer() {
+    public Consumer<Message<AddressManagerBodyEvent>> pnAddressManagerEventInboundConsumer() {
         return message -> {
             log.debug("Handle message from {} with content {}", "Address Manager", message);
-            PnAddressManagerEvent response = message.getPayload();
+            PnAddressManagerEvent response = message.getPayload().getBody();
             MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, response.getCorrelationId());
             var monoResult = registryService.handleAddressManagerEvent(response)
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))

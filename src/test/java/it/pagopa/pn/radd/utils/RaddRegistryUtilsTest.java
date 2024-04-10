@@ -22,7 +22,10 @@ import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,19 +44,18 @@ import static it.pagopa.pn.radd.utils.RaddRegistryUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ContextConfiguration(classes = {RaddRegistryUtils.class, PnRaddFsuConfig.class})
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class RaddRegistryUtilsTest {
-    @Autowired
+    @InjectMocks
     private RaddRegistryUtils raddRegistryUtils;
 
-    @MockBean
+    @Mock
     private ObjectMapperUtil objectMapperUtil;
 
-    @Autowired
+    @Mock
     private PnRaddFsuConfig pnRaddFsuConfig;
 
-    @MockBean
+    @Mock
     private SecretService secretService;
 
     /**
@@ -119,10 +121,7 @@ class RaddRegistryUtilsTest {
         verify(preExistingRegistryEntity).setZipCode(Mockito.any());
     }
 
-    /**
-     * Method under test:
-     * {@link RaddRegistryUtils#constructRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress, RaddRegistryRequestEntity)}
-     */
+
     @Test
     void testConstructRaddRegistryEntity() {
         // Arrange
@@ -149,7 +148,7 @@ class RaddRegistryUtilsTest {
         registryRequest.setCreatedAt(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         registryRequest.setCxId("42");
         registryRequest.setError("An error occurred");
-        registryRequest.setOriginalRequest("Original Request");
+        registryRequest.setOriginalRequest("{}");
         registryRequest.setPk("Pk");
         registryRequest.setRegistryId("42");
         registryRequest.setRequestId("42");
@@ -157,8 +156,10 @@ class RaddRegistryUtilsTest {
         registryRequest.setUpdatedAt(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         registryRequest.setZipCode("21654");
 
+        when(objectMapperUtil.toObject(any(), any())).thenReturn(new RaddRegistryOriginalRequest());
+
         // Act
-        raddRegistryUtils.constructRaddRegistryEntity(normalizedAddress, registryRequest);
+        raddRegistryUtils.constructRaddRegistryEntity("registryId", normalizedAddress, registryRequest);
 
         // Assert
         verify(normalizedAddress).setAddressRow(Mockito.any());

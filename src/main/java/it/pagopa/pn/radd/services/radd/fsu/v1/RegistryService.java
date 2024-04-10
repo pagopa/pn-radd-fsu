@@ -38,6 +38,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -136,11 +137,12 @@ public class RegistryService {
     }
 
     private Mono<RaddRegistryRequestEntity> handleRegistryUpdate(RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
-        UUID registryId = UUID.nameUUIDFromBytes(resultItem.getNormalizedAddress().toString().getBytes());
+        String normalizedAddressString = objectMapperUtil.toJson(resultItem.getNormalizedAddress());
+        String registryId = UUID.nameUUIDFromBytes(normalizedAddressString.getBytes(StandardCharsets.UTF_8)).toString();
 
-        return raddRegistryDAO.find(registryId.toString(), raddRegistryRequestEntity.getCxId())
+        return raddRegistryDAO.find(registryId, raddRegistryRequestEntity.getCxId())
                 .flatMap(entity -> updateRegistryRequestEntity(raddRegistryRequestEntity, entity))
-                .switchIfEmpty(createNewRegistryEntity(raddRegistryRequestEntity, resultItem))
+                .switchIfEmpty(createNewRegistryEntity(registryId, raddRegistryRequestEntity, resultItem))
                 .onErrorResume(throwable -> {
                     if (throwable instanceof RaddGenericException ex && ERROR_DUPLICATE.equals(ex.getMessage())) {
                         return raddRegistryRequestDAO.updateStatusAndError(
@@ -163,11 +165,18 @@ public class RegistryService {
         }
     }
 
-    private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
-        return raddRegistryUtils.constructRaddRegistryEntity(resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
+    private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(String registryId, RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
+        return raddRegistryUtils.constructRaddRegistryEntity(registryId, resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
                 .flatMap(item -> this.raddRegistryDAO.putItemIfAbsent(item)
                         .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
-                .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(raddRegistryRequestEntity, RegistryRequestStatus.ACCEPTED));
+                .flatMap(raddRegistryEntity -> {
+                    raddRegistryRequestEntity.setUpdatedAt(Instant.now());
+                    raddRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
+                    raddRegistryRequestEntity.setRegistryId(raddRegistryEntity.getRegistryId());
+                    raddRegistryRequestEntity.setZipCode(raddRegistryEntity.getZipCode());
+                    return raddRegistryRequestDAO.updateRegistryRequestData(raddRegistryRequestEntity)
+                            .doOnNext(requestEntity -> log.info("Registry request [{}] updated in status ACCEPTED", requestEntity.getPk()));
+                });
 
     }
 

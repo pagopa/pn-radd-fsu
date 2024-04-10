@@ -75,19 +75,17 @@ public class RaddRegistryUtils {
         return registryEntity;
     }
 
-    public Mono<RaddRegistryEntity> constructRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
-        return Mono.fromCallable(() -> {
-            String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
-            RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
+    public Mono<RaddRegistryEntity> constructRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
+        String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
 
-            return getRaddRegistryEntity(normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest);
-        });
+        return Mono.just(getRaddRegistryEntity(registryId, normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest));
     }
 
-    private static RaddRegistryEntity getRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
+    private static RaddRegistryEntity getRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         RaddRegistryEntity registryEntity = new RaddRegistryEntity();
 
-        registryEntity.setRegistryId(registryRequest.getRegistryId());
+        registryEntity.setRegistryId(registryId);
         registryEntity.setCxId(registryRequest.getCxId());
         registryEntity.setNormalizedAddress(normalizedAddressString);
         registryEntity.setRequestId(registryRequest.getRequestId());

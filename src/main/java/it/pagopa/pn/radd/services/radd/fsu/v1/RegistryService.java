@@ -23,8 +23,10 @@ import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.pojo.AddressManagerRequest;
+import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +46,7 @@ import java.util.UUID;
 import java.util.function.BiPredicate;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
-import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
+import static it.pagopa.pn.radd.utils.Const.*;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +61,7 @@ public class RegistryService {
     private final RaddAltCapCheckerProducer raddAltCapCheckerProducer;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
+    private final ObjectMapperUtil objectMapperUtil;
 
     public static final String PROCESS_SERVICE_IMPORT_COMPLETE = "[IMPORT_COMPLETE] import complete request service";
 
@@ -221,7 +223,7 @@ public class RegistryService {
      *
      */
     public Flux<String> deleteOlderRegistriesAndGetZipCodeList(String xPagopaPnCxId, String requestId) {
-        log.info("start getCapListByCxIdAndRequestId for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
+        log.info("start deleteOlderRegistriesAndGetZipCodeList for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
         return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
                 .collectList().flatMapMany(raddRegistryImportEntities -> processRegistryImportsInStatusDone(xPagopaPnCxId, requestId, raddRegistryImportEntities));
     }
@@ -322,9 +324,30 @@ public class RegistryService {
     }
 
     private Mono<Void> deleteOldRegistries(List<RaddRegistryEntity> raddRegistryEntities, RaddRegistryImportEntity raddRegistryImportEntity) {
-        return Mono.empty();
+        RaddRegistryImportConfig raddRegistryImportConfig = objectMapperUtil.toObject(raddRegistryImportEntity.getConfig(), RaddRegistryImportConfig.class);
+        return Flux.fromIterable(raddRegistryEntities)
+                .map(raddRegistryEntity -> setEndValidityAndRequestId(raddRegistryImportEntity, raddRegistryEntity, raddRegistryImportConfig))
+                .flatMap(raddRegistryDAO::updateRegistryEntity)
+                .filter(raddRegistryEntity -> "DUPLICATE".equalsIgnoreCase(raddRegistryImportConfig.getDeleteRole()))
+                .flatMap(raddRegistryEntity -> raddRegistryRequestDAO.findByCxIdAndRegistryId(raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId()))
+                .map(raddRegistryRequestEntity -> setDeletedStatusAndUpdatePk(raddRegistryImportEntity, raddRegistryRequestEntity))
+                .flatMap(raddRegistryRequestDAO::putRaddRegistryRequestEntity)
+                .then();
     }
 
+    private RaddRegistryEntity setEndValidityAndRequestId(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryEntity raddRegistryEntity, RaddRegistryImportConfig raddRegistryImportConfig) {
+        raddRegistryEntity.setEndValidity(Instant.now().plus(raddRegistryImportConfig.getDefaultEndValidity(), ChronoUnit.DAYS));
+        raddRegistryEntity.setRequestId(raddRegistryImportEntity.getRequestId());
+        return raddRegistryEntity;
+    }
+
+    private RaddRegistryRequestEntity setDeletedStatusAndUpdatePk(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        raddRegistryRequestEntity.setPk(raddRegistryRequestEntity.getCxId()+"#"+raddRegistryImportEntity.getRequestId()+"#"+RaddRegistryRequestEntity.retrieveIndexFromPk(raddRegistryRequestEntity.getPk()));
+        raddRegistryRequestEntity.setRequestId(raddRegistryImportEntity.getRequestId());
+        raddRegistryRequestEntity.setStatus(RegistryRequestStatus.DELETED.name());
+        raddRegistryRequestEntity.setError(REMOVED_FROM_LATEST_IMPORT);
+        return raddRegistryRequestEntity;
+    }
 
     public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
         return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())

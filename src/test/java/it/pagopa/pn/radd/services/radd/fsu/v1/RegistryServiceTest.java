@@ -15,18 +15,19 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.eventbus.EventBridgeProducer;
 import it.pagopa.pn.radd.middleware.msclient.PnAddressManagerClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
-import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
-import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
+import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
+import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
+import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
+import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -43,12 +44,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.PENDING;
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
+import static it.pagopa.pn.radd.utils.Const.ERROR_DUPLICATE;
+import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -85,12 +86,15 @@ class RegistryServiceTest {
     @Mock
     private EventBridgeProducer<PnEvaluatedZipCodeEvent> eventBridgeProducer;
 
+    @Mock
+    private ObjectMapperUtil objectMapperUtil;
+
 
     private RegistryService registryService;
 
     @BeforeEach
     void setUp() {
-        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, raddAltCapCheckerProducer, pnRaddFsuConfig, eventBridgeProducer);
+        registryService = new RegistryService(raddRegistryRequestDAO, raddRegistryDAO, raddRegistryImportDAO, pnSafeStorageClient, new RaddRegistryUtils(new ObjectMapperUtil(new com.fasterxml.jackson.databind.ObjectMapper()), pnRaddFsuConfig, secretService), pnAddressManagerClient, raddAltCapCheckerProducer, pnRaddFsuConfig, eventBridgeProducer, objectMapperUtil);
     }
 
     @Test
@@ -334,19 +338,38 @@ class RegistryServiceTest {
                 .thenReturn(Flux.just(mock(RaddRegistryRequestEntity.class)));
         StepVerifier.create(registryService.handleImportCompletedRequest(payload)).expectComplete();
     }
+
     @Test
     void testDeleteOlderRequestRegistriesAndGetCapListForFirstImportRequest() {
         String xPagopaPnCxId = "testCxId";
         String requestId = "testRequestId";
 
+        RaddRegistryImportEntity raddRegistryImportEntity = new RaddRegistryImportEntity();
+        raddRegistryImportEntity.setConfig("json");
+
         RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
         raddRegistryEntity.setRegistryId("testRegistryId");
         raddRegistryEntity.setZipCode("00100");
 
+        RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
+        raddRegistryImportConfig.setDeleteRole("duplicate");
+        raddRegistryImportConfig.setDefaultEndValidity(1);
+
+        RaddRegistryRequestEntity raddRegistryRequestEntity = new RaddRegistryRequestEntity();
+        raddRegistryRequestEntity.setPk("cxId#requestId#index");
+
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE))
-                .thenReturn(Flux.just(new RaddRegistryImportEntity()));
+                .thenReturn(Flux.just(raddRegistryImportEntity));
         when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX))
                 .thenReturn(Flux.just(raddRegistryEntity));
+        when(objectMapperUtil.toObject(raddRegistryImportEntity.getConfig(), RaddRegistryImportConfig.class))
+                .thenReturn(raddRegistryImportConfig);
+        when(raddRegistryDAO.updateRegistryEntity(raddRegistryEntity))
+                .thenReturn(Mono.just(raddRegistryEntity));
+        when(raddRegistryRequestDAO.findByCxIdAndRegistryId(raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId()))
+                .thenReturn(Flux.just(raddRegistryRequestEntity));
+        when(raddRegistryRequestDAO.putRaddRegistryRequestEntity(any()))
+                .thenReturn(Mono.just(raddRegistryRequestEntity));
 
         Flux<String> result = registryService.deleteOlderRegistriesAndGetZipCodeList(xPagopaPnCxId, requestId);
 
@@ -356,6 +379,9 @@ class RegistryServiceTest {
 
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE);
         verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
+        verify(raddRegistryDAO, times(1)).updateRegistryEntity(raddRegistryEntity);
+        verify(raddRegistryRequestDAO, times(1)).findByCxIdAndRegistryId(raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId());
+        verify(raddRegistryRequestDAO, times(1)).putRaddRegistryRequestEntity(any());
     }
 
     @Test
@@ -382,6 +408,10 @@ class RegistryServiceTest {
         raddRegistryEntityMadeByOldImport.setRegistryId(oldRequestId);
         raddRegistryEntityMadeByOldImport.setZipCode("00200");
 
+        RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
+        raddRegistryImportConfig.setDeleteRole("differentFromDuplicate");
+        raddRegistryImportConfig.setDefaultEndValidity(1);
+
         when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE))
                 .thenReturn(Flux.just(newRaddRegistryImportEntity, oldRaddRegistryImportEntity));
         when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, oldRequestId))
@@ -390,7 +420,10 @@ class RegistryServiceTest {
                 .thenReturn(Flux.just(raddRegistryEntityMadeByCrud));
         when(raddRegistryImportDAO.updateStatusAndTtl(any(), any(), any()))
                 .thenReturn(Mono.just(newRaddRegistryImportEntity));
-
+        when(objectMapperUtil.toObject(newRaddRegistryImportEntity.getConfig(), RaddRegistryImportConfig.class))
+                .thenReturn(raddRegistryImportConfig);
+        when(raddRegistryDAO.updateRegistryEntity(any()))
+                .thenReturn(Mono.just(new RaddRegistryEntity()));
 
         Flux<String> result = registryService.deleteOlderRegistriesAndGetZipCodeList(xPagopaPnCxId, requestId);
 
@@ -401,6 +434,9 @@ class RegistryServiceTest {
         verify(raddRegistryImportDAO, times(1)).getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE);
         verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX);
         verify(raddRegistryDAO, times(1)).findByCxIdAndRequestId(xPagopaPnCxId, oldRequestId);
+        verify(raddRegistryDAO, times(2)).updateRegistryEntity(any());
+        verify(raddRegistryRequestDAO, times(0)).findByCxIdAndRegistryId(anyString(), anyString());
+        verify(raddRegistryRequestDAO, times(0)).putRaddRegistryRequestEntity(any());
     }
 
     @Test

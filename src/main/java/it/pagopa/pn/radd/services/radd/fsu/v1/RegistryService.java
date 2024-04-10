@@ -107,22 +107,25 @@ public class RegistryService {
         return raddRegistryImportDAO.putRaddRegistryImportEntity(pnRaddRegistryImportEntity);
     }
 
-    public Mono<Void> handleAddressManagerEvent(PnAddressManagerEvent message) {
-        return processMessage(message.getPayload().getResultItems(), message.getPayload().getCorrelationId());
+    public Mono<Void> handleAddressManagerEvent(PnAddressManagerEvent payload) {
+        return processMessage(payload.getResultItems(), payload.getCorrelationId());
     }
 
     private Mono<Void> processMessage(List<PnAddressManagerEvent.ResultItem> resultItems, String correlationId) {
-        String id = resultItems.get(0).getId();
-        String cxId = PnAddressManagerEvent.ResultItem.retrieveCxIdFromId(id);
-        String requestId = PnAddressManagerEvent.ResultItem.retrieveRequestIdFromId(id);
-        return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(cxId, requestId, RaddRegistryImportStatus.PENDING)
-                .switchIfEmpty(Mono.error(new RaddGenericException(String.format("No pending import request found for cxId: [%s] and requestId: [%s] ", cxId, requestId))))
-                .flatMap(registryImport -> raddRegistryRequestDAO.findByCorrelationIdWithStatus(correlationId, RegistryRequestStatus.PENDING)
-                        .switchIfEmpty(Mono.error(new RaddGenericException("No pending items found for correlationId " + correlationId)))
-                        .flatMap(raddRegistryRequest -> processAddressForRegistryRequest(resultItems, raddRegistryRequest)))
-                .doOnError(throwable -> log.error("Error processing addressManager event: {}", throwable.getMessage(), throwable))
-                .onErrorResume(RaddGenericException.class, e -> Mono.empty())
-                .then();
+        if(!resultItems.isEmpty()) {
+            String id = resultItems.get(0).getId();
+            String cxId = PnAddressManagerEvent.ResultItem.retrieveCxIdFromId(id);
+            String requestId = PnAddressManagerEvent.ResultItem.retrieveRequestIdFromId(id);
+            return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(cxId, requestId, RaddRegistryImportStatus.PENDING)
+                    .switchIfEmpty(Mono.error(new RaddGenericException(String.format("No pending import request found for cxId: [%s] and requestId: [%s] ", cxId, requestId))))
+                    .flatMap(registryImport -> raddRegistryRequestDAO.findByCorrelationIdWithStatus(correlationId, RegistryRequestStatus.PENDING)
+                            .switchIfEmpty(Mono.error(new RaddGenericException("No pending items found for correlationId " + correlationId)))
+                            .flatMap(raddRegistryRequest -> processAddressForRegistryRequest(resultItems, raddRegistryRequest)))
+                    .doOnError(throwable -> log.error("Error processing addressManager event: {}", throwable.getMessage(), throwable))
+                    .onErrorResume(RaddGenericException.class, e -> Mono.empty())
+                    .then();
+        }
+        return Mono.empty();
     }
 
     private Mono<RaddRegistryRequestEntity> processAddressForRegistryRequest(List<PnAddressManagerEvent.ResultItem> resultItems, RaddRegistryRequestEntity raddRegistryRequest) {

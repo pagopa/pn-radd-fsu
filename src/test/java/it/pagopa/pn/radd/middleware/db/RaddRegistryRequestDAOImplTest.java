@@ -135,4 +135,25 @@ class RaddRegistryRequestDAOImplTest extends BaseTest.WithLocalStack{
                 .verifyComplete();
     }
 
+    @Test
+    void writeCsvAddressesError(){
+        baseDao.putItem(baseEntity).block();
+        RaddRegistryRequestEntity newEntity = new RaddRegistryRequestEntity();
+        newEntity.setPk("cxId#requestId#testPk2");
+        StepVerifier.create(registryRequestDAO.writeCsvAddresses(List.of(baseEntity, newEntity), "testKey"))
+                .expectError()
+                .verify();
+
+    }
+
+
+    @Test
+    void writeCsvAddressesErrorOK(){
+        RaddRegistryRequestEntity newEntity = new RaddRegistryRequestEntity();
+        newEntity.setPk("cxId#requestId#testPk2");
+        StepVerifier.create(registryRequestDAO.writeCsvAddresses(List.of(baseEntity, newEntity), "testKey"))
+                .verifyComplete();
+
+    }
+
 }

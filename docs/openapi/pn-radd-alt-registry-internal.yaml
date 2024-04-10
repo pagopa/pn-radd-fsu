@@ -31,7 +31,7 @@ tags:
   - name: Registry
 
 paths:
-  /radd-alt/api/v1/registry:
+  /radd-net/api/v1/registry:
     post:
       tags:
         - Registry
@@ -137,7 +137,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /radd-alt/api/v1/registry/{registryId}:
+  /radd-net/api/v1/registry/{registryId}:
     patch:
       tags:
         - Registry
@@ -194,7 +194,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /radd-alt/api/v1/registry/{registryId}/dismiss:
+  /radd-net/api/v1/registry/{registryId}/dismiss:
     patch:
       tags:
         - Registry

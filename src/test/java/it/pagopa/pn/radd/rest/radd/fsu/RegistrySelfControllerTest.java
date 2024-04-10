@@ -38,7 +38,7 @@ class RegistrySelfControllerTest {
 
     @Test
     void updateRegistry() {
-        String path = "/radd-alt/api/v1/registry/{registryId}";
+        String path = "/radd-net/api/v1/registry/{registryId}";
 
         UpdateRegistryRequest request = new UpdateRegistryRequest();
         request.setPhoneNumber("phoneNumber");
@@ -58,7 +58,7 @@ class RegistrySelfControllerTest {
 
     @Test
     void createReqistry() {
-        String path = "/radd-alt/api/v1/registry";
+        String path = "/radd-net/api/v1/registry";
 
         CreateRegistryRequest createRegistryRequest = new CreateRegistryRequest();
         Address address = new Address();

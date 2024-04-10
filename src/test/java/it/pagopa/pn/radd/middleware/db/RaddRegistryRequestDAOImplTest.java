@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static it.pagopa.pn.radd.pojo.RegistryRequestStatus.ACCEPTED;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -134,6 +135,29 @@ class RaddRegistryRequestDAOImplTest extends BaseTest.WithLocalStack{
                 .expectNextCount(3)
                 .verifyComplete();
     }
+
+    @Test
+    void writeCsvAddressesError(){
+        baseDao.putItem(baseEntity).block();
+        RaddRegistryRequestEntity newEntity = new RaddRegistryRequestEntity();
+        newEntity.setPk("cxId#requestId#testPk2");
+        StepVerifier.create(registryRequestDAO.writeCsvAddresses(List.of(baseEntity, newEntity), "testKey"))
+                .expectError()
+                .verify();
+
+    }
+
+
+    @Test
+    void writeCsvAddressesErrorOK(){
+        RaddRegistryRequestEntity newEntity = new RaddRegistryRequestEntity();
+        newEntity.setPk(UUID.randomUUID().toString());
+        baseEntity.setPk(UUID.randomUUID().toString());
+        StepVerifier.create(registryRequestDAO.writeCsvAddresses(List.of(newEntity), "testKey"))
+                .verifyComplete();
+
+    }
+
     @Test
     void testGetRegistryByCxIdAndRequestId(){
         baseDao.putItem(baseEntity).block();

@@ -6,7 +6,6 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRespo
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistrySelfService;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,7 @@ class RegistrySelfControllerTest {
 
     @Test
     void updateRegistry() {
-        String path = "/radd-alt/api/v1/registry/{registryId}";
+        String path = "/radd-net/api/v1/registry/{registryId}";
 
         UpdateRegistryRequest request = new UpdateRegistryRequest();
         request.setPhoneNumber("phoneNumber");
@@ -59,7 +58,7 @@ class RegistrySelfControllerTest {
 
     @Test
     void createReqistry() {
-        String path = "/radd-alt/api/v1/registry";
+        String path = "/radd-net/api/v1/registry";
 
         CreateRegistryRequest createRegistryRequest = new CreateRegistryRequest();
         Address address = new Address();

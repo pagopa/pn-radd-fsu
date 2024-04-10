@@ -25,10 +25,16 @@ public interface RaddRegistryRequestDAO {
 
     Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses);
 
+    Flux<RaddRegistryRequestEntity> findByCxIdAndRegistryId(String cxId, String registryId);
+
+    Mono<RaddRegistryRequestEntity> putRaddRegistryRequestEntity(RaddRegistryRequestEntity raddRegistryRequestEntity);
+
     Mono<ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey);
 
 
     Flux<RaddRegistryRequestEntity> findByCxIdAndRequestIdAndStatusNotIn(String cxId, String requestId, List<RegistryRequestStatus> statusList);
 
     Mono<RaddRegistryRequestEntity> createEntity(RaddRegistryRequestEntity entity);
+
+    Mono<RaddRegistryRequestEntity> updateRegistryRequestData(RaddRegistryRequestEntity raddRegistryRequestEntity);
 }

@@ -28,7 +28,7 @@ tags:
   - name: Import
 
 paths:
-  /radd-alt/api/v1/registry/import/upload:
+  /radd-net/api/v1/registry/import/upload:
     post:
       tags:
         - Import
@@ -37,7 +37,6 @@ paths:
         di sportelli di un soggetto RADD.
       operationId: uploadRegistryRequests
       parameters:
-        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -88,7 +87,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /radd-alt/api/v1/registry/import/{requestId}/verify:
+  /radd-net/api/v1/registry/import/{requestId}/verify:
     get:
       tags:
         - Import
@@ -96,7 +95,6 @@ paths:
         API utilizzata per la verifica dello stato di una richiesta di censimento indirizzi (CSV)
       operationId: verifyRequest
       parameters:
-        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/requestId'
       responses:
@@ -142,7 +140,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /radd-alt/api/v1/registry/import/{requestId}:
+  /radd-net/api/v1/registry/import/{requestId}:
     get:
       tags:
         - Import
@@ -150,7 +148,6 @@ paths:
         API utilizzata per il recupero della lista paginata di tutte le richieste di inserimento in anagrafica associate alla richiesta di import
       operationId: retrieveRequestItems
       parameters:
-        - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'
         - $ref: '#/components/parameters/uid'
         - $ref: '#/components/parameters/requestId'
         - $ref: '#/components/parameters/limit'

@@ -53,9 +53,6 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
 
     @Override
     public Mono<RaddRegistryEntity> putItemIfAbsent(RaddRegistryEntity newRegistry) {
-        if (newRegistry == null || StringUtils.isBlank(newRegistry.getRegistryId()) || StringUtils.isBlank(newRegistry.getCxId())) {
-            throw new IllegalArgumentException();
-        }
 
         Expression condition = Expression.builder()
                 .expression("attribute_not_exists(registryId) AND attribute_not_exists(cxId)")

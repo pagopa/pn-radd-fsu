@@ -28,7 +28,7 @@ tags:
   - name: Import
 
 paths:
-  /radd-alt/api/v1/registry/import/upload:
+  /radd-net/api/v1/registry/import/upload:
     post:
       tags:
         - Import
@@ -89,7 +89,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /radd-alt/api/v1/registry/import/{requestId}/verify:
+  /radd-net/api/v1/registry/import/{requestId}/verify:
     get:
       tags:
         - Import
@@ -144,7 +144,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /radd-alt/api/v1/registry/import/{requestId}:
+  /radd-net/api/v1/registry/import/{requestId}:
     get:
       tags:
         - Import

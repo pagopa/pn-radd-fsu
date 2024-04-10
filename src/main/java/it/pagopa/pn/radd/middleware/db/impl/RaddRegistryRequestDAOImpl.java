@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
@@ -91,7 +92,10 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
 
     @Override
     public Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses) {
-        addresses.forEach(address -> address.setStatus(RegistryRequestStatus.PENDING.name()));
+        addresses.forEach(address -> {
+            address.setStatus(RegistryRequestStatus.PENDING.name());
+            address.setUpdatedAt(Instant.now());
+        });
         return this.transactWriteItems(addresses, RaddRegistryRequestEntity.class);
     }
 
@@ -144,6 +148,11 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         return this.putItem(entity);
     }
 
+    @Override
+    public Mono<RaddRegistryRequestEntity> updateRegistryRequestData(RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        return this.updateItem(raddRegistryRequestEntity);
+    }
+
     private String getQueryAndPopulateMapForStatusFilter(String status, Map<String, AttributeValue> map) {
         String query = "";
         if (StringUtils.isNotEmpty(status)) {
@@ -156,7 +165,25 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     @Override
     public Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId) {
         raddRegistryRequestEntities.forEach(raddRegistryRequestEntity -> raddRegistryRequestEntity.setCorrelationId(correlationId));
-        return batchWriter(raddRegistryRequestEntities, 0, true);
+
+        Expression condition = Expression.builder()
+                .expression("attribute_not_exists(pk)")
+                .build();
+
+        return putItemsWithConditions(raddRegistryRequestEntities, condition, RaddRegistryRequestEntity.class);
+    }
+
+    @Override
+    public Flux<RaddRegistryRequestEntity> findByCxIdAndRegistryId(String cxId, String registryId) {
+        Key key = Key.builder().partitionValue(cxId).sortValue(registryId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        return getByFilter(conditional, RaddRegistryRequestEntity.CXID_REGISTRYID_INDEX, null, null, null, null);
+    }
+
+    @Override
+    public Mono<RaddRegistryRequestEntity> putRaddRegistryRequestEntity(RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        return putItem(raddRegistryRequestEntity);
     }
 
     @Override

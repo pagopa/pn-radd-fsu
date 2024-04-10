@@ -64,6 +64,7 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(newRegistryRequestEntity.getZipCode());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
+        registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
             registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
@@ -74,19 +75,17 @@ public class RaddRegistryUtils {
         return registryEntity;
     }
 
-    public Mono<RaddRegistryEntity> constructRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
-        return Mono.fromCallable(() -> {
-            String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
-            RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
+    public Mono<RaddRegistryEntity> constructRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
+        String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
 
-            return getRaddRegistryEntity(normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest);
-        });
+        return Mono.just(getRaddRegistryEntity(registryId, normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest));
     }
 
-    private static RaddRegistryEntity getRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
+    private static RaddRegistryEntity getRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         RaddRegistryEntity registryEntity = new RaddRegistryEntity();
 
-        registryEntity.setRegistryId(registryRequest.getRegistryId());
+        registryEntity.setRegistryId(registryId);
         registryEntity.setCxId(registryRequest.getCxId());
         registryEntity.setNormalizedAddress(normalizedAddressString);
         registryEntity.setRequestId(registryRequest.getRequestId());
@@ -96,6 +95,7 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(normalizedAddress.getCap());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
+        registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
             registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
@@ -107,7 +107,9 @@ public class RaddRegistryUtils {
     }
 
     public Mono<PnAddressManagerEvent.ResultItem> getRelativeItemFromAddressManagerEvent(List<PnAddressManagerEvent.ResultItem> resultItems, String id) {
-        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream().filter(item -> StringUtils.equals(item.getId(), id)).findFirst();
+        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream()
+                .filter(item -> StringUtils.equals(item.getId(), RaddRegistryRequestEntity.retrieveIndexFromPk(id))).findFirst();
+
         if (resultItemOptional.isEmpty()) {
             log.warn("Item with id {} not found or not in event list", id);
             return Mono.empty();
@@ -145,7 +147,7 @@ public class RaddRegistryUtils {
     public List<AddressManagerRequestAddress> getRequestAddressFromOriginalRequest(List<RaddRegistryRequestEntity> entities) {
         return entities.stream().map(entity -> {
             AddressManagerRequestAddress request = objectMapperUtil.toObject(entity.getOriginalRequest(), AddressManagerRequestAddress.class);
-            request.setId(entity.getPk());
+            request.setId(RaddRegistryRequestEntity.retrieveIndexFromPk(entity.getPk()));
             return request;
         }).toList();
     }
@@ -297,6 +299,10 @@ public class RaddRegistryUtils {
 
     private static Instant getStartOfTodayInstant() {
         return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    public static String buildCorrelationIdForImport(String cxId, String requestId) {
+        return cxId + "_" + requestId + "_" + UUID.randomUUID();
     }
 
 

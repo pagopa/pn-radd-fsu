@@ -147,7 +147,7 @@ public class RaddRegistryUtils {
     public List<AddressManagerRequestAddress> getRequestAddressFromOriginalRequest(List<RaddRegistryRequestEntity> entities) {
         return entities.stream().map(entity -> {
             AddressManagerRequestAddress request = objectMapperUtil.toObject(entity.getOriginalRequest(), AddressManagerRequestAddress.class);
-            request.setId(entity.getPk());
+            request.setId(RaddRegistryRequestEntity.retrieveIndexFromPk(entity.getPk()));
             return request;
         }).toList();
     }

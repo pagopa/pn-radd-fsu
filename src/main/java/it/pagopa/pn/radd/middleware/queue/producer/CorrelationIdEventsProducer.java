@@ -6,6 +6,7 @@ import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.radd.middleware.queue.event.CorrelationIdEvent;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static it.pagopa.pn.radd.utils.Const.RADD_NORMALIZE_REQUEST;
 
@@ -20,7 +21,7 @@ public interface CorrelationIdEventsProducer extends MomProducer<CorrelationIdEv
         return CorrelationIdEvent.builder()
                 .header(GenericEventHeader.builder()
                         .eventType(RADD_NORMALIZE_REQUEST)
-                        .eventId(correlationId)
+                        .eventId(UUID.randomUUID().toString())
                         .publisher(EventPublisher.RADD_ALT.name())
                         .createdAt(Instant.now())
                         .build()

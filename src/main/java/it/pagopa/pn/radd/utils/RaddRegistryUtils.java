@@ -109,7 +109,9 @@ public class RaddRegistryUtils {
     }
 
     public Mono<PnAddressManagerEvent.ResultItem> getRelativeItemFromAddressManagerEvent(List<PnAddressManagerEvent.ResultItem> resultItems, String id) {
-        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream().filter(item -> StringUtils.equals(item.getId(), id)).findFirst();
+        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream()
+                .filter(item -> StringUtils.equals(item.getId(), RaddRegistryRequestEntity.retrieveIndexFromPk(id))).findFirst();
+
         if (resultItemOptional.isEmpty()) {
             log.warn("Item with id {} not found or not in event list", id);
             return Mono.empty();

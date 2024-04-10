@@ -18,6 +18,7 @@ import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static it.pagopa.pn.radd.pojo.RegistryRequestStatus.REJECTED;
 import static it.pagopa.pn.radd.services.radd.fsu.v1.CsvService.ERROR_RADD_ALT_READING_CSV;
 
 @Service
@@ -74,7 +76,7 @@ public class SafeStorageEventService {
                     if (fileDownloadResponseDto.getDownload() != null && StringUtils.isNotBlank(fileDownloadResponseDto.getDownload().getUrl())) {
                         return downloadCSV(fileDownloadResponseDto.getDownload().getUrl());
                     }
-                    return Mono.error(new RaddImportException(String.format("Error during download CSV for fileKey: [%s], Url is null", fileKey)));
+                    return Mono.error(new RaddGenericException(String.format("Error during download CSV for fileKey: [%s], Url is null", fileKey)));
                 })
                 .flatMap(this::readAndProcessCSV);
     }
@@ -86,27 +88,50 @@ public class SafeStorageEventService {
     }
 
     private Mono<Void> persistRaddRegistryRequest(Map<String, List<RaddRegistryRequestEntity>> raddRegistryRequestsMap) {
-        return Mono.just(raddRegistryRequestsMap.entrySet()
+        return Flux.fromStream(raddRegistryRequestsMap.entrySet()
                         .stream()
-                        .map(this::persistItemsAndSendEvent)
-                        .toList())
+                        .filter(stringListEntry -> !stringListEntry.getKey().equals(REJECTED.name())))
+                .flatMap(entry -> persistItemsAndSendEvent(entry).thenReturn(raddRegistryRequestsMap))
+                .map(stringListMap -> stringListMap.get(REJECTED.name()))
+                .map(this::persisteRejectedItems)
                 .then();
+    }
+
+    private Flux<RaddRegistryRequestEntity> persisteRejectedItems(List<RaddRegistryRequestEntity> raddRegistryRequestEntities) {
+        if(!CollectionUtils.isEmpty(raddRegistryRequestEntities)){
+            return Flux.fromIterable(raddRegistryRequestEntities)
+                    .flatMap(raddRegistryRequestDAO::createEntity);
+        }
+        return Flux.empty();
     }
 
     private Mono<Void> persistItemsAndSendEvent(Map.Entry<String, List<RaddRegistryRequestEntity>> entry) {
         return raddRegistryRequestDAO.writeCsvAddresses(entry.getValue(), entry.getKey())
                 .thenReturn(entry.getKey())
-                .flatMap(correlationId -> Mono.from(subscriber -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)));
+                .flatMap(correlationId -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)));
     }
 
     private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {
         final AtomicInteger counter = new AtomicInteger();
 
-        return raddRegistryRequestEntities.stream()
+        Map<String, List<RaddRegistryRequestEntity>> map = raddRegistryRequestEntities.stream()
+                .filter(raddRegistryRequestEntity -> !REJECTED.name().equals(raddRegistryRequestEntity.getStatus()))
                 .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numberOfElements))
                 .values()
                 .stream()
                 .collect(Collectors.toMap(item -> UUID.randomUUID().toString(), Function.identity()));
+
+        log.info("groupingRaddRegistryRequest size: {}", map.size());
+
+        var rejectedRequest = raddRegistryRequestEntities.stream()
+                .filter(raddRegistryRequestEntity -> REJECTED.name().equals(raddRegistryRequestEntity.getStatus()))
+                .toList();
+
+        if (!CollectionUtils.isEmpty(rejectedRequest)) {
+            map.put(REJECTED.name(), rejectedRequest);
+        }
+
+        return map;
     }
 
     private Mono<FileDownloadResponseDto> getFile(String fileKey) {

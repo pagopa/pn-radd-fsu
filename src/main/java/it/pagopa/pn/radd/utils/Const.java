@@ -74,4 +74,7 @@ public class Const {
     public static final String CAP_CHECKER_EVENT = "CAP_CHECKER_EVENT";
     public static final String RADD_NORMALIZE_REQUEST = "RADD_NORMALIZE_REQUEST";
     public static final String IMPORT_COMPLETED = "IMPORT_COMPLETED";
+
+
+    public static final String MISSING_ADDRESS_REQUIRED_FIELD = "I dati relativi a indirizzo, cap, città e provincia sono obbligatori";
 }

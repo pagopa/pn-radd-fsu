@@ -160,6 +160,14 @@ Parameters:
     Type: Number
     Description: 'Max query size'
 
+  AddressManagerToRaddAltQueueARN:
+    Type: String
+    Description: 'AddressManager-to-f24 queue ARN'
+
+  SafeStorageToRaddAltQueueARN:
+    Type: String
+    Description: 'SafeStorage-to-f24 queue ARN'
+
   SecretAndSSMPrefix:
     Type: String
     Default: pn-radd-alt
@@ -403,7 +411,7 @@ Resources:
         ContainerEnvEntry23: !Sub 'PN_RADD_REGISTRYSAFESTORAGEDOCTYPE=${RegistrySafeStorageDocType}'
         ContainerEnvEntry24: !Sub 'PN_RADD_REGISTRYDEFAULTENDVALIDITY=${RegistryDefaultEndValidity}'
         ContainerEnvEntry25: !Sub 'PN_RADD_REGISTRYDEFAULTDELETERULE=${RegistryDefaultDeleteRule}'
-        ContainerEnvEntry26: !Sub 'PN-RADD-REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
+        ContainerEnvEntry26: !Sub 'PN_RADD_REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
         ContainerEnvEntry27: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry28: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
@@ -458,6 +466,8 @@ Resources:
               - !Ref RaddInternalCapCheckerQueueARN
               - !Ref PnRaddAltInputQueueDLQARN
               - !Ref PnRaddAltInputQueueARN
+              - !Ref AddressManagerToRaddAltQueueARN
+              - !Ref SafeStorageToRaddAltQueueARN
           - Effect: Allow
             Action:
               - dynamodb:BatchGetItem

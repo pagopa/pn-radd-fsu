@@ -62,22 +62,22 @@ public class RaddRegistryRequestEntity {
 
 
     @DynamoDbIgnore
-    private String[] retrievePkItems() {
-        return this.getPk().split(ITEMS_SEPARATOR);
+    private static String[] retrievePkItems(String pk) {
+        return pk.split(ITEMS_SEPARATOR);
     }
     @DynamoDbIgnore
-    public String retrieveCxIdFromPk() {
-        String[] pkItems = retrievePkItems();
+    public String retrieveCxIdFromPk(String pk) {
+        String[] pkItems = retrievePkItems(pk);
         return pkItems.length == 3 ? pkItems[CXID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
-    public String retrieveRequestIdFromPk() {
-        String[] pkItems = retrievePkItems();
+    public String retrieveRequestIdFromPk(String pk) {
+        String[] pkItems = retrievePkItems(pk);
         return pkItems.length == 3 ? pkItems[REQUESTID_POSITION] : StringUtils.EMPTY;
     }
     @DynamoDbIgnore
-    public String retrieveIndexFromPk() {
-        String[] pkItems = retrievePkItems();
+    public static String retrieveIndexFromPk(String pk) {
+        String[] pkItems = retrievePkItems(pk);
         return pkItems.length == 3 ? pkItems[INDEX_POSITION] : StringUtils.EMPTY;
     }
 

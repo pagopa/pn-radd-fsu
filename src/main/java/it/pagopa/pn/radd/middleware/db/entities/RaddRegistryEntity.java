@@ -22,6 +22,7 @@ public class RaddRegistryEntity {
     public static final String COL_OPENING_TIME = "openingTime";
     public static final String COL_START_VALIDITY = "startValidity";
     public static final String COL_END_VALIDITY = "endValidity";
+    public static final String COL_CAPACITY = "capacity";
 
     public static final String CXID_REQUESTID_INDEX = "cxId-requestId-index";
     public static final String ZIPCODE_INDEX = "zipCode-index";
@@ -49,5 +50,7 @@ public class RaddRegistryEntity {
     private Instant startValidity;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_END_VALIDITY)}))
     private Instant endValidity;
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_CAPACITY)}))
+    private String capacity;
 
 }

@@ -266,6 +266,10 @@ components:
               type: string
               description: Longitudine della posizione geografica dello sportello.
               example: "12.4964"
+        capacity:
+          type: string
+          description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
+          example: 100
         openingTime:
           type: string
           description: Orario di apertura dello sportello.

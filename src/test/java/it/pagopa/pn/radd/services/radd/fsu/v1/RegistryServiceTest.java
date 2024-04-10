@@ -319,6 +319,7 @@ class RegistryServiceTest {
         ObjectMapper objectMapper = new ObjectMapper();
         when(payload.getCorrelationId()).thenReturn("correlationId");
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
+        when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
         RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
         raddRegistryOriginalRequest.setGeoLocation("test");
         raddRegistryOriginalRequest.setPr("RM");

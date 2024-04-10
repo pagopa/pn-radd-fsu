@@ -66,10 +66,12 @@ public class RaddRegistryUtils {
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
-            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getStartValidity());
+            registryEntity.setStartValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
         }
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
-            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getEndValidity());
+            registryEntity.setEndValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
         }
 
         return registryEntity;
@@ -97,10 +99,12 @@ public class RaddRegistryUtils {
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
-            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getStartValidity());
+            registryEntity.setStartValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
         }
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
-            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getEndValidity());
+            registryEntity.setEndValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
         }
 
         return registryEntity;

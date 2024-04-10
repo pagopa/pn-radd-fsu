@@ -295,7 +295,7 @@ class RegistryServiceTest {
 
         PnAddressManagerEvent.ResultItem resultItem = new PnAddressManagerEvent.ResultItem();
         resultItem.setError(null);
-        resultItem.setId("cxId#requestId#addressId");
+        resultItem.setId("addressId");
         resultItem.setNormalizedAddress(new PnAddressManagerEvent.NormalizedAddress());
         List<PnAddressManagerEvent.ResultItem> resultItems = Collections.singletonList(resultItem);
         PnAddressManagerEvent payload = new PnAddressManagerEvent();

@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 
@@ -45,6 +46,17 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         );
         pnRaddFsuConfig = raddFsuConfig;
     }
+
+    private final static Function<RaddRegistryRequestEntity, PnLastEvaluatedKey> REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER = (keyEntity) -> {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getCxId());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(keyEntity.getPk()).build(),
+                RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
+                RaddRegistryRequestEntity.COL_REQUEST_ID, AttributeValue.builder().s(keyEntity.getRequestId()).build()
+        ));
+        return pageLastEvaluatedKey;
+    };
 
     @Override
     public Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String correlationId, RegistryRequestStatus status) throws IllegalArgumentException {
@@ -187,7 +199,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     }
 
     @Override
-    public Mono<ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey) {
+    public Mono<ResultPaginationDto<RaddRegistryRequestEntity, String>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey) {
         PnLastEvaluatedKey lastKey = null;
         if (lastEvaluatedKey != null) {
             try {
@@ -203,6 +215,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
 
         Key key = Key.builder().partitionValue(xPagopaPnCxId).sortValue(requestId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
-        return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey());
+
+        return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey(), REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 }

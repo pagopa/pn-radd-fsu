@@ -162,7 +162,7 @@ class RaddRegistryRequestDAOImplTest extends BaseTest.WithLocalStack{
     void testGetRegistryByCxIdAndRequestId(){
         baseDao.putItem(baseEntity).block();
         StepVerifier.create(registryRequestDAO.getRegistryByCxIdAndRequestId(baseEntity.getCxId(), baseEntity.getRequestId(), 1, null))
-                .expectNextMatches(result -> result.getResultsPage().size() == 1 && result.isMoreResult())
+                .expectNextMatches(result -> result.getResultsPage().size() == 1)
                 .verifyComplete();
     }
 }

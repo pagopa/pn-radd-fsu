@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,6 +41,8 @@ public class RaddRegistryUtils {
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final SecretService secretService;
+
+
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -309,17 +310,10 @@ public class RaddRegistryUtils {
         return cxId + "_" + requestId + "_" + UUID.randomUUID();
     }
 
-
-
-    public RequestResponse prepareGlobalResult(List<RaddRegistryRequestEntity> queryResult,
-                                               boolean moreResults,
-                                               int limit) {
+    public RequestResponse mapToRequestResponse(ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto) {
         RequestResponse result = new RequestResponse();
-        result.setNextPagesKey(new ArrayList<>());
-
-        if(queryResult != null) {
-            result.setItems(queryResult.stream()
-                    .limit(limit)
+        if(resultPaginationDto.getResultsPage() != null) {
+            result.setItems(resultPaginationDto.getResultsPage().stream()
                     .map(raddRegistryRequestEntity -> {
                         RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
                         registryRequestResponse.setRegistryId(raddRegistryRequestEntity.getRegistryId());
@@ -335,29 +329,9 @@ public class RaddRegistryUtils {
                     })
                     .toList());
         }
-        result.setMoreResult(moreResults);
-
-        for (int i = 1; i <= pnRaddFsuConfig.getMaxPageNumber(); i++){
-            int index = limit * i;
-            if (queryResult.size() <= index) {
-                break;
-            }
-            RaddRegistryRequestEntity keyEntity = queryResult.get(index - 1);
-            PnLastEvaluatedKey pageLastEvaluatedKey = computeLastEvaluatedKey(keyEntity);
-            result.getNextPagesKey().add(pageLastEvaluatedKey.serializeInternalLastEvaluatedKey());
-        }
-
+        result.setNextPagesKey(resultPaginationDto.getNextPagesKey());
+        result.setMoreResult(resultPaginationDto.isMoreResult());
         return result;
     }
 
-    private PnLastEvaluatedKey computeLastEvaluatedKey(RaddRegistryRequestEntity keyEntity) {
-        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
-        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getCxId());
-        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
-                RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(keyEntity.getPk()).build(),
-                RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
-                RaddRegistryRequestEntity.COL_REQUEST_ID, AttributeValue.builder().s(keyEntity.getRequestId()).build()
-        ));
-        return pageLastEvaluatedKey;
-    }
 }

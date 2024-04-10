@@ -369,7 +369,7 @@ public class RegistryService {
 
     public Mono<RequestResponse> retrieveRequestItems(String xPagopaPnCxId, String requestId, Integer limit, String lastKey) {
         return raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(xPagopaPnCxId, requestId, limit, lastKey)
-                .map(resultPaginationDto -> raddRegistryUtils.prepareGlobalResult(resultPaginationDto.getResultsPage(), resultPaginationDto.isMoreResult(), limit));
+                .map(raddRegistryUtils::mapToRequestResponse);
     }
 
 

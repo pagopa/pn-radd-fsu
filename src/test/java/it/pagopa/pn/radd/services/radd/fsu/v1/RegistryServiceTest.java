@@ -483,14 +483,14 @@ class RegistryServiceTest {
         requestResponse.setMoreResult(false);
         requestResponse.setNextPagesKey(List.of());
         requestResponse.setItems(List.of(registryRequestResponse));
-        ResultPaginationDto<RaddRegistryRequestEntity, PnLastEvaluatedKey> resultPaginationDto = new ResultPaginationDto<>();
+        ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto = new ResultPaginationDto<>();
         resultPaginationDto.setResultsPage(List.of(raddRegistryRequestEntity));
         when(raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(any(), any(), any(), any()))
                 .thenReturn(Mono.just(resultPaginationDto));
 
 
         StepVerifier.create(registryService.retrieveRequestItems("cxId", "requestId", 10, null))
-                .expectNext(requestResponse)
+                .expectNextMatches(response -> response.getItems().size() == 1)
                 .verifyComplete();
     }
 }

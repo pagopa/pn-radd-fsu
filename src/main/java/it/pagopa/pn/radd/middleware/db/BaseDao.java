@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +16,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 
 @Slf4j
@@ -164,7 +166,13 @@ public abstract class BaseDao<T> {
     }
 
 
-    protected <T, K> Mono<ResultPaginationDto<T, K>> getByFilterPaginated(QueryConditional conditional, String index, Map<String, AttributeValue> values, String filterExpression, Integer pageSize, Map<String, AttributeValue> lastEvaluatedKey) {
+    protected <T> Mono<ResultPaginationDto<T, String>> getByFilterPaginated(QueryConditional conditional,
+                                                                          String index,
+                                                                          Map<String, AttributeValue> values,
+                                                                          String filterExpression,
+                                                                          Integer pageSize,
+                                                                          Map<String, AttributeValue> lastEvaluatedKey,
+                                                                          Function<T, PnLastEvaluatedKey> internalKeyMakerFn) {
         QueryEnhancedRequest.Builder query = QueryEnhancedRequest
                 .builder()
                 .queryConditional(conditional);
@@ -179,10 +187,10 @@ public abstract class BaseDao<T> {
         }
         query.limit(totalElements);
 
-        ResultPaginationDto<T, K> resultPaginationDto = new ResultPaginationDto<>();
+        ResultPaginationDto<T, String> resultPaginationDto = new ResultPaginationDto<>();
         resultPaginationDto.setResultsPage(new ArrayList<>());
-        resultPaginationDto.setResultsPage(new ArrayList<>());
-        return query(index, query, resultPaginationDto, totalElements, lastEvaluatedKey);
+        return query(index, query, resultPaginationDto, totalElements, lastEvaluatedKey)
+                .map(resultPagination -> prepareGlobalResult(resultPaginationDto.getResultsPage(), resultPaginationDto.isMoreResult(), pageSize, internalKeyMakerFn));
     }
 
     private <T, K> Mono<ResultPaginationDto<T, K>> query(String index,
@@ -209,6 +217,30 @@ public abstract class BaseDao<T> {
                 });
     }
 
+    private <T> ResultPaginationDto<T, String> prepareGlobalResult(List<T> queryResult, boolean moreResults, int limit, Function<T, PnLastEvaluatedKey> keyMaker) {
+        ResultPaginationDto<T, String> result = new ResultPaginationDto<>();
+        result.setNextPagesKey(new ArrayList<>());
+
+        if(queryResult != null) {
+            result.setResultsPage(queryResult.stream()
+                    .limit(limit)
+                    .toList());
+        }
+        result.setMoreResult(moreResults);
+
+        for (int i = 1; i <= raddFsuConfig.getMaxPageNumber(); i++){
+            int index = limit * i;
+            if (queryResult.size() <= index) {
+                break;
+            }
+            T keyEntity = queryResult.get(index - 1);
+            PnLastEvaluatedKey pageLastEvaluatedKey = keyMaker.apply(keyEntity);
+            result.getNextPagesKey().add(pageLastEvaluatedKey.serializeInternalLastEvaluatedKey());
+        }
+
+        return result;
+    }
+
     protected Mono<T> putItemWithConditions(T entity, Expression expression, Class<T> entityClass) {
         PutItemEnhancedRequest<T> putItemEnhancedRequest = PutItemEnhancedRequest.builder(entityClass)
                 .item(entity)
@@ -232,4 +264,5 @@ public abstract class BaseDao<T> {
 
         return Mono.fromFuture(this.dynamoDbEnhancedAsyncClient.transactWriteItems(transactionWriteRequest.build()));
     }
+
 }

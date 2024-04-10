@@ -326,29 +326,28 @@ public class RegistryService {
     private Mono<Void> deleteOldRegistries(List<RaddRegistryEntity> raddRegistryEntities, RaddRegistryImportEntity raddRegistryImportEntity) {
         RaddRegistryImportConfig raddRegistryImportConfig = objectMapperUtil.toObject(raddRegistryImportEntity.getConfig(), RaddRegistryImportConfig.class);
         return Flux.fromIterable(raddRegistryEntities)
-                .map(raddRegistryEntity -> setRaddRegistryEntity(raddRegistryImportEntity, raddRegistryEntity, raddRegistryImportConfig))
+                .map(raddRegistryEntity -> setEndValidityAndRequestId(raddRegistryImportEntity, raddRegistryEntity, raddRegistryImportConfig))
                 .flatMap(raddRegistryDAO::updateRegistryEntity)
                 .filter(raddRegistryEntity -> "DUPLICATE".equalsIgnoreCase(raddRegistryImportConfig.getDeleteRole()))
                 .flatMap(raddRegistryEntity -> raddRegistryRequestDAO.findByCxIdAndRegistryId(raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId()))
-                .map(raddRegistryRequestEntity -> setRaddRegistryRequestEntity(raddRegistryImportEntity, raddRegistryRequestEntity))
+                .map(raddRegistryRequestEntity -> setDeletedStatusAndUpdatePk(raddRegistryImportEntity, raddRegistryRequestEntity))
                 .flatMap(raddRegistryRequestDAO::putRaddRegistryRequestEntity)
                 .then();
     }
 
-    private RaddRegistryRequestEntity setRaddRegistryRequestEntity(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryRequestEntity raddRegistryRequestEntity) {
-        raddRegistryRequestEntity.setPk(raddRegistryRequestEntity.getCxId()+"#"+raddRegistryImportEntity.getRequestId()+"#"+raddRegistryRequestEntity.retrieveIndexFromPk());
-        raddRegistryRequestEntity.setRequestId(raddRegistryImportEntity.getRequestId());
-        raddRegistryRequestEntity.setStatus(RegistryRequestStatus.DELETED.name());
-        raddRegistryRequestEntity.setError(ERROR_DELETED);
-        return raddRegistryRequestEntity;
-    }
-
-    private RaddRegistryEntity setRaddRegistryEntity(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryEntity raddRegistryEntity, RaddRegistryImportConfig raddRegistryImportConfig) {
+    private RaddRegistryEntity setEndValidityAndRequestId(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryEntity raddRegistryEntity, RaddRegistryImportConfig raddRegistryImportConfig) {
         raddRegistryEntity.setEndValidity(Instant.now().plus(raddRegistryImportConfig.getDefaultEndValidity(), ChronoUnit.DAYS));
         raddRegistryEntity.setRequestId(raddRegistryImportEntity.getRequestId());
         return raddRegistryEntity;
     }
 
+    private RaddRegistryRequestEntity setDeletedStatusAndUpdatePk(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        raddRegistryRequestEntity.setPk(raddRegistryRequestEntity.getCxId()+"#"+raddRegistryImportEntity.getRequestId()+"#"+RaddRegistryRequestEntity.retrieveIndexFromPk(raddRegistryRequestEntity.getPk()));
+        raddRegistryRequestEntity.setRequestId(raddRegistryImportEntity.getRequestId());
+        raddRegistryRequestEntity.setStatus(RegistryRequestStatus.DELETED.name());
+        raddRegistryRequestEntity.setError(REMOVED_FROM_LATEST_IMPORT);
+        return raddRegistryRequestEntity;
+    }
 
     public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
         return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())

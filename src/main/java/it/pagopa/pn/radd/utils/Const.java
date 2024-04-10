@@ -55,7 +55,7 @@ public class Const {
     public static final String CONTENT_TYPE_PDF = "application/pdf";
     public static final String SAFESTORAGE_PREFIX = "safestorage://";
 
-    public static final String ERROR_DELETED = "Removed from latest import";
+    public static final String REMOVED_FROM_LATEST_IMPORT = "Removed from latest import";
 
 
     /* Document type external mapping */

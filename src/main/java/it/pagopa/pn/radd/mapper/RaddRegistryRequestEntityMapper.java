@@ -19,6 +19,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
+import static it.pagopa.pn.radd.utils.Const.MISSING_ADDRESS_REQUIRED_FIELD;
+
 @RequiredArgsConstructor
 @Component
 public class RaddRegistryRequestEntityMapper {
@@ -53,6 +55,7 @@ public class RaddRegistryRequestEntityMapper {
         originalRequest.setGeoLocation(objectMapperUtil.toJson(request.getGeoLocation()));
         originalRequest.setPhoneNumber(request.getPhoneNumber());
         originalRequest.setExternalCode(request.getExternalCode());
+        originalRequest.setCapacity(request.getCapacity());
 
         return originalRequest;
     }
@@ -107,6 +110,7 @@ public class RaddRegistryRequestEntityMapper {
 
                     originalRequest.setPhoneNumber(request.getTelefono());
                     originalRequest.setExternalCode(request.getExternalCode());
+                    originalRequest.setCapacity(request.getCapacita());
                     return originalRequest;
                 })
                 .toList();
@@ -134,9 +138,23 @@ public class RaddRegistryRequestEntityMapper {
             requestEntity.setCreatedAt(Instant.now());
             requestEntity.setUpdatedAt(Instant.now());
             requestEntity.setOriginalRequest(originalRequestString);
-            requestEntity.setStatus(RegistryRequestStatus.NOT_WORKED.name());
+
+            checkRequiredFieldsAndSetStatus(originalRequest, requestEntity);
+
             return requestEntity;
         }).toList();
+    }
+
+    private void checkRequiredFieldsAndSetStatus(RaddRegistryOriginalRequest originalRequest, RaddRegistryRequestEntity requestEntity) {
+        if (StringUtils.isBlank(originalRequest.getAddressRow())
+                || StringUtils.isBlank(originalRequest.getCap())
+                || StringUtils.isBlank(originalRequest.getCity())
+                || StringUtils.isBlank(originalRequest.getPr())) {
+            requestEntity.setStatus(RegistryRequestStatus.REJECTED.name());
+            requestEntity.setError(MISSING_ADDRESS_REQUIRED_FIELD);
+        } else {
+            requestEntity.setStatus(RegistryRequestStatus.NOT_WORKED.name());
+        }
     }
 
     private static String buildPk(RaddRegistryImportEntity importEntity, String originalRequest) {

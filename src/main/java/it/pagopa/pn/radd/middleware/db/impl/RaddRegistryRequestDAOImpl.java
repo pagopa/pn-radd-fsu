@@ -142,6 +142,11 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         return this.putItem(entity);
     }
 
+    @Override
+    public Mono<RaddRegistryRequestEntity> updateRegistryRequestData(RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        return this.updateItem(raddRegistryRequestEntity);
+    }
+
     private String getQueryAndPopulateMapForStatusFilter(String status, Map<String, AttributeValue> map) {
         String query = "";
         if (StringUtils.isNotEmpty(status)) {

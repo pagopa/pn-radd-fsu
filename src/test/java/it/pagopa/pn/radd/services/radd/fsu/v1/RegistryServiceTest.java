@@ -187,16 +187,6 @@ class RegistryServiceTest {
         PnAddressManagerEvent.ResultItem resultItem = new PnAddressManagerEvent.ResultItem();
         resultItem.setError("error");
         resultItem.setId("cxId#requestId#addressId");
-        List<PnAddressManagerEvent.ResultItem> resultItems = Collections.singletonList(resultItem);
-        PnAddressManagerEvent.Payload payload = mock(PnAddressManagerEvent.Payload.class);
-        when(message.getPayload()).thenReturn(payload);
-        when(payload.getResultItems()).thenReturn(resultItems);
-        when(payload.getCorrelationId()).thenReturn("correlationId");
-        RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
-        when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
-        when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
-        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any())).thenReturn(Flux.just(new RaddRegistryImportEntity()));
-        when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
 
         Mono<Void> result = registryService.handleAddressManagerEvent(message);
 
@@ -308,10 +298,10 @@ class RegistryServiceTest {
         resultItem.setId("cxId#requestId#addressId");
         resultItem.setNormalizedAddress(new PnAddressManagerEvent.NormalizedAddress());
         List<PnAddressManagerEvent.ResultItem> resultItems = Collections.singletonList(resultItem);
-        PnAddressManagerEvent.Payload payload = PnAddressManagerEvent.Payload.builder().correlationId("id").resultItems(resultItems).build();
-        PnAddressManagerEvent pnAddressManagerEvent = new PnAddressManagerEvent();
-        pnAddressManagerEvent.setPayload(payload);
-        return pnAddressManagerEvent;
+        PnAddressManagerEvent payload = new PnAddressManagerEvent();
+        payload.setCorrelationId("id");
+        payload.setResultItems(resultItems);
+        return payload;
     }
 
     @Test

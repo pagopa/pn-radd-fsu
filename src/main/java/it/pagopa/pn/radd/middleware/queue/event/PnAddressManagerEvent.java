@@ -1,30 +1,17 @@
 package it.pagopa.pn.radd.middleware.queue.event;
 
-import it.pagopa.pn.api.dto.events.GenericEvent;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
-import lombok.*;
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class PnAddressManagerEvent implements GenericEvent<StandardEventHeader, PnAddressManagerEvent.Payload> {
+public class PnAddressManagerEvent {
 
-    private StandardEventHeader header;
+    private String correlationId;
+    private List<ResultItem> resultItems = new ArrayList<>();
 
-    private Payload payload;
-
-    @Getter
-    @Builder
-    @ToString
-    @EqualsAndHashCode
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Payload {
-        private String correlationId;
-        private List<ResultItem> resultItems;
-        private String cxId;
-    }
 
     @Data
     public static class ResultItem {

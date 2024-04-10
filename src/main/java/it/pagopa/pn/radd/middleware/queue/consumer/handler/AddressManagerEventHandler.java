@@ -25,7 +25,7 @@ public class AddressManagerEventHandler {
         return message -> {
             log.debug("Handle message from {} with content {}", "Address Manager", message);
             PnAddressManagerEvent response = message.getPayload();
-            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, response.getPayload().getCorrelationId());
+            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, response.getCorrelationId());
             var monoResult = registryService.handleAddressManagerEvent(response)
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                     .doOnError(throwable ->  {

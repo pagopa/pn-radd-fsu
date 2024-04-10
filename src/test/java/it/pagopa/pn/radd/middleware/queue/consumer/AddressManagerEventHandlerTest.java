@@ -33,9 +33,8 @@ class AddressManagerEventHandlerTest {
     @Test
     void shouldHandleMessageSuccessfully() {
         PnAddressManagerEvent event = new PnAddressManagerEvent();
-        PnAddressManagerEvent.Payload payload = mock(PnAddressManagerEvent.Payload.class);
+        PnAddressManagerEvent payload = mock(PnAddressManagerEvent.class);
         when(payload.getCorrelationId()).thenReturn("correlationId");
-        event.setPayload(payload);
         when(message.getPayload()).thenReturn(event);
         when(registryService.handleAddressManagerEvent(event)).thenReturn(Mono.empty());
 
@@ -47,9 +46,8 @@ class AddressManagerEventHandlerTest {
     @Test
     void shouldHandleMessageError() {
         PnAddressManagerEvent event = new PnAddressManagerEvent();
-        PnAddressManagerEvent.Payload payload = mock(PnAddressManagerEvent.Payload.class);
+        PnAddressManagerEvent payload = mock(PnAddressManagerEvent.class);
         when(payload.getCorrelationId()).thenReturn("correlationId");
-        event.setPayload(payload);
         when(message.getPayload()).thenReturn(event);
         when(registryService.handleAddressManagerEvent(event)).thenReturn(Mono.error(mock(RaddGenericException.class)));
 

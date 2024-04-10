@@ -86,7 +86,10 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
 
     @Override
     public Mono<Void> updateRecordsInPending(List<RaddRegistryRequestEntity> addresses) {
-        addresses.forEach(address -> address.setStatus(RegistryRequestStatus.PENDING.name()));
+        addresses.forEach(address -> {
+            address.setStatus(RegistryRequestStatus.PENDING.name());
+            address.setUpdatedAt(Instant.now());
+        });
         return this.transactWriteItems(addresses, RaddRegistryRequestEntity.class);
     }
 

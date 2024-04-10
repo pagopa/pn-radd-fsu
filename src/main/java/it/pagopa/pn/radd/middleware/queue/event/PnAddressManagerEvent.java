@@ -12,35 +12,32 @@ public class PnAddressManagerEvent {
     private String correlationId;
     private List<ResultItem> resultItems = new ArrayList<>();
 
+    private static final int CXID_POSITION = 0;
+    private static final int REQUESTID_POSITION = 1;
+    private static final String ITEMS_SEPARATOR = "_";
+
+    public static String[] splitId(String id) {
+        return id.split(ITEMS_SEPARATOR);
+    }
+
+    public static String retrieveCxIdFromCorrelationId(String correlationId) {
+        String[] idItems = splitId(correlationId);
+        return idItems.length == 3 ? idItems[CXID_POSITION] : StringUtils.EMPTY;
+    }
+
+    public static String retrieveRequestIdFromCorrelationId(String correlationId) {
+        String[] idItems = splitId(correlationId);
+        return idItems.length == 3 ? idItems[REQUESTID_POSITION] : StringUtils.EMPTY;
+    }
+
 
     @Data
     public static class ResultItem {
-        private static final int CXID_POSITION = 0;
-        private static final int REQUESTID_POSITION = 1;
-        private static final int INDEX_POSITION = 2;
-        private static final String ITEMS_SEPARATOR = "#";
+
 
         private String id;
         private NormalizedAddress normalizedAddress;
         private String error;
-
-        public static String[] splitId(String id) {
-            return id.split(ITEMS_SEPARATOR);
-        }
-        public static String retrieveCxIdFromId(String id) {
-            String[] idItems = splitId(id);
-            return idItems.length == 3 ? idItems[CXID_POSITION] : StringUtils.EMPTY;
-        }
-
-        public static String retrieveRequestIdFromId(String id) {
-            String[] idItems = splitId(id);
-            return idItems.length == 3 ? idItems[REQUESTID_POSITION] : StringUtils.EMPTY;
-        }
-
-        public String retrieveIndexFromId(String id) {
-            String[] idItems = splitId(id);
-            return idItems.length == 3 ? idItems[INDEX_POSITION] : StringUtils.EMPTY;
-        }
     }
 
     @Data

@@ -113,9 +113,8 @@ public class RegistryService {
 
     private Mono<Void> processMessage(List<PnAddressManagerEvent.ResultItem> resultItems, String correlationId) {
         if(!resultItems.isEmpty()) {
-            String id = resultItems.get(0).getId();
-            String cxId = PnAddressManagerEvent.ResultItem.retrieveCxIdFromId(id);
-            String requestId = PnAddressManagerEvent.ResultItem.retrieveRequestIdFromId(id);
+            String cxId = PnAddressManagerEvent.retrieveCxIdFromCorrelationId(correlationId);
+            String requestId = PnAddressManagerEvent.retrieveRequestIdFromCorrelationId(correlationId);
             return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(cxId, requestId, RaddRegistryImportStatus.PENDING)
                     .switchIfEmpty(Mono.error(new RaddGenericException(String.format("No pending import request found for cxId: [%s] and requestId: [%s] ", cxId, requestId))))
                     .flatMap(registryImport -> raddRegistryRequestDAO.findByCorrelationIdWithStatus(correlationId, RegistryRequestStatus.PENDING)

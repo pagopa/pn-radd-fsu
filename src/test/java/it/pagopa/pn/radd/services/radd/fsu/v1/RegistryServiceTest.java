@@ -299,7 +299,7 @@ class RegistryServiceTest {
         resultItem.setNormalizedAddress(new PnAddressManagerEvent.NormalizedAddress());
         List<PnAddressManagerEvent.ResultItem> resultItems = Collections.singletonList(resultItem);
         PnAddressManagerEvent payload = new PnAddressManagerEvent();
-        payload.setCorrelationId("id");
+        payload.setCorrelationId("cxId_requestId_id");
         payload.setResultItems(resultItems);
         return payload;
     }

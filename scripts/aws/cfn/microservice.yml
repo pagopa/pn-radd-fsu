@@ -445,7 +445,6 @@ Resources:
         ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         ContainerEnvEntry45: !Sub 'PN_RADD_MAX_DYNAMO_DB_QUERY_SIZE=${PnRaddMaxDynamoDBQuerySize}'
         ContainerEnvEntry46: !Sub 'PN_RADD_MAX_PAGE_NUMBER=${PnRaddMaxPageNumber}'
-
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

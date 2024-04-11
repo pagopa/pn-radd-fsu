@@ -371,13 +371,13 @@ public class RegistryService {
         return raddRegistryRequestEntity;
     }
 
-    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
-        return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())
+    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent.Payload response) {
+        return raddRegistryDAO.getRegistriesByZipCode(response.getZipCode())
                 .collectList()
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
                 .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
-                        response.getPayload().getZipCode())))
+                        response.getZipCode())))
                 .then();
     }
 

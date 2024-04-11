@@ -19,12 +19,11 @@ public class InternalCapCheckerEventHandler {
     private RegistryService registryService;
     private static final String HANDLER_REQUEST = "pnInternalCapCheckerEventInboundConsumer";
     @Bean
-    public Consumer<Message<PnInternalCapCheckerEvent>> pnInternalCapCheckerEventInboundConsumer() {
+    public Consumer<Message<PnInternalCapCheckerEvent.Payload>> pnInternalCapCheckerEventInboundConsumer() {
         return message -> {
             log.debug("Handle message from {} with content {}", "Internal Cap Checker", message);
-            PnInternalCapCheckerEvent response = message.getPayload();
 
-            registryService.handleInternalCapCheckerMessage(response)
+            registryService.handleInternalCapCheckerMessage(message.getPayload())
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                     .doOnError(throwable ->  {
                         log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
@@ -33,5 +32,5 @@ public class InternalCapCheckerEventHandler {
                     .block();
         };
     }
-   
+
 }

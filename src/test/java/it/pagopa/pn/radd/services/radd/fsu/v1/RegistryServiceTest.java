@@ -471,7 +471,9 @@ class RegistryServiceTest {
 
     @Test
     public void handleInternalCapCheckerMessageTest() {
-        PnInternalCapCheckerEvent event = PnInternalCapCheckerEvent.builder().payload(PnInternalCapCheckerEvent.Payload.builder().zipCode("zipCode").build()).build();
+        PnInternalCapCheckerEvent event = PnInternalCapCheckerEvent.builder()
+                .payload(PnInternalCapCheckerEvent.Payload.builder().zipCode("zipCode").build())
+                .build();
         Instant start = Instant.now();
         Instant end = Instant.now();
         RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
@@ -480,7 +482,7 @@ class RegistryServiceTest {
         raddRegistryEntity.setEndValidity(end);
         when(raddRegistryDAO.getRegistriesByZipCode(any())).thenReturn(Flux.just(raddRegistryEntity));
 
-        StepVerifier.create(registryService.handleInternalCapCheckerMessage(event)).expectComplete();
+        StepVerifier.create(registryService.handleInternalCapCheckerMessage(event.getPayload())).expectComplete();
     }
 
 

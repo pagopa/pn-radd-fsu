@@ -8,17 +8,16 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.No
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.OriginalRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryRequestResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.*;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.AddressManagerRequestAddress;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +41,8 @@ public class RaddRegistryUtils {
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final SecretService secretService;
+
+
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -309,5 +310,28 @@ public class RaddRegistryUtils {
         return cxId + "_" + requestId + "_" + UUID.randomUUID();
     }
 
+    public RequestResponse mapToRequestResponse(ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto) {
+        RequestResponse result = new RequestResponse();
+        if(resultPaginationDto.getResultsPage() != null) {
+            result.setItems(resultPaginationDto.getResultsPage().stream()
+                    .map(raddRegistryRequestEntity -> {
+                        RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
+                        registryRequestResponse.setRegistryId(raddRegistryRequestEntity.getRegistryId());
+                        registryRequestResponse.setRequestId(raddRegistryRequestEntity.getRequestId());
+                        registryRequestResponse.setError(raddRegistryRequestEntity.getError());
+                        registryRequestResponse.setCreatedAt(raddRegistryRequestEntity.getCreatedAt().toString());
+                        registryRequestResponse.setUpdatedAt(raddRegistryRequestEntity.getUpdatedAt().toString());
+                        registryRequestResponse.setStatus(raddRegistryRequestEntity.getStatus());
+                        OriginalRequest originalRequest = objectMapperUtil.toObject(raddRegistryRequestEntity.getOriginalRequest(), OriginalRequest.class);
+                        registryRequestResponse.setOriginalRequest(originalRequest);
+
+                        return registryRequestResponse;
+                    })
+                    .toList());
+        }
+        result.setNextPagesKey(resultPaginationDto.getNextPagesKey());
+        result.setMoreResult(resultPaginationDto.isMoreResult());
+        return result;
+    }
 
 }

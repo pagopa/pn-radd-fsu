@@ -1,11 +1,15 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -21,6 +25,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 
 
 @Repository
@@ -39,6 +46,17 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         );
         pnRaddFsuConfig = raddFsuConfig;
     }
+
+    private final static Function<RaddRegistryRequestEntity, PnLastEvaluatedKey> REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER = (keyEntity) -> {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getCxId());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(keyEntity.getPk()).build(),
+                RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
+                RaddRegistryRequestEntity.COL_REQUEST_ID, AttributeValue.builder().s(keyEntity.getRequestId()).build()
+        ));
+        return pageLastEvaluatedKey;
+    };
 
     @Override
     public Flux<RaddRegistryRequestEntity> findByCorrelationIdWithStatus(String correlationId, RegistryRequestStatus status) throws IllegalArgumentException {
@@ -81,7 +99,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         Map<String,String> expressionName = new HashMap<>();
         expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
 
-        return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, query,map,expressionName, null);
+        return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, query, map, expressionName, null);
     }
 
     @Override
@@ -178,5 +196,26 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     @Override
     public Mono<RaddRegistryRequestEntity> putRaddRegistryRequestEntity(RaddRegistryRequestEntity raddRegistryRequestEntity) {
         return putItem(raddRegistryRequestEntity);
+    }
+
+    @Override
+    public Mono<ResultPaginationDto<RaddRegistryRequestEntity, String>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey) {
+        PnLastEvaluatedKey lastKey = null;
+        if (lastEvaluatedKey != null) {
+            try {
+                lastKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastEvaluatedKey);
+            } catch (JsonProcessingException e) {
+                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        e);
+            }
+        } else {
+            log.debug("First page search");
+        }
+
+        Key key = Key.builder().partitionValue(xPagopaPnCxId).sortValue(requestId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey(), REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 }

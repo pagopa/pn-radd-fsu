@@ -2,6 +2,7 @@ package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,6 +27,8 @@ public interface RaddRegistryRequestDAO {
     Flux<RaddRegistryRequestEntity> findByCxIdAndRegistryId(String cxId, String registryId);
 
     Mono<RaddRegistryRequestEntity> putRaddRegistryRequestEntity(RaddRegistryRequestEntity raddRegistryRequestEntity);
+
+    Mono<ResultPaginationDto<RaddRegistryRequestEntity, String>> getRegistryByCxIdAndRequestId(String xPagopaPnCxId, String requestId, Integer limit, String lastEvaluatedKey);
 
     Flux<RaddRegistryRequestEntity> findByCxIdAndRequestIdAndStatusNotIn(String cxId, String requestId, List<RegistryRequestStatus> statusList);
 

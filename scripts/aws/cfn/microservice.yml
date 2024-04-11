@@ -362,6 +362,20 @@ Parameters:
     Default: 1
     Description: 'Config number for zipCode to paper channel'
 
+  RaddEventBusName:
+    Type: String
+    Description: Name of the radd event bus
+
+  PnRaddMaxDynamoDBQuerySize:
+    Type: Number
+    Description: max number of record before reaching 1MB DynamoDb limitation
+    Default: 1000
+
+  PnRaddMaxPageNumber:
+    Type: Number
+    Description: max number of pages to retrieve nextPagesKey of (listing APIs)
+    Default: 10
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -429,6 +443,9 @@ Resources:
         ContainerEnvEntry42: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
         ContainerEnvEntry43: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
         ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry45: !Sub 'PN_RADD_MAX_DYNAMO_DB_QUERY_SIZE=${PnRaddMaxDynamoDBQuerySize}'
+        ContainerEnvEntry46: !Sub 'PN_RADD_MAX_PAGE_NUMBER=${PnRaddMaxPageNumber}'
+
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

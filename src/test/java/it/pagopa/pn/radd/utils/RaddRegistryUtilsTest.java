@@ -11,12 +11,13 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.No
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.CachedSecretsManagerConsumer;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
-import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import org.junit.jupiter.api.Assertions;
@@ -26,10 +27,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
 import java.time.Instant;
@@ -1216,7 +1213,7 @@ class RaddRegistryUtilsTest {
 
         for (Set<TimeInterval> intervalSet : result) {
             TimeInterval timeInterval = findIntersection(intervalSet.stream().toList());
-            if(timeInterval != null) {
+            if (timeInterval != null) {
                 activeIntervals.add(timeInterval);
             }
         }
@@ -1235,5 +1232,47 @@ class RaddRegistryUtilsTest {
         TimeInterval[] timeIntervals1 = new TimeInterval[0];
 
         Assertions.assertEquals(verify, mergeIntervals(activeIntervals.toArray(timeIntervals1)));
+    }
+
+    @Test
+    void shouldMapToRequestResponseWhenResultsPageIsNotNull() {
+        // Given
+        ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto = new ResultPaginationDto<>();
+        List<RaddRegistryRequestEntity> resultsPage = new ArrayList<>();
+        RaddRegistryRequestEntity raddRegistryRequestEntity = new RaddRegistryRequestEntity();
+        raddRegistryRequestEntity.setRegistryId("testRegistryId");
+        raddRegistryRequestEntity.setRequestId("testRequestId");
+        raddRegistryRequestEntity.setError("testError");
+        raddRegistryRequestEntity.setCreatedAt(Instant.now());
+        raddRegistryRequestEntity.setUpdatedAt(Instant.now());
+        raddRegistryRequestEntity.setStatus("testStatus");
+        raddRegistryRequestEntity.setOriginalRequest("testOriginalRequest");
+        resultsPage.add(raddRegistryRequestEntity);
+        resultPaginationDto.setResultsPage(resultsPage);
+
+        // When
+        RequestResponse result = raddRegistryUtils.mapToRequestResponse(resultPaginationDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getItems().size());
+        assertEquals("testRegistryId", result.getItems().get(0).getRegistryId());
+        assertEquals("testRequestId", result.getItems().get(0).getRequestId());
+        assertEquals("testError", result.getItems().get(0).getError());
+        assertEquals("testStatus", result.getItems().get(0).getStatus());
+    }
+
+    @Test
+    void shouldMapToRequestResponseWhenResultsPageIsNull() {
+        // Given
+        ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto = new ResultPaginationDto<>();
+        resultPaginationDto.setResultsPage(null);
+
+        // When
+        RequestResponse result = raddRegistryUtils.mapToRequestResponse(resultPaginationDto);
+
+        // Then
+        assertNotNull(result);
+        assertNull(result.getItems());
     }
 }

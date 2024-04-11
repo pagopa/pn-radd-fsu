@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -209,6 +210,13 @@ public class RegistryService {
 
         return raddRegistryRequestDAO.getAllFromCorrelationId(payload.getCorrelationId(), RegistryRequestStatus.NOT_WORKED.name())
                 .collectList()
+                .flatMap(raddRegistryRequestEntities -> {
+                    if(CollectionUtils.isEmpty(raddRegistryRequestEntities)) {
+                        log.warn("No records found for correlationId: {}", payload.getCorrelationId());
+                        return Mono.empty();
+                    }
+                    return Mono.just(raddRegistryRequestEntities);
+                })
                 .zipWhen(entities -> Mono.just(raddRegistryUtils.getRequestAddressFromOriginalRequest(entities)))
                 .flatMap(tuple -> {
                     request.setAddresses(tuple.getT2());

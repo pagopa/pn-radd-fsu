@@ -64,7 +64,7 @@ public class SafeStorageEventService {
                     }
                 })
                 .flatMap(importEntity -> pnRaddRegistryImportDAO.updateStatus(importEntity, RaddRegistryImportStatus.PENDING, null))
-                .doOnError(throwable -> log.error("Error during import csv for fileKey [{}] --> ", fileKey, throwable))
+                .doOnError(throwable -> log.error("Error during import csv for fileKey [{}]", fileKey, throwable))
                 .onErrorResume(RaddImportException.class, e -> Mono.empty())
                 .then();
 
@@ -92,7 +92,7 @@ public class SafeStorageEventService {
                         .stream()
                         .filter(stringListEntry -> !stringListEntry.getKey().equals(REJECTED.name())))
                 .flatMap(entry -> persistItemsAndSendEvent(entry).thenReturn(raddRegistryRequestsMap))
-                .map(stringListMap -> stringListMap.get(REJECTED.name()))
+                .map(stringListMap -> stringListMap.getOrDefault(REJECTED.name(), Collections.emptyList()))
                 .map(this::persisteRejectedItems)
                 .then();
     }

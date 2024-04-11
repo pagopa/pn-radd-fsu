@@ -340,6 +340,17 @@ class RegistryServiceTest {
     }
 
     @Test
+    public void shouldHandleRequestSuccessfullyWithoutItems() {
+        when(payload.getCorrelationId()).thenReturn("correlationId");
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
+        raddRegistryOriginalRequest.setGeoLocation("test");
+        raddRegistryOriginalRequest.setPr("RM");
+        when(raddRegistryRequestDAO.getAllFromCorrelationId(any(), any())).thenReturn(Flux.empty());
+
+        StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
+    }
+
+    @Test
     void handleImportCompletedRequest() {
         ImportCompletedRequestEvent.Payload payload = ImportCompletedRequestEvent.Payload.builder().cxId("cxId").requestId("requestId").build();
         when(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState("cxId", "requestId", RegistryRequestStatus.ACCEPTED.name()))

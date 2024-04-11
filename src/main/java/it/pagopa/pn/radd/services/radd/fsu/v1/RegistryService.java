@@ -144,6 +144,12 @@ public class RegistryService {
         return raddRegistryDAO.find(registryId, raddRegistryRequestEntity.getCxId())
                 .flatMap(entity -> updateRegistryRequestEntity(raddRegistryRequestEntity, entity))
                 .switchIfEmpty(createNewRegistryEntity(registryId, raddRegistryRequestEntity, resultItem))
+                .flatMap(entity -> {
+                    if(entity.getRequestId().startsWith(REQUEST_ID_PREFIX)) {
+                        return raddAltCapCheckerProducer.sendCapCheckerEvent(entity.getZipCode()).thenReturn(entity);
+                    }
+                    return Mono.just(entity);
+                })
                 .onErrorResume(throwable -> {
                     if (throwable instanceof RaddGenericException ex && ERROR_DUPLICATE.equals(ex.getMessage())) {
                         return raddRegistryRequestDAO.updateStatusAndError(

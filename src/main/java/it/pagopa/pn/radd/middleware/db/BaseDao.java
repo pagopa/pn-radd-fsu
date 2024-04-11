@@ -182,8 +182,8 @@ public abstract class BaseDao<T> {
             query.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).build());
             totalElements *= (values.size() + 1) * 2;
         }
-        if (totalElements > raddFsuConfig.getMaxDynamoDBQuerySize()) {
-            totalElements = raddFsuConfig.getMaxDynamoDBQuerySize();
+        if (totalElements > raddFsuConfig.getMaxQuerySize()) {
+            totalElements = raddFsuConfig.getMaxQuerySize();
         }
         query.limit(totalElements);
 

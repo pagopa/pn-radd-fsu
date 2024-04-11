@@ -3,7 +3,9 @@
         {
             "intendedUsage": "RADD",
             "openapiFiles": [
-                "pn-radd-alt-internal.yaml"
+                "pn-radd-alt-internal.yaml",
+                "pn-radd-alt-registry-internal.yaml",
+                "pn-radd-alt-import-registry-internal.yaml"
             ],
             "servicePath": "radd-net"
         }

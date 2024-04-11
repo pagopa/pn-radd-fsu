@@ -17,6 +17,11 @@
     "VerifyRaddRegistryImportLockAtMost": "120000",
     "VerifyRaddRegistryImportLockAtLeast": "1000",
     "VerifyRaddRegistryImportDelay": "12000",
-    "MaxQuerySize": "1000"
+    "MaxQuerySize": "1000",
+    "RegistryImportReplacedTtl": "8766",
+    "EvaluatedZipCodeConfigType": "ZIPCODE",
+    "EvaluatedZipCodeConfigNumber": "1",
+    "PnRaddMaxPageNumber": "10",
+    "PnRaddMaxDynamoDBQuerySize": "1000"
   }
 }

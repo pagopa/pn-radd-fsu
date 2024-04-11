@@ -5,14 +5,13 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.Fil
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
-import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
-import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
+import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
 import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
@@ -21,11 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -35,8 +35,9 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 @Slf4j
-class AorServiceTest extends BaseTest {
+class AorServiceTest {
     private static final String ENSURE_FC = "PF-4fc75df3-0913-407e-bdaa-e50329708b7d";
     @InjectMocks
     private AorService aorService;
@@ -50,7 +51,6 @@ class AorServiceTest extends BaseTest {
     private RaddTransactionDAOImpl raddTransactionDAOImpl;
     @Mock
     private PnSafeStorageClient pnSafeStorageClient;
-    @Autowired
     @Spy
     private TransactionDataMapper transactionDataMapper;
 
@@ -61,7 +61,6 @@ class AorServiceTest extends BaseTest {
 
     @BeforeEach
     public void setUp() {
-        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just(ENSURE_FC));
         abortTransactionRequest = new AbortTransactionRequest();
         abortTransactionRequest.setOperationId("1234AOR");
         abortTransactionRequest.setReason("cancelled by user");
@@ -323,6 +322,7 @@ class AorServiceTest extends BaseTest {
     @Test
     void testWhenSearchReturnEmptyThrowException() {
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(new ResponsePaperNotificationFailedDtoDto()));
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just(ENSURE_FC));
         aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId")
                 .onErrorResume(ex -> {
                     if (ex instanceof RaddGenericException) {
@@ -343,6 +343,7 @@ class AorServiceTest extends BaseTest {
         response2.setRecipientInternalId("testCF2");
 
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just(ENSURE_FC));
 
         AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId").block();
         assertNotNull(inquiryResponse);
@@ -359,7 +360,7 @@ class AorServiceTest extends BaseTest {
         ResponsePaperNotificationFailedDtoDto response2 = new ResponsePaperNotificationFailedDtoDto();
         response2.setRecipientInternalId("testCF2");
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
-
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.just(ENSURE_FC));
         AORInquiryResponse inquiryResponse = aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId").block();
         log.info("Response {}", inquiryResponse);
         assertNotNull(inquiryResponse);

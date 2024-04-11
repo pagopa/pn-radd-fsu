@@ -146,7 +146,7 @@ Parameters:
 
   RegistryDefaultEndValidity:
     Type: String
-    Description: 'Default end validity for radd registry'
+    Description: 'Default end validity for radd registry in days'
 
   RegistryDefaultDeleteRule:
     Type: String
@@ -159,6 +159,14 @@ Parameters:
   MaxQuerySize:
     Type: Number
     Description: 'Max query size'
+
+  AddressManagerToRaddAltQueueARN:
+    Type: String
+    Description: 'AddressManager-to-f24 queue ARN'
+
+  SafeStorageToRaddAltQueueARN:
+    Type: String
+    Description: 'SafeStorage-to-f24 queue ARN'
 
   SecretAndSSMPrefix:
     Type: String
@@ -340,6 +348,29 @@ Parameters:
     Description: It defines the time interval between each batch of clean expires working requests (milliseconds)
     Default: '120000'
 
+  RegistryImportReplacedTtl:
+    Type: Number
+    Description: 'Time, expressed in hours, in which the record persists on the table'
+
+  EvaluatedZipCodeConfigType:
+    Type: String
+    Default: ZIPCODE
+    Description: 'Config type for zipCode to paper channel'
+
+  EvaluatedZipCodeConfigNumber:
+    Type: Number
+    Default: 1
+    Description: 'Config number for zipCode to paper channel'
+
+  PnRaddMaxDynamoDBQuerySize:
+    Type: Number
+    Description: max number of record before reaching 1MB DynamoDb limitation
+    Default: 1000
+
+  PnRaddMaxPageNumber:
+    Type: Number
+    Description: max number of pages to retrieve nextPagesKey of (listing APIs)
+    Default: 10
 
 Resources:
 
@@ -390,7 +421,7 @@ Resources:
         ContainerEnvEntry23: !Sub 'PN_RADD_REGISTRYSAFESTORAGEDOCTYPE=${RegistrySafeStorageDocType}'
         ContainerEnvEntry24: !Sub 'PN_RADD_REGISTRYDEFAULTENDVALIDITY=${RegistryDefaultEndValidity}'
         ContainerEnvEntry25: !Sub 'PN_RADD_REGISTRYDEFAULTDELETERULE=${RegistryDefaultDeleteRule}'
-        ContainerEnvEntry26: !Sub 'PN-RADD-REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
+        ContainerEnvEntry26: !Sub 'PN_RADD_REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
         ContainerEnvEntry27: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry28: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
         ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
@@ -401,7 +432,15 @@ Resources:
         ContainerEnvEntry35: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_LOCKATLEAST=${VerifyRaddRegistryImportLockAtLeast}'
         ContainerEnvEntry36: !Sub 'PN_RADD_VERIFYRADDREGISTRYIMPORT_DELAY=${VerifyRaddRegistryImportDelay}'
         ContainerEnvEntry37: !Sub 'PN_RADD_MAXQUERYSIZE=${MaxQuerySize}'
-
+        ContainerEnvEntry38: !Sub 'PN_RADD_REGISTRYIMPORTREPLACEDTTL=${RegistryImportReplacedTtl}'
+        ContainerEnvEntry39: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
+        ContainerEnvEntry40: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry41: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry42: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
+        ContainerEnvEntry43: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
+        ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
+        ContainerEnvEntry45: !Sub 'PN_RADD_MAX_DYNAMO_DB_QUERY_SIZE=${PnRaddMaxDynamoDBQuerySize}'
+        ContainerEnvEntry46: !Sub 'PN_RADD_MAX_PAGE_NUMBER=${PnRaddMaxPageNumber}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -439,6 +478,8 @@ Resources:
               - !Ref RaddInternalCapCheckerQueueARN
               - !Ref PnRaddAltInputQueueDLQARN
               - !Ref PnRaddAltInputQueueARN
+              - !Ref AddressManagerToRaddAltQueueARN
+              - !Ref SafeStorageToRaddAltQueueARN
           - Effect: Allow
             Action:
               - dynamodb:BatchGetItem

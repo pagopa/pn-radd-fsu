@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.utils;
 
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventItem;
+import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventPayload;
+import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeItemsRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
@@ -22,6 +25,8 @@ import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -35,6 +40,8 @@ public class RaddRegistryUtils {
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final SecretService secretService;
+
+
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -57,24 +64,30 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(newRegistryRequestEntity.getZipCode());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
-        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
-        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
+        registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getStartValidity());
+            registryEntity.setStartValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+        }
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getEndValidity());
+            registryEntity.setEndValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+        }
 
         return registryEntity;
     }
 
-    public Mono<RaddRegistryEntity> constructRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
-        return Mono.fromCallable(() -> {
-            RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
+    public Mono<RaddRegistryEntity> constructRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
+        String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
 
-            return getRaddRegistryEntity(normalizedAddress, registryRequest, raddRegistryOriginalRequest);
-        });
+        return Mono.just(getRaddRegistryEntity(registryId, normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest));
     }
 
-    private static RaddRegistryEntity getRaddRegistryEntity(PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
+    private static RaddRegistryEntity getRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         RaddRegistryEntity registryEntity = new RaddRegistryEntity();
 
-        registryEntity.setRegistryId(registryRequest.getRegistryId());
+        registryEntity.setRegistryId(registryId);
         registryEntity.setCxId(registryRequest.getCxId());
         registryEntity.setNormalizedAddress(mapNormalizedAddressEntityToNormalizedAddress(normalizedAddress));
         registryEntity.setRequestId(registryRequest.getRequestId());
@@ -84,14 +97,23 @@ public class RaddRegistryUtils {
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
         registryEntity.setZipCode(normalizedAddress.getCap());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
-        registryEntity.setStartValidity(raddRegistryOriginalRequest.getStartValidity());
-        registryEntity.setEndValidity(raddRegistryOriginalRequest.getEndValidity());
+        registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getStartValidity());
+            registryEntity.setStartValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+        }
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getEndValidity());
+            registryEntity.setEndValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+        }
 
         return registryEntity;
     }
 
     public Mono<PnAddressManagerEvent.ResultItem> getRelativeItemFromAddressManagerEvent(List<PnAddressManagerEvent.ResultItem> resultItems, String id) {
-        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream().filter(item -> StringUtils.equals(item.getId(), id)).findFirst();
+        Optional<PnAddressManagerEvent.ResultItem> resultItemOptional = resultItems.stream()
+                .filter(item -> StringUtils.equals(item.getId(), RaddRegistryRequestEntity.retrieveIndexFromPk(id))).findFirst();
+
         if (resultItemOptional.isEmpty()) {
             log.warn("Item with id {} not found or not in event list", id);
             return Mono.empty();
@@ -129,7 +151,7 @@ public class RaddRegistryUtils {
     public List<AddressManagerRequestAddress> getRequestAddressFromOriginalRequest(List<RaddRegistryRequestEntity> entities) {
         return entities.stream().map(entity -> {
             AddressManagerRequestAddress request = objectMapperUtil.toObject(entity.getOriginalRequest(), AddressManagerRequestAddress.class);
-            request.setId(entity.getPk());
+            request.setId(RaddRegistryRequestEntity.retrieveIndexFromPk(entity.getPk()));
             return request;
         }).toList();
     }
@@ -157,16 +179,136 @@ public class RaddRegistryUtils {
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
+    public PnEvaluatedZipCodeEvent mapToEventMessage(Set<TimeInterval> timeIntervals, String zipCode) {
+        return PnEvaluatedZipCodeEvent.builder().detail(
+                PnAttachmentsConfigEventPayload
+                        .builder()
+                        .configKey(zipCode)
+                        .configType(pnRaddFsuConfig.getEvaluatedZipCodeConfigType())
+                        .configs(getConfigEntries(timeIntervals))
+                        .build()
+        ).build();
+    }
 
-    public RequestResponse prepareGlobalResult(List<RaddRegistryRequestEntity> queryResult,
-                                               boolean moreResults,
-                                               int limit) {
+    private List<PnAttachmentsConfigEventItem> getConfigEntries(Set<TimeInterval> timeIntervals) {
+        return timeIntervals.stream()
+                .map(timeInterval -> PnAttachmentsConfigEventItem.builder()
+                        .startValidity(timeInterval.getStart())
+                        .endValidity(timeInterval.getEnd() == Instant.MAX ? null : timeInterval.getEnd())
+                        .build()).toList();
+    }
+
+    public List<TimeInterval> getOfficeIntervals(List<RaddRegistryEntity> raddRegistryEntities) {
+        return raddRegistryEntities.stream()
+                .map(raddRegistryEntity -> {
+                    if (raddRegistryEntity.getEndValidity() == null) {
+                        return new TimeInterval(raddRegistryEntity.getStartValidity(), Instant.MAX);
+                    } else {
+                        return new TimeInterval(raddRegistryEntity.getStartValidity(), raddRegistryEntity.getEndValidity());
+                    }
+                }).toList();
+    }
+
+    public Set<TimeInterval> findActiveIntervals(List<TimeInterval> timeIntervals) {
+
+        TimeInterval[] timeIntervalArray = timeIntervals.toArray(new TimeInterval[0]);
+        Set<Set<TimeInterval>> result = new HashSet<>();
+
+        combinations(timeIntervalArray, new ArrayList<>(), result, pnRaddFsuConfig.getEvaluatedZipCodeConfigNumber(), 0);
+
+        Set<TimeInterval> activeIntervals = new HashSet<>();
+
+        for (Set<TimeInterval> intervalSet : result) {
+            TimeInterval timeInterval = findIntersection(intervalSet.stream().toList());
+            if (timeInterval != null) {
+                activeIntervals.add(timeInterval);
+            }
+        }
+
+        TimeInterval[] activeIntervalsArray = new TimeInterval[0];
+        return mergeIntervals(activeIntervals.toArray(activeIntervalsArray));
+    }
+
+    public static void combinations(TimeInterval[] values, List<TimeInterval> current, Set<Set<TimeInterval>> accumulator, int size, int pos) {
+        if (current.size() == size) {
+            Set<TimeInterval> toAdd = new HashSet<>(current);
+            if (accumulator.contains(toAdd)) {
+                throw new RuntimeException("Duplicated value " + current);
+            }
+            accumulator.add(toAdd);
+            return;
+        }
+        for (int i = pos; i <= values.length - size + current.size(); i++) {
+            current.add(values[i]);
+            combinations(values, current, accumulator, size, i + 1);
+            current.remove(current.size() - 1);
+        }
+    }
+
+    static TimeInterval findIntersection(List<TimeInterval> intervals) {
+        Instant start = intervals.get(0).getStart();
+        Instant end = intervals.get(0).getEnd();
+
+        for (int i = 1; i < intervals.size(); i++) {
+            if (intervals.get(i).getStart().isAfter(end) || intervals.get(i).getEnd().isBefore(start)) {
+                return null;
+            } else {
+                if (start.isBefore(intervals.get(i).getStart()))
+                    start = intervals.get(i).getStart();
+                if (end.isAfter(intervals.get(i).getEnd()))
+                    end = intervals.get(i).getEnd();
+            }
+        }
+        return new TimeInterval(start, end);
+    }
+
+    public static Set<TimeInterval> mergeIntervals(TimeInterval[] timeIntervals)
+    {
+        if (timeIntervals.length <= 0) {
+            return Set.of();
+        }
+        Arrays.sort(timeIntervals, Comparator.comparing(TimeInterval::getStart));
+
+        Stack<TimeInterval> stack = new Stack<>();
+        stack.push(timeIntervals[0]);
+
+        for (int i = 1; i < timeIntervals.length; i++) {
+            TimeInterval top = stack.peek();
+
+            if (top.getEnd().isBefore(timeIntervals[i].getStart()))
+                stack.push(timeIntervals[i]);
+            else if (top.getEnd().isBefore(timeIntervals[i].getEnd())) {
+                top.setEnd(timeIntervals[i].getEnd());
+                stack.pop();
+                stack.push(top);
+            }
+        }
+
+        TimeInterval[] activeIntervals = new TimeInterval[0];
+        return actualizePastIntervals(Set.of(stack.toArray(activeIntervals)));
+    }
+
+    private static Set<TimeInterval> actualizePastIntervals(Set<TimeInterval> timeIntervals) {
+        /* arrivati a questo punto dovremmo avere solo intervalli attivi che vanno da prima di oggi fino ad un tempo futuro indefinito.
+         Se l'intervallo ha un inizio precedente ad oggi, lo aggiorniamo con la data odierna. */
+        Instant now = getStartOfTodayInstant();
+        for (TimeInterval timeInterval : timeIntervals) {
+            if (timeInterval.getStart().isBefore(now)) {
+                timeInterval.setStart(now);
+            }
+        }
+
+        return timeIntervals;
+    }
+
+    private static Instant getStartOfTodayInstant() {
+        return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    public RequestResponse mapToRequestResponse(ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto) {
         RequestResponse result = new RequestResponse();
-        result.setNextPagesKey(new ArrayList<>());
-
-        if(queryResult != null) {
-            result.setItems(queryResult.stream()
-                    .limit(limit)
+        if(resultPaginationDto.getResultsPage() != null) {
+            result.setItems(resultPaginationDto.getResultsPage().stream()
                     .map(raddRegistryRequestEntity -> {
                         RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
                         registryRequestResponse.setRegistryId(raddRegistryRequestEntity.getRegistryId());
@@ -182,35 +324,14 @@ public class RaddRegistryUtils {
                     })
                     .toList());
         }
-        result.setMoreResult(moreResults);
-
-        for (int i = 1; i <= pnRaddFsuConfig.getMaxPageNumber(); i++){
-            int index = limit * i;
-            if (queryResult.size() <= index) {
-                break;
-            }
-            RaddRegistryRequestEntity keyEntity = queryResult.get(index - 1);
-            PnLastEvaluatedKey pageLastEvaluatedKey = computeLastEvaluatedKey(keyEntity);
-            result.getNextPagesKey().add(pageLastEvaluatedKey.getExternalLastEvaluatedKey());
-        }
-
+        result.setNextPagesKey(resultPaginationDto.getNextPagesKey());
+        result.setMoreResult(resultPaginationDto.isMoreResult());
         return result;
     }
 
-    private PnLastEvaluatedKey computeLastEvaluatedKey(RaddRegistryRequestEntity keyEntity) {
-        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
-        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getCxId());
-        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
-                RaddRegistryRequestEntity.COL_PK, AttributeValue.builder().s(keyEntity.getPk()).build(),
-                RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
-                RaddRegistryRequestEntity.COL_REGISTRY_ID, AttributeValue.builder().s(keyEntity.getRegistryId()).build()
-        ));
-        return pageLastEvaluatedKey;
-    }
-
     public RegistriesResponse prepareRaddRegistrySelfResult(List<RaddRegistryEntity> queryResult,
-                                               boolean moreResults,
-                                               int limit) {
+                                                            boolean moreResults,
+                                                            int limit) {
         RegistriesResponse result = new RegistriesResponse();
         result.setNextPagesKey(new ArrayList<>());
 
@@ -284,4 +405,5 @@ public class RaddRegistryUtils {
         address.setCountry(normalizedAddress.getCountry());
         return address;
     }
+
 }

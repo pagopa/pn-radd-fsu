@@ -18,7 +18,7 @@ public class RegistryController implements ImportApi {
     private final RegistryService registryService;
 
     /**
-     * POST /radd-alt/api/v1/registry/import/upload
+     * POST /radd-net/api/v1/registry/import/upload
      * API utilizzata per la richiesta della presigned URL utilizzata per il caricamento del file CSV contenente la lista di sportelli di un soggetto RADD.
      *
      * @param xPagopaPnCxType       Customer/Receiver Type (required)
@@ -39,7 +39,7 @@ public class RegistryController implements ImportApi {
     }
 
     /**
-     * GET /radd-alt/api/v1/registry/import/{requestId}/verify
+     * GET /radd-net/api/v1/registry/import/{requestId}/verify
      * L’API di verifica stato richiesta import restituisce lo stato di tale richiesta di import
      *
      * @param xPagopaPnCxType Customer/Receiver Type (required)
@@ -60,7 +60,7 @@ public class RegistryController implements ImportApi {
     }
 
     /**
-     * GET /radd-alt/api/v1/registry/import/{requestId}
+     * GET /radd-net/api/v1/registry/import/{requestId}
      * API utilizzata per il recupero della lista paginata e filtrata di tutti gli sportelli associati alla richiesta di import
      *
      * @param xPagopaPnCxType Customer/Receiver Type (required)
@@ -80,6 +80,5 @@ public class RegistryController implements ImportApi {
     public Mono<ResponseEntity<RequestResponse>> retrieveRequestItems(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String requestId, Integer limit, String lastKey, final ServerWebExchange exchange) {
         return registryService.retrieveRequestItems(xPagopaPnCxId, requestId, limit, lastKey)
                 .map(requestResponse -> ResponseEntity.status(HttpStatus.OK).body(requestResponse));
-
     }
 }

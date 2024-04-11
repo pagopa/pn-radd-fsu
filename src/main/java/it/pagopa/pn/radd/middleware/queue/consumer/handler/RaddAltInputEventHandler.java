@@ -10,6 +10,7 @@ import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
+import it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent;
 
 import java.util.function.Consumer;
 @Configuration
@@ -21,6 +22,8 @@ public class RaddAltInputEventHandler {
 
     private static final String HANDLER_NORMALIZE_REQUEST = "pnRaddAltInputNormalizeRequestConsumer";
 
+    private static final String IMPORT_COMPLETED_REQUEST = "pnRaddAltImportCompletedRequestConsumer";
+
     @Bean
     public Consumer<Message<PnRaddAltNormalizeRequestEvent.Payload>> pnRaddAltInputNormalizeRequestConsumer() {
         return message -> {
@@ -31,6 +34,24 @@ public class RaddAltInputEventHandler {
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_NORMALIZE_REQUEST))
                     .doOnError(throwable ->  {
                         log.logEndingProcess(HANDLER_NORMALIZE_REQUEST, false, throwable.getMessage());
+                        HandleEventUtils.handleException(message.getHeaders(), throwable);
+                    });
+
+            MDCUtils.addMDCToContextAndExecute(monoResult).block();
+        };
+    }
+
+    @Bean
+    public Consumer<Message<ImportCompletedRequestEvent.Payload>> pnRaddAltImportCompletedRequestConsumer() {
+        return message -> {
+            log.logStartingProcess(IMPORT_COMPLETED_REQUEST);
+            log.debug(IMPORT_COMPLETED_REQUEST + "- message: {}", message);
+            MDC.put(MDCUtils.MDC_CX_ID_KEY, message.getPayload().getCxId());
+            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, message.getPayload().getRequestId());
+            var monoResult = registryService.handleImportCompletedRequest(message.getPayload())
+                    .doOnSuccess(unused -> log.logEndingProcess(IMPORT_COMPLETED_REQUEST))
+                    .doOnError(throwable ->  {
+                        log.logEndingProcess(IMPORT_COMPLETED_REQUEST, false, throwable.getMessage());
                         HandleEventUtils.handleException(message.getHeaders(), throwable);
                     });
 

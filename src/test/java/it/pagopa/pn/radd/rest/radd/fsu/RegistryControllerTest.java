@@ -87,7 +87,7 @@ class RegistryControllerTest {
         RegistryUploadResponse response = new RegistryUploadResponse();
         RegistryUploadRequest req = new RegistryUploadRequest();
 
-        String path = "/radd-alt/api/v1/registry/import/upload";
+        String path = "/radd-net/api/v1/registry/import/upload";
         Mockito.when(registryService.uploadRegistryRequests(Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.just(response));
         webTestClient.post()

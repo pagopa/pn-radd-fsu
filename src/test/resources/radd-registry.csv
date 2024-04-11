@@ -1,0 +1,4 @@
+paese;citta;provincia;cap;via;dataInizioValidita;dataFineValidita;descrizione;orariApertura;coordinateGeoReferenziali;telefono;capacita;externalCode;
+Italia;Roma;RM;;viaalquartomiglio70;;;descrizione;;12345,65256;007025462;;;
+Italia;Roma;RM;00178;;2024-03-27;2024-12-27;descrizione;;12354;007025445;;;
+;Roma;RM;00178;viaappia100;2024-03-27;;descrizione;;;007025462;;;

@@ -19,7 +19,10 @@ class RaddAltInputEventHandlerTest {
     private RegistryService registryService;
 
     @Mock
-    private Message<PnRaddAltNormalizeRequestEvent.Payload> message;
+    private Message<PnRaddAltNormalizeRequestEvent.Payload> messageNormalizeRequest;
+
+    @Mock
+    private Message<it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent.Payload> messageImportCompleted;
 
     @InjectMocks
     private RaddAltInputEventHandler raddAltInputEventHandler;
@@ -30,13 +33,28 @@ class RaddAltInputEventHandlerTest {
     }
 
     @Test
-    void shouldHandleMessageSuccessfully() {
-        PnRaddAltNormalizeRequestEvent.Payload event = new PnRaddAltNormalizeRequestEvent.Payload();
-        when(message.getPayload()).thenReturn(event);
+    void shouldHandleNormalizeRequestSuccessfully() {
+        PnRaddAltNormalizeRequestEvent.Payload event = mock(PnRaddAltNormalizeRequestEvent.Payload.class);
+        when(event.getCorrelationId()).thenReturn("correlationId");
+        when(messageNormalizeRequest.getPayload()).thenReturn(event);
         when(registryService.handleNormalizeRequestEvent(event)).thenReturn(Mono.empty());
 
-        raddAltInputEventHandler.pnRaddAltInputNormalizeRequestConsumer().accept(message);
+        raddAltInputEventHandler.pnRaddAltInputNormalizeRequestConsumer().accept(messageNormalizeRequest);
 
         verify(registryService, times(1)).handleNormalizeRequestEvent(event);
+    }
+
+    @Test
+    void shouldHandleImportCompletedSuccessfully() {
+        it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent.Payload event = mock(it.pagopa.pn.radd.middleware.queue.consumer.event.ImportCompletedRequestEvent.Payload.class);
+        when(event.getCxId()).thenReturn("cxId");
+        when(event.getRequestId()).thenReturn("requestId");
+        when(messageImportCompleted.getPayload()).thenReturn(event);
+
+        when(registryService.handleImportCompletedRequest(event)).thenReturn(Mono.empty());
+
+        raddAltInputEventHandler.pnRaddAltImportCompletedRequestConsumer().accept(messageImportCompleted);
+
+        verify(registryService, times(1)).handleImportCompletedRequest(event);
     }
 }

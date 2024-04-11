@@ -4,6 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ExceptionTypeEnum {
+    REGISTRY_NOT_FOUND("REGISTRY_NOT_FOUND", "Sede radd non trovata", 99),
+    DATE_NOTICE_ERROR("DATE_NOTICE_ERROR","La data di fine validità non rispetta il preavviso minimo richiesto", 99),
+    DATE_INVALID_ERROR("DATE_INVALID_ERROR","formato della data non valido", 99),
     IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params", 99),
     TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata", 99),
     TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente", 99),
@@ -33,7 +36,7 @@ public enum ExceptionTypeEnum {
     DUPLICATE_REQUEST("DUPLICATE_REQUEST", "Richiesta Duplicata. il file inviato è già in fase di elaborazione", 99),
     PENDING_REQUEST("PENDING_REQUEST", "Una precedente richiesta di import è ancora in corso", 99),
     MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "RequestId e CxId sono obbligatori", 99),
-    IMPORT_REQUEST_NOT_FOUND("IMPORT_REQUEST_NOT_FOUND", "No import request found for given value", 99),
+    IMPORT_REQUEST_NOT_FOUND("IMPORT_REQUEST_NOT_FOUND", "Richiesta di import non trovata", 99),
     RADD_REGISTRY_NOT_FOUND("RADD_REGISTRY_NOT_FOUND","Punto di ritiro SEND non trovato",99 ),
     RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY("RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY", "Ultima chiave di paginazione non supportata.", 99);
 

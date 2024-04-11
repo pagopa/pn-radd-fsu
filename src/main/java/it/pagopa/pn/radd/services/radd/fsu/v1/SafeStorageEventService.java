@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -112,6 +113,10 @@ public class SafeStorageEventService {
                 .flatMap(s -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)))
                 .onErrorResume(throwable -> {
                     log.error("Error during persistItemsAndSendEvent --> ", throwable);
+                    if(throwable instanceof ConditionalCheckFailedException){
+                        return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId))
+                                .thenReturn(Mono.empty());
+                    }
                     return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId))
                             .then(Mono.error(throwable));
                 })

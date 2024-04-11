@@ -233,9 +233,6 @@ public class RaddRegistryUtils {
     public static void combinations(TimeInterval[] values, List<TimeInterval> current, Set<Set<TimeInterval>> accumulator, int size, int pos) {
         if (current.size() == size) {
             Set<TimeInterval> toAdd = new HashSet<>(current);
-            if (accumulator.contains(toAdd)) {
-                throw new RuntimeException("Duplicated value " + current);
-            }
             accumulator.add(toAdd);
             return;
         }

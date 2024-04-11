@@ -237,6 +237,24 @@ class RegistryServiceTest {
     }
 
     @Test
+    public void shouldProcessMessageSuccessfullyWithDuplicateSelf() {
+        PnAddressManagerEvent pnAddressManagerEvent = getMessage();
+        RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
+        RaddRegistryEntity raddRegistryEntity = mock(RaddRegistryEntity.class);
+        when(raddRegistryEntity.getRequestId()).thenReturn("SELF-requestId");
+        when(raddRegistryRequestEntity.getPk()).thenReturn("cxId#requestId#addressId");
+        when(raddRegistryRequestEntity.getRequestId()).thenReturn("SELF-requestId");
+        when(raddRegistryRequestEntity.getOriginalRequest()).thenReturn("{}");
+        when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
+        when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.just(raddRegistryEntity));
+        when(raddRegistryRequestDAO.updateStatusAndError(any(), any(), any())).thenReturn(Mono.just(raddRegistryRequestEntity));
+        when(raddAltCapCheckerProducer.sendCapCheckerEvent(any())).thenReturn(Mono.empty());
+        Mono<Void> result = registryService.handleAddressManagerEvent(pnAddressManagerEvent);
+
+        StepVerifier.create(result).verifyComplete();
+    }
+
+    @Test
     public void shouldProcessMessageSuccessfullyWithDuplicate() {
         PnAddressManagerEvent pnAddressManagerEvent = getMessage();
         RaddRegistryRequestEntity raddRegistryRequestEntity = mock(RaddRegistryRequestEntity.class);
@@ -317,6 +335,17 @@ class RegistryServiceTest {
         when(raddRegistryRequestDAO.getAllFromCorrelationId(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(pnAddressManagerClient.normalizeAddresses(any(), any())).thenReturn(Mono.just(new AcceptedResponseDto()));
         when(raddRegistryRequestDAO.updateRecordsInPending(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
+    }
+
+    @Test
+    public void shouldHandleRequestSuccessfullyWithoutItems() {
+        when(payload.getCorrelationId()).thenReturn("correlationId");
+        RaddRegistryOriginalRequest raddRegistryOriginalRequest = new RaddRegistryOriginalRequest();
+        raddRegistryOriginalRequest.setGeoLocation("test");
+        raddRegistryOriginalRequest.setPr("RM");
+        when(raddRegistryRequestDAO.getAllFromCorrelationId(any(), any())).thenReturn(Flux.empty());
 
         StepVerifier.create(registryService.handleNormalizeRequestEvent(payload)).verifyComplete();
     }

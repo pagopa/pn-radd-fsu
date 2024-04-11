@@ -12,7 +12,7 @@ public class HandleEventUtils {
 
     public static void handleException(MessageHeaders headers, Throwable t) {
         if (headers != null) {
-            log.error(RADD_ALT_IMPORT_ASYNC + "Generic exception ex=", t.getCause());
+            log.error(RADD_ALT_IMPORT_ASYNC + "Generic exception ex= {}", t.getMessage(), t);
         } else {
             log.error(RADD_ALT_IMPORT_ASYNC + "Generic exception ex ", t);
         }

@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import static it.pagopa.pn.radd.pojo.RegistryRequestStatus.REJECTED;
 import static it.pagopa.pn.radd.services.radd.fsu.v1.CsvService.ERROR_RADD_ALT_READING_CSV;
-import static it.pagopa.pn.radd.utils.RaddRegistryUtils.buildCorrelationIdForImport;
 
 @Service
 @CustomLog
@@ -65,7 +64,7 @@ public class SafeStorageEventService {
                     }
                 })
                 .flatMap(importEntity -> pnRaddRegistryImportDAO.updateStatus(importEntity, RaddRegistryImportStatus.PENDING, null))
-                .doOnError(throwable -> log.error("Error during import csv for fileKey [{}] --> ", fileKey, throwable))
+                .doOnError(throwable -> log.error("Error during import csv for fileKey [{}]", fileKey, throwable))
                 .onErrorResume(RaddImportException.class, e -> Mono.empty())
                 .then();
 
@@ -93,7 +92,7 @@ public class SafeStorageEventService {
                         .stream()
                         .filter(stringListEntry -> !stringListEntry.getKey().equals(REJECTED.name())))
                 .flatMap(entry -> persistItemsAndSendEvent(entry).thenReturn(raddRegistryRequestsMap))
-                .map(stringListMap -> stringListMap.get(REJECTED.name()))
+                .map(stringListMap -> stringListMap.getOrDefault(REJECTED.name(), Collections.emptyList()))
                 .map(this::persisteRejectedItems)
                 .then();
     }
@@ -127,7 +126,7 @@ public class SafeStorageEventService {
                 .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numberOfElements))
                 .values()
                 .stream()
-                .collect(Collectors.toMap(item -> buildCorrelationIdForImport(cxId, requestId), Function.identity()));
+                .collect(Collectors.toMap(item -> UUID.randomUUID().toString(), Function.identity()));
 
         log.info("groupingRaddRegistryRequest size: {}", map.size());
 

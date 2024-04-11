@@ -38,6 +38,4 @@ public interface RaddRegistryRequestDAO {
 
     Mono<RaddRegistryRequestEntity> updateRegistryRequestData(RaddRegistryRequestEntity raddRegistryRequestEntity);
 
-    Mono<ResultPaginationDto<RaddRegistryEntity, PnLastEvaluatedKey>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, PnLastEvaluatedKey lastEvaluatedKey);
-
 }

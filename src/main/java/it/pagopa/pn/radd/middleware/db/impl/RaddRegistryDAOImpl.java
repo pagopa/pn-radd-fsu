@@ -1,11 +1,16 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
+import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
+import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,6 +26,8 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.function.Function;
 
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
@@ -39,6 +46,15 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
                 RaddRegistryEntity.class
         );
     }
+
+    private final static Function<RaddRegistryEntity, PnLastEvaluatedKey> SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER = (keyEntity) -> {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getRegistryId());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryEntity.COL_CXID, AttributeValue.builder().s(keyEntity.getCxId()).build()
+        ));
+        return pageLastEvaluatedKey;
+    };
 
     @Override
     public Mono<RaddRegistryEntity> find(String registryId, String cxId) {
@@ -86,5 +102,36 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
 
     private Instant startOfTodayInstant() {
         return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    @Override
+    public Mono<ResultPaginationDto<RaddRegistryEntity, String>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, PnLastEvaluatedKey lastEvaluatedKey) {
+        log.info("Start findAll RaddRegistryEntity - xPagopaPnCxId={} and limit: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, cap, city, pr, externalCode);
+
+        //Creazione key per fare la query
+        Key key = Key.builder().partitionValue(xPagopaPnCxId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        //Creazione query filtrata e mappa dei valori per i filtri se presenti
+        Map<String, AttributeValue> map = new HashMap<>();
+        StringJoiner query = new StringJoiner(" AND ");
+        if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(cap)) {
+            map.put(":" + RaddRegistryEntity.COL_ZIP_CODE, AttributeValue.builder().s(cap).build());
+            query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_ZIP_CODE, RaddRegistryEntity.COL_ZIP_CODE));
+        }
+        if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(city)) {
+            map.put(":" + NormalizedAddressEntity.COL_CITY, AttributeValue.builder().s(city).build());
+            query.add(String.format("#%s.%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_CITY, NormalizedAddressEntity.COL_CITY));
+        }
+        if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(pr)) {
+            map.put(":" + NormalizedAddressEntity.COL_PR, AttributeValue.builder().s(pr).build());
+            query.add(String.format("#%s.%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR));
+        }
+        if (StringUtils.isNotEmpty(externalCode)) {
+            map.put(":" + RaddRegistryEntity.COL_EXTERNAL_CODE, AttributeValue.builder().s(externalCode).build());
+            query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_EXTERNAL_CODE, RaddRegistryEntity.COL_EXTERNAL_CODE));
+        }
+
+        return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, query.toString(), limit,  lastEvaluatedKey.getInternalLastEvaluatedKey(), SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 }

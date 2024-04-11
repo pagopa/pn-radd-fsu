@@ -222,36 +222,4 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey(), REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 
-    @Override
-    public Mono<ResultPaginationDto<RaddRegistryEntity, PnLastEvaluatedKey>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, PnLastEvaluatedKey lastEvaluatedKey) {
-        log.info("Start findAll RaddRegistryEntity - xPagopaPnCxId={} and limit: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, cap, city, pr, externalCode);
-
-        //Creazione key per fare la query
-        Key key = Key.builder().sortValue(xPagopaPnCxId).build();
-        QueryConditional conditional = QueryConditional.keyEqualTo(key);
-
-        //Creazione query filtrata e mappa dei valori per i filtri se presenti
-        Map<String, AttributeValue> map = new HashMap<>();
-        StringJoiner query = new StringJoiner(" AND ");
-        if (StringUtils.isNotEmpty(cap)) {
-            map.put(":" + RaddRegistryEntity.COL_ZIP_CODE, AttributeValue.builder().s(cap).build());
-            query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_ZIP_CODE, RaddRegistryEntity.COL_ZIP_CODE));
-        }
-        if (StringUtils.isNotEmpty(city)) {
-            map.put(":" + NormalizedAddressEntity.COL_CITY, AttributeValue.builder().s(city).build());
-            query.add(String.format("#%s.%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_CITY, NormalizedAddressEntity.COL_CITY));
-        }
-        if (StringUtils.isNotEmpty(pr)) {
-            map.put(":" + NormalizedAddressEntity.COL_PR, AttributeValue.builder().s(pr).build());
-            query.add(String.format("#%s.%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR));
-        }
-        if (StringUtils.isNotEmpty(externalCode)) {
-            map.put(":" + RaddRegistryEntity.COL_EXTERNAL_CODE, AttributeValue.builder().s(externalCode).build());
-            query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_EXTERNAL_CODE, RaddRegistryEntity.COL_EXTERNAL_CODE));
-        }
-
-        ResultPaginationDto<RaddRegistryRequestDAO, PnLastEvaluatedKey> resultPaginationDto = new ResultPaginationDto<>();
-        //FIXME va bene mettere CXID_REQUESTID_INDEX anche se faccio la query solamente con la sortKey?
-        return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, query.toString(), limit,  lastEvaluatedKey.getInternalLastEvaluatedKey());
-    }
 }

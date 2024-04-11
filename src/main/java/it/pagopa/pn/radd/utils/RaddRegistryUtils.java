@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
@@ -40,8 +41,6 @@ public class RaddRegistryUtils {
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final SecretService secretService;
-
-
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -329,63 +328,34 @@ public class RaddRegistryUtils {
         return result;
     }
 
-    public RegistriesResponse prepareRaddRegistrySelfResult(List<RaddRegistryEntity> queryResult,
-                                                            boolean moreResults,
-                                                            int limit) {
+    public RegistriesResponse mapRegistryEntityToRegistry(ResultPaginationDto<RaddRegistryEntity, String> resultPaginationDto) {
         RegistriesResponse result = new RegistriesResponse();
-        result.setNextPagesKey(new ArrayList<>());
+        if(resultPaginationDto.getResultsPage() != null) {
+            result.setRegistries(resultPaginationDto.getResultsPage().stream()
+                    .map(entity -> {
+                        Registry registry = new Registry();
+                        registry.setRegistryId(entity.getRegistryId());
+                        registry.setRequestId(entity.getRequestId());
+                        registry.setAddress(mapNormalizedAddressToAddress(entity.getNormalizedAddress()));
+                        registry.setDescription(entity.getDescription());
+                        registry.setPhoneNumber(entity.getPhoneNumber());
+                        String[] geoLocationArray = entity.getGeoLocation().split(",");
+                        RegistryGeoLocation geoLocation = new RegistryGeoLocation();
+                        geoLocation.setLatitude(geoLocationArray[0]);
+                        geoLocation.setLongitude(geoLocationArray[1]);
+                        registry.setGeoLocation(geoLocation);
+                        registry.setOpeningTime(entity.getOpeningTime());
+                        registry.setStartValidity(Date.from(entity.getStartValidity()));
+                        registry.setEndValidity(Date.from(entity.getEndValidity()));
 
-        if(queryResult != null) {
-            result.setRegistries(queryResult.stream()
-                    .limit(limit)
-                    .map(raddRegistryEntity -> {
-                        RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
-                        return mapRegistryEntityToRegistry(raddRegistryEntity);
+                        return registry;
                     })
                     .toList());
         }
-        result.setMoreResult(moreResults);
-
-        for (int i = 1; i <= pnRaddFsuConfig.getMaxPageNumber(); i++){
-            int index = limit * i;
-            if (queryResult.size() <= index) {
-                break;
-            }
-            RaddRegistryEntity keyEntity = queryResult.get(index - 1);
-            PnLastEvaluatedKey pageLastEvaluatedKey = computeLastEvaluatedKey(keyEntity);
-            result.getNextPagesKey().add(pageLastEvaluatedKey.getExternalLastEvaluatedKey());
-        }
-
+        result.setNextPagesKey(resultPaginationDto.getNextPagesKey());
+        result.setMoreResult(resultPaginationDto.isMoreResult());
         return result;
     }
-
-    private Registry mapRegistryEntityToRegistry(RaddRegistryEntity entity) {
-        Registry registry = new Registry();
-        registry.setRegistryId(entity.getRegistryId());
-        registry.setRequestId(entity.getRequestId());
-        registry.setAddress(mapNormalizedAddressToAddress(entity.getNormalizedAddress()));
-        registry.setDescription(entity.getDescription());
-        registry.setPhoneNumber(entity.getPhoneNumber());
-        String[] geoLocationArray = entity.getGeoLocation().split(",");
-        RegistryGeoLocation geoLocation = new RegistryGeoLocation();
-        geoLocation.setLatitude(geoLocationArray[0]);
-        geoLocation.setLongitude(geoLocationArray[1]);
-        registry.setGeoLocation(geoLocation);
-        registry.setOpeningTime(entity.getOpeningTime());
-        registry.setStartValidity(Date.from(entity.getStartValidity()));
-        registry.setEndValidity(Date.from(entity.getEndValidity()));
-        return registry;
-    }
-
-    private PnLastEvaluatedKey computeLastEvaluatedKey(RaddRegistryEntity keyEntity) {
-        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
-        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getRegistryId());
-        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
-                RaddRegistryRequestEntity.COL_CX_ID, AttributeValue.builder().s(keyEntity.getCxId()).build()
-        ));
-        return pageLastEvaluatedKey;
-    }
-
     private Address mapNormalizedAddressToAddress(NormalizedAddressEntity normalizedAddress) {
         Address address = new Address();
         address.addressRow(normalizedAddress.getAddressRow());

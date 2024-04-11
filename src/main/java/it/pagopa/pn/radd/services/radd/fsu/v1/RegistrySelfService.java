@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistriesResponse;
@@ -24,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,7 +33,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
@@ -145,8 +149,8 @@ public class RegistrySelfService {
         }
 
         log.info("start registryListing for xPagopaPnCxId={} and limit: [{}] and lastKey: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, lastKey, cap, city, pr, externalCode);
-        return raddRegistryRequestDAO.findAll(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastEvaluatedKey)
-                .map(resultPaginationDto -> raddRegistryUtils.prepareRaddRegistrySelfResult(resultPaginationDto.getResultsPage(), resultPaginationDto.isMoreResult(), limit));
+        return raddRegistryDAO.findAll(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastEvaluatedKey)
+                .map(raddRegistryUtils::mapRegistryEntityToRegistry);
     }
 
 }

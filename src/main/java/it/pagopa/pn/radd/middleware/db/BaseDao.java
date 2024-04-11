@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 
 @Slf4j

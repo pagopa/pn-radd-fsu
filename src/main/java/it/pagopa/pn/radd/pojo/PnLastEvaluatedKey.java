@@ -54,6 +54,7 @@ public class PnLastEvaluatedKey {
         return pnLastEvaluatedKey;
     }
 
+
     public String serializeInternalLastEvaluatedKey( ) {
         Map<String,String> internalAttributesValues = new HashMap<>();
         for (Map.Entry<String,AttributeValue> entry : this.internalLastEvaluatedKey.entrySet()) {

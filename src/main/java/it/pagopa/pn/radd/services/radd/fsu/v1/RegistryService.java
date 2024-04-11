@@ -2,10 +2,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
@@ -23,10 +20,7 @@ import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
-import it.pagopa.pn.radd.pojo.AddressManagerRequest;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
-import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
-import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import lombok.CustomLog;
@@ -385,6 +379,5 @@ public class RegistryService {
         return raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(xPagopaPnCxId, requestId, limit, lastKey)
                 .map(raddRegistryUtils::mapToRequestResponse);
     }
-
 
 }

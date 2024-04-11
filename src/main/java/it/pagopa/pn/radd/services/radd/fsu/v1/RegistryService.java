@@ -223,7 +223,7 @@ public class RegistryService {
     public Mono<Void> handleImportCompletedRequest(ImportCompletedRequestEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_IMPORT_COMPLETE);
         return Flux.merge(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState(payload.getCxId(), payload.getRequestId(), RegistryRequestStatus.ACCEPTED.name())
-                        .map(RaddRegistryRequestEntity::getZipCode), Flux.empty())//FIXME richiamare metodo su 02.11
+                        .map(RaddRegistryRequestEntity::getZipCode), deleteOlderRegistriesAndGetZipCodeList(payload.getCxId(), payload.getRequestId()))
                 .distinct()
                 .flatMap(raddAltCapCheckerProducer::sendCapCheckerEvent)
                 .then();
@@ -365,13 +365,13 @@ public class RegistryService {
         return raddRegistryRequestEntity;
     }
 
-    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
-        return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())
+    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent.Payload response) {
+        return raddRegistryDAO.getRegistriesByZipCode(response.getZipCode())
                 .collectList()
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
                 .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
-                        response.getPayload().getZipCode())))
+                        response.getZipCode())))
                 .then();
     }
 

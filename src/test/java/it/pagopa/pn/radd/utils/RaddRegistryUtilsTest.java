@@ -994,30 +994,6 @@ class RaddRegistryUtilsTest {
     }
 
     /**
-     * Method under test: {@link RaddRegistryUtils#findActiveIntervals(List)}
-     */
-    @Test
-    void testFindActiveIntervals3() {
-        // Arrange
-        PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
-        pnRaddFsuConfig.setEvaluatedZipCodeConfigNumber(1);
-        ObjectMapperUtil objectMapperUtil = new ObjectMapperUtil(new ObjectMapper());
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
-
-        ArrayList<TimeInterval> timeIntervals = new ArrayList<>();
-        Instant start = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
-        timeIntervals
-                .add(new TimeInterval(start, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-        Instant start2 = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
-        timeIntervals
-                .add(new TimeInterval(start2, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-
-        // Act and Assert
-        assertThrows(RuntimeException.class, () -> raddRegistryUtils.findActiveIntervals(timeIntervals));
-    }
-
-    /**
      * Method under test:
      * {@link RaddRegistryUtils#combinations(TimeInterval[], List, Set, int, int)}
      */

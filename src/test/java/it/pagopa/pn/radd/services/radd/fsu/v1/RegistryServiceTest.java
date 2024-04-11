@@ -53,11 +53,8 @@ import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-
-@PropertySource("classpath:application-test.properties")
 @EnableConfigurationProperties
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = {RegistryService.class})
 class RegistryServiceTest {
 
     @Mock
@@ -351,11 +348,88 @@ class RegistryServiceTest {
     }
 
     @Test
+    void handleImportCompletedRequestWithMultipleImport() {
+        String xPagopaPnCxId = "testCxId";
+        String requestId = "testRequestId";
+
+        RaddRegistryImportEntity raddRegistryImportEntity = new RaddRegistryImportEntity();
+        raddRegistryImportEntity.setConfig("{}");
+        raddRegistryImportEntity.setRequestId(requestId);
+        raddRegistryImportEntity.setCxId(xPagopaPnCxId);
+
+        RaddRegistryImportEntity raddRegistryImportEntityOld = new RaddRegistryImportEntity();
+        raddRegistryImportEntityOld.setConfig("{}");
+        raddRegistryImportEntityOld.setRequestId(requestId + "old");
+        raddRegistryImportEntityOld.setCxId(xPagopaPnCxId);
+
+        RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
+        raddRegistryEntity.setRegistryId("testRegistryId");
+        raddRegistryEntity.setZipCode("00100");
+
+        RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
+        raddRegistryImportConfig.setDeleteRole("duplicate");
+        raddRegistryImportConfig.setDefaultEndValidity(1);
+
+        RaddRegistryRequestEntity raddRegistryRequestEntity = new RaddRegistryRequestEntity();
+        raddRegistryRequestEntity.setPk("cxId#requestId#index");
+        raddRegistryRequestEntity.setZipCode("00100");
+
+        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any()))
+                .thenReturn(Flux.just(raddRegistryImportEntity,raddRegistryImportEntityOld));
+        when(raddRegistryDAO.findByCxIdAndRequestId(any(), any()))
+                .thenReturn(Flux.just(raddRegistryEntity));
+        when(raddRegistryImportDAO.updateStatusAndTtl(any(), any(), any()))
+                .thenReturn(Mono.just(raddRegistryImportEntity));
+        when(raddRegistryDAO.updateRegistryEntity(raddRegistryEntity))
+                .thenReturn(Mono.just(raddRegistryEntity));
+        when(raddAltCapCheckerProducer.sendCapCheckerEvent(any()))
+                .thenReturn(Mono.empty());
+
+        ImportCompletedRequestEvent.Payload payload = ImportCompletedRequestEvent.Payload.builder().cxId(xPagopaPnCxId).requestId(requestId).build();
+        when(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState(xPagopaPnCxId, requestId, RegistryRequestStatus.ACCEPTED.name()))
+                .thenReturn(Flux.just(raddRegistryRequestEntity));
+
+        StepVerifier.create(registryService.handleImportCompletedRequest(payload)).expectComplete().verify();
+
+    }
+
+    @Test
     void handleImportCompletedRequest() {
-        ImportCompletedRequestEvent.Payload payload = ImportCompletedRequestEvent.Payload.builder().cxId("cxId").requestId("requestId").build();
-        when(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState("cxId", "requestId", RegistryRequestStatus.ACCEPTED.name()))
-                .thenReturn(Flux.just(mock(RaddRegistryRequestEntity.class)));
-        StepVerifier.create(registryService.handleImportCompletedRequest(payload)).expectComplete();
+        String xPagopaPnCxId = "testCxId";
+        String requestId = "testRequestId";
+
+        RaddRegistryImportEntity raddRegistryImportEntity = new RaddRegistryImportEntity();
+        raddRegistryImportEntity.setConfig("{}");
+        raddRegistryImportEntity.setRequestId(requestId);
+        raddRegistryImportEntity.setCxId(xPagopaPnCxId);
+
+        RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
+        raddRegistryEntity.setRegistryId("testRegistryId");
+        raddRegistryEntity.setZipCode("00100");
+
+        RaddRegistryImportConfig raddRegistryImportConfig = new RaddRegistryImportConfig();
+        raddRegistryImportConfig.setDeleteRole("duplicate");
+        raddRegistryImportConfig.setDefaultEndValidity(1);
+
+        RaddRegistryRequestEntity raddRegistryRequestEntity = new RaddRegistryRequestEntity();
+        raddRegistryRequestEntity.setPk("cxId#requestId#index");
+        raddRegistryRequestEntity.setZipCode("00100");
+
+        when(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(any(), any(), any()))
+                .thenReturn(Flux.just(raddRegistryImportEntity));
+        when(raddRegistryDAO.findByCxIdAndRequestId(xPagopaPnCxId, REQUEST_ID_PREFIX))
+                .thenReturn(Flux.just(raddRegistryEntity));
+        when(raddRegistryDAO.updateRegistryEntity(raddRegistryEntity))
+                .thenReturn(Mono.just(raddRegistryEntity));
+        when(raddAltCapCheckerProducer.sendCapCheckerEvent(any()))
+                .thenReturn(Mono.empty());
+
+        ImportCompletedRequestEvent.Payload payload = ImportCompletedRequestEvent.Payload.builder().cxId(xPagopaPnCxId).requestId(requestId).build();
+        when(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState(xPagopaPnCxId, requestId, RegistryRequestStatus.ACCEPTED.name()))
+                .thenReturn(Flux.just(raddRegistryRequestEntity));
+
+        StepVerifier.create(registryService.handleImportCompletedRequest(payload)).expectComplete().verify();
+
     }
 
     @Test
@@ -471,9 +545,9 @@ class RegistryServiceTest {
 
     @Test
     public void handleInternalCapCheckerMessageTest() {
-        PnInternalCapCheckerEvent event = new PnInternalCapCheckerEvent();
-        PnInternalCapCheckerEvent.Payload payload = new PnInternalCapCheckerEvent.Payload("zipCode");
-        event.setPayload(payload);
+        PnInternalCapCheckerEvent event = PnInternalCapCheckerEvent.builder()
+                .payload(PnInternalCapCheckerEvent.Payload.builder().zipCode("zipCode").build())
+                .build();
         Instant start = Instant.now();
         Instant end = Instant.now();
         RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();
@@ -482,7 +556,7 @@ class RegistryServiceTest {
         raddRegistryEntity.setEndValidity(end);
         when(raddRegistryDAO.getRegistriesByZipCode(any())).thenReturn(Flux.just(raddRegistryEntity));
 
-        StepVerifier.create(registryService.handleInternalCapCheckerMessage(event)).expectComplete();
+        StepVerifier.create(registryService.handleInternalCapCheckerMessage(event.getPayload())).expectComplete();
     }
 
 

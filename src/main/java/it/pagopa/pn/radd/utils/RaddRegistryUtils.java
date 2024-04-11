@@ -306,10 +306,6 @@ public class RaddRegistryUtils {
         return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
 
-    public static String buildCorrelationIdForImport(String cxId, String requestId) {
-        return cxId + "_" + requestId + "_" + UUID.randomUUID();
-    }
-
     public RequestResponse mapToRequestResponse(ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto) {
         RequestResponse result = new RequestResponse();
         if(resultPaginationDto.getResultsPage() != null) {

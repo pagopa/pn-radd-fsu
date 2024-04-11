@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import static it.pagopa.pn.radd.pojo.RegistryRequestStatus.REJECTED;
 import static it.pagopa.pn.radd.services.radd.fsu.v1.CsvService.ERROR_RADD_ALT_READING_CSV;
-import static it.pagopa.pn.radd.utils.RaddRegistryUtils.buildCorrelationIdForImport;
 
 @Service
 @CustomLog
@@ -127,7 +126,7 @@ public class SafeStorageEventService {
                 .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / numberOfElements))
                 .values()
                 .stream()
-                .collect(Collectors.toMap(item -> buildCorrelationIdForImport(cxId, requestId), Function.identity()));
+                .collect(Collectors.toMap(item -> UUID.randomUUID().toString(), Function.identity()));
 
         log.info("groupingRaddRegistryRequest size: {}", map.size());
 

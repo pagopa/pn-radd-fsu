@@ -21,7 +21,7 @@
     "RegistryImportReplacedTtl": "8766",
     "EvaluatedZipCodeConfigType": "ZIPCODE",
     "EvaluatedZipCodeConfigNumber": "1",
-    "PnRaddMaxPageNumber": 10,
-    "PnRaddMaxDynamoDBQuerySize": 1000
+    "PnRaddMaxPageNumber": "10",
+    "PnRaddMaxDynamoDBQuerySize": "1000"
   }
 }

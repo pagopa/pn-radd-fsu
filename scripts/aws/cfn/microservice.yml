@@ -362,10 +362,6 @@ Parameters:
     Default: 1
     Description: 'Config number for zipCode to paper channel'
 
-  RaddEventBusName:
-    Type: String
-    Description: Name of the radd event bus
-
   PnRaddMaxDynamoDBQuerySize:
     Type: Number
     Description: max number of record before reaching 1MB DynamoDb limitation

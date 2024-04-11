@@ -443,7 +443,6 @@ Resources:
         ContainerEnvEntry42: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
         ContainerEnvEntry43: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
         ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
-        ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS=${RaddEventBusName}'
         ContainerEnvEntry45: !Sub 'PN_RADD_MAX_DYNAMO_DB_QUERY_SIZE=${PnRaddMaxDynamoDBQuerySize}'
         ContainerEnvEntry46: !Sub 'PN_RADD_MAX_PAGE_NUMBER=${PnRaddMaxPageNumber}'
 

@@ -471,9 +471,7 @@ class RegistryServiceTest {
 
     @Test
     public void handleInternalCapCheckerMessageTest() {
-        PnInternalCapCheckerEvent event = new PnInternalCapCheckerEvent();
-        PnInternalCapCheckerEvent.Payload payload = new PnInternalCapCheckerEvent.Payload("zipCode");
-        event.setPayload(payload);
+        PnInternalCapCheckerEvent event = PnInternalCapCheckerEvent.builder().payload(PnInternalCapCheckerEvent.Payload.builder().zipCode("zipCode").build()).build();
         Instant start = Instant.now();
         Instant end = Instant.now();
         RaddRegistryEntity raddRegistryEntity = new RaddRegistryEntity();

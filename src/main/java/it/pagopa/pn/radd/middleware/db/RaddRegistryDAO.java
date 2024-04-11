@@ -18,6 +18,6 @@ public interface RaddRegistryDAO {
 
     Flux<RaddRegistryEntity> getRegistriesByZipCode(String zipCode);
 
-    Mono<ResultPaginationDto<RaddRegistryEntity, String>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, PnLastEvaluatedKey lastEvaluatedKey);
+    Mono<ResultPaginationDto<RaddRegistryEntity, String>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, String lastEvaluatedKey);
 
 }

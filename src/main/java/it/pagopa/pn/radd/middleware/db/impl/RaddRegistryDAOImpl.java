@@ -1,6 +1,8 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
@@ -29,6 +31,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
+import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 
@@ -105,8 +108,21 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
     }
 
     @Override
-    public Mono<ResultPaginationDto<RaddRegistryEntity, String>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, PnLastEvaluatedKey lastEvaluatedKey) {
+    public Mono<ResultPaginationDto<RaddRegistryEntity, String>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, String lastKey) {
         log.info("Start findAll RaddRegistryEntity - xPagopaPnCxId={} and limit: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, cap, city, pr, externalCode);
+
+        PnLastEvaluatedKey lastEvaluatedKey = null;
+        if (lastKey != null) {
+            try {
+                lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
+            } catch (JsonProcessingException e) {
+                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        e);
+            }
+        } else {
+            log.debug("First page search");
+        }
 
         //Creazione key per fare la query
         Key key = Key.builder().partitionValue(xPagopaPnCxId).build();
@@ -132,6 +148,6 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
             query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_EXTERNAL_CODE, RaddRegistryEntity.COL_EXTERNAL_CODE));
         }
 
-        return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, query.toString(), limit,  lastEvaluatedKey.getInternalLastEvaluatedKey(), SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
+        return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, query.toString(), limit,  lastEvaluatedKey != null ? lastEvaluatedKey.getInternalLastEvaluatedKey() : null, SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 }

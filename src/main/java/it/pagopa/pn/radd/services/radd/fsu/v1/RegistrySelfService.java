@@ -135,21 +135,8 @@ public class RegistrySelfService {
     }
 
     public Mono<RegistriesResponse> registryListing(String xPagopaPnCxId, Integer limit, String lastKey, String cap, String city, String pr, String externalCode) {
-        PnLastEvaluatedKey lastEvaluatedKey = null;
-        if (lastKey != null) {
-            try {
-                lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
-            } catch (JsonProcessingException e) {
-                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
-                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
-                        e);
-            }
-        } else {
-            log.debug("First page search");
-        }
-
         log.info("start registryListing for xPagopaPnCxId={} and limit: [{}] and lastKey: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, lastKey, cap, city, pr, externalCode);
-        return raddRegistryDAO.findAll(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastEvaluatedKey)
+        return raddRegistryDAO.findAll(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastKey)
                 .map(raddRegistryUtils::mapRegistryEntityToRegistry);
     }
 

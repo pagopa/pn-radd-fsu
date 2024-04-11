@@ -4,7 +4,12 @@ import it.pagopa.pn.api.dto.events.GenericEvent;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import lombok.*;
 
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Builder(toBuilder = true)
+@EqualsAndHashCode
+@ToString
 public class PnInternalCapCheckerEvent implements GenericEvent<GenericEventHeader, PnInternalCapCheckerEvent.Payload> {
 
     private GenericEventHeader header;

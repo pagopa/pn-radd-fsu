@@ -229,7 +229,7 @@ public class RegistryService {
     public Mono<Void> handleImportCompletedRequest(ImportCompletedRequestEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_IMPORT_COMPLETE);
         return Flux.merge(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState(payload.getCxId(), payload.getRequestId(), RegistryRequestStatus.ACCEPTED.name())
-                        .map(RaddRegistryRequestEntity::getZipCode), Flux.empty())//FIXME richiamare metodo su 02.11
+                        .map(RaddRegistryRequestEntity::getZipCode), deleteOlderRegistriesAndGetZipCodeList(payload.getCxId(), payload.getRequestId()))
                 .distinct()
                 .flatMap(raddAltCapCheckerProducer::sendCapCheckerEvent)
                 .then();

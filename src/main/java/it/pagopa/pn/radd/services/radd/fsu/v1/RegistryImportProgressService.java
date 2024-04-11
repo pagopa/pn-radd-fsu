@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.apache.commons.lang3.time.StopWatch;
+import org.jboss.logging.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -59,7 +61,10 @@ public class RegistryImportProgressService {
     }
 
     private Mono<Void> checkRegistryRequest(RaddRegistryImportEntity item) {
-        return registryRequestDAO.findByCxIdAndRequestIdAndStatusNotIn(item.getCxId(), item.getRequestId(), List.of(RegistryRequestStatus.ACCEPTED, RegistryRequestStatus.REJECTED))
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, item.getRequestId());
+        MDC.put(MDCUtils.MDC_CX_ID_KEY, item.getCxId());
+
+        Mono<Void> voidMono = registryRequestDAO.findByCxIdAndRequestIdAndStatusNotIn(item.getCxId(), item.getRequestId(), List.of(RegistryRequestStatus.ACCEPTED, RegistryRequestStatus.REJECTED))
                 .hasElements()
                 .flatMap(hasElement -> {
                     if (Boolean.FALSE.equals(hasElement)) {
@@ -68,6 +73,9 @@ public class RegistryImportProgressService {
                     }
                     return Mono.empty();
                 });
+
+        return MDCUtils.addMDCToContextAndExecute(voidMono);
+
     }
 
     private Mono<Void> sendSqsImportCompleted(String cxId, String requestId) {

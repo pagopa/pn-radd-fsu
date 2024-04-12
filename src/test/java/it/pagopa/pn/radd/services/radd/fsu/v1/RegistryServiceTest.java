@@ -127,7 +127,7 @@ class RegistryServiceTest {
         RaddRegistryImportEntity pnRaddRegistryImportEntity = new RaddRegistryImportEntity();
         pnRaddRegistryImportEntity.setStatus(TO_PROCESS.name());
         pnRaddRegistryImportEntity.setChecksum("checksum");
-        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().minus(10, ChronoUnit.DAYS));
+        pnRaddRegistryImportEntity.setFileUploadDueDate(Instant.now().plus(10, ChronoUnit.DAYS));
         when(raddRegistryImportDAO.getRegistryImportByCxId(any())).thenReturn(Flux.just(pnRaddRegistryImportEntity));
 
         StepVerifier.create(registryService.uploadRegistryRequests("cxId", Mono.just(request)))

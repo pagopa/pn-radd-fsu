@@ -159,7 +159,7 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
             map.put(":" + NormalizedAddressEntity.COL_PR, AttributeValue.builder().s(pr).build());
             names.put("#" + NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR);
             names.put("#" + RaddRegistryEntity.COL_NORMALIZED_ADDRESS, RaddRegistryEntity.COL_NORMALIZED_ADDRESS);
-            query.add(String.format("#%s.%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR));
+            query.add(String.format("#%s.#%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR));
         }
         if (StringUtils.isNotEmpty(externalCode)) {
             map.put(":" + RaddRegistryEntity.COL_EXTERNAL_CODE, AttributeValue.builder().s(externalCode).build());

@@ -171,7 +171,14 @@ public class RegistryService {
         } else {
             return raddRegistryUtils.mergeNewRegistryEntity(preExistingRegistryEntity, newRegistryRequestEntity)
                     .flatMap(updatedEntity -> raddRegistryDAO.updateRegistryEntity(updatedEntity)
-                            .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(newRegistryRequestEntity, RegistryRequestStatus.ACCEPTED)));
+                            .flatMap(entity -> {
+                                newRegistryRequestEntity.setUpdatedAt(Instant.now());
+                                newRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
+                                newRegistryRequestEntity.setRegistryId(entity.getRegistryId());
+                                newRegistryRequestEntity.setZipCode(entity.getZipCode());
+                                return raddRegistryRequestDAO.updateRegistryRequestData(newRegistryRequestEntity)
+                                        .doOnNext(requestEntity -> log.info("Registry request [{}] updated in status ACCEPTED", requestEntity.getPk()));
+                            }));
         }
     }
 

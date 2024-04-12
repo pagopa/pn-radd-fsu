@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestRespon
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
@@ -35,12 +36,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -85,10 +88,10 @@ public class RegistryService {
         for (RaddRegistryImportEntity entity : entities) {
             if (request.getChecksum().equalsIgnoreCase(entity.getChecksum()) &&
                     (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
-                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isAfter(entity.getFileUploadDueDate())))) {
+                            || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate())))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(DUPLICATE_REQUEST.name()), HttpStatus.CONFLICT));
             } else if (RaddRegistryImportStatus.PENDING.name().equalsIgnoreCase(entity.getStatus())
-                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isAfter(entity.getFileUploadDueDate()))) {
+                    || (RaddRegistryImportStatus.TO_PROCESS.name().equalsIgnoreCase(entity.getStatus()) && Instant.now().isBefore(entity.getFileUploadDueDate()))) {
                 return Mono.error(new RaddGenericException(ExceptionTypeEnum.valueOf(PENDING_REQUEST.name()), HttpStatus.BAD_REQUEST));
             }
         }
@@ -144,6 +147,12 @@ public class RegistryService {
         return raddRegistryDAO.find(registryId, raddRegistryRequestEntity.getCxId())
                 .flatMap(entity -> updateRegistryRequestEntity(raddRegistryRequestEntity, entity))
                 .switchIfEmpty(createNewRegistryEntity(registryId, raddRegistryRequestEntity, resultItem))
+                .flatMap(entity -> {
+                    if(entity.getRequestId().startsWith(REQUEST_ID_PREFIX)) {
+                        return raddAltCapCheckerProducer.sendCapCheckerEvent(entity.getZipCode()).thenReturn(entity);
+                    }
+                    return Mono.just(entity);
+                })
                 .onErrorResume(throwable -> {
                     if (throwable instanceof RaddGenericException ex && ERROR_DUPLICATE.equals(ex.getMessage())) {
                         return raddRegistryRequestDAO.updateStatusAndError(
@@ -162,14 +171,21 @@ public class RegistryService {
         } else {
             return raddRegistryUtils.mergeNewRegistryEntity(preExistingRegistryEntity, newRegistryRequestEntity)
                     .flatMap(updatedEntity -> raddRegistryDAO.updateRegistryEntity(updatedEntity)
-                            .flatMap(unused -> raddRegistryRequestDAO.updateRegistryRequestStatus(newRegistryRequestEntity, RegistryRequestStatus.ACCEPTED)));
+                            .flatMap(entity -> {
+                                newRegistryRequestEntity.setUpdatedAt(Instant.now());
+                                newRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
+                                newRegistryRequestEntity.setRegistryId(entity.getRegistryId());
+                                newRegistryRequestEntity.setZipCode(entity.getZipCode());
+                                return raddRegistryRequestDAO.updateRegistryRequestData(newRegistryRequestEntity)
+                                        .doOnNext(requestEntity -> log.info("Registry request [{}] updated in status ACCEPTED", requestEntity.getPk()));
+                            }));
         }
     }
 
     private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(String registryId, RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
         return raddRegistryUtils.constructRaddRegistryEntity(registryId, resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
                 .flatMap(item -> this.raddRegistryDAO.putItemIfAbsent(item)
-                        .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
+                        .onErrorResume(TransactionAlreadyExistsException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
                 .flatMap(raddRegistryEntity -> {
                     raddRegistryRequestEntity.setUpdatedAt(Instant.now());
                     raddRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
@@ -203,6 +219,13 @@ public class RegistryService {
 
         return raddRegistryRequestDAO.getAllFromCorrelationId(payload.getCorrelationId(), RegistryRequestStatus.NOT_WORKED.name())
                 .collectList()
+                .flatMap(raddRegistryRequestEntities -> {
+                    if(CollectionUtils.isEmpty(raddRegistryRequestEntities)) {
+                        log.warn("No records found for correlationId: {}", payload.getCorrelationId());
+                        return Mono.empty();
+                    }
+                    return Mono.just(raddRegistryRequestEntities);
+                })
                 .zipWhen(entities -> Mono.just(raddRegistryUtils.getRequestAddressFromOriginalRequest(entities)))
                 .flatMap(tuple -> {
                     request.setAddresses(tuple.getT2());
@@ -214,8 +237,12 @@ public class RegistryService {
 
     public Mono<Void> handleImportCompletedRequest(ImportCompletedRequestEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_IMPORT_COMPLETE);
-        return Flux.merge(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState(payload.getCxId(), payload.getRequestId(), RegistryRequestStatus.ACCEPTED.name())
-                        .map(RaddRegistryRequestEntity::getZipCode), Flux.empty())//FIXME richiamare metodo su 02.11
+        var newRegistryRequest = raddRegistryDAO.findPaginatedByCxIdAndRequestId(payload.getCxId(), payload.getRequestId())
+                .map(RaddRegistryEntity::getZipCode);
+
+        var oldRegistryRequest = deleteOlderRegistriesAndGetZipCodeList(payload.getCxId(), payload.getRequestId());
+
+        return newRegistryRequest.concatWith(oldRegistryRequest)
                 .distinct()
                 .flatMap(raddAltCapCheckerProducer::sendCapCheckerEvent)
                 .then();
@@ -232,7 +259,7 @@ public class RegistryService {
      */
     public Flux<String> deleteOlderRegistriesAndGetZipCodeList(String xPagopaPnCxId, String requestId) {
         log.info("start deleteOlderRegistriesAndGetZipCodeList for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
-        return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
+        return raddRegistryImportDAO.getRegistryImportByCxIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
                 .collectList().flatMapMany(raddRegistryImportEntities -> processRegistryImportsInStatusDone(xPagopaPnCxId, requestId, raddRegistryImportEntities));
     }
 
@@ -344,7 +371,7 @@ public class RegistryService {
     }
 
     private RaddRegistryEntity setEndValidityAndRequestId(RaddRegistryImportEntity raddRegistryImportEntity, RaddRegistryEntity raddRegistryEntity, RaddRegistryImportConfig raddRegistryImportConfig) {
-        raddRegistryEntity.setEndValidity(Instant.now().plus(raddRegistryImportConfig.getDefaultEndValidity(), ChronoUnit.DAYS));
+        raddRegistryEntity.setEndValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).plus(raddRegistryImportConfig.getDefaultEndValidity(), ChronoUnit.DAYS));
         raddRegistryEntity.setRequestId(raddRegistryImportEntity.getRequestId());
         return raddRegistryEntity;
     }
@@ -357,13 +384,18 @@ public class RegistryService {
         return raddRegistryRequestEntity;
     }
 
-    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent response) {
-        return raddRegistryDAO.getRegistriesByZipCode(response.getPayload().getZipCode())
+    public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent.Payload response) {
+        return raddRegistryDAO.getRegistriesByZipCode(response.getZipCode())
                 .collectList()
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
-                .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
-                        response.getPayload().getZipCode())))
+                .flatMap(timeIntervals -> {
+                    if(timeIntervals.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    return eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
+                            response.getZipCode()));
+                })
                 .then();
     }
 
@@ -371,6 +403,5 @@ public class RegistryService {
         return raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(xPagopaPnCxId, requestId, limit, lastKey)
                 .map(raddRegistryUtils::mapToRequestResponse);
     }
-
 
 }

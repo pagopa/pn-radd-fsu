@@ -1,13 +1,18 @@
 package it.pagopa.pn.radd.middleware.queue.event;
 
 import it.pagopa.pn.api.dto.events.GenericEvent;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
+import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import lombok.*;
 
-@Data
-public class PnInternalCapCheckerEvent implements GenericEvent<StandardEventHeader, PnInternalCapCheckerEvent.Payload> {
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Builder(toBuilder = true)
+@EqualsAndHashCode
+@ToString
+public class PnInternalCapCheckerEvent implements GenericEvent<GenericEventHeader, PnInternalCapCheckerEvent.Payload> {
 
-    private StandardEventHeader header;
+    private GenericEventHeader header;
 
     private Payload payload;
 

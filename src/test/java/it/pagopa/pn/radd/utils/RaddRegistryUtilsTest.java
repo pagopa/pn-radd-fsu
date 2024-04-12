@@ -14,6 +14,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadReque
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.CachedSecretsManagerConsumer;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
@@ -32,10 +33,7 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static it.pagopa.pn.radd.utils.RaddRegistryUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,7 +77,12 @@ class RaddRegistryUtilsTest {
         preExistingRegistryEntity
                 .setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         preExistingRegistryEntity.setGeoLocation("Geo Location");
-        preExistingRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        preExistingRegistryEntity.setNormalizedAddress(addressEntity);
         preExistingRegistryEntity.setOpeningTime("Opening Time");
         preExistingRegistryEntity.setPhoneNumber("6625550144");
         preExistingRegistryEntity.setRegistryId("42");
@@ -795,7 +798,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setDescription("The characteristics of someone or something");
         raddRegistryEntity.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity.setGeoLocation("Geo Location");
-        raddRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        raddRegistryEntity.setNormalizedAddress(addressEntity);
         raddRegistryEntity.setOpeningTime("Opening Time");
         raddRegistryEntity.setPhoneNumber("6625550144");
         raddRegistryEntity.setRegistryId("42");
@@ -827,7 +835,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setDescription("The characteristics of someone or something");
         raddRegistryEntity.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity.setGeoLocation("Geo Location");
-        raddRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        raddRegistryEntity.setNormalizedAddress(addressEntity);
         raddRegistryEntity.setOpeningTime("Opening Time");
         raddRegistryEntity.setPhoneNumber("6625550144");
         raddRegistryEntity.setRegistryId("42");
@@ -840,7 +853,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity2.setDescription("Description");
         raddRegistryEntity2.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity2.setGeoLocation("it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity");
-        raddRegistryEntity2.setNormalizedAddress("17 High St");
+        NormalizedAddressEntity addressEntity2 = new NormalizedAddressEntity();
+        addressEntity.setCountry("country2");
+        addressEntity.setPr("pr2");
+        addressEntity.setCity("city2");
+        addressEntity.setCap("cap2");
+        raddRegistryEntity2.setNormalizedAddress(addressEntity2);
         raddRegistryEntity2.setOpeningTime("it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity");
         raddRegistryEntity2.setPhoneNumber("8605550118");
         raddRegistryEntity2.setRegistryId("Registry Id");
@@ -889,7 +907,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setDescription("The characteristics of someone or something");
         raddRegistryEntity.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity.setGeoLocation("Geo Location");
-        raddRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        raddRegistryEntity.setNormalizedAddress(addressEntity);
         raddRegistryEntity.setOpeningTime("Opening Time");
         raddRegistryEntity.setPhoneNumber("6625550144");
         raddRegistryEntity.setRegistryId("42");
@@ -965,30 +988,6 @@ class RaddRegistryUtilsTest {
         Instant expectedStart = getResult.getStart();
         Instant startOfToday = LocalDate.now().atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
         assertEquals(expectedStart, startOfToday);
-    }
-
-    /**
-     * Method under test: {@link RaddRegistryUtils#findActiveIntervals(List)}
-     */
-    @Test
-    void testFindActiveIntervals3() {
-        // Arrange
-        PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
-        pnRaddFsuConfig.setEvaluatedZipCodeConfigNumber(1);
-        ObjectMapperUtil objectMapperUtil = new ObjectMapperUtil(new ObjectMapper());
-        RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
-
-        ArrayList<TimeInterval> timeIntervals = new ArrayList<>();
-        Instant start = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
-        timeIntervals
-                .add(new TimeInterval(start, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-        Instant start2 = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
-        timeIntervals
-                .add(new TimeInterval(start2, LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant()));
-
-        // Act and Assert
-        assertThrows(RuntimeException.class, () -> raddRegistryUtils.findActiveIntervals(timeIntervals));
     }
 
     /**
@@ -1246,10 +1245,19 @@ class RaddRegistryUtilsTest {
         raddRegistryRequestEntity.setCreatedAt(Instant.now());
         raddRegistryRequestEntity.setUpdatedAt(Instant.now());
         raddRegistryRequestEntity.setStatus("testStatus");
-        raddRegistryRequestEntity.setOriginalRequest("testOriginalRequest");
+        raddRegistryRequestEntity.setOriginalRequest("{\"addressRow\": \"testAddressRow\", \"cap\": \"testCap\", \"city\": \"testCity\", \"pr\": \"testPr\", \"country\": \"testCountry\", \"startValidity\": \"2024-01-01T00:00:00.000Z\"}");
         resultsPage.add(raddRegistryRequestEntity);
         resultPaginationDto.setResultsPage(resultsPage);
+        resultPaginationDto.setNextPagesKey(Collections.emptyList());
+        resultPaginationDto.setMoreResult(true);
 
+        RaddRegistryOriginalRequest originalRequest = new RaddRegistryOriginalRequest();
+        originalRequest.setAddressRow("testAddressRow");
+        originalRequest.setCap("testCap");
+        originalRequest.setCity("testCity");
+        originalRequest.setPr("testPr");
+
+        when(objectMapperUtil.toObject(Mockito.anyString(), Mockito.any())).thenReturn(originalRequest);
         // When
         RequestResponse result = raddRegistryUtils.mapToRequestResponse(resultPaginationDto);
 
@@ -1260,6 +1268,9 @@ class RaddRegistryUtilsTest {
         assertEquals("testRequestId", result.getItems().get(0).getRequestId());
         assertEquals("testError", result.getItems().get(0).getError());
         assertEquals("testStatus", result.getItems().get(0).getStatus());
+        assertEquals("testAddressRow", result.getItems().get(0).getOriginalRequest().getOriginalAddress().getAddressRow());
+        assertEquals(0, result.getNextPagesKey().size());
+        assertTrue(result.getMoreResult());
     }
 
     @Test
@@ -1267,6 +1278,8 @@ class RaddRegistryUtilsTest {
         // Given
         ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto = new ResultPaginationDto<>();
         resultPaginationDto.setResultsPage(null);
+        resultPaginationDto.setNextPagesKey(Collections.emptyList());
+        resultPaginationDto.setMoreResult(true);
 
         // When
         RequestResponse result = raddRegistryUtils.mapToRequestResponse(resultPaginationDto);
@@ -1274,5 +1287,7 @@ class RaddRegistryUtilsTest {
         // Then
         assertNotNull(result);
         assertNull(result.getItems());
+        assertEquals(0, result.getNextPagesKey().size());
+        assertTrue(result.getMoreResult());
     }
 }

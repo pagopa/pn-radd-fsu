@@ -19,7 +19,7 @@ class InternalCapCheckerEventHandlerTest {
     private RegistryService registryService;
 
     @Mock
-    private Message<PnInternalCapCheckerEvent> message;
+    private Message<PnInternalCapCheckerEvent.Payload> message;
 
     @InjectMocks
     private InternalCapCheckerEventHandler internalCapCheckerEventHandler;
@@ -31,7 +31,8 @@ class InternalCapCheckerEventHandlerTest {
 
     @Test
     void shouldHandleMessageSuccessfully() {
-        PnInternalCapCheckerEvent event = new PnInternalCapCheckerEvent();
+        PnInternalCapCheckerEvent.Payload event = mock(PnInternalCapCheckerEvent.Payload.class);
+        when(event.getZipCode()).thenReturn("zipCode");
         when(message.getPayload()).thenReturn(event);
         when(registryService.handleInternalCapCheckerMessage(event)).thenReturn(Mono.empty());
 

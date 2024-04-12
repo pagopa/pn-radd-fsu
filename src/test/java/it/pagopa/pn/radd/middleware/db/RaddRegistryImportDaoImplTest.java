@@ -72,7 +72,7 @@ class RaddRegistryImportDaoImplTest extends BaseTest.WithLocalStack {
     }
     @Test
     void testGetRegistryImportByCxIdAndRequestIdFilterByStatus() {
-        StepVerifier.create(raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(baseEntity.getCxId(), baseEntity.getRequestId(), RaddRegistryImportStatus.TO_PROCESS))
+        StepVerifier.create(raddRegistryImportDAO.getRegistryImportByCxIdFilterByStatus(baseEntity.getCxId(), baseEntity.getRequestId(), RaddRegistryImportStatus.TO_PROCESS))
                 .expectNextMatches(entity -> entity.getCxId().equals(baseEntity.getCxId()) && entity.getRequestId().equals(baseEntity.getRequestId()) && entity.getStatus().equals(RaddRegistryImportStatus.TO_PROCESS.name()));
     }
 

@@ -66,7 +66,7 @@ public class RaddRegistryRequestEntityMapper {
         requestEntity.setPk(buildPk(cxId, requestId, originalRequestString));
         requestEntity.setCxId(cxId);
         requestEntity.setRequestId(requestId);
-        requestEntity.setCorrelationId(buildCorrelationId(cxId, requestId, originalRequestString));
+        requestEntity.setCorrelationId(requestId);
         requestEntity.setCreatedAt(Instant.now());
         requestEntity.setUpdatedAt(Instant.now());
         requestEntity.setOriginalRequest(originalRequestString);
@@ -77,12 +77,6 @@ public class RaddRegistryRequestEntityMapper {
         UUID index = UUID.nameUUIDFromBytes(originalRequest.getBytes(StandardCharsets.UTF_8));
         return cxId + "#" + requestId + "#" + index;
     }
-
-    private static String buildCorrelationId(String cxId, String requestId, String originalRequest) {
-        UUID index = UUID.nameUUIDFromBytes(originalRequest.getBytes(StandardCharsets.UTF_8));
-        return cxId + "_" + requestId + "_" + index;
-    }
-
 
     public List<RaddRegistryOriginalRequest> retrieveOriginalRequest(List<RaddRegistryRequest> raddRegistryRequest) {
 
@@ -96,13 +90,15 @@ public class RaddRegistryRequestEntityMapper {
                     originalRequest.setCountry(request.getPaese());
 
                     if (StringUtils.isNotBlank(request.getDataInizioValidita())) {
-                        originalRequest.setStartValidity(request.getDataInizioValidita());
+                        LocalDate date = LocalDate.parse(request.getDataInizioValidita());
+                        originalRequest.setStartValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
                     } else {
                         originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
                     }
 
                     if (StringUtils.isNotBlank(request.getDataFineValidita())) {
-                        originalRequest.setEndValidity(request.getDataFineValidita());
+                        LocalDate date = LocalDate.parse(request.getDataFineValidita());
+                        originalRequest.setEndValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
                     }
 
                     originalRequest.setOpeningTime(request.getOrariApertura());

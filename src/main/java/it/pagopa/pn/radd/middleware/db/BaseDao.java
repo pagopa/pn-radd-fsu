@@ -3,8 +3,8 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
-import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -27,6 +27,8 @@ public abstract class BaseDao<T> {
     private final String tableName;
     private final Class<T> tClass;
     private final PnRaddFsuConfig raddFsuConfig;
+
+    public static final int FILTER_EXPRESSION_APPLIED_MULTIPLIER = 4;
 
     protected BaseDao(
             DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
@@ -169,6 +171,7 @@ public abstract class BaseDao<T> {
     protected <T> Mono<ResultPaginationDto<T, String>> getByFilterPaginated(QueryConditional conditional,
                                                                           String index,
                                                                           Map<String, AttributeValue> values,
+                                                                          Map<String, String> names,
                                                                           String filterExpression,
                                                                           Integer pageSize,
                                                                           Map<String, AttributeValue> lastEvaluatedKey,
@@ -179,11 +182,11 @@ public abstract class BaseDao<T> {
 
         int totalElements = pageSize * raddFsuConfig.getMaxPageNumber();
         if (!StringUtils.isBlank(filterExpression)) {
-            query.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).build());
+            query.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).expressionNames(names).build());
             totalElements *= (values.size() + 1) * 2;
         }
-        if (totalElements > raddFsuConfig.getMaxDynamoDBQuerySize()) {
-            totalElements = raddFsuConfig.getMaxDynamoDBQuerySize();
+        if (totalElements > raddFsuConfig.getMaxQuerySize()) {
+            totalElements = raddFsuConfig.getMaxQuerySize();
         }
         query.limit(totalElements);
 

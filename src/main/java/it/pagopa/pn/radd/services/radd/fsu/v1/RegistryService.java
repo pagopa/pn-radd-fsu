@@ -222,8 +222,12 @@ public class RegistryService {
 
     public Mono<Void> handleImportCompletedRequest(ImportCompletedRequestEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_IMPORT_COMPLETE);
-        return Flux.merge(raddRegistryRequestDAO.getAllFromCxidAndRequestIdWithState(payload.getCxId(), payload.getRequestId(), RegistryRequestStatus.ACCEPTED.name())
-                        .map(RaddRegistryRequestEntity::getZipCode), deleteOlderRegistriesAndGetZipCodeList(payload.getCxId(), payload.getRequestId()))
+        var newRegistryRequest = raddRegistryDAO.findPaginatedByCxIdAndRequestId(payload.getCxId(), payload.getRequestId())
+                .map(RaddRegistryEntity::getZipCode);
+
+        var oldRegistryRequest = deleteOlderRegistriesAndGetZipCodeList(payload.getCxId(), payload.getRequestId());
+
+        return newRegistryRequest.concatWith(oldRegistryRequest)
                 .distinct()
                 .flatMap(raddAltCapCheckerProducer::sendCapCheckerEvent)
                 .then();
@@ -240,7 +244,7 @@ public class RegistryService {
      */
     public Flux<String> deleteOlderRegistriesAndGetZipCodeList(String xPagopaPnCxId, String requestId) {
         log.info("start deleteOlderRegistriesAndGetZipCodeList for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
-        return raddRegistryImportDAO.getRegistryImportByCxIdAndRequestIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
+        return raddRegistryImportDAO.getRegistryImportByCxIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
                 .collectList().flatMapMany(raddRegistryImportEntities -> processRegistryImportsInStatusDone(xPagopaPnCxId, requestId, raddRegistryImportEntities));
     }
 

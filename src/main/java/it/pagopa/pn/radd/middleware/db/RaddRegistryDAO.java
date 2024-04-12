@@ -16,6 +16,8 @@ public interface RaddRegistryDAO {
 
     Flux<RaddRegistryEntity> findByCxIdAndRequestId(String cxId, String requestId);
 
+    Flux<RaddRegistryEntity> findPaginatedByCxIdAndRequestId(String cxId, String requestId);
+
     Flux<RaddRegistryEntity> getRegistriesByZipCode(String zipCode);
 
     Mono<ResultPaginationDto<RaddRegistryEntity, String>> findAll(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, String lastEvaluatedKey);

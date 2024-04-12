@@ -10,6 +10,7 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
@@ -39,6 +40,8 @@ import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 @CustomLog
 public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements RaddRegistryDAO {
 
+    private final PnRaddFsuConfig pnRaddFsuConfig;
+
     public RaddRegistryDAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                DynamoDbAsyncClient dynamoDbAsyncClient,
                                PnRaddFsuConfig raddFsuConfig) {
@@ -48,6 +51,7 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
                 raddFsuConfig,
                 RaddRegistryEntity.class
         );
+        pnRaddFsuConfig = raddFsuConfig;
     }
 
     private final static Function<RaddRegistryEntity, PnLastEvaluatedKey> SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER = (keyEntity) -> {
@@ -86,6 +90,14 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         QueryConditional conditional = requestId.startsWith(REQUEST_ID_PREFIX) ? QueryConditional.sortBeginsWith(key) : QueryConditional.keyEqualTo(key);
 
         return getByFilter(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, null, null, null, null);
+    }
+
+    @Override
+    public Flux<RaddRegistryEntity> findPaginatedByCxIdAndRequestId(String cxId, String requestId) {
+        Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
+        QueryConditional conditional = requestId.startsWith(REQUEST_ID_PREFIX) ? QueryConditional.sortBeginsWith(key) : QueryConditional.keyEqualTo(key);
+        return getAllPaginatedItems(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null,null,null, pnRaddFsuConfig.getMaxQuerySize())
+                .flatMapIterable(page -> page);
     }
 
     @Override

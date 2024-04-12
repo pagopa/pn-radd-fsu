@@ -53,8 +53,8 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
 
 
     @Override
-    public Flux<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus) {
-        Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
+    public Flux<RaddRegistryImportEntity> getRegistryImportByCxIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus) {
+        Key key = Key.builder().partitionValue(cxId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
 
         Map<String, AttributeValue> map = new HashMap<>();

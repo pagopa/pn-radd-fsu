@@ -2,10 +2,14 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
@@ -20,7 +24,10 @@ import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.middleware.queue.event.PnRaddAltNormalizeRequestEvent;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
-import it.pagopa.pn.radd.pojo.*;
+import it.pagopa.pn.radd.pojo.AddressManagerRequest;
+import it.pagopa.pn.radd.pojo.RaddRegistryImportConfig;
+import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
+import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import lombok.CustomLog;
@@ -32,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -170,7 +176,7 @@ public class RegistryService {
     private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(String registryId, RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
         return raddRegistryUtils.constructRaddRegistryEntity(registryId, resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
                 .flatMap(item -> this.raddRegistryDAO.putItemIfAbsent(item)
-                        .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
+                        .onErrorResume(TransactionAlreadyExistsException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
                 .flatMap(raddRegistryEntity -> {
                     raddRegistryRequestEntity.setUpdatedAt(Instant.now());
                     raddRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
@@ -374,8 +380,13 @@ public class RegistryService {
                 .collectList()
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
-                .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
-                        response.getZipCode())))
+                .flatMap(timeIntervals -> {
+                    if(timeIntervals.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    return eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
+                            response.getZipCode()));
+                })
                 .then();
     }
 

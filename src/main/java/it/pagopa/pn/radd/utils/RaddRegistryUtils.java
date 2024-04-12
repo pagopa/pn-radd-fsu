@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.utils;
 import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventItem;
 import it.pagopa.pn.api.dto.events.PnAttachmentsConfigEventPayload;
 import it.pagopa.pn.api.dto.events.PnEvaluatedZipCodeEvent;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.AnalogAddressDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeItemsRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
@@ -22,14 +23,12 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
@@ -65,12 +64,10 @@ public class RaddRegistryUtils {
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
-            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getStartValidity());
-            registryEntity.setStartValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
-            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getEndValidity());
-            registryEntity.setEndValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
         }
 
         return registryEntity;
@@ -98,12 +95,10 @@ public class RaddRegistryUtils {
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
-            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getStartValidity());
-            registryEntity.setStartValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+            registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
-            LocalDate localDate = LocalDate.parse(raddRegistryOriginalRequest.getEndValidity());
-            registryEntity.setEndValidity(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
+            registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
         }
 
         return registryEntity;
@@ -336,15 +331,21 @@ public class RaddRegistryUtils {
                         registry.setAddress(mapNormalizedAddressToAddress(entity.getNormalizedAddress()));
                         registry.setDescription(entity.getDescription());
                         registry.setPhoneNumber(entity.getPhoneNumber());
-                        String[] geoLocationArray = entity.getGeoLocation().split(",");
-                        RegistryGeoLocation geoLocation = new RegistryGeoLocation();
-                        geoLocation.setLatitude(geoLocationArray[0]);
-                        geoLocation.setLongitude(geoLocationArray[1]);
-                        registry.setGeoLocation(geoLocation);
+                        try {
+                            CreateRegistryRequestGeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), CreateRegistryRequestGeoLocation.class);
+                            geoLocation.setLatitude(geoLocation.getLatitude());
+                            geoLocation.setLongitude(geoLocation.getLatitude());
+                            registry.setGeoLocation(geoLocation);
+                        } catch (PnInternalException e) {
+                            log.info("Registry with cxId = {} and registryId = {} has not valid geoLocation", entity.getCxId(), entity.getRegistryId(), e);
+                        }
                         registry.setOpeningTime(entity.getOpeningTime());
                         registry.setStartValidity(Date.from(entity.getStartValidity()));
-                        registry.setEndValidity(Date.from(entity.getEndValidity()));
-
+                        if(entity.getEndValidity() != null) {
+                            registry.setEndValidity(Date.from(entity.getEndValidity()));
+                        }
+                        registry.setExternalCode(entity.getExternalCode());
+                        registry.setCapacity(entity.getCapacity());
                         return registry;
                     })
                     .toList());

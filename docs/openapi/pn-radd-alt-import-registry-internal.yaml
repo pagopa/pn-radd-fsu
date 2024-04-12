@@ -203,51 +203,6 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
 components:
   schemas:
-    Registry:
-      type: object
-      properties:
-        registryId:
-          type: string
-          description: identificativo univoco della sede RADD popolato solo in caso di record in stato ACCEPTED
-        requestId:
-          type: string
-          description: ID della richiesta di import.
-          example: "987654"
-        address:
-          $ref: '#/components/schemas/Address'
-        description:
-          type: string
-          description: Descrizione dello sportello.
-          example: Sportello ABC.
-        phoneNumber:
-          type: string
-          description: Numero di telefono dello sportello.
-          example: "+39 0123456789"
-        geoLocation:
-          type: object
-          properties:
-            latitude:
-              type: string
-              description: Latitudine della posizione geografica dello sportello.
-              example: "41.9028"
-            longitude:
-              type: string
-              description: Longitudine della posizione geografica dello sportello.
-              example: "12.4964"
-        openingTime:
-          type: string
-          description: Orario di apertura dello sportello.
-          example: "09:00-13:30"
-        startValidity:
-          type: string
-          format: date-time
-          description: Data e ora di inizio di validità dello sportello.
-          example: "2024-03-21T09:00:00Z"
-        endValidity:
-          type: string
-          format: date-time
-          description: Data e ora di fine di validità dello sportello.
-          example: "2024-03-21T17:00:00Z"
     VerifyRequestResponse:
       type: object
       properties:

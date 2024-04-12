@@ -1,7 +1,5 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistriesResponse;
@@ -15,7 +13,6 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.producer.CorrelationIdEventsProducer;
-import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
@@ -25,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -33,11 +29,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 
-import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 @Service
@@ -136,7 +129,7 @@ public class RegistrySelfService {
 
     public Mono<RegistriesResponse> registryListing(String xPagopaPnCxId, Integer limit, String lastKey, String cap, String city, String pr, String externalCode) {
         log.info("start registryListing for xPagopaPnCxId={} and limit: [{}] and lastKey: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, lastKey, cap, city, pr, externalCode);
-        return raddRegistryDAO.findAll(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastKey)
+        return raddRegistryDAO.findByFilters(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastKey)
                 .map(raddRegistryUtils::mapRegistryEntityToRegistry);
     }
 

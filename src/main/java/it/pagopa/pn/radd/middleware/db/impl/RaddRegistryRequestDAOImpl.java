@@ -6,8 +6,6 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
-import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
@@ -27,7 +25,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
@@ -219,7 +216,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         Key key = Key.builder().partitionValue(xPagopaPnCxId).sortValue(requestId).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);
 
-        return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey(), REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
+        return getByFilterPaginated(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, null, limit,  lastEvaluatedKey == null ? null : lastKey.getInternalLastEvaluatedKey(), REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 
 }

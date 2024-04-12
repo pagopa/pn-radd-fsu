@@ -116,7 +116,7 @@ class RegistrySelfServiceTest {
                             .s( "VALUE" )
                             .build() )  );
             String serializedLEK = lastEvaluatedKeyToSerialize.serializeInternalLastEvaluatedKey();
-            when(raddRegistryDAO.findAll(eq("cxId"), eq(1),eq("cap"), eq("city"), eq("pr"), eq("externalCode"), any())).thenReturn(Mono.just(paginator));
+            when(raddRegistryDAO.findByFilters(eq("cxId"), eq(1),eq("cap"), eq("city"), eq("pr"), eq("externalCode"), any())).thenReturn(Mono.just(paginator));
             StepVerifier.create(registrySelfService.registryListing("cxId", 1, serializedLEK,"cap", "city", "pr", "externalCode"))
                     .expectNextMatches(registriesResponse -> Boolean.FALSE.equals(registriesResponse.getMoreResult()))
                     .verifyComplete();

@@ -171,6 +171,7 @@ public abstract class BaseDao<T> {
     protected <T> Mono<ResultPaginationDto<T, String>> getByFilterPaginated(QueryConditional conditional,
                                                                           String index,
                                                                           Map<String, AttributeValue> values,
+                                                                          Map<String, String> names,
                                                                           String filterExpression,
                                                                           Integer pageSize,
                                                                           Map<String, AttributeValue> lastEvaluatedKey,
@@ -181,7 +182,7 @@ public abstract class BaseDao<T> {
 
         int totalElements = pageSize * raddFsuConfig.getMaxPageNumber();
         if (!StringUtils.isBlank(filterExpression)) {
-            query.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).build());
+            query.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).expressionNames(names).build());
             totalElements *= (values.size() + 1) * 2;
         }
         if (totalElements > raddFsuConfig.getMaxQuerySize()) {

@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.RaddImportException;
+import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -113,7 +113,7 @@ public class SafeStorageEventService {
                 .flatMap(s -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)))
                 .onErrorResume(throwable -> {
                     log.error("Error during persistItemsAndSendEvent --> ", throwable);
-                    if(throwable instanceof ConditionalCheckFailedException){
+                    if(throwable instanceof TransactionAlreadyExistsException){
                         return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId))
                                 .thenReturn(Mono.empty());
                     }

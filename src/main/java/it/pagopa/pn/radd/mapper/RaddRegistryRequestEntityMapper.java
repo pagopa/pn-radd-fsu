@@ -92,13 +92,15 @@ public class RaddRegistryRequestEntityMapper {
                     originalRequest.setCountry(request.getPaese());
 
                     if (StringUtils.isNotBlank(request.getDataInizioValidita())) {
-                        originalRequest.setStartValidity(request.getDataInizioValidita());
+                        LocalDate date = LocalDate.parse(request.getDataInizioValidita());
+                        originalRequest.setStartValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
                     } else {
                         originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
                     }
 
                     if (StringUtils.isNotBlank(request.getDataFineValidita())) {
-                        originalRequest.setEndValidity(request.getDataFineValidita());
+                        LocalDate date = LocalDate.parse(request.getDataFineValidita());
+                        originalRequest.setEndValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
                     }
 
                     originalRequest.setOpeningTime(request.getOrariApertura());

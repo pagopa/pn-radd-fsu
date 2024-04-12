@@ -63,7 +63,7 @@ public class RaddRegistryUtils {
         registryEntity.setDescription(raddRegistryOriginalRequest.getDescription());
         registryEntity.setPhoneNumber(raddRegistryOriginalRequest.getPhoneNumber());
         registryEntity.setGeoLocation(raddRegistryOriginalRequest.getGeoLocation());
-        registryEntity.setZipCode(newRegistryRequestEntity.getZipCode());
+        registryEntity.setZipCode(preExistingRegistryEntity.getZipCode());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {

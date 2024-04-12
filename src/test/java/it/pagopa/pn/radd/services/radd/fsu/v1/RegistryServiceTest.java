@@ -280,7 +280,6 @@ class RegistryServiceTest {
         when(raddRegistryRequestDAO.findByCorrelationIdWithStatus(any(), any())).thenReturn(Flux.just(raddRegistryRequestEntity));
         when(raddRegistryDAO.find(any(), any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryDAO.updateRegistryEntity(any())).thenReturn(Mono.just(raddRegistryEntity));
-        when(raddRegistryRequestDAO.updateRegistryRequestStatus(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryDAO.putItemIfAbsent(any())).thenReturn(Mono.just(raddRegistryEntity));
         when(raddRegistryRequestDAO.updateRegistryRequestData(any())).thenReturn(Mono.empty());
 

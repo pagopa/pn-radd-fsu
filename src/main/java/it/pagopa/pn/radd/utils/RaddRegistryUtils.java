@@ -332,10 +332,12 @@ public class RaddRegistryUtils {
                         registry.setDescription(entity.getDescription());
                         registry.setPhoneNumber(entity.getPhoneNumber());
                         try {
-                            CreateRegistryRequestGeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), CreateRegistryRequestGeoLocation.class);
-                            geoLocation.setLatitude(geoLocation.getLatitude());
-                            geoLocation.setLongitude(geoLocation.getLatitude());
-                            registry.setGeoLocation(geoLocation);
+                            if(StringUtils.isNotBlank(entity.getGeoLocation())) {
+                                CreateRegistryRequestGeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), CreateRegistryRequestGeoLocation.class);
+                                geoLocation.setLatitude(geoLocation.getLatitude());
+                                geoLocation.setLongitude(geoLocation.getLatitude());
+                                registry.setGeoLocation(geoLocation);
+                            }
                         } catch (PnInternalException e) {
                             log.info("Registry with cxId = {} and registryId = {} has not valid geoLocation", entity.getCxId(), entity.getRegistryId(), e);
                         }

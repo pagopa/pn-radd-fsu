@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.VerifyRequestRespon
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
@@ -38,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -178,7 +178,7 @@ public class RegistryService {
     private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(String registryId, RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
         return raddRegistryUtils.constructRaddRegistryEntity(registryId, resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
                 .flatMap(item -> this.raddRegistryDAO.putItemIfAbsent(item)
-                        .onErrorResume(ConditionalCheckFailedException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
+                        .onErrorResume(TransactionAlreadyExistsException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
                 .flatMap(raddRegistryEntity -> {
                     raddRegistryRequestEntity.setUpdatedAt(Instant.now());
                     raddRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
@@ -382,8 +382,13 @@ public class RegistryService {
                 .collectList()
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
-                .flatMap(timeIntervals -> eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
-                        response.getZipCode())))
+                .flatMap(timeIntervals -> {
+                    if(timeIntervals.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    return eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
+                            response.getZipCode()));
+                })
                 .then();
     }
 
@@ -391,6 +396,5 @@ public class RegistryService {
         return raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(xPagopaPnCxId, requestId, limit, lastKey)
                 .map(raddRegistryUtils::mapToRequestResponse);
     }
-
 
 }

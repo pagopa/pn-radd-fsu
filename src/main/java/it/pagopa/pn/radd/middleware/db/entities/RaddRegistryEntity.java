@@ -1,6 +1,9 @@
 package it.pagopa.pn.radd.middleware.db.entities;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.Instant;
@@ -13,6 +16,7 @@ public class RaddRegistryEntity {
 
     public static final String COL_REGISTRY_ID = "registryId";
     public static final String COL_CXID = "cxId";
+    public static final String COL_EXTERNAL_CODE = "externalCode";
     public static final String COL_REQUEST_ID = "requestId";
     public static final String COL_NORMALIZED_ADDRESS= "normalizedAddress";
     public static final String COL_DESCRIPTION = "description";
@@ -32,10 +36,12 @@ public class RaddRegistryEntity {
     private String registryId;
     @Getter(onMethod = @__({@DynamoDbSortKey, @DynamoDbSecondaryPartitionKey(indexNames = CXID_REQUESTID_INDEX), @DynamoDbAttribute(COL_CXID)}))
     private String cxId;
+    @Getter(onMethod = @__({@DynamoDbAttribute(COL_EXTERNAL_CODE)}))
+    private String externalCode;
     @Getter(onMethod = @__({@DynamoDbSecondarySortKey(indexNames = CXID_REQUESTID_INDEX), @DynamoDbAttribute(COL_REQUEST_ID)}))
     private String requestId;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_NORMALIZED_ADDRESS)}))
-    private String normalizedAddress;
+    private NormalizedAddressEntity normalizedAddress;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_DESCRIPTION)}))
     private String description;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_PHONE_NUMBER)}))

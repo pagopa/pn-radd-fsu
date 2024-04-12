@@ -4,6 +4,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.RegistryApi;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistriesResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistrySelfService;
 import lombok.RequiredArgsConstructor;
@@ -83,5 +84,31 @@ public class RegistrySelfController implements RegistryApi {
     public Mono<ResponseEntity<Void>> deleteRegistry(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, String registryId,String endDate ,final ServerWebExchange exchange) {
         return registrySelfService.deleteRegistry(xPagopaPnCxId, registryId, endDate)
                 .map(registryUploadResponse -> ResponseEntity.noContent().build());
+    }
+
+    /**
+     * GET /radd-alt/api/v1/registry
+     * API utilizzata per recuperare la lista paginata di anagrafiche RADD dato il cxId
+     *
+     * @param xPagopaPnCxType Customer/Receiver Type (required)
+     * @param xPagopaPnCxId Customer/Receiver Identifier (required)
+     * @param uid Identificativo pseudo-anonimizzato dell&#39;operatore RADD (required)
+     * @param limit  (optional, default to 10)
+     * @param lastKey  (optional)
+     * @param cap CAP (optional)
+     * @param city Città (optional)
+     * @param pr Provincia (optional)
+     * @param externalCode Identificativo punto ritiro SEND indicato dal client (optional)
+     * @return OK (status code 200)
+     *         or Bad Request (status code 400)
+     *         or Unauthorized (status code 401)
+     *         or Forbidden (status code 403)
+     *         or Method not allowed (status code 405)
+     *         or Internal Server Error (status code 500)
+     */
+    @Override
+    public  Mono<ResponseEntity<RegistriesResponse>> retrieveRegistries(CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String uid, Integer limit, String lastKey, String cap, String city, String pr, String externalCode, final ServerWebExchange exchange) {
+        return registrySelfService.registryListing(xPagopaPnCxId, limit, lastKey, cap, city, pr, externalCode)
+                .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
     }
 }

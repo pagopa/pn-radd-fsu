@@ -1,10 +1,16 @@
 package it.pagopa.pn.radd.middleware.db.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.micrometer.core.instrument.util.StringUtils;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
+import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -21,7 +27,10 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.function.Function;
 
+import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 
 
@@ -42,6 +51,17 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         );
         pnRaddFsuConfig = raddFsuConfig;
     }
+
+    private final static Function<RaddRegistryEntity, PnLastEvaluatedKey> SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER = (keyEntity) -> {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(keyEntity.getCxId());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryEntity.COL_REGISTRY_ID, AttributeValue.builder().s(keyEntity.getRegistryId()).build(),
+                RaddRegistryEntity.COL_CXID, AttributeValue.builder().s(keyEntity.getCxId()).build(),
+                RaddRegistryEntity.COL_REQUEST_ID, AttributeValue.builder().s(keyEntity.getRequestId()).build()
+        ));
+        return pageLastEvaluatedKey;
+    };
 
     @Override
     public Mono<RaddRegistryEntity> find(String registryId, String cxId) {
@@ -76,7 +96,7 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
     public Flux<RaddRegistryEntity> findPaginatedByCxIdAndRequestId(String cxId, String requestId) {
         Key key = Key.builder().partitionValue(cxId).sortValue(requestId).build();
         QueryConditional conditional = requestId.startsWith(REQUEST_ID_PREFIX) ? QueryConditional.sortBeginsWith(key) : QueryConditional.keyEqualTo(key);
-        return getAllPaginatedItems(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null,null,null, pnRaddFsuConfig.getMaxQuerySize())
+        return getAllPaginatedItems(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, null, null, null, pnRaddFsuConfig.getMaxQuerySize())
                 .flatMapIterable(page -> page);
     }
 
@@ -97,5 +117,56 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
 
     private Instant startOfTodayInstant() {
         return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    @Override
+    public Mono<ResultPaginationDto<RaddRegistryEntity, String>> findByFilters(String xPagopaPnCxId, Integer limit, String cap, String city, String pr, String externalCode, String lastKey) {
+        log.info("Start findAll RaddRegistryEntity - xPagopaPnCxId={} and limit: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, cap, city, pr, externalCode);
+
+        PnLastEvaluatedKey lastEvaluatedKey = null;
+        if (StringUtils.isNotEmpty(lastKey)) {
+            try {
+                lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
+            } catch (JsonProcessingException e) {
+                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        e);
+            }
+        } else {
+            log.debug("First page search");
+        }
+
+        //Creazione key per fare la query
+        Key key = Key.builder().partitionValue(xPagopaPnCxId).build();
+        QueryConditional conditional = QueryConditional.keyEqualTo(key);
+
+        //Creazione query filtrata e mappa dei valori per i filtri se presenti
+        Map<String, AttributeValue> map = new HashMap<>();
+        Map<String, String> names = new HashMap<>();
+        StringJoiner query = new StringJoiner(" AND ");
+        if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(cap)) {
+            map.put(":" + RaddRegistryEntity.COL_ZIP_CODE, AttributeValue.builder().s(cap).build());
+            names.put("#" + RaddRegistryEntity.COL_ZIP_CODE, RaddRegistryEntity.COL_ZIP_CODE);
+            query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_ZIP_CODE, RaddRegistryEntity.COL_ZIP_CODE));
+        }
+        if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(city)) {
+            map.put(":" + NormalizedAddressEntity.COL_CITY, AttributeValue.builder().s(city).build());
+            names.put("#" + RaddRegistryEntity.COL_NORMALIZED_ADDRESS, RaddRegistryEntity.COL_NORMALIZED_ADDRESS);
+            names.put("#" + NormalizedAddressEntity.COL_CITY, NormalizedAddressEntity.COL_CITY);
+            query.add(String.format("#%s.#%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_CITY, NormalizedAddressEntity.COL_CITY));
+        }
+        if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(pr)) {
+            map.put(":" + NormalizedAddressEntity.COL_PR, AttributeValue.builder().s(pr).build());
+            names.put("#" + NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR);
+            names.put("#" + RaddRegistryEntity.COL_NORMALIZED_ADDRESS, RaddRegistryEntity.COL_NORMALIZED_ADDRESS);
+            query.add(String.format("#%s.%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR));
+        }
+        if (StringUtils.isNotEmpty(externalCode)) {
+            map.put(":" + RaddRegistryEntity.COL_EXTERNAL_CODE, AttributeValue.builder().s(externalCode).build());
+            names.put("#" + RaddRegistryEntity.COL_EXTERNAL_CODE, RaddRegistryEntity.COL_EXTERNAL_CODE);
+            query.add(String.format("#%s = :%s", RaddRegistryEntity.COL_EXTERNAL_CODE, RaddRegistryEntity.COL_EXTERNAL_CODE));
+        }
+
+        return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, names, query.toString(), limit, lastEvaluatedKey != null ? lastEvaluatedKey.getInternalLastEvaluatedKey() : null, SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
     }
 }

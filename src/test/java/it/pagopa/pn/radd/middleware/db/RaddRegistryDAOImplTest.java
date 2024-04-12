@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,12 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
         baseEntity.setRegistryId("testRegistryId");
         baseEntity.setCxId("testCxId");
         baseEntity.setRequestId("testRequestId");
-        baseEntity.setNormalizedAddress("testAddress");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        baseEntity.setNormalizedAddress(addressEntity);
         baseEntity.setDescription("testDescription");
         baseEntity.setPhoneNumber("testPhoneNumber");
         baseEntity.setGeoLocation("testGeoLocation");
@@ -64,7 +70,12 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
         objct.setCxId("CxId");
         objct.setRegistryId("RegistryId");
         objct.setRequestId("RequestId");
-        objct.setNormalizedAddress("Address");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        objct.setNormalizedAddress(addressEntity);
         objct.setDescription("testDescription");
         objct.setPhoneNumber("testPhoneNumber");
         objct.setGeoLocation("testGeoLocation");

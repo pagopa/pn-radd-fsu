@@ -14,6 +14,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadReque
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
 import it.pagopa.pn.radd.config.CachedSecretsManagerConsumer;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
@@ -79,7 +80,12 @@ class RaddRegistryUtilsTest {
         preExistingRegistryEntity
                 .setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         preExistingRegistryEntity.setGeoLocation("Geo Location");
-        preExistingRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        preExistingRegistryEntity.setNormalizedAddress(addressEntity);
         preExistingRegistryEntity.setOpeningTime("Opening Time");
         preExistingRegistryEntity.setPhoneNumber("6625550144");
         preExistingRegistryEntity.setRegistryId("42");
@@ -795,7 +801,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setDescription("The characteristics of someone or something");
         raddRegistryEntity.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity.setGeoLocation("Geo Location");
-        raddRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        raddRegistryEntity.setNormalizedAddress(addressEntity);
         raddRegistryEntity.setOpeningTime("Opening Time");
         raddRegistryEntity.setPhoneNumber("6625550144");
         raddRegistryEntity.setRegistryId("42");
@@ -827,7 +838,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setDescription("The characteristics of someone or something");
         raddRegistryEntity.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity.setGeoLocation("Geo Location");
-        raddRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        raddRegistryEntity.setNormalizedAddress(addressEntity);
         raddRegistryEntity.setOpeningTime("Opening Time");
         raddRegistryEntity.setPhoneNumber("6625550144");
         raddRegistryEntity.setRegistryId("42");
@@ -840,7 +856,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity2.setDescription("Description");
         raddRegistryEntity2.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity2.setGeoLocation("it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity");
-        raddRegistryEntity2.setNormalizedAddress("17 High St");
+        NormalizedAddressEntity addressEntity2 = new NormalizedAddressEntity();
+        addressEntity.setCountry("country2");
+        addressEntity.setPr("pr2");
+        addressEntity.setCity("city2");
+        addressEntity.setCap("cap2");
+        raddRegistryEntity2.setNormalizedAddress(addressEntity2);
         raddRegistryEntity2.setOpeningTime("it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity");
         raddRegistryEntity2.setPhoneNumber("8605550118");
         raddRegistryEntity2.setRegistryId("Registry Id");
@@ -889,7 +910,12 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setDescription("The characteristics of someone or something");
         raddRegistryEntity.setEndValidity(LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
         raddRegistryEntity.setGeoLocation("Geo Location");
-        raddRegistryEntity.setNormalizedAddress("42 Main St");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setPr("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        raddRegistryEntity.setNormalizedAddress(addressEntity);
         raddRegistryEntity.setOpeningTime("Opening Time");
         raddRegistryEntity.setPhoneNumber("6625550144");
         raddRegistryEntity.setRegistryId("42");

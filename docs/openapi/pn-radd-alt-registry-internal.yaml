@@ -382,6 +382,9 @@ components:
           type: string
           description: Identificativo punto ritiro SEND
           example: "123456"
+        capacity:
+          description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
+          example: 100
     VerifyRequestResponse:
       type: object
       properties:

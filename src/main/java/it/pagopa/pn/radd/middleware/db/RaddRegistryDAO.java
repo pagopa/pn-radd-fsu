@@ -14,5 +14,7 @@ public interface RaddRegistryDAO {
 
     Flux<RaddRegistryEntity> findByCxIdAndRequestId(String cxId, String requestId);
 
+    Flux<RaddRegistryEntity> findPaginatedByCxIdAndRequestId(String cxId, String requestId);
+
     Flux<RaddRegistryEntity> getRegistriesByZipCode(String zipCode);
 }

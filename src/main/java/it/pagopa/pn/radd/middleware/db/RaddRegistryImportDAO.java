@@ -9,7 +9,7 @@ public interface RaddRegistryImportDAO {
     Flux<RaddRegistryImportEntity> getRegistryImportByCxId(String xPagopaPnCxId);
     Mono<RaddRegistryImportEntity> putRaddRegistryImportEntity(RaddRegistryImportEntity raddRegistryImportEntity);
     Mono<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestId(String xPagopaPnCxId, String requestId);
-    Flux<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus);
+    Flux<RaddRegistryImportEntity> getRegistryImportByCxIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus);
     Mono<RaddRegistryImportEntity> updateStatus(RaddRegistryImportEntity entity, RaddRegistryImportStatus status, String error);
     Flux<RaddRegistryImportEntity> findWithStatusPending();
     Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, RaddRegistryImportStatus status);

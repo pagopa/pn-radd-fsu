@@ -308,8 +308,8 @@ public class RaddRegistryUtils {
                         registryRequestResponse.setCreatedAt(raddRegistryRequestEntity.getCreatedAt().toString());
                         registryRequestResponse.setUpdatedAt(raddRegistryRequestEntity.getUpdatedAt().toString());
                         registryRequestResponse.setStatus(raddRegistryRequestEntity.getStatus());
-                        OriginalRequest originalRequest = objectMapperUtil.toObject(raddRegistryRequestEntity.getOriginalRequest(), OriginalRequest.class);
-                        registryRequestResponse.setOriginalRequest(originalRequest);
+                        RaddRegistryOriginalRequest originalRequest = objectMapperUtil.toObject(raddRegistryRequestEntity.getOriginalRequest(), RaddRegistryOriginalRequest.class);
+                        registryRequestResponse.setOriginalRequest(convertToOriginalRequest(originalRequest));
 
                         return registryRequestResponse;
                     })
@@ -318,6 +318,50 @@ public class RaddRegistryUtils {
         result.setNextPagesKey(resultPaginationDto.getNextPagesKey());
         result.setMoreResult(resultPaginationDto.isMoreResult());
         return result;
+    }
+
+    private OriginalRequest convertToOriginalRequest(RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
+        OriginalRequest originalRequest = new OriginalRequest();
+
+        if(raddRegistryOriginalRequest == null) {
+            return originalRequest;
+        }
+
+        originalRequest.setOriginalAddress(convertToAddress(raddRegistryOriginalRequest));
+        originalRequest.setDescription(raddRegistryOriginalRequest.getDescription());
+        originalRequest.setPhoneNumber(raddRegistryOriginalRequest.getPhoneNumber());
+        try {
+            OriginalRequestGeoLocation geoLocation = new OriginalRequestGeoLocation();
+            if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getGeoLocation())) {
+                geoLocation=objectMapperUtil.toObject(raddRegistryOriginalRequest.getGeoLocation(), OriginalRequestGeoLocation.class);
+            }
+            originalRequest.setGeoLocation(geoLocation);
+        }
+        catch (PnInternalException e) {
+            log.debug("There are no valid geolocation data for this registry request.");
+        }
+        originalRequest.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
+        if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+            Instant instant = Instant.parse(raddRegistryOriginalRequest.getStartValidity());
+            originalRequest.setStartValidity(Date.from(instant));
+        }
+        if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+            Instant instant = Instant.parse(raddRegistryOriginalRequest.getEndValidity());
+            originalRequest.setEndValidity(Date.from(instant));
+        }
+        originalRequest.setCapacity(raddRegistryOriginalRequest.getCapacity());
+        originalRequest.setExternalCode(raddRegistryOriginalRequest.getExternalCode());
+        return originalRequest;
+    }
+
+    private Address convertToAddress(RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
+        Address address = new Address();
+        address.setAddressRow(raddRegistryOriginalRequest.getAddressRow());
+        address.setCap(raddRegistryOriginalRequest.getCap());
+        address.setCity(raddRegistryOriginalRequest.getCity());
+        address.setPr(raddRegistryOriginalRequest.getPr());
+        address.setCountry(raddRegistryOriginalRequest.getCountry());
+        return address;
     }
 
     public RegistriesResponse mapRegistryEntityToRegistry(ResultPaginationDto<RaddRegistryEntity, String> resultPaginationDto) {
@@ -339,7 +383,7 @@ public class RaddRegistryUtils {
                                 registry.setGeoLocation(geoLocation);
                             }
                         } catch (PnInternalException e) {
-                            log.info("Registry with cxId = {} and registryId = {} has not valid geoLocation", entity.getCxId(), entity.getRegistryId(), e);
+                            log.debug("Registry with cxId = {} and registryId = {} has not valid geoLocation", entity.getCxId(), entity.getRegistryId(), e);
                         }
                         registry.setOpeningTime(entity.getOpeningTime());
                         registry.setStartValidity(Date.from(entity.getStartValidity()));

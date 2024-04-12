@@ -33,10 +33,7 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static it.pagopa.pn.radd.utils.RaddRegistryUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -1248,10 +1245,19 @@ class RaddRegistryUtilsTest {
         raddRegistryRequestEntity.setCreatedAt(Instant.now());
         raddRegistryRequestEntity.setUpdatedAt(Instant.now());
         raddRegistryRequestEntity.setStatus("testStatus");
-        raddRegistryRequestEntity.setOriginalRequest("testOriginalRequest");
+        raddRegistryRequestEntity.setOriginalRequest("{\"addressRow\": \"testAddressRow\", \"cap\": \"testCap\", \"city\": \"testCity\", \"pr\": \"testPr\", \"country\": \"testCountry\", \"startValidity\": \"2024-01-01T00:00:00.000Z\"}");
         resultsPage.add(raddRegistryRequestEntity);
         resultPaginationDto.setResultsPage(resultsPage);
+        resultPaginationDto.setNextPagesKey(Collections.emptyList());
+        resultPaginationDto.setMoreResult(true);
 
+        RaddRegistryOriginalRequest originalRequest = new RaddRegistryOriginalRequest();
+        originalRequest.setAddressRow("testAddressRow");
+        originalRequest.setCap("testCap");
+        originalRequest.setCity("testCity");
+        originalRequest.setPr("testPr");
+
+        when(objectMapperUtil.toObject(Mockito.anyString(), Mockito.any())).thenReturn(originalRequest);
         // When
         RequestResponse result = raddRegistryUtils.mapToRequestResponse(resultPaginationDto);
 
@@ -1262,6 +1268,9 @@ class RaddRegistryUtilsTest {
         assertEquals("testRequestId", result.getItems().get(0).getRequestId());
         assertEquals("testError", result.getItems().get(0).getError());
         assertEquals("testStatus", result.getItems().get(0).getStatus());
+        assertEquals("testAddressRow", result.getItems().get(0).getOriginalRequest().getOriginalAddress().getAddressRow());
+        assertEquals(0, result.getNextPagesKey().size());
+        assertTrue(result.getMoreResult());
     }
 
     @Test
@@ -1269,6 +1278,8 @@ class RaddRegistryUtilsTest {
         // Given
         ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto = new ResultPaginationDto<>();
         resultPaginationDto.setResultsPage(null);
+        resultPaginationDto.setNextPagesKey(Collections.emptyList());
+        resultPaginationDto.setMoreResult(true);
 
         // When
         RequestResponse result = raddRegistryUtils.mapToRequestResponse(resultPaginationDto);
@@ -1276,5 +1287,7 @@ class RaddRegistryUtilsTest {
         // Then
         assertNotNull(result);
         assertNull(result.getItems());
+        assertEquals(0, result.getNextPagesKey().size());
+        assertTrue(result.getMoreResult());
     }
 }

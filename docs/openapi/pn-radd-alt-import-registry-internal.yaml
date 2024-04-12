@@ -296,7 +296,14 @@ components:
           type: string
           format: date-time
           description: Data e ora di fine di validità dello sportello.
-          example: "2024-03-21T17:00:00Z"    
+          example: "2024-03-21T17:00:00Z"
+        externalCode:
+          type: string
+          description: Identificativo punto ritiro SEND
+        capacity:
+          type: string
+          description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
+          example: 100
     Address:
       type: object
       properties:

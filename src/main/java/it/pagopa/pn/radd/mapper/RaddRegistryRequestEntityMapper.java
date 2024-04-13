@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static it.pagopa.pn.radd.utils.Const.MISSING_ADDRESS_REQUIRED_FIELD;
+import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayByInstant;
 
 @RequiredArgsConstructor
 @Component
@@ -36,23 +37,24 @@ public class RaddRegistryRequestEntityMapper {
             originalRequest.setPr(request.getAddress().getPr());
             originalRequest.setCountry(request.getAddress().getCountry());
         }
-        if(StringUtils.isNotBlank(request.getStartValidity())) {
-            LocalDate date = LocalDate.parse(request.getStartValidity());
-            Instant instant = date.atStartOfDay().toInstant(ZoneOffset.UTC);
+        if(request.getStartValidity() != null ) {
+            Instant instant = getStartOfDayByInstant(request.getStartValidity().toInstant());
+
             originalRequest.setStartValidity(instant.toString());
         } else {
             originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
         }
 
-        if(StringUtils.isNotBlank(request.getEndValidity())) {
-            LocalDate date = LocalDate.parse(request.getEndValidity());
-            Instant instant = date.atStartOfDay().toInstant(ZoneOffset.UTC);
+        if(request.getEndValidity() != null) {
+            Instant instant = getStartOfDayByInstant(request.getEndValidity().toInstant());
             originalRequest.setEndValidity(instant.toString());
         }
 
         originalRequest.setOpeningTime(request.getOpeningTime());
         originalRequest.setDescription(request.getDescription());
-        originalRequest.setGeoLocation(objectMapperUtil.toJson(request.getGeoLocation()));
+        if(request.getGeoLocation() != null) {
+            originalRequest.setGeoLocation(objectMapperUtil.toJson(request.getGeoLocation()));
+        }
         originalRequest.setPhoneNumber(request.getPhoneNumber());
         originalRequest.setExternalCode(request.getExternalCode());
         originalRequest.setCapacity(request.getCapacity());

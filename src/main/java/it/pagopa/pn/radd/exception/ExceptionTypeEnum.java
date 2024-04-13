@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum ExceptionTypeEnum {
     REGISTRY_NOT_FOUND("REGISTRY_NOT_FOUND", "Sede radd non trovata", 99),
     DATE_NOTICE_ERROR("DATE_NOTICE_ERROR","La data di fine validità non rispetta il preavviso minimo richiesto", 99),
+    DATE_INTERVAL_ERROR("DATE_INTERVAL_ERROR","La data di fine validità non può essere precedente alla data di inizio validità", 99),
     DATE_INVALID_ERROR("DATE_INVALID_ERROR","formato della data non valido", 99),
     IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params", 99),
     TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata", 99),

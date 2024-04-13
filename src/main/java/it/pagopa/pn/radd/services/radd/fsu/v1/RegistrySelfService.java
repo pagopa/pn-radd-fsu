@@ -29,9 +29,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
+import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayByInstant;
+import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayToday;
 
 @Service
 @RequiredArgsConstructor
@@ -68,10 +71,21 @@ public class RegistrySelfService {
     }
 
     public Mono<CreateRegistryResponse> addRegistry(String xPagopaPnCxId, CreateRegistryRequest request) {
+        verifyDates(request.getStartValidity(), request.getEndValidity());
         RaddRegistryRequestEntity raddRegistryRequestEntity = createRaddRegistryRequestEntity(request, xPagopaPnCxId);
         return registryRequestDAO.createEntity(raddRegistryRequestEntity)
                 .flatMap(this::sendStartEvent)
                 .map(this::createRegistryResponse);
+    }
+
+    private void verifyDates(Date startValidity, Date endValidity) {
+        Instant startValidityInstant = startValidity != null ? getStartOfDayByInstant(startValidity.toInstant()) : getStartOfDayToday();
+        if(endValidity != null) {
+            Instant endValidityInstant = getStartOfDayByInstant(endValidity.toInstant());
+            if(endValidityInstant.isBefore(startValidityInstant)) {
+                throw new RaddGenericException(ExceptionTypeEnum.DATE_INTERVAL_ERROR, HttpStatus.BAD_REQUEST);
+            }
+        }
     }
 
     private Mono<RaddRegistryRequestEntity> sendStartEvent(RaddRegistryRequestEntity entity) {

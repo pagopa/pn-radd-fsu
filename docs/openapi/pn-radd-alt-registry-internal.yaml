@@ -284,11 +284,13 @@ components:
           example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
         startValidity:
           type: string
-          description: Data e ora di inizio di validità dello sportello, se non inviata viene considerata la data corrente.
+          format: date
+          description: Data di inizio di validità dello sportello, se non inviata viene considerata la data corrente.
           example: "2024-03-21"
         endValidity:
           type: string
-          description: Data e ora di fine di validità dello sportello.
+          format: date
+          description: Data di fine di validità dello sportello.
           example: "2024-03-21"
         externalCode:
           type: string

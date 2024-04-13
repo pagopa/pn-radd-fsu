@@ -41,41 +41,11 @@ public class DateUtils {
         return OffsetDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC);
     }
 
-    /*
-
-    public static String formatTime(ZonedDateTime datetime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-        return datetime.format(formatter.withZone(italianZoneId));
+    public static Instant getStartOfDayByInstant(Instant instant) {
+        return instant.atOffset(ZoneOffset.UTC).toLocalDate().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
 
-    public static LocalDate getLocalDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        return LocalDate.parse(date, formatter);
+    public static Instant getStartOfDayToday() {
+        return Instant.now().atOffset(ZoneOffset.UTC).toLocalDate().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
-
-    public static ZonedDateTime parseDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
-        LocalDate locdate = LocalDate.parse(date, formatter);
-
-        return locdate.atStartOfDay(italianZoneId);
-    }
-
-    public static ZonedDateTime atStartOfDay(Instant instant) {
-        LocalDate locdate = LocalDate.ofInstant(instant, italianZoneId);
-        return locdate.atStartOfDay(italianZoneId);
-    }
-
-    public static ZonedDateTime parseTime(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-        return formatter.parse(date, ZonedDateTime::from);
-    }
-
-    public static String formatDate(Instant instant) {
-        if (instant == null)
-            return null;
-
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
-        return LocalDate.ofInstant(instant, italianZoneId).format(formatter);
-    }
-    */
 }

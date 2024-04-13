@@ -285,12 +285,12 @@ components:
         startValidity:
           type: string
           format: date
-          description: Data e ora di inizio di validità dello sportello, se non inviata viene considerata la data corrente.
+          description: Data di inizio di validità dello sportello, se non inviata viene considerata la data corrente.
           example: "2024-03-21"
         endValidity:
           type: string
           format: date
-          description: Data e ora di fine di validità dello sportello.
+          description: Data di fine di validità dello sportello.
           example: "2024-03-21"
         externalCode:
           type: string

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
@@ -15,6 +16,7 @@ import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
+import org.junit.jupiter.api.Assertions;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,9 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.List;
 import java.util.Map;
+
+import java.time.Instant;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -121,4 +126,17 @@ class RegistrySelfServiceTest {
                     .expectNextMatches(registriesResponse -> Boolean.FALSE.equals(registriesResponse.getMoreResult()))
                     .verifyComplete();
         }
+
+    @Test
+    public void shouldAddRegistryFailsForInvalidIntervalDates() {
+        CreateRegistryRequest request = new CreateRegistryRequest();
+        Date today = new Date();
+        Instant yesterday = new Date().toInstant().minus(1, java.time.temporal.ChronoUnit.DAYS);
+        request.setStartValidity(today);
+        request.setEndValidity(Date.from(yesterday));
+
+        Assertions.assertThrows(RaddGenericException.class, () -> {
+            registrySelfService.addRegistry("cxId", request);
+        });
+    }
 }

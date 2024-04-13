@@ -22,9 +22,6 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -32,6 +29,7 @@ import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
+import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayToday;
 
 
 @Repository
@@ -109,14 +107,10 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         Map<String, String> names = new HashMap<>();
         names.put("#endValidity", RaddRegistryEntity.COL_END_VALIDITY);
         Map<String, AttributeValue> values = new HashMap<>();
-        values.put(":today", AttributeValue.builder().s(String.valueOf(startOfTodayInstant())).build());
-        String expression = "attribute_not_exists(#endValidity) OR #endValidity > :today";
+        values.put(":today", AttributeValue.builder().s(String.valueOf(getStartOfDayToday())).build());
+        String expression = "attribute_not_exists(#endValidity) OR #endValidity >= :today";
 
         return this.getByFilter(conditional, index, expression, values, names, null);
-    }
-
-    private Instant startOfTodayInstant() {
-        return LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
 
     @Override

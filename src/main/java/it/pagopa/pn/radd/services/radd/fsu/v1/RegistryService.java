@@ -133,7 +133,7 @@ public class RegistryService {
                 .flatMap(item -> {
                     String error = item.getError();
                     if (StringUtils.isNotBlank(error)) {
-                        log.warn("Id {} error not empty", item.getError());
+                        log.warn("Id {} error not empty: {}", item.getId(), item.getError());
                         return raddRegistryRequestDAO.updateStatusAndError(raddRegistryRequest, RegistryRequestStatus.REJECTED, error);
                     }
                     return handleRegistryUpdate(raddRegistryRequest, item);
@@ -387,10 +387,12 @@ public class RegistryService {
     public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent.Payload response) {
         return raddRegistryDAO.getRegistriesByZipCode(response.getZipCode())
                 .collectList()
+                .doOnNext(raddRegistryEntities -> log.info("Found {} registries for zipCode: {}", raddRegistryEntities.size(), response.getZipCode()))
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
                 .flatMap(timeIntervals -> {
                     if(timeIntervals.isEmpty()) {
+                        log.info("No active intervals found for zipCode: {}", response.getZipCode());
                         return Mono.empty();
                     }
                     return eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,

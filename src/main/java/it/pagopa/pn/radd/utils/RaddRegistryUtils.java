@@ -63,6 +63,7 @@ public class RaddRegistryUtils {
         registryEntity.setZipCode(preExistingRegistryEntity.getZipCode());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
+        registryEntity.setExternalCode(raddRegistryOriginalRequest.getExternalCode());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
             registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
@@ -74,13 +75,12 @@ public class RaddRegistryUtils {
     }
 
     public Mono<RaddRegistryEntity> constructRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest) {
-        String normalizedAddressString = objectMapperUtil.toJson(normalizedAddress);
         RaddRegistryOriginalRequest raddRegistryOriginalRequest = objectMapperUtil.toObject(registryRequest.getOriginalRequest(), RaddRegistryOriginalRequest.class);
 
-        return Mono.just(getRaddRegistryEntity(registryId, normalizedAddress, registryRequest, normalizedAddressString, raddRegistryOriginalRequest));
+        return Mono.just(getRaddRegistryEntity(registryId, normalizedAddress, registryRequest, raddRegistryOriginalRequest));
     }
 
-    private static RaddRegistryEntity getRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, String normalizedAddressString, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
+    private static RaddRegistryEntity getRaddRegistryEntity(String registryId, PnAddressManagerEvent.NormalizedAddress normalizedAddress, RaddRegistryRequestEntity registryRequest, RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         RaddRegistryEntity registryEntity = new RaddRegistryEntity();
 
         registryEntity.setRegistryId(registryId);
@@ -94,6 +94,7 @@ public class RaddRegistryUtils {
         registryEntity.setZipCode(normalizedAddress.getCap());
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
+        registryEntity.setExternalCode(raddRegistryOriginalRequest.getExternalCode());
         if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
             registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }

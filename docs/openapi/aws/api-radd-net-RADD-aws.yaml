@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: E7csWibse8TTa8vLquJXfdrhT+PEPs3KcK7Vj6iuoUY=
+  version: 5HjbdswmroW7Ow6Py1Jt8CdNS1DMsLFu+2bRfN8DqCs=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -1772,13 +1772,15 @@ components:
           example: mon=10:00-13:00_14:00-20:00;tue=10:00-20:00
         startValidity:
           type: string
+          format: date
           description: >-
-            Data e ora di inizio di validità dello sportello, se non inviata
-            viene considerata la data corrente.
+            Data di inizio di validità dello sportello, se non inviata viene
+            considerata la data corrente.
           example: '2024-03-21'
         endValidity:
           type: string
-          description: Data e ora di fine di validità dello sportello.
+          format: date
+          description: Data di fine di validità dello sportello.
           example: '2024-03-21'
         externalCode:
           type: string

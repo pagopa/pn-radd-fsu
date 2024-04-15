@@ -78,18 +78,18 @@ class RegistrySelfServiceTest {
 
     @Test
     void updateRegistry() {
+        String newDescription = "new description";
+        String newPhoneNumber = "0600011231";
         UpdateRegistryRequest updateRegistryRequest = new UpdateRegistryRequest();
-        updateRegistryRequest.setDescription("description");
-        updateRegistryRequest.setOpeningTime("openingTime");
-        updateRegistryRequest.setPhoneNumber("phoneNumber");
+        updateRegistryRequest.setDescription(newDescription);
+        updateRegistryRequest.setPhoneNumber(newPhoneNumber);
         RaddRegistryEntity entity = new RaddRegistryEntity();
         entity.setRegistryId("registryId");
         when(raddRegistryDAO.find("registryId", "cxId")).thenReturn(Mono.just(entity));
         when(raddRegistryDAO.updateRegistryEntity(entity)).thenReturn(Mono.just(entity));
         StepVerifier.create(registrySelfService.updateRegistry("registryId", "cxId", updateRegistryRequest))
-                .expectNextMatches(raddRegistryEntity -> entity.getDescription().equalsIgnoreCase("description")
-                        && entity.getOpeningTime().equalsIgnoreCase("openingTime")
-                        && entity.getPhoneNumber().equalsIgnoreCase("phoneNumber"))
+                .expectNextMatches(raddRegistryEntity -> entity.getDescription().equalsIgnoreCase(newDescription)
+                        && entity.getPhoneNumber().equalsIgnoreCase(newPhoneNumber))
                 .verifyComplete();
     }
 

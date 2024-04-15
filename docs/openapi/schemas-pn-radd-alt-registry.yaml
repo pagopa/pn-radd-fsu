@@ -1,0 +1,46 @@
+components:
+  schemas:
+
+    Address:
+      type: object
+      required:
+        - addressRow
+        - cap
+        - city
+        - pr
+      properties:
+        addressRow:
+          type: string
+          description: Indirizzo completo
+          example: Via Roma 123
+        cap:
+          type: string
+          description: CAP (Codice di Avviamento Postale).
+          example: 00100
+        city:
+          type: string
+          description: Città.
+          example: Roma
+        pr:
+          type: string
+          description: Provincia.
+          example: RM
+        country:
+          type: string
+          description: Paese.
+          example: Italia
+
+    GeoLocation:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: string
+          description: Latitudine della posizione geografica dello sportello.
+          example: "41.9028"
+        longitude:
+          type: string
+          description: Longitudine della posizione geografica dello sportello.
+          example: "12.4964"

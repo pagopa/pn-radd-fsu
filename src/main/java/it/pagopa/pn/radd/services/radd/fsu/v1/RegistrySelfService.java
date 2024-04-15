@@ -13,9 +13,10 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.queue.producer.CorrelationIdEventsProducer;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.middleware.queue.producer.RaddAltCapCheckerProducer;
+import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.utils.RaddRegistryUtils;
+import it.pagopa.pn.radd.utils.Utils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -26,11 +27,11 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-
 import java.util.UUID;
 
-import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
-import static it.pagopa.pn.radd.utils.DateUtils.*;
+import static it.pagopa.pn.radd.utils.Const.*;
+import static it.pagopa.pn.radd.utils.DateUtils.convertDateToInstantAtStartOfDay;
+import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayToday;
 
 @Service
 @RequiredArgsConstructor
@@ -47,40 +48,58 @@ public class RegistrySelfService {
 
     public Mono<RaddRegistryEntity> updateRegistry(String registryId, String xPagopaPnCxId, UpdateRegistryRequest request) {
         log.info("start updateRegistry for registryId [{}] and cxId [{}]", registryId, xPagopaPnCxId);
+        checkUpdateRegistryRequest(request);
         return raddRegistryDAO.find(registryId, xPagopaPnCxId)
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.RADD_REGISTRY_NOT_FOUND, HttpStatus.NOT_FOUND)))
                 .flatMap(registryEntity -> raddRegistryDAO.updateRegistryEntity(mapFieldToUpdate(registryEntity, request)))
                 .doOnError(throwable -> log.error("Error during update registry request for registryId: [{}] and cxId: [{}]", registryId, xPagopaPnCxId, throwable));
     }
 
+    private void checkUpdateRegistryRequest(UpdateRegistryRequest request) {
+        Utils.matchRegex(REGEX_PHONENUMBER, request.getPhoneNumber(), ExceptionTypeEnum.PHONE_NUMBER_ERROR);
+        Utils.matchRegex(REGEX_OPENINGTIME, request.getOpeningTime(), ExceptionTypeEnum.OPENING_TIME_ERROR);
+    }
+
     private RaddRegistryEntity mapFieldToUpdate(RaddRegistryEntity registryEntity, UpdateRegistryRequest request) {
-        if(StringUtils.isNotBlank(request.getDescription())) {
+        if (StringUtils.isNotBlank(request.getDescription())) {
             registryEntity.setDescription(request.getDescription());
         }
-        if(StringUtils.isNotBlank(request.getOpeningTime())) {
+        if (StringUtils.isNotBlank(request.getOpeningTime())) {
             registryEntity.setOpeningTime(request.getOpeningTime());
         }
-        if(StringUtils.isNotBlank(request.getPhoneNumber())) {
+        if (StringUtils.isNotBlank(request.getPhoneNumber())) {
             registryEntity.setPhoneNumber(request.getPhoneNumber());
         }
         return registryEntity;
     }
 
     public Mono<CreateRegistryResponse> addRegistry(String xPagopaPnCxId, CreateRegistryRequest request) {
-        verifyDates(request.getStartValidity(), request.getEndValidity());
+        checkCreateRegistryRequest(request);
         RaddRegistryRequestEntity raddRegistryRequestEntity = createRaddRegistryRequestEntity(request, xPagopaPnCxId);
         return registryRequestDAO.createEntity(raddRegistryRequestEntity)
                 .flatMap(this::sendStartEvent)
                 .map(this::createRegistryResponse);
     }
 
+    private void checkCreateRegistryRequest(CreateRegistryRequest request) {
+        Utils.matchRegex(REGEX_PHONENUMBER, request.getPhoneNumber(), ExceptionTypeEnum.PHONE_NUMBER_ERROR);
+        if (request.getGeoLocation() != null) {
+            Utils.matchRegex(REGEX_GEOLOCATION, request.getGeoLocation().getLatitude(), ExceptionTypeEnum.GEOLOCATION_ERROR);
+            Utils.matchRegex(REGEX_GEOLOCATION, request.getGeoLocation().getLongitude(), ExceptionTypeEnum.GEOLOCATION_ERROR);
+        }
+        Utils.matchRegex(REGEX_OPENINGTIME, request.getOpeningTime(), ExceptionTypeEnum.OPENING_TIME_ERROR);
+        Utils.matchRegex(REGEX_CAPACITY, request.getCapacity(), ExceptionTypeEnum.CAPACITY_ERROR);
+
+        verifyDates(request.getStartValidity(), request.getEndValidity());
+    }
+
     private void verifyDates(String startValidity, String endValidity) {
         try {
             Instant startValidityInstant = startValidity != null ? convertDateToInstantAtStartOfDay(startValidity) : getStartOfDayToday();
 
-            if(endValidity != null) {
+            if (endValidity != null) {
                 Instant endValidityInstant = convertDateToInstantAtStartOfDay(endValidity);
-                if(endValidityInstant.isBefore(startValidityInstant)) {
+                if (endValidityInstant.isBefore(startValidityInstant)) {
                     throw new RaddGenericException(ExceptionTypeEnum.DATE_INTERVAL_ERROR, HttpStatus.BAD_REQUEST);
                 }
             }
@@ -88,6 +107,7 @@ public class RegistrySelfService {
             throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR, HttpStatus.BAD_REQUEST);
         }
     }
+
 
     private Mono<RaddRegistryRequestEntity> sendStartEvent(RaddRegistryRequestEntity entity) {
         return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(entity.getCorrelationId()))
@@ -100,7 +120,8 @@ public class RegistrySelfService {
         return response;
     }
 
-    private RaddRegistryRequestEntity createRaddRegistryRequestEntity(CreateRegistryRequest createRegistryRequest, String cxId) {
+    private RaddRegistryRequestEntity createRaddRegistryRequestEntity(CreateRegistryRequest
+                                                                              createRegistryRequest, String cxId) {
         String requestId = REQUEST_ID_PREFIX + UUID.randomUUID();
         RaddRegistryOriginalRequest originalRequest = raddRegistryRequestEntityMapper.retrieveOriginalRequest(createRegistryRequest);
         return raddRegistryRequestEntityMapper.retrieveRaddRegistryRequestEntity(cxId, requestId, originalRequest);
@@ -109,7 +130,7 @@ public class RegistrySelfService {
     public Mono<RaddRegistryEntity> deleteRegistry(String xPagopaPnCxId, String registryId, String endDate) {
         log.info("deleteRegistry called with xPagopaPnCxId: {}, registryId: {}, endDate: {}", xPagopaPnCxId, registryId, endDate);
         return raddRegistryDAO.find(registryId, xPagopaPnCxId)
-                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.REGISTRY_NOT_FOUND,HttpStatus.NOT_FOUND)))
+                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.REGISTRY_NOT_FOUND, HttpStatus.NOT_FOUND)))
                 .flatMap(registryEntity -> updateRegistryEntityIfValidDate(registryEntity, endDate, registryId, xPagopaPnCxId))
                 .doOnNext(raddRegistryEntity -> log.info("Registry with id: {} and cap: {} updated successfully", registryId, raddRegistryEntity.getZipCode()))
                 .flatMap(raddRegistryEntity -> raddAltCapCheckerProducer.sendCapCheckerEvent(raddRegistryEntity.getZipCode())
@@ -117,7 +138,8 @@ public class RegistrySelfService {
                 .doOnError(throwable -> log.error("Error during delete registry request for registryId: [{}] and cxId: [{}]", registryId, xPagopaPnCxId, throwable));
     }
 
-    private Mono<RaddRegistryEntity> updateRegistryEntityIfValidDate(RaddRegistryEntity registryEntity, String date, String registryId, String xPagopaPnCxId) {
+    private Mono<RaddRegistryEntity> updateRegistryEntityIfValidDate(RaddRegistryEntity registryEntity, String
+            date, String registryId, String xPagopaPnCxId) {
         try {
             Instant instant = convertDateToInstantAtStartOfDay(date);
             if (isValidDate(instant)) {
@@ -126,23 +148,24 @@ public class RegistrySelfService {
                 return raddRegistryDAO.updateRegistryEntity(registryEntity);
             } else {
                 log.error("not enough notice time for cancellation date: {}", instant);
-                return Mono.error(new RaddGenericException(ExceptionTypeEnum.DATE_NOTICE_ERROR,HttpStatus.BAD_REQUEST));
+                return Mono.error(new RaddGenericException(ExceptionTypeEnum.DATE_NOTICE_ERROR, HttpStatus.BAD_REQUEST));
             }
         } catch (DateTimeParseException e) {
-            throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR,HttpStatus.BAD_REQUEST);
+            throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR, HttpStatus.BAD_REQUEST);
         }
 
     }
 
     private boolean isValidDate(Instant endDate) {
-        if(pnRaddFsuConfig.getRegistryDefaultEndValidity() != 0) {
+        if (pnRaddFsuConfig.getRegistryDefaultEndValidity() != 0) {
             Instant minimumCancellationTime = Instant.now().plus(pnRaddFsuConfig.getRegistryDefaultEndValidity(), ChronoUnit.DAYS);
             return endDate.isAfter(minimumCancellationTime);
         }
         return true;
     }
 
-    public Mono<RegistriesResponse> registryListing(String xPagopaPnCxId, Integer limit, String lastKey, String cap, String city, String pr, String externalCode) {
+    public Mono<RegistriesResponse> registryListing(String xPagopaPnCxId, Integer limit, String lastKey, String
+            cap, String city, String pr, String externalCode) {
         log.info("start registryListing for xPagopaPnCxId={} and limit: [{}] and lastKey: [{}] and cap: [{}] and city: [{}] and pr: [{}] and externalCode: [{}].", xPagopaPnCxId, limit, lastKey, cap, city, pr, externalCode);
         return raddRegistryDAO.findByFilters(xPagopaPnCxId, limit, cap, city, pr, externalCode, lastKey)
                 .map(raddRegistryUtils::mapRegistryEntityToRegistry);

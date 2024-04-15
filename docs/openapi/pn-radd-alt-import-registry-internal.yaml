@@ -263,7 +263,7 @@ components:
       type: object
       properties:
         originalAddress:
-          $ref: '#/components/schemas/Address'
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/Address'
         description:
           type: string
           description: Descrizione dello sportello.
@@ -273,16 +273,7 @@ components:
           description: Numero di telefono dello sportello.
           example: "+39 0123456789"
         geoLocation:
-          type: object
-          properties:
-            latitude:
-              type: string
-              description: Latitudine della posizione geografica dello sportello.
-              example: "41.9028"
-            longitude:
-              type: string
-              description: Longitudine della posizione geografica dello sportello.
-              example: "12.4964"
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/GeoLocation'
         openingTime:
           type: string
           description: Orario di apertura dello sportello.
@@ -304,29 +295,6 @@ components:
           type: string
           description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
           example: 100
-    Address:
-      type: object
-      properties:
-        addressRow:
-          type: string
-          description: Indirizzo completo
-          example: Via Roma 123
-        cap:
-          type: string
-          description: CAP (Codice di Avviamento Postale).
-          example: 00100
-        city:
-          type: string
-          description: Città.
-          example: Roma
-        pr:
-          type: string
-          description: Provincia.
-          example: RM
-        country:
-          type: string
-          description: Paese.
-          example: Italia
     RegistryUploadRequest:
       description: Richiesta di upload di un file csv contenente una lista di sportelli da censire
       type: object

@@ -3,7 +3,10 @@ package it.pagopa.pn.radd.utils;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DownloadUrl;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,5 +68,11 @@ public class Utils {
         }
 
         return "";
+    }
+
+    public static void matchRegex(String regex, String value, ExceptionTypeEnum exceptionTypeEnum) {
+        if (!StringUtils.isEmpty(value) && !Pattern.compile(regex).matcher(value).matches()) {
+            throw new RaddGenericException(exceptionTypeEnum, HttpStatus.BAD_REQUEST);
+        }
     }
 }

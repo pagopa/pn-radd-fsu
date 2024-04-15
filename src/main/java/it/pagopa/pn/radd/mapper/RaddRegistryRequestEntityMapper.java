@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.mapper;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequestGeoLocation;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.GeoLocation;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
@@ -120,12 +120,12 @@ public class RaddRegistryRequestEntityMapper {
                 .toList();
     }
 
-    private CreateRegistryRequestGeoLocation retrieveGeoLocationObject(String coordinateGeoReferenziali) {
+    private GeoLocation retrieveGeoLocationObject(String coordinateGeoReferenziali) {
         String[] coordinates = coordinateGeoReferenziali.split(",");
         if (coordinates.length != 2) {
             return null;
         }
-        CreateRegistryRequestGeoLocation geoLocation = new CreateRegistryRequestGeoLocation();
+        GeoLocation geoLocation = new GeoLocation();
         geoLocation.setLatitude(coordinates[0]);
         geoLocation.setLongitude(coordinates[1]);
         return geoLocation;

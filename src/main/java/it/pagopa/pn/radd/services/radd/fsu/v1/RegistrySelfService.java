@@ -24,17 +24,13 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 
-import java.util.Date;
 import java.util.UUID;
 
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
-import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayByInstant;
-import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayToday;
+import static it.pagopa.pn.radd.utils.DateUtils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -78,13 +74,18 @@ public class RegistrySelfService {
                 .map(this::createRegistryResponse);
     }
 
-    private void verifyDates(Date startValidity, Date endValidity) {
-        Instant startValidityInstant = startValidity != null ? getStartOfDayByInstant(startValidity.toInstant()) : getStartOfDayToday();
-        if(endValidity != null) {
-            Instant endValidityInstant = getStartOfDayByInstant(endValidity.toInstant());
-            if(endValidityInstant.isBefore(startValidityInstant)) {
-                throw new RaddGenericException(ExceptionTypeEnum.DATE_INTERVAL_ERROR, HttpStatus.BAD_REQUEST);
+    private void verifyDates(String startValidity, String endValidity) {
+        try {
+            Instant startValidityInstant = startValidity != null ? convertDateToInstantAtStartOfDay(startValidity) : getStartOfDayToday();
+
+            if(endValidity != null) {
+                Instant endValidityInstant = convertDateToInstantAtStartOfDay(endValidity);
+                if(endValidityInstant.isBefore(startValidityInstant)) {
+                    throw new RaddGenericException(ExceptionTypeEnum.DATE_INTERVAL_ERROR, HttpStatus.BAD_REQUEST);
+                }
             }
+        } catch (DateTimeParseException e) {
+            throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -117,28 +118,28 @@ public class RegistrySelfService {
     }
 
     private Mono<RaddRegistryEntity> updateRegistryEntityIfValidDate(RaddRegistryEntity registryEntity, String date, String registryId, String xPagopaPnCxId) {
-        LocalDate localDate = LocalDate.parse(date);
-        Instant instant = localDate.atStartOfDay().toInstant(ZoneOffset.UTC);
-        if (isValidDate(instant)) {
-            log.info("Updating registry with id: {} and cxId: {}", registryId, xPagopaPnCxId);
-            registryEntity.setEndValidity(instant);
-            return raddRegistryDAO.updateRegistryEntity(registryEntity);
-        } else {
-            log.error("not enough notice time for cancellation date: {}", instant);
-            return Mono.error(new RaddGenericException(ExceptionTypeEnum.DATE_NOTICE_ERROR,HttpStatus.BAD_REQUEST));
-        }
-    }
-
-    private boolean isValidDate(Instant endDate) {
         try {
-            if(pnRaddFsuConfig.getRegistryDefaultEndValidity() != 0) {
-                Instant minimumCancellationTime = Instant.now().plus(pnRaddFsuConfig.getRegistryDefaultEndValidity(), ChronoUnit.DAYS);
-                return endDate.isAfter(minimumCancellationTime);
+            Instant instant = convertDateToInstantAtStartOfDay(date);
+            if (isValidDate(instant)) {
+                log.info("Updating registry with id: {} and cxId: {}", registryId, xPagopaPnCxId);
+                registryEntity.setEndValidity(instant);
+                return raddRegistryDAO.updateRegistryEntity(registryEntity);
+            } else {
+                log.error("not enough notice time for cancellation date: {}", instant);
+                return Mono.error(new RaddGenericException(ExceptionTypeEnum.DATE_NOTICE_ERROR,HttpStatus.BAD_REQUEST));
             }
-            return true;
         } catch (DateTimeParseException e) {
             throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR,HttpStatus.BAD_REQUEST);
         }
+
+    }
+
+    private boolean isValidDate(Instant endDate) {
+        if(pnRaddFsuConfig.getRegistryDefaultEndValidity() != 0) {
+            Instant minimumCancellationTime = Instant.now().plus(pnRaddFsuConfig.getRegistryDefaultEndValidity(), ChronoUnit.DAYS);
+            return endDate.isAfter(minimumCancellationTime);
+        }
+        return true;
     }
 
     public Mono<RegistriesResponse> registryListing(String xPagopaPnCxId, Integer limit, String lastKey, String cap, String city, String pr, String externalCode) {

@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.GeoLocation;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
@@ -117,9 +118,7 @@ class RegistrySelfServiceTest {
         request.setStartValidity("2024-03-01");
         request.setEndValidity("2023-10-21");
 
-        Assertions.assertThrows(RaddGenericException.class, () -> {
-            registrySelfService.addRegistry("cxId", request);
-        });
+        Assertions.assertThrows(RaddGenericException.class, () -> registrySelfService.addRegistry("cxId", request));
     }
 
     @Test
@@ -127,9 +126,34 @@ class RegistrySelfServiceTest {
         CreateRegistryRequest request = new CreateRegistryRequest();
         request.setStartValidity("10/02/2022");
 
-        Assertions.assertThrows(RaddGenericException.class, () -> {
-            registrySelfService.addRegistry("cxId", request);
-        });
+        Assertions.assertThrows(RaddGenericException.class, () -> registrySelfService.addRegistry("cxId", request));
+    }
+
+    @Test
+    public void shouldAddRegistryFailsForGeolocationFormat() {
+        CreateRegistryRequest request = new CreateRegistryRequest();
+        GeoLocation geoLocation = new GeoLocation();
+        geoLocation.setLatitude("10.0");
+        geoLocation.setLongitude("10,0");
+        request.setGeoLocation(geoLocation);
+
+        Assertions.assertThrows(RaddGenericException.class, () -> registrySelfService.addRegistry("cxId", request));
+    }
+
+    @Test
+    public void shouldAddRegistryFailsForOpeningTimeFormat() {
+        CreateRegistryRequest request = new CreateRegistryRequest();
+        request.setOpeningTime("10:00");
+
+        Assertions.assertThrows(RaddGenericException.class, () -> registrySelfService.addRegistry("cxId", request));
+    }
+
+    @Test
+    public void shouldAddRegistryFailsForCapacityFormat() {
+        CreateRegistryRequest request = new CreateRegistryRequest();
+        request.setCapacity("10a");
+
+        Assertions.assertThrows(RaddGenericException.class, () -> registrySelfService.addRegistry("cxId", request));
     }
 
     @Test

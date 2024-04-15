@@ -76,9 +76,16 @@ public class RegistrySelfService {
     public Mono<CreateRegistryResponse> addRegistry(String xPagopaPnCxId, CreateRegistryRequest request) {
         checkCreateRegistryRequest(request);
         RaddRegistryRequestEntity raddRegistryRequestEntity = createRaddRegistryRequestEntity(request, xPagopaPnCxId);
+        log.info("Creating registry request entity for cxId: {} and requestId: {}", xPagopaPnCxId, raddRegistryRequestEntity.getRequestId());
         return registryRequestDAO.createEntity(raddRegistryRequestEntity)
-                .flatMap(this::sendStartEvent)
-                .map(this::createRegistryResponse);
+                .flatMap(entity -> {
+                    log.info("Registry request entity created successfully for cxId: {} and requestId: {}", xPagopaPnCxId, entity.getRequestId());
+                    return sendStartEvent(entity);
+                })
+                .map(response -> {
+                    log.info("Start event sent successfully for cxId: {} and requestId: {}", xPagopaPnCxId, response.getRequestId());
+                    return createRegistryResponse(response);
+                });
     }
 
     private void checkCreateRegistryRequest(CreateRegistryRequest request) {

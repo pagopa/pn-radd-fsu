@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryResponse;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.UpdateRegistryRequest;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
@@ -28,11 +29,10 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-
-import java.time.Instant;
-import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -110,33 +110,124 @@ class RegistrySelfServiceTest {
                 .verifyComplete();
     }
 
-        @Test
-        void registryListing() {
-            ResultPaginationDto<RaddRegistryEntity, String> paginator = new ResultPaginationDto<RaddRegistryEntity, String>().toBuilder().build();
-            paginator.setResultsPage(List.of());
-            PnLastEvaluatedKey lastEvaluatedKeyToSerialize = new PnLastEvaluatedKey();
-            lastEvaluatedKeyToSerialize.setExternalLastEvaluatedKey( "SenderId##creationMonth" );
-            lastEvaluatedKeyToSerialize.setInternalLastEvaluatedKey(
-                    Map.of( "KEY", AttributeValue.builder()
-                            .s( "VALUE" )
-                            .build() )  );
-            String serializedLEK = lastEvaluatedKeyToSerialize.serializeInternalLastEvaluatedKey();
-            when(raddRegistryDAO.findByFilters(eq("cxId"), eq(1),eq("cap"), eq("city"), eq("pr"), eq("externalCode"), any())).thenReturn(Mono.just(paginator));
-            StepVerifier.create(registrySelfService.registryListing("cxId", 1, serializedLEK,"cap", "city", "pr", "externalCode"))
-                    .expectNextMatches(registriesResponse -> Boolean.FALSE.equals(registriesResponse.getMoreResult()))
-                    .verifyComplete();
-        }
 
     @Test
     public void shouldAddRegistryFailsForInvalidIntervalDates() {
         CreateRegistryRequest request = new CreateRegistryRequest();
-        Date today = new Date();
-        Instant yesterday = new Date().toInstant().minus(1, java.time.temporal.ChronoUnit.DAYS);
-        request.setStartValidity(today);
-        request.setEndValidity(Date.from(yesterday));
+        request.setStartValidity("2024-03-01");
+        request.setEndValidity("2023-10-21");
 
         Assertions.assertThrows(RaddGenericException.class, () -> {
             registrySelfService.addRegistry("cxId", request);
         });
     }
+
+    @Test
+    public void shouldAddRegistryFailsForInvalidDateFormat() {
+        CreateRegistryRequest request = new CreateRegistryRequest();
+        request.setStartValidity("10/02/2022");
+
+        Assertions.assertThrows(RaddGenericException.class, () -> {
+            registrySelfService.addRegistry("cxId", request);
+        });
+    }
+
+    @Test
+    void registryListing() {
+        ResultPaginationDto<RaddRegistryEntity, String> paginator = new ResultPaginationDto<RaddRegistryEntity, String>().toBuilder().build();
+        paginator.setResultsPage(List.of());
+        PnLastEvaluatedKey lastEvaluatedKeyToSerialize = new PnLastEvaluatedKey();
+        lastEvaluatedKeyToSerialize.setExternalLastEvaluatedKey( "SenderId##creationMonth" );
+        lastEvaluatedKeyToSerialize.setInternalLastEvaluatedKey(
+                Map.of( "KEY", AttributeValue.builder()
+                        .s( "VALUE" )
+                        .build() )  );
+        String serializedLEK = lastEvaluatedKeyToSerialize.serializeInternalLastEvaluatedKey();
+        when(raddRegistryDAO.findByFilters(eq("cxId"), eq(1),eq("cap"), eq("city"), eq("pr"), eq("externalCode"), any())).thenReturn(Mono.just(paginator));
+        StepVerifier.create(registrySelfService.registryListing("cxId", 1, serializedLEK,"cap", "city", "pr", "externalCode"))
+                .expectNextMatches(registriesResponse -> Boolean.FALSE.equals(registriesResponse.getMoreResult()))
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldDeleteRegistrySuccessfullyWhenRegistryExistsAndDateIsValid() {
+        // Given
+        String registryId = "testRegistryId";
+        String cxId = "testCxId";
+        String endDate = "2023-10-21";
+        RaddRegistryEntity registryEntity = new RaddRegistryEntity();
+        registryEntity.setRegistryId(registryId);
+        registryEntity.setZipCode("testZipCode");
+        when(raddRegistryDAO.find(registryId, cxId)).thenReturn(Mono.just(registryEntity));
+        when(raddRegistryDAO.updateRegistryEntity(any())).thenReturn(Mono.just(registryEntity));
+        when(raddAltCapCheckerProducer.sendCapCheckerEvent(any())).thenReturn(Mono.empty());
+
+        // When
+        Mono<RaddRegistryEntity> result = registrySelfService.deleteRegistry(cxId, registryId, endDate);
+
+        // Then
+        StepVerifier.create(result)
+                .expectNextMatches(raddRegistryEntity -> registryId.equals(raddRegistryEntity.getRegistryId()))
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRegistryNotFound() {
+        // Given
+        String registryId = "testRegistryId";
+        String cxId = "testCxId";
+        String endDate = "2023-10-21";
+        when(raddRegistryDAO.find(registryId, cxId)).thenReturn(Mono.empty());
+
+        // When
+        Mono<RaddRegistryEntity> result = registrySelfService.deleteRegistry(cxId, registryId, endDate);
+
+        // Then
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable -> throwable instanceof RaddGenericException &&
+                        ((RaddGenericException) throwable).getExceptionType() == ExceptionTypeEnum.REGISTRY_NOT_FOUND)
+                .verify();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEndDateIsInvalid() {
+        // Given
+        String registryId = "testRegistryId";
+        String cxId = "testCxId";
+        String endDate = LocalDate.now().format(DateTimeFormatter.ISO_DATE); // Invalid date
+        RaddRegistryEntity registryEntity = new RaddRegistryEntity();
+        registryEntity.setRegistryId(registryId);
+        when(raddRegistryDAO.find(registryId, cxId)).thenReturn(Mono.just(registryEntity));
+        when(pnRaddFsuConfig.getRegistryDefaultEndValidity()).thenReturn(1);
+
+        // When
+        Mono<RaddRegistryEntity> result = registrySelfService.deleteRegistry(cxId, registryId, endDate);
+
+        // Then
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable -> throwable instanceof RaddGenericException &&
+                        ((RaddGenericException) throwable).getExceptionType() == ExceptionTypeEnum.DATE_NOTICE_ERROR)
+                .verify();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEndDateHasInvalidFormat() {
+        // Given
+        String registryId = "testRegistryId";
+        String cxId = "testCxId";
+        String endDate = "20/02/2020"; // Invalid date
+        RaddRegistryEntity registryEntity = new RaddRegistryEntity();
+        registryEntity.setRegistryId(registryId);
+        when(raddRegistryDAO.find(registryId, cxId)).thenReturn(Mono.just(registryEntity));
+
+        // When
+        Mono<RaddRegistryEntity> result = registrySelfService.deleteRegistry(cxId, registryId, endDate);
+
+        // Then
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable -> throwable instanceof RaddGenericException &&
+                        ((RaddGenericException) throwable).getExceptionType() == ExceptionTypeEnum.DATE_INVALID_ERROR)
+                .verify();
+    }
+
 }

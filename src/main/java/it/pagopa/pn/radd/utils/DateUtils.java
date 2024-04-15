@@ -48,4 +48,8 @@ public class DateUtils {
     public static Instant getStartOfDayToday() {
         return Instant.now().atOffset(ZoneOffset.UTC).toLocalDate().atStartOfDay().toInstant(ZoneOffset.UTC);
     }
+
+    public static Instant convertDateToInstantAtStartOfDay(String date) {
+        return LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC).toInstant();
+    }
 }

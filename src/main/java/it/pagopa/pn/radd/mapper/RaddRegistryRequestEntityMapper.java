@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static it.pagopa.pn.radd.utils.Const.MISSING_ADDRESS_REQUIRED_FIELD;
-import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayByInstant;
+import static it.pagopa.pn.radd.utils.DateUtils.convertDateToInstantAtStartOfDay;
 
 @RequiredArgsConstructor
 @Component
@@ -38,7 +38,7 @@ public class RaddRegistryRequestEntityMapper {
             originalRequest.setCountry(request.getAddress().getCountry());
         }
         if(request.getStartValidity() != null ) {
-            Instant instant = getStartOfDayByInstant(request.getStartValidity().toInstant());
+            Instant instant = convertDateToInstantAtStartOfDay(request.getStartValidity());
 
             originalRequest.setStartValidity(instant.toString());
         } else {
@@ -46,7 +46,7 @@ public class RaddRegistryRequestEntityMapper {
         }
 
         if(request.getEndValidity() != null) {
-            Instant instant = getStartOfDayByInstant(request.getEndValidity().toInstant());
+            Instant instant = convertDateToInstantAtStartOfDay(request.getEndValidity());
             originalRequest.setEndValidity(instant.toString());
         }
 

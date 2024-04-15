@@ -161,13 +161,11 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
 
     @Override
     public Mono<RaddRegistryRequestEntity> createEntity(RaddRegistryRequestEntity entity) {
-        log.info("Creating new RaddRegistryRequest entity with pk {}", entity.getPk());
         return this.putItem(entity);
     }
 
     @Override
     public Mono<RaddRegistryRequestEntity> updateRegistryRequestData(RaddRegistryRequestEntity raddRegistryRequestEntity) {
-        log.info("Update RaddRegistryRequest entity with pk {}", raddRegistryRequestEntity.getPk());
         return this.updateItem(raddRegistryRequestEntity);
     }
 

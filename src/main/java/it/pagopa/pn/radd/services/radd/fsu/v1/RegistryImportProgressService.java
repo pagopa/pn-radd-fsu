@@ -69,10 +69,7 @@ public class RegistryImportProgressService {
                 .flatMap(hasElement -> {
                     if (Boolean.FALSE.equals(hasElement)) {
                         return registryImportDAO.updateStatus(item, RaddRegistryImportStatus.DONE, null)
-                                .flatMap(entity -> {
-                                    log.info("Registry import status updated to DONE for cxId: {} and requestId: {}", item.getCxId(), item.getRequestId());
-                                    return sendSqsImportCompleted(item.getCxId(), item.getRequestId());
-                                });
+                                .flatMap(entity -> sendSqsImportCompleted(item.getCxId(), item.getRequestId()));
                     } else {
                         log.info("No registry request found for cxId: {} and requestId: {}", item.getCxId(), item.getRequestId());
                         return Mono.empty();
@@ -80,6 +77,7 @@ public class RegistryImportProgressService {
                 });
 
         return MDCUtils.addMDCToContextAndExecute(voidMono);
+
     }
 
 

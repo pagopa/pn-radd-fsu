@@ -95,6 +95,7 @@ public class RegistryService {
         );
     }
 
+
     private Mono<RegistryUploadRequest> checkImportRequest(RegistryUploadRequest request, List<RaddRegistryImportEntity> entities) {
         for (RaddRegistryImportEntity entity : entities) {
             if (request.getChecksum().equalsIgnoreCase(entity.getChecksum()) &&
@@ -219,6 +220,7 @@ public class RegistryService {
                     return raddRegistryRequestDAO.updateRegistryRequestData(raddRegistryRequestEntity)
                             .doOnNext(requestEntity -> log.info("Registry request [{}] updated in status ACCEPTED", requestEntity.getPk()));
                 });
+
     }
 
     public Mono<VerifyRequestResponse> verifyRegistriesImportRequest(String xPagopaPnCxId, String requestId) {
@@ -244,7 +246,7 @@ public class RegistryService {
         return raddRegistryRequestDAO.getAllFromCorrelationId(payload.getCorrelationId(), RegistryRequestStatus.NOT_WORKED.name())
                 .collectList()
                 .flatMap(raddRegistryRequestEntities -> {
-                    if (CollectionUtils.isEmpty(raddRegistryRequestEntities)) {
+                    if(CollectionUtils.isEmpty(raddRegistryRequestEntities)) {
                         log.warn("No records found for correlationId: {}", payload.getCorrelationId());
                         return Mono.empty();
                     } else {

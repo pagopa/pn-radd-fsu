@@ -96,7 +96,6 @@ public class RegistrySelfService {
         }
     }
 
-
     private Mono<RaddRegistryRequestEntity> sendStartEvent(RaddRegistryRequestEntity entity) {
         return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(entity.getCorrelationId()))
                 .thenReturn(entity);

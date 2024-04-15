@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.middleware.queue.consumer.handler;
 
+import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.radd.middleware.queue.consumer.HandleEventUtils;
 import it.pagopa.pn.radd.middleware.queue.event.PnInternalCapCheckerEvent;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistryService;
@@ -27,14 +28,14 @@ public class InternalCapCheckerEventHandler {
             PnInternalCapCheckerEvent.Payload payload = message.getPayload();
             MDC.put(MDC_ZIP_CODE_KEY, payload.getZipCode());
 
-            registryService.handleInternalCapCheckerMessage(payload)
+            var handleMessage = registryService.handleInternalCapCheckerMessage(payload)
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                     .doOnError(throwable ->  {
                         log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
                         HandleEventUtils.handleException(message.getHeaders(), throwable);
-                    })
-                    .block();
-            MDC.remove(MDC_ZIP_CODE_KEY);
+                    });
+
+            MDCUtils.addMDCToContextAndExecute(handleMessage).block();
         };
     }
 

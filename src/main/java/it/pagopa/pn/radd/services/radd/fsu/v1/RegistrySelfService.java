@@ -69,9 +69,16 @@ public class RegistrySelfService {
     public Mono<CreateRegistryResponse> addRegistry(String xPagopaPnCxId, CreateRegistryRequest request) {
         verifyDates(request.getStartValidity(), request.getEndValidity());
         RaddRegistryRequestEntity raddRegistryRequestEntity = createRaddRegistryRequestEntity(request, xPagopaPnCxId);
+        log.info("Creating registry request entity for cxId: {} and requestId: {}", xPagopaPnCxId, raddRegistryRequestEntity.getRequestId());
         return registryRequestDAO.createEntity(raddRegistryRequestEntity)
-                .flatMap(this::sendStartEvent)
-                .map(this::createRegistryResponse);
+                .flatMap(entity -> {
+                    log.info("Registry request entity created successfully for cxId: {} and requestId: {}", xPagopaPnCxId, entity.getRequestId());
+                    return sendStartEvent(entity);
+                })
+                .map(response -> {
+                    log.info("Start event sent successfully for cxId: {} and requestId: {}", xPagopaPnCxId, response.getRequestId());
+                    return createRegistryResponse(response);
+                });
     }
 
     private void verifyDates(String startValidity, String endValidity) {
@@ -88,6 +95,7 @@ public class RegistrySelfService {
             throw new RaddGenericException(ExceptionTypeEnum.DATE_INVALID_ERROR, HttpStatus.BAD_REQUEST);
         }
     }
+
 
     private Mono<RaddRegistryRequestEntity> sendStartEvent(RaddRegistryRequestEntity entity) {
         return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(entity.getCorrelationId()))

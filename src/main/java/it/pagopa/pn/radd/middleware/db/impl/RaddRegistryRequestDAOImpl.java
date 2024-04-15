@@ -70,6 +70,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         Map<String,String> expressionName = new HashMap<>();
         expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
 
+        log.debug("findByCorrelationIdWithStatus query: {}", query);
         return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, query,map,expressionName, null);
     }
 
@@ -99,6 +100,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         Map<String,String> expressionName = new HashMap<>();
         expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
 
+        log.debug("getQueryAndPopulateMapForStatusFilter query: {}", query);
         return getByFilter(conditional, RaddRegistryRequestEntity.CORRELATIONID_INDEX, query, map, expressionName, null);
     }
 
@@ -123,6 +125,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         Map<String,String> expressionName = new HashMap<>();
         expressionName.put("#status", RaddRegistryRequestEntity.COL_STATUS);
 
+        log.debug("findByCxIdAndRequestIdAndStatusNotIn query: {}", query);
         return getByFilter(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, query, valueMap, expressionName, null);
     }
 
@@ -138,6 +141,7 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
 
         String query = getQueryAndPopulateMapForStatusFilter(state, map);
 
+        log.debug("getAllFromCxidAndRequestIdWithState query: {}", query);
         return getAllPaginatedItems(conditional, RaddRegistryRequestEntity.CXID_REQUESTID_INDEX, query,map,expressionName, pnRaddFsuConfig.getMaxQuerySize())
                 .flatMapIterable(page -> page);
     }
@@ -151,17 +155,19 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
         }).toList();
 
         String query = " NOT #status IN (" + String.join(",", statusPlaceHolders) + ")";
-        log.info("query: {}", query);
+        log.debug("addStatusFilterExpression query: {}", query);
         return query;
     }
 
     @Override
     public Mono<RaddRegistryRequestEntity> createEntity(RaddRegistryRequestEntity entity) {
+        log.info("Creating new RaddRegistryRequest entity with pk {}", entity.getPk());
         return this.putItem(entity);
     }
 
     @Override
     public Mono<RaddRegistryRequestEntity> updateRegistryRequestData(RaddRegistryRequestEntity raddRegistryRequestEntity) {
+        log.info("Update RaddRegistryRequest entity with pk {}", raddRegistryRequestEntity.getPk());
         return this.updateItem(raddRegistryRequestEntity);
     }
 

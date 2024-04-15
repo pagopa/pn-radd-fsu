@@ -69,16 +69,24 @@ public class RegistryImportProgressService {
                 .flatMap(hasElement -> {
                     if (Boolean.FALSE.equals(hasElement)) {
                         return registryImportDAO.updateStatus(item, RaddRegistryImportStatus.DONE, null)
-                                .flatMap(entity -> sendSqsImportCompleted(item.getCxId(), item.getRequestId()));
+                                .flatMap(entity -> {
+                                    log.info("Registry import status updated to DONE for cxId: {} and requestId: {}", item.getCxId(), item.getRequestId());
+                                    return sendSqsImportCompleted(item.getCxId(), item.getRequestId());
+                                });
+                    } else {
+                        log.info("No registry request found for cxId: {} and requestId: {}", item.getCxId(), item.getRequestId());
+                        return Mono.empty();
                     }
-                    return Mono.empty();
                 });
 
         return MDCUtils.addMDCToContextAndExecute(voidMono);
-
     }
 
+
     private Mono<Void> sendSqsImportCompleted(String cxId, String requestId) {
-        return Mono.fromRunnable(() -> registryImportProgressProducer.sendRegistryImportCompletedEvent(cxId, requestId));
+        return Mono.fromRunnable(() -> {
+            log.info("Sending registry import completed event for cxId: {} and requestId: {}", cxId, requestId);
+            registryImportProgressProducer.sendRegistryImportCompletedEvent(cxId, requestId);
+        });
     }
 }

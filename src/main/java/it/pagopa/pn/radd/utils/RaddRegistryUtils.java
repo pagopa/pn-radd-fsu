@@ -243,6 +243,7 @@ public class RaddRegistryUtils {
 
         for (int i = 1; i < intervals.size(); i++) {
             if (intervals.get(i).getStart().isAfter(end) || intervals.get(i).getEnd().isBefore(start)) {
+                log.info("No intersection found for intervals: {} and {}", intervals.get(0), intervals.get(i));
                 return null;
             } else {
                 if (start.isBefore(intervals.get(i).getStart()))
@@ -251,7 +252,9 @@ public class RaddRegistryUtils {
                     end = intervals.get(i).getEnd();
             }
         }
-        return new TimeInterval(start, end);
+        TimeInterval intersection = new TimeInterval(start, end);
+        log.info("Intersection found: {}", intersection);
+        return intersection;
     }
 
     public static Set<TimeInterval> mergeIntervals(TimeInterval[] timeIntervals)
@@ -332,9 +335,9 @@ public class RaddRegistryUtils {
         originalRequest.setDescription(raddRegistryOriginalRequest.getDescription());
         originalRequest.setPhoneNumber(raddRegistryOriginalRequest.getPhoneNumber());
         try {
-            OriginalRequestGeoLocation geoLocation = new OriginalRequestGeoLocation();
+            GeoLocation geoLocation = new GeoLocation();
             if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getGeoLocation())) {
-                geoLocation=objectMapperUtil.toObject(raddRegistryOriginalRequest.getGeoLocation(), OriginalRequestGeoLocation.class);
+                geoLocation=objectMapperUtil.toObject(raddRegistryOriginalRequest.getGeoLocation(), GeoLocation.class);
             }
             originalRequest.setGeoLocation(geoLocation);
         }
@@ -378,7 +381,7 @@ public class RaddRegistryUtils {
                         registry.setPhoneNumber(entity.getPhoneNumber());
                         try {
                             if(StringUtils.isNotBlank(entity.getGeoLocation())) {
-                                CreateRegistryRequestGeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), CreateRegistryRequestGeoLocation.class);
+                                GeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), GeoLocation.class);
                                 geoLocation.setLatitude(geoLocation.getLatitude());
                                 geoLocation.setLongitude(geoLocation.getLatitude());
                                 registry.setGeoLocation(geoLocation);

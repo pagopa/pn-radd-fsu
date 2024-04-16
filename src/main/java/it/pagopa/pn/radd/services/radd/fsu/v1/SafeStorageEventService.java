@@ -58,10 +58,15 @@ public class SafeStorageEventService {
                                 .flatMap(importEntity -> Mono.error(new RaddImportException(ERROR_RADD_ALT_READING_CSV)));
                     } else {
                         List<RaddRegistryOriginalRequest> originalRequests = raddRegistryRequestEntityMapper.retrieveOriginalRequest(tuple.getT2());
+                        log.info("Retrieved {} original requests.", originalRequests.size());
                         List<RaddRegistryRequestEntity> raddRegistryRequestEntities = raddRegistryRequestEntityMapper.retrieveRaddRegistryRequestEntity(originalRequests, tuple.getT1());
+                        log.info("Mapped {} original requests to registry request entities.", raddRegistryRequestEntities.size());
                         Map<String, List<RaddRegistryRequestEntity>> map = groupingRaddRegistryRequest(tuple.getT1().getCxId(), tuple.getT1().getRequestId(), raddRegistryRequestEntities, 20);
+                        log.info("Grouped {} registry request entities.", map.values().stream().mapToInt(List::size).sum());
                         return persistRaddRegistryRequest(map)
-                                .thenReturn(tuple.getT1());
+                                .thenReturn(tuple.getT1())
+                                .doOnSuccess(t1 -> log.info("Successfully persisted {} registry requests for cxId {} and requestId {}", map.values().stream().mapToInt(List::size).sum(), t1.getCxId(), t1.getRequestId()))
+                                .doOnError(throwable -> log.error("Error persisting registry requests: {}", throwable.getMessage()));
                     }
                 })
                 .flatMap(importEntity -> pnRaddRegistryImportDAO.updateStatus(importEntity, RaddRegistryImportStatus.PENDING, null))
@@ -72,9 +77,11 @@ public class SafeStorageEventService {
     }
 
     private Mono<List<RaddRegistryRequest>> retrieveAndProcessFile(String fileKey) {
+        log.info("Retrieving and processing file for fileKey: {}", fileKey);
         return getFile(fileKey)
                 .flatMap(fileDownloadResponseDto -> {
                     if (fileDownloadResponseDto.getDownload() != null && StringUtils.isNotBlank(fileDownloadResponseDto.getDownload().getUrl())) {
+                        log.info("Downloading CSV for fileKey: {}", fileKey);
                         return downloadCSV(fileDownloadResponseDto.getDownload().getUrl());
                     }
                     return Mono.error(new RaddGenericException(String.format("Error during download CSV for fileKey: [%s], Url is null", fileKey)));
@@ -83,10 +90,12 @@ public class SafeStorageEventService {
     }
 
     private Mono<List<RaddRegistryRequest>> readAndProcessCSV(byte[] bytes) {
+        log.info("Reading and processing CSV data");
         return csvService.readItemsFromCsv(RaddRegistryRequest.class, bytes, 1)
+                .doOnError(throwable -> log.error("Error reading CSV data: {}", throwable.getMessage()))
                 .onErrorReturn(Collections.emptyList());
-
     }
+
 
     private Mono<Void> persistRaddRegistryRequest(Map<String, List<RaddRegistryRequestEntity>> raddRegistryRequestsMap) {
         return Flux.fromStream(raddRegistryRequestsMap.entrySet()

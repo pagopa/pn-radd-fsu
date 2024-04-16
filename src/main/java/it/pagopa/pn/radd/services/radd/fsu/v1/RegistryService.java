@@ -75,11 +75,23 @@ public class RegistryService {
         return registryUploadRequest.flatMap(request ->
                 raddRegistryImportDAO.getRegistryImportByCxId(xPagopaPnCxId)
                         .collectList()
-                        .flatMap(entities -> checkImportRequest(request, entities))
-                        .flatMap(o -> pnSafeStorageClient.createFile(raddRegistryUtils.getFileCreationRequestDto(), request.getChecksum()))
-                        .flatMap(fileCreationResponseDto -> saveImportRequest(xPagopaPnCxId, request, fileCreationResponseDto, requestId).thenReturn(fileCreationResponseDto))
-                        .map(fileCreationResponseDto -> mapUploadResponse(fileCreationResponseDto, requestId))
-                        .doOnError(throwable -> log.error("Error uploading registry requests for cxId: {} ->", xPagopaPnCxId, throwable))
+                        .flatMap(entities -> {
+                            log.info("Checking import request for cxId: {}", xPagopaPnCxId);
+                            return checkImportRequest(request, entities);
+                        })
+                        .flatMap(o -> {
+                            log.info("Creating file in safe storage for cxId: {}", xPagopaPnCxId);
+                            return pnSafeStorageClient.createFile(raddRegistryUtils.getFileCreationRequestDto(), request.getChecksum());
+                        })
+                        .flatMap(fileCreationResponseDto -> {
+                            log.info("Saving import request for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
+                            return saveImportRequest(xPagopaPnCxId, request, fileCreationResponseDto, requestId).thenReturn(fileCreationResponseDto);
+                        })
+                        .map(fileCreationResponseDto -> {
+                            log.info("Mapping upload response for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
+                            return mapUploadResponse(fileCreationResponseDto, requestId);
+                        })
+                        .doOnError(throwable -> log.error("Error uploading registry requests for cxId: {}", xPagopaPnCxId, throwable))
         );
     }
 
@@ -144,17 +156,27 @@ public class RegistryService {
         String normalizedAddressString = objectMapperUtil.toJson(resultItem.getNormalizedAddress());
         String registryId = UUID.nameUUIDFromBytes(normalizedAddressString.getBytes(StandardCharsets.UTF_8)).toString();
 
+        log.debug("Handling registry update for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
+
         return raddRegistryDAO.find(registryId, raddRegistryRequestEntity.getCxId())
-                .flatMap(entity -> updateRegistryRequestEntity(raddRegistryRequestEntity, entity))
+                .flatMap(entity -> {
+                    log.debug("Found existing registry entity for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
+                    return updateRegistryRequestEntity(raddRegistryRequestEntity, entity);
+                })
                 .switchIfEmpty(createNewRegistryEntity(registryId, raddRegistryRequestEntity, resultItem))
                 .flatMap(entity -> {
+                    log.debug("Registry entity updated or created successfully for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
                     if(entity.getRequestId().startsWith(REQUEST_ID_PREFIX)) {
+                        log.debug("Sending CAP checker event for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
                         return raddAltCapCheckerProducer.sendCapCheckerEvent(entity.getZipCode()).thenReturn(entity);
                     }
+                    log.debug("No CAP checker event needed for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
                     return Mono.just(entity);
                 })
                 .onErrorResume(throwable -> {
+                    log.error("Error occurred while handling registry update for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId(), throwable);
                     if (throwable instanceof RaddGenericException ex && ERROR_DUPLICATE.equals(ex.getMessage())) {
+                        log.debug("Updating status and error message for duplicate registry request with registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
                         return raddRegistryRequestDAO.updateStatusAndError(
                                 raddRegistryRequestEntity,
                                 RegistryRequestStatus.REJECTED,
@@ -167,6 +189,7 @@ public class RegistryService {
 
     private Mono<RaddRegistryRequestEntity> updateRegistryRequestEntity(RaddRegistryRequestEntity newRegistryRequestEntity, RaddRegistryEntity preExistingRegistryEntity) {
         if (StringUtils.equals(preExistingRegistryEntity.getRequestId(), newRegistryRequestEntity.getRequestId())) {
+            log.info("Registry request [{}] is a duplicate, updating status to REJECTED", newRegistryRequestEntity.getPk());
             return raddRegistryRequestDAO.updateStatusAndError(newRegistryRequestEntity, RegistryRequestStatus.REJECTED, ERROR_DUPLICATE);
         } else {
             return raddRegistryUtils.mergeNewRegistryEntity(preExistingRegistryEntity, newRegistryRequestEntity)
@@ -185,7 +208,10 @@ public class RegistryService {
     private Mono<RaddRegistryRequestEntity> createNewRegistryEntity(String registryId, RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
         return raddRegistryUtils.constructRaddRegistryEntity(registryId, resultItem.getNormalizedAddress(), raddRegistryRequestEntity)
                 .flatMap(item -> this.raddRegistryDAO.putItemIfAbsent(item)
-                        .onErrorResume(TransactionAlreadyExistsException.class, ex -> Mono.error(new RaddGenericException(ERROR_DUPLICATE))))
+                        .onErrorResume(TransactionAlreadyExistsException.class, ex -> {
+                            log.warn("Duplicate registry detected with registryId: {}", registryId);
+                            return Mono.error(new RaddGenericException(ERROR_DUPLICATE));
+                        }))
                 .flatMap(raddRegistryEntity -> {
                     raddRegistryRequestEntity.setUpdatedAt(Instant.now());
                     raddRegistryRequestEntity.setStatus(RegistryRequestStatus.ACCEPTED.name());
@@ -223,16 +249,22 @@ public class RegistryService {
                     if(CollectionUtils.isEmpty(raddRegistryRequestEntities)) {
                         log.warn("No records found for correlationId: {}", payload.getCorrelationId());
                         return Mono.empty();
+                    } else {
+                        log.info("Found {} records for correlationId: {}", raddRegistryRequestEntities.size(), payload.getCorrelationId());
+                        return Mono.just(raddRegistryRequestEntities);
                     }
-                    return Mono.just(raddRegistryRequestEntities);
                 })
                 .zipWhen(entities -> Mono.just(raddRegistryUtils.getRequestAddressFromOriginalRequest(entities)))
                 .flatMap(tuple -> {
                     request.setAddresses(tuple.getT2());
                     String addressManagerApiKey = raddRegistryUtils.retrieveAddressManagerApiKey();
+                    log.info("Normalizing addresses for correlationId: {}", payload.getCorrelationId());
                     return pnAddressManagerClient.normalizeAddresses(request, addressManagerApiKey).thenReturn(tuple);
                 })
-                .flatMap(tuple -> raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1()));
+                .flatMap(tuple -> {
+                    log.info("Updating records in pending state for correlationId: {}", payload.getCorrelationId());
+                    return raddRegistryRequestDAO.updateRecordsInPending(tuple.getT1());
+                });
     }
 
     public Mono<Void> handleImportCompletedRequest(ImportCompletedRequestEvent.Payload payload) {
@@ -244,8 +276,11 @@ public class RegistryService {
 
         return newRegistryRequest.concatWith(oldRegistryRequest)
                 .distinct()
-                .flatMap(raddAltCapCheckerProducer::sendCapCheckerEvent)
-                .then();
+                .flatMap(zipCode -> raddAltCapCheckerProducer.sendCapCheckerEvent(zipCode)
+                        .doOnError(throwable -> log.error("Failed to send Cap Checker event for zipCode {}: {}", zipCode, throwable.getMessage())))
+                .then()
+                .doOnSuccess(voidValue -> log.info("Completed import completed request processing for cxId {} and requestId {}", payload.getCxId(), payload.getRequestId()))
+                .doOnError(throwable -> log.error("Failed to complete import completed request processing for cxId {} and requestId {}: {}", payload.getCxId(), payload.getRequestId(), throwable.getMessage()));
     }
 
     /**
@@ -258,9 +293,11 @@ public class RegistryService {
      *
      */
     public Flux<String> deleteOlderRegistriesAndGetZipCodeList(String xPagopaPnCxId, String requestId) {
-        log.info("start deleteOlderRegistriesAndGetZipCodeList for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
+        log.info("Start deleteOlderRegistriesAndGetZipCodeList for cxId: {} and requestId: {}", xPagopaPnCxId, requestId);
         return raddRegistryImportDAO.getRegistryImportByCxIdFilterByStatus(xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE)
-                .collectList().flatMapMany(raddRegistryImportEntities -> processRegistryImportsInStatusDone(xPagopaPnCxId, requestId, raddRegistryImportEntities));
+                .collectList()
+                .doOnNext(list -> log.info("Found {} entities with cxId: {} requestId: {} and status {}", list.size(), xPagopaPnCxId, requestId, RaddRegistryImportStatus.DONE.name()))
+                .flatMapMany(raddRegistryImportEntities -> processRegistryImportsInStatusDone(xPagopaPnCxId, requestId, raddRegistryImportEntities));
     }
 
     /**
@@ -385,16 +422,18 @@ public class RegistryService {
     }
 
     public Mono<Void> handleInternalCapCheckerMessage(PnInternalCapCheckerEvent.Payload response) {
+        log.debug("Handling internal CAP checker message for ZIP code '{}'", response.getZipCode());
         return raddRegistryDAO.getRegistriesByZipCode(response.getZipCode())
                 .collectList()
-                .doOnNext(raddRegistryEntities -> log.info("Found {} registries for zipCode: {}", raddRegistryEntities.size(), response.getZipCode()))
+                .doOnNext(raddRegistryEntities -> log.info("Found {} registries for ZIP code: {}", raddRegistryEntities.size(), response.getZipCode()))
                 .map(raddRegistryUtils::getOfficeIntervals)
                 .map(raddRegistryUtils::findActiveIntervals)
                 .flatMap(timeIntervals -> {
                     if(timeIntervals.isEmpty()) {
-                        log.info("No active intervals found for zipCode: {}", response.getZipCode());
+                        log.info("No active intervals found for ZIP code '{}'", response.getZipCode());
                         return Mono.empty();
                     }
+                    log.info("Found {} active intervals for ZIP code '{}'", timeIntervals.size(), response.getZipCode());
                     return eventBridgeProducer.sendEvent(raddRegistryUtils.mapToEventMessage(timeIntervals,
                             response.getZipCode()));
                 })
@@ -402,6 +441,7 @@ public class RegistryService {
     }
 
     public Mono<RequestResponse> retrieveRequestItems(String xPagopaPnCxId, String requestId, Integer limit, String lastKey) {
+        log.debug("Retrieving request items for CX ID '{}' and request ID '{}'", xPagopaPnCxId, requestId);
         return raddRegistryRequestDAO.getRegistryByCxIdAndRequestId(xPagopaPnCxId, requestId, limit, lastKey)
                 .map(raddRegistryUtils::mapToRequestResponse);
     }

@@ -39,7 +39,12 @@ public enum ExceptionTypeEnum {
     MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "RequestId e CxId sono obbligatori", 99),
     IMPORT_REQUEST_NOT_FOUND("IMPORT_REQUEST_NOT_FOUND", "Richiesta di import non trovata", 99),
     RADD_REGISTRY_NOT_FOUND("RADD_REGISTRY_NOT_FOUND","Punto di ritiro SEND non trovato",99 ),
-    RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY("RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY", "Ultima chiave di paginazione non supportata.", 99);
+    RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY("RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY", "Ultima chiave di paginazione non supportata.", 99),
+    PHONE_NUMBER_ERROR("PHONE_NUMBER_ERROR","Il formato del numero di telefono non è corretto", 99),
+    GEOLOCATION_ERROR("GEOLOCATION_ERROR","Il formato della geolocalizzazione non è corretto", 99),
+    OPENING_TIME_ERROR("OPENING_TIME_ERROR","Il formato dell'orario di apertura non è corretto", 99),
+    CAPACITY_ERROR("CAPACITY_ERROR","Il formato della capacità non è corretto", 99);
+
 
     private final String title;
     private final String message;

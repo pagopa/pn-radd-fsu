@@ -77,4 +77,11 @@ public class Const {
 
 
     public static final String MISSING_ADDRESS_REQUIRED_FIELD = "I dati relativi a indirizzo, cap, città e provincia sono obbligatori";
+
+
+    /* Regex */
+    public static final String REGEX_PHONENUMBER = "^\\+?[0-9]*$";
+    public static final String REGEX_GEOLOCATION = "^[0-9]*\\.?[0-9]*$";
+    public static final String REGEX_OPENINGTIME = "^((mon|tue|wed|thu|fri|sat|sun)=([0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}(_[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2})?;)?)+$";
+    public static final String REGEX_CAPACITY = "^\\[0-9]*$";
 }

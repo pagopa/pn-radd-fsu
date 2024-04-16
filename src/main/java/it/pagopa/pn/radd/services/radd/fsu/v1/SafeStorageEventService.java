@@ -12,7 +12,6 @@ import it.pagopa.pn.radd.middleware.msclient.DocumentDownloadClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.middleware.queue.producer.CorrelationIdEventsProducer;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
-import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.RaddRegistryRequest;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
@@ -22,7 +21,10 @@ import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,9 +59,7 @@ public class SafeStorageEventService {
                         return pnRaddRegistryImportDAO.updateStatus(tuple.getT1(), RaddRegistryImportStatus.REJECTED, errorCSV)
                                 .flatMap(importEntity -> Mono.error(new RaddImportException(ERROR_RADD_ALT_READING_CSV)));
                     } else {
-                        List<RaddRegistryOriginalRequest> originalRequests = raddRegistryRequestEntityMapper.retrieveOriginalRequest(tuple.getT2());
-                        log.info("Retrieved {} original requests.", originalRequests.size());
-                        List<RaddRegistryRequestEntity> raddRegistryRequestEntities = raddRegistryRequestEntityMapper.retrieveRaddRegistryRequestEntity(originalRequests, tuple.getT1());
+                        List<RaddRegistryRequestEntity> raddRegistryRequestEntities = raddRegistryRequestEntityMapper.retrieveRaddRegistryRequestEntity(tuple.getT2(), tuple.getT1());
                         log.info("Mapped {} original requests to registry request entities.", raddRegistryRequestEntities.size());
                         Map<String, List<RaddRegistryRequestEntity>> map = groupingRaddRegistryRequest(tuple.getT1().getCxId(), tuple.getT1().getRequestId(), raddRegistryRequestEntities, 20);
                         log.info("Grouped {} registry request entities.", map.values().stream().mapToInt(List::size).sum());

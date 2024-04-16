@@ -1,5 +1,6 @@
 package it.pagopa.pn.radd.mapper;
 
+import com.amazonaws.util.CollectionUtils;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CreateRegistryRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.GeoLocation;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
@@ -7,6 +8,7 @@ import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.RaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.pojo.RaddRegistryRequest;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
+import it.pagopa.pn.radd.pojo.WrappedRaddRegistryOriginalRequest;
 import it.pagopa.pn.radd.utils.ObjectMapperUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,14 +34,14 @@ public class RaddRegistryRequestEntityMapper {
 
     public RaddRegistryOriginalRequest retrieveOriginalRequest(CreateRegistryRequest request) {
         RaddRegistryOriginalRequest originalRequest = new RaddRegistryOriginalRequest();
-        if(request.getAddress() != null) {
+        if (request.getAddress() != null) {
             originalRequest.setAddressRow(request.getAddress().getAddressRow());
             originalRequest.setCap(request.getAddress().getCap());
             originalRequest.setCity(request.getAddress().getCity());
             originalRequest.setPr(request.getAddress().getPr());
             originalRequest.setCountry(request.getAddress().getCountry());
         }
-        if(request.getStartValidity() != null ) {
+        if (request.getStartValidity() != null) {
             Instant instant = convertDateToInstantAtStartOfDay(request.getStartValidity());
 
             originalRequest.setStartValidity(instant.toString());
@@ -45,14 +49,14 @@ public class RaddRegistryRequestEntityMapper {
             originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
         }
 
-        if(request.getEndValidity() != null) {
+        if (request.getEndValidity() != null) {
             Instant instant = convertDateToInstantAtStartOfDay(request.getEndValidity());
             originalRequest.setEndValidity(instant.toString());
         }
 
         originalRequest.setOpeningTime(request.getOpeningTime());
         originalRequest.setDescription(request.getDescription());
-        if(request.getGeoLocation() != null) {
+        if (request.getGeoLocation() != null) {
             originalRequest.setGeoLocation(objectMapperUtil.toJson(request.getGeoLocation()));
         }
         originalRequest.setPhoneNumber(request.getPhoneNumber());
@@ -77,47 +81,58 @@ public class RaddRegistryRequestEntityMapper {
         requestEntity.setStatus(RegistryRequestStatus.NOT_WORKED.name());
         return requestEntity;
     }
+
     private static String buildPk(String cxId, String requestId, String originalRequest) {
         UUID index = UUID.nameUUIDFromBytes(originalRequest.getBytes(StandardCharsets.UTF_8));
         return cxId + "#" + requestId + "#" + index;
     }
 
-    public List<RaddRegistryOriginalRequest> retrieveOriginalRequest(List<RaddRegistryRequest> raddRegistryRequest) {
+    public WrappedRaddRegistryOriginalRequest retrieveOriginalRequest(RaddRegistryRequest request) {
+        List<String> errors = new ArrayList<>();
+        WrappedRaddRegistryOriginalRequest wrappedRaddRegistryOriginalRequest = new WrappedRaddRegistryOriginalRequest();
+        RaddRegistryOriginalRequest originalRequest = new RaddRegistryOriginalRequest();
+        originalRequest.setAddressRow(request.getVia());
+        originalRequest.setCap(request.getCap());
+        originalRequest.setCity(request.getCitta());
+        originalRequest.setPr(request.getProvincia());
+        originalRequest.setCountry(request.getPaese());
 
-        return raddRegistryRequest.stream()
-                .map(request -> {
-                    RaddRegistryOriginalRequest originalRequest = new RaddRegistryOriginalRequest();
-                    originalRequest.setAddressRow(request.getVia());
-                    originalRequest.setCap(request.getCap());
-                    originalRequest.setCity(request.getCitta());
-                    originalRequest.setPr(request.getProvincia());
-                    originalRequest.setCountry(request.getPaese());
+        if (StringUtils.isNotBlank(request.getDataInizioValidita())) {
+            try {
+                LocalDate date = LocalDate.parse(request.getDataInizioValidita());
+                originalRequest.setStartValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
+            } catch (DateTimeParseException exception) {
+                errors.add("Formato non valido per data inizio validità");
+            }
+        } else {
+            originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
+        }
 
-                    if (StringUtils.isNotBlank(request.getDataInizioValidita())) {
-                        LocalDate date = LocalDate.parse(request.getDataInizioValidita());
-                        originalRequest.setStartValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
-                    } else {
-                        originalRequest.setStartValidity(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
-                    }
+        if (StringUtils.isNotBlank(request.getDataFineValidita())) {
+            try {
+                LocalDate date = LocalDate.parse(request.getDataFineValidita());
+                originalRequest.setEndValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
+            } catch (DateTimeParseException exception) {
+                errors.add("Formato non valido per data fine validità");
+            }
+        }
 
-                    if (StringUtils.isNotBlank(request.getDataFineValidita())) {
-                        LocalDate date = LocalDate.parse(request.getDataFineValidita());
-                        originalRequest.setEndValidity(date.atStartOfDay().toInstant(ZoneOffset.UTC).toString());
-                    }
+        originalRequest.setOpeningTime(request.getOrariApertura());
+        originalRequest.setDescription(request.getDescrizione());
 
-                    originalRequest.setOpeningTime(request.getOrariApertura());
-                    originalRequest.setDescription(request.getDescrizione());
+        if (StringUtils.isNotBlank(request.getCoordinateGeoReferenziali())) {
+            originalRequest.setGeoLocation(objectMapperUtil.toJson(retrieveGeoLocationObject(request.getCoordinateGeoReferenziali())));
+        }
 
-                    if (StringUtils.isNotBlank(request.getCoordinateGeoReferenziali())) {
-                        originalRequest.setGeoLocation(objectMapperUtil.toJson(retrieveGeoLocationObject(request.getCoordinateGeoReferenziali())));
-                    }
+        originalRequest.setPhoneNumber(request.getTelefono());
+        originalRequest.setExternalCode(request.getExternalCode());
+        originalRequest.setCapacity(request.getCapacita());
 
-                    originalRequest.setPhoneNumber(request.getTelefono());
-                    originalRequest.setExternalCode(request.getExternalCode());
-                    originalRequest.setCapacity(request.getCapacita());
-                    return originalRequest;
-                })
-                .toList();
+        if (!CollectionUtils.isNullOrEmpty(errors)) {
+            wrappedRaddRegistryOriginalRequest.setErrors(errors);
+        }
+        wrappedRaddRegistryOriginalRequest.setRequest(originalRequest);
+        return wrappedRaddRegistryOriginalRequest;
     }
 
     private GeoLocation retrieveGeoLocationObject(String coordinateGeoReferenziali) {
@@ -131,8 +146,10 @@ public class RaddRegistryRequestEntityMapper {
         return geoLocation;
     }
 
-    public List<RaddRegistryRequestEntity> retrieveRaddRegistryRequestEntity(List<RaddRegistryOriginalRequest> originalRequests, RaddRegistryImportEntity importEntity) {
-        return originalRequests.stream().map(originalRequest -> {
+    public List<RaddRegistryRequestEntity> retrieveRaddRegistryRequestEntity(List<RaddRegistryRequest> raddRegistryRequests, RaddRegistryImportEntity importEntity) {
+        List<RaddRegistryRequestEntity> entities = raddRegistryRequests.stream().map(raddRegistryRequest -> {
+            WrappedRaddRegistryOriginalRequest originalRequest = retrieveOriginalRequest(raddRegistryRequest);
+
             String originalRequestString = objectMapperUtil.toJson(originalRequest);
 
             RaddRegistryRequestEntity requestEntity = new RaddRegistryRequestEntity();
@@ -143,22 +160,30 @@ public class RaddRegistryRequestEntityMapper {
             requestEntity.setUpdatedAt(Instant.now());
             requestEntity.setOriginalRequest(originalRequestString);
 
-            checkRequiredFieldsAndSetStatus(originalRequest, requestEntity);
-
+            checkRequiredFieldsAndUpdateError(originalRequest);
+            if (CollectionUtils.isNullOrEmpty(originalRequest.getErrors())) {
+                requestEntity.setStatus(RegistryRequestStatus.REJECTED.name());
+                requestEntity.setError(String.join(", ", originalRequest.getErrors()));
+            } else {
+                requestEntity.setStatus(RegistryRequestStatus.NOT_WORKED.name());
+            }
             return requestEntity;
         }).toList();
+        log.info("Retrieved {} raddRegistryRequestEntities from {} CSV rows.", entities.size(), raddRegistryRequests.size());
+        return entities;
     }
 
-    private void checkRequiredFieldsAndSetStatus(RaddRegistryOriginalRequest originalRequest, RaddRegistryRequestEntity requestEntity) {
-        if (StringUtils.isBlank(originalRequest.getAddressRow())
-                || StringUtils.isBlank(originalRequest.getCap())
-                || StringUtils.isBlank(originalRequest.getCity())
-                || StringUtils.isBlank(originalRequest.getPr())) {
-            requestEntity.setStatus(RegistryRequestStatus.REJECTED.name());
-            requestEntity.setError(MISSING_ADDRESS_REQUIRED_FIELD);
-        } else {
-            requestEntity.setStatus(RegistryRequestStatus.NOT_WORKED.name());
+    private void checkRequiredFieldsAndUpdateError(WrappedRaddRegistryOriginalRequest originalRequest) {
+        if (checkAddressFields(originalRequest)) {
+            originalRequest.getErrors().add(MISSING_ADDRESS_REQUIRED_FIELD);
         }
+    }
+
+    private static boolean checkAddressFields(WrappedRaddRegistryOriginalRequest originalRequest) {
+        return StringUtils.isBlank(originalRequest.getRequest().getAddressRow())
+                || StringUtils.isBlank(originalRequest.getRequest().getCap())
+                || StringUtils.isBlank(originalRequest.getRequest().getCity())
+                || StringUtils.isBlank(originalRequest.getRequest().getPr());
     }
 
     private static String buildPk(RaddRegistryImportEntity importEntity, String originalRequest) {

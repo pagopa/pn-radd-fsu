@@ -96,6 +96,15 @@ class RegistrySelfServiceTest {
     @Test
     public void shouldAddRegistrySuccessfully() {
         CreateRegistryRequest request = new CreateRegistryRequest();
+        request.setPhoneNumber("+39 0123456");
+        request.setCapacity("100");
+        request.setOpeningTime("mon=10:00-13:00_14:00-20:00;tue=10:00-20:00;thu=10:00-20:00;");
+
+        GeoLocation geoLocation = new GeoLocation();
+        geoLocation.setLatitude("42.12345");
+        geoLocation.setLongitude("51.12345");
+        request.setGeoLocation(geoLocation);
+
         RaddRegistryRequestEntity entity = new RaddRegistryRequestEntity();
         entity.setRequestId("testRequestId");
         when(registryRequestDAO.createEntity(any())).thenReturn(Mono.just(entity));

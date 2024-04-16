@@ -23,7 +23,7 @@ class CsvServiceTest {
         InputStream inputStream = new FileInputStream(file);
 
         StepVerifier.create(csvService.readItemsFromCsv(RaddRegistryRequest.class, inputStream.readAllBytes(), 1))
-                .expectNextMatches(raddRegistryRequests -> raddRegistryRequests.size() == 3)
+                .expectNextMatches(raddRegistryRequests -> raddRegistryRequests.size() == 5)
                 .verifyComplete();
     }
 

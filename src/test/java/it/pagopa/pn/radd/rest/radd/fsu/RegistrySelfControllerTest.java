@@ -75,15 +75,16 @@ class RegistrySelfControllerTest {
         when(registrySelfService.addRegistry(any(), any())).thenReturn(Mono.just(createRegistryResponse));
 
         webTestClient.post()
-                .uri(path )
+                .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
-                .header( PN_PAGOPA_CX_ID, "cxId")
-                .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
                 .body(Mono.just(createRegistryRequest), CreateRegistryRequest.class)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk();
     }
+
 
     @Test
     void retrieveRegistries() {

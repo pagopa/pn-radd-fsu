@@ -98,17 +98,19 @@ public class SafeStorageEventService {
 
 
     private Mono<Void> persistRaddRegistryRequest(Map<String, List<RaddRegistryRequestEntity>> raddRegistryRequestsMap) {
-        return Flux.fromStream(raddRegistryRequestsMap.entrySet()
-                        .stream()
-                        .filter(stringListEntry -> !stringListEntry.getKey().equals(REJECTED.name())))
-                .flatMap(entry -> persistItemsAndSendEvent(entry).thenReturn(raddRegistryRequestsMap))
-                .map(stringListMap -> stringListMap.getOrDefault(REJECTED.name(), Collections.emptyList()))
-                .flatMap(this::persisteRejectedItems)
+        return Flux.fromStream(raddRegistryRequestsMap.entrySet().stream())
+                .flatMap(entry -> {
+                    if (REJECTED.name().equals(entry.getKey())) {
+                        return persisteRejectedItems(entry.getValue());
+                    }
+                    return persistItemsAndSendEvent(entry);
+                })
                 .then();
     }
 
     private Flux<RaddRegistryRequestEntity> persisteRejectedItems(List<RaddRegistryRequestEntity> raddRegistryRequestEntities) {
         if(!CollectionUtils.isEmpty(raddRegistryRequestEntities)){
+            log.info("Persisting rejected items for cxId: [{}] and requestId: [{}]", raddRegistryRequestEntities.get(0).getCxId(), raddRegistryRequestEntities.get(0).getRequestId());
             return Flux.fromIterable(raddRegistryRequestEntities)
                     .flatMap(raddRegistryRequestDAO::createEntity);
         }

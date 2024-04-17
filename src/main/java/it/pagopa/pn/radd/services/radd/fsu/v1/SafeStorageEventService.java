@@ -103,7 +103,7 @@ public class SafeStorageEventService {
                         .filter(stringListEntry -> !stringListEntry.getKey().equals(REJECTED.name())))
                 .flatMap(entry -> persistItemsAndSendEvent(entry).thenReturn(raddRegistryRequestsMap))
                 .map(stringListMap -> stringListMap.getOrDefault(REJECTED.name(), Collections.emptyList()))
-                .map(this::persisteRejectedItems)
+                .flatMap(this::persisteRejectedItems)
                 .then();
     }
 

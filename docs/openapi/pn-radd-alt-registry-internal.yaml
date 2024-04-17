@@ -272,7 +272,7 @@ components:
         openingTime:
           type: string
           description: Orario di apertura dello sportello.
-          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
         startValidity:
           type: string
           description: Data di inizio di validità dello sportello in formato (yyyy-MM-dd), se non inviata viene considerata la data corrente.
@@ -295,7 +295,7 @@ components:
         openingTime:
           type: string
           description: Orario di apertura aggiornato dello sportello.
-          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
         phoneNumber:
           type: string
           description: Numero di telefono della sede
@@ -349,7 +349,7 @@ components:
         openingTime:
           type: string
           description: Orario di apertura dello sportello.
-          example: "09:00-13:30"
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
         startValidity:
           type: string
           format: date-time

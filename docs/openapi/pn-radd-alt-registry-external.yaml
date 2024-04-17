@@ -19,7 +19,7 @@ info:
     - modificare un punto di ritiro SEND
     - cancellare un punto di ritiro SEND
     - recuperare la lista di punti di ritiro SEND attivi
-    
+
 
 servers:
   - url: https://api.radd.notifichedigitali.it
@@ -246,7 +246,7 @@ components:
         - address
       properties:
         address:
-          $ref: '#/components/schemas/Address'
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/Address'
         description:
           type: string
           description: Descrizione dello sportello.
@@ -256,16 +256,7 @@ components:
           description: Numero di telefono dello sportello.
           example: "+39 0123456789"
         geoLocation:
-          type: object
-          properties:
-            latitude:
-              type: string
-              description: Latitudine della posizione geografica dello sportello.
-              example: "41.9028"
-            longitude:
-              type: string
-              description: Longitudine della posizione geografica dello sportello.
-              example: "12.4964"
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/GeoLocation'
         capacity:
           type: string
           description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
@@ -273,7 +264,7 @@ components:
         openingTime:
           type: string
           description: Orario di apertura dello sportello.
-          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
         startValidity:
           type: string
           description: Data di inizio di validità dello sportello in formato (yyyy-MM-dd), se non inviata viene considerata la data corrente.
@@ -285,7 +276,7 @@ components:
         externalCode:
           type: string
           description: Identificativo punto ritiro SEND
-        
+
     UpdateRegistryRequest:
       type: object
       properties:
@@ -296,7 +287,7 @@ components:
         openingTime:
           type: string
           description: Orario di apertura aggiornato dello sportello.
-          example: "mon=10:00-13:00_14:00-20:00;tue=10:00-20:00"
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
         phoneNumber:
           type: string
           description: Numero di telefono della sede
@@ -324,7 +315,7 @@ components:
           type: array
           items:
             type: string
-            
+
     Registry:
       type: object
       properties:
@@ -336,7 +327,7 @@ components:
           description: ID della richiesta di import.
           example: "987654"
         address:
-          $ref: '#/components/schemas/Address'
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/Address'
         description:
           type: string
           description: Descrizione dello sportello.
@@ -346,20 +337,11 @@ components:
           description: Numero di telefono dello sportello.
           example: "+39 0123456789"
         geoLocation:
-          type: object
-          properties:
-            latitude:
-              type: string
-              description: Latitudine della posizione geografica dello sportello.
-              example: "41.9028"
-            longitude:
-              type: string
-              description: Longitudine della posizione geografica dello sportello.
-              example: "12.4964"
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/GeoLocation'
         openingTime:
           type: string
           description: Orario di apertura dello sportello.
-          example: "09:00-13:30"
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
         startValidity:
           type: string
           format: date-time
@@ -388,34 +370,7 @@ components:
           type: string
           description: Eventuale errore, popolato solo in caso di status = REJECTED.
           example: "csv malformato"
-    Address:
-      type: object
-      required:
-        - addressRow
-        - cap
-        - city
-        - pr
-      properties:
-        addressRow:
-          type: string
-          description: Indirizzo completo
-          example: Via Roma 123
-        cap:
-          type: string
-          description: CAP (Codice di Avviamento Postale).
-          example: 00100
-        city:
-          type: string
-          description: Città.
-          example: Roma
-        pr:
-          type: string
-          description: Provincia.
-          example: RM
-        country:
-          type: string
-          description: Paese.
-          example: Italia
+
   parameters:
     status:
       name: status

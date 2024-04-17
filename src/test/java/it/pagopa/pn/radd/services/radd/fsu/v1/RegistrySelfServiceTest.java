@@ -98,7 +98,7 @@ class RegistrySelfServiceTest {
         CreateRegistryRequest request = new CreateRegistryRequest();
         request.setPhoneNumber("+39 0123456");
         request.setCapacity("100");
-        request.setOpeningTime("mon=10:00-13:00_14:00-20:00;tue=10:00-20:00;thu=10:00-20:00;");
+        request.setOpeningTime("mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#thu=10:00-20:00#");
 
         GeoLocation geoLocation = new GeoLocation();
         geoLocation.setLatitude("42.12345");
@@ -119,6 +119,25 @@ class RegistrySelfServiceTest {
                 })
                 .verifyComplete();
     }
+
+    @Test
+    public void shouldAddRegistrySuccessfullyWithWrongOpeningTime() {
+        CreateRegistryRequest request = new CreateRegistryRequest();
+        request.setPhoneNumber("+39 0123456");
+        request.setCapacity("100");
+        request.setOpeningTime("mon=10:00-13:00_14:00-20:00;tue=10:00-20:00;thu=10:00-20:00;");
+
+        GeoLocation geoLocation = new GeoLocation();
+        geoLocation.setLatitude("42.12345");
+        geoLocation.setLongitude("51.12345");
+        request.setGeoLocation(geoLocation);
+
+        RaddRegistryRequestEntity entity = new RaddRegistryRequestEntity();
+        entity.setRequestId("testRequestId");
+        Assertions.assertThrows(RaddGenericException.class, () -> registrySelfService.addRegistry("cxId", request));
+
+    }
+
 
 
     @Test

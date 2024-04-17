@@ -152,9 +152,9 @@ public class RaddRegistryRequestEntityMapper {
 
     public List<RaddRegistryRequestEntity> retrieveRaddRegistryRequestEntity(List<RaddRegistryRequest> raddRegistryRequests, RaddRegistryImportEntity importEntity) {
         List<RaddRegistryRequestEntity> entities = raddRegistryRequests.stream().map(raddRegistryRequest -> {
-            WrappedRaddRegistryOriginalRequest originalRequest = retrieveOriginalRequest(raddRegistryRequest);
+            WrappedRaddRegistryOriginalRequest wrappedRaddRegistryOriginalRequest = retrieveOriginalRequest(raddRegistryRequest);
 
-            String originalRequestString = objectMapperUtil.toJson(originalRequest);
+            String originalRequestString = objectMapperUtil.toJson(wrappedRaddRegistryOriginalRequest.getRequest());
 
             RaddRegistryRequestEntity requestEntity = new RaddRegistryRequestEntity();
             requestEntity.setPk(buildPk(importEntity, originalRequestString));
@@ -164,10 +164,10 @@ public class RaddRegistryRequestEntityMapper {
             requestEntity.setUpdatedAt(Instant.now());
             requestEntity.setOriginalRequest(originalRequestString);
 
-            checkRequiredFieldsAndUpdateError(originalRequest);
-            if (!CollectionUtils.isNullOrEmpty(originalRequest.getErrors())) {
+            checkRequiredFieldsAndUpdateError(wrappedRaddRegistryOriginalRequest);
+            if (!CollectionUtils.isNullOrEmpty(wrappedRaddRegistryOriginalRequest.getErrors())) {
                 requestEntity.setStatus(RegistryRequestStatus.REJECTED.name());
-                requestEntity.setError(String.join(", ", originalRequest.getErrors()));
+                requestEntity.setError(String.join(", ", wrappedRaddRegistryOriginalRequest.getErrors()));
             } else {
                 requestEntity.setStatus(RegistryRequestStatus.NOT_WORKED.name());
             }

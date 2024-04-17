@@ -153,8 +153,9 @@ public class RegistryService {
     }
 
     private Mono<RaddRegistryRequestEntity> handleRegistryUpdate(RaddRegistryRequestEntity raddRegistryRequestEntity, PnAddressManagerEvent.ResultItem resultItem) {
-        String normalizedAddressString = objectMapperUtil.toJson(resultItem.getNormalizedAddress());
-        String registryId = UUID.nameUUIDFromBytes(normalizedAddressString.getBytes(StandardCharsets.UTF_8)).toString();
+        StringBuilder stringBuilder = new StringBuilder(objectMapperUtil.toJson(resultItem.getNormalizedAddress()));
+        stringBuilder.append(raddRegistryRequestEntity.getCxId());
+        String registryId = UUID.nameUUIDFromBytes(stringBuilder.toString().getBytes(StandardCharsets.UTF_8)).toString();
 
         log.debug("Handling registry update for registry ID '{}' and CX ID '{}'", registryId, raddRegistryRequestEntity.getCxId());
 

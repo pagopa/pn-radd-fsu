@@ -73,6 +73,7 @@ public class SafeStorageEventServiceTest {
         when(pnRaddRegistryImportDAO.getItemByFileKey(any())).thenReturn(Mono.just(raddRegistryImportEntity));
         when(pnRaddRegistryImportDAO.updateStatus(any(), any(), any())).thenReturn(Mono.just(raddRegistryImportEntity));
         when(raddRegistryRequestDAO.writeCsvAddresses(any(), any())).thenReturn(Mono.empty());
+        when(raddRegistryRequestDAO.createEntity(any())).thenReturn(Mono.empty());
         when(safeStorageClient.getFile("testKey")).thenReturn(Mono.just(response));
         when(documentDownloadClient.downloadContent("testUrl")).thenReturn(Mono.just(inputStream.readAllBytes()));
         Mono<Void> result = safeStorageEventService.handleSafeStorageResponse(response);

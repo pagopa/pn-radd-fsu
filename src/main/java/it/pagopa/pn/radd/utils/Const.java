@@ -77,6 +77,9 @@ public class Const {
 
 
     public static final String MISSING_ADDRESS_REQUIRED_FIELD = "I dati relativi a indirizzo, cap, città e provincia sono obbligatori";
+    public static final String START_VALIDITY_PARSING_ERROR = "C'è stato un errore nel parsing della data di startValidity";
+    public static final String END_VALIDITY_PARSING_ERROR = "C'è stato un errore nel parsing della data di endValidity";
+
 
 
     /* Regex */

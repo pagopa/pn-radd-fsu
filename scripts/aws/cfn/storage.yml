@@ -292,7 +292,7 @@ Resources:
       Parameters:
         QueueName: !Sub '${ProjectName}-radd_alt_input'
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
-        VisibilityTimeout: 60
+        VisibilityTimeout: 180
         MaxReceiveCount: 10
         DelaySeconds: 1
 

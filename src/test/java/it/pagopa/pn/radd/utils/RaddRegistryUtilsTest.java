@@ -1199,10 +1199,10 @@ class RaddRegistryUtilsTest {
     void findIntervalsTest() {
         List<TimeInterval> timeIntervals = new ArrayList<>();
 
-        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-01T00:00:00Z"), Instant.parse("2024-05-08T00:00:00Z")));
-        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-06T00:00:00Z"), Instant.parse("2024-05-12T00:00:00Z"))); // Intersects with first interval
-        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-15T00:00:00Z"), Instant.parse("2024-05-22T00:00:00Z")));
-        timeIntervals.add(new TimeInterval(Instant.parse("2024-05-18T00:00:00Z"), Instant.parse("2024-05-25T00:00:00Z"))); // Intersects with third interval
+        timeIntervals.add(new TimeInterval(Instant.parse("2100-05-01T00:00:00Z"), Instant.parse("2100-05-08T00:00:00Z")));
+        timeIntervals.add(new TimeInterval(Instant.parse("2100-05-06T00:00:00Z"), Instant.parse("2100-05-12T00:00:00Z"))); // Intersects with first interval
+        timeIntervals.add(new TimeInterval(Instant.parse("2100-05-15T00:00:00Z"), Instant.parse("2100-05-22T00:00:00Z")));
+        timeIntervals.add(new TimeInterval(Instant.parse("2100-05-18T00:00:00Z"), Instant.parse("2100-05-25T00:00:00Z"))); // Intersects with third interval
         TimeInterval[] timeIntervalArray = timeIntervals.toArray(new TimeInterval[0]);
 
         Set<Set<TimeInterval>> result = new HashSet<>();
@@ -1218,10 +1218,10 @@ class RaddRegistryUtilsTest {
         }
 
 
-        Instant instant1Start = Instant.parse("2024-05-15T00:00:00Z");
-        Instant instant1End = Instant.parse("2024-05-25T00:00:00Z");
-        Instant instant2Start = Instant.parse("2024-05-01T00:00:00Z");
-        Instant instant2End = Instant.parse("2024-05-12T00:00:00Z");
+        Instant instant1Start = Instant.parse("2100-05-15T00:00:00Z");
+        Instant instant1End = Instant.parse("2100-05-25T00:00:00Z");
+        Instant instant2Start = Instant.parse("2100-05-01T00:00:00Z");
+        Instant instant2End = Instant.parse("2100-05-12T00:00:00Z");
 
         // Create TimeInterval objects from the Instant objects
         TimeInterval interval1 = new TimeInterval(instant1Start, instant1End);

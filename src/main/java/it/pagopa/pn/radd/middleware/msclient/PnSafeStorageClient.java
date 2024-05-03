@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.DOCUMENT_UPLOAD_ERROR;
+import static it.pagopa.pn.radd.utils.Const.SAFESTORAGE_PREFIX;
 
 @CustomLog
 @Component
@@ -60,6 +61,9 @@ public class PnSafeStorageClient extends BaseClient {
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey) {
+        if (fileKey.startsWith(SAFESTORAGE_PREFIX)) {
+            fileKey = fileKey.replace(SAFESTORAGE_PREFIX, "");
+        }
         log.debug("Req params : {}", fileKey);
         log.trace("GET FILE TICK {}", new Date().getTime());
         return fileDownloadApi.getFile(fileKey, this.pnRaddFsuConfig.getSafeStorageCxId(), false)

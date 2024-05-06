@@ -24,7 +24,7 @@ public class RaddGenericException extends RuntimeException {
         super(exceptionType.getMessage());
         this.exceptionType = exceptionType;
         this.status = null;
-        this.message = null;
+        this.message = exceptionType.getMessage();
         this.extra = extra;
     }
 

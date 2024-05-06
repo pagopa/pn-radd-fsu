@@ -12,10 +12,12 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.*;
-
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
-import it.pagopa.pn.radd.middleware.msclient.*;
+import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
+import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
+import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
+import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.pojo.*;
 import it.pagopa.pn.radd.utils.DateUtils;
 import it.pagopa.pn.radd.utils.OperationTypeEnum;
@@ -44,7 +46,7 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.pojo.NotificationAttachment.AttachmentType.*;
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
-import static org.springframework.util.StringUtils.*;
+import static org.springframework.util.StringUtils.hasText;
 
 @Service
 @CustomLog
@@ -101,7 +103,7 @@ public class ActService extends BaseService {
         if (hasText(qrCode)) {
             return checkQrCode(recipientType, qrCode, recipientId);
         } else {
-            return checkIun(iun, recipientId,recipientId);
+            return checkIun(iun, recipientId, recipientId);
         }
     }
 
@@ -115,7 +117,7 @@ public class ActService extends BaseService {
     @NotNull
     private Mono<String> checkQrCode(String recipientType, String qrCode, String recipientId) {
         return controlAndCheckAar(recipientType, recipientId, qrCode)
-                .flatMap(responseCheckAarDtoDto -> checkIunIsAlreadyExistsInCompleted(responseCheckAarDtoDto.getIun(),recipientId)
+                .flatMap(responseCheckAarDtoDto -> checkIunIsAlreadyExistsInCompleted(responseCheckAarDtoDto.getIun(), recipientId)
                         .thenReturn(responseCheckAarDtoDto.getIun()));
     }
 
@@ -124,7 +126,7 @@ public class ActService extends BaseService {
     }
 
     private Mono<Integer> checkIunIsAlreadyExistsInCompleted(String iun, String recipientId) {
-        return this.raddTransactionDAO.countFromIunAndStatus(iun,recipientId)
+        return this.raddTransactionDAO.countFromIunAndStatus(iun, recipientId)
                 .filter(counter -> counter == 0)
                 .switchIfEmpty(Mono.error(new IunAlreadyExistsException()))
                 .doOnError(err -> log.error(err.getMessage()));
@@ -144,6 +146,12 @@ public class ActService extends BaseService {
 
         return validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId)
                 .flatMap(this::getEnsureRecipientAndDelegate)
+                .doOnNext(transactionData -> {
+                    pnRaddAltAuditLog.getContext().addRecipientInternalId(transactionData.getEnsureRecipientId());
+                    if(StringUtils.hasText(transactionData.getEnsureDelegateId())) {
+                        pnRaddAltAuditLog.getContext().addDelegateInternalId(transactionData.getEnsureDelegateId());
+                    }
+                })
                 .flatMap(transactionData -> checkQrCodeOrIun(request.getRecipientType().getValue(), request.getQrCode(), request.getIun(), transactionData.getEnsureRecipientId())
                         .map(s -> setIun(transactionData, s)))
                 .flatMap(transactionData -> hasNotificationsCancelled(transactionData.getIun())
@@ -397,7 +405,7 @@ public class ActService extends BaseService {
     }
 
     private static void logFatalOrError(NotificationAttachment notificationAttachment) {
-        if(F24.equals(notificationAttachment.getType())) {
+        if (F24.equals(notificationAttachment.getType())) {
             log.error("Found document/attachment with retry after {}", notificationAttachment.getNotificationMetadata().getRetryAfter());
         } else {
             log.fatal("Found document/attachment with retry after {}", notificationAttachment.getNotificationMetadata().getRetryAfter());

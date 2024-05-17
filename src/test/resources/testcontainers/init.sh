@@ -7,7 +7,7 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --secret-string "address-manager-apikey"
 
 echo "### CREATE QUEUES FOR RADD-ALT ###"
-queues="pn-radd_alt_internal_cap_checker pn-radd_alt_input pn-addressmanager_to_raddalt pn-safestore_to_raddalt"
+queues="pn-radd_alt_internal_cap_checker pn-radd_alt_input pn-addressmanager_to_raddalt pn-safestore_to_raddalt pn-radd-alt-store-locator"
 for qn in $(echo $queues | tr " " "\n");do
   echo creating queue $qn ...
   aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \

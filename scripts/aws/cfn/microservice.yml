@@ -136,6 +136,22 @@ Parameters:
     Type: String
     Description: 'DLQ ARN for RaddInternalCapChecker'
 
+  RaddAltStoreLocatorQueueName:
+    Type: String
+    Description: Name of store locator queue
+
+  RaddAltStoreLocatorQueueARN:
+    Type: String
+    Description: 'ARN for RaddAltStoreLocator'
+
+  RaddAltStoreLocatorDLQName:
+    Type: String
+    Description: Name of DLQ for RaddAltStoreLocator
+
+  RaddAltStoreLocatorDLQARN:
+    Type: String
+    Description: 'DLQ ARN for RaddAltStoreLocator'
+
   ShedLockTableName:
     Type: String
     Description: Name of DynamoDB table used for implementing distributed locks.
@@ -424,7 +440,7 @@ Resources:
         ContainerEnvEntry26: !Sub 'PN_RADD_REGISTRYIMPORTUPLOADFILETTL=${RegistryImportUploadFileTtl}'
         ContainerEnvEntry27: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry28: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
-        ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry29: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName},${RaddAltStoreLocator}'
         ContainerEnvEntry30: !Sub 'PN_RADD_ADDRESSMANAGERBASEURL=${AddressManagerBaseUrl}'
         ContainerEnvEntry31: !Sub 'PN_RADD_ADDRESSMANAGERAPIKEYSECRET=${AddressManagerApiKeySecret}'
         ContainerEnvEntry32: !Sub 'PN_RADD_DAO_SHEDLOCKTABLENAME=${ShedLockTableName}'
@@ -435,12 +451,14 @@ Resources:
         ContainerEnvEntry38: !Sub 'PN_RADD_REGISTRYIMPORTREPLACEDTTL=${RegistryImportReplacedTtl}'
         ContainerEnvEntry39: !Sub 'PN_RADD_SQS_SAFESTORAGEQUEUENAME=${SafeStorageToRaddAltQueueName}'
         ContainerEnvEntry40: !Sub 'PN_RADD_SQS_ADDRESSMANAGERQUEUENAME=${AddressManagerToRaddAltQueueName}'
-        ContainerEnvEntry41: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName}'
+        ContainerEnvEntry41: !Sub 'SPRING_CLOUD_FUNCTIONROUTER_QUEUES_LIST=${RaddInternalCapCheckerQueueName},${PnRaddAltInputQueueName},${SafeStorageToRaddAltQueueName},${AddressManagerToRaddAltQueueName},${RaddAltStoreLocator}}'
         ContainerEnvEntry42: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_TYPE=${EvaluatedZipCodeConfigType}'
         ContainerEnvEntry43: !Sub 'PN_RADD_EVALUATED_ZIP_CODE_CONFIG_NUMBER=${EvaluatedZipCodeConfigNumber}'
         ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         ContainerEnvEntry45: !Sub 'PN_RADD_MAX_DYNAMO_DB_QUERY_SIZE=${PnRaddMaxDynamoDBQuerySize}'
         ContainerEnvEntry46: !Sub 'PN_RADD_MAX_PAGE_NUMBER=${PnRaddMaxPageNumber}'
+        ContainerEnvEntry47: !Sub 'PN_RADD_SQS_STORELOCATORQUEUENAME=${RaddAltStoreLocator}'
+
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -476,6 +494,8 @@ Resources:
             Resource:
               - !Ref RaddInternalCapCheckerDLQARN
               - !Ref RaddInternalCapCheckerQueueARN
+              - !Ref RaddAltStoreLocatorDLQARN
+              - !Ref RaddAltStoreLocatorQueueARN
               - !Ref PnRaddAltInputQueueDLQARN
               - !Ref PnRaddAltInputQueueARN
               - !Ref AddressManagerToRaddAltQueueARN
@@ -556,6 +576,7 @@ Resources:
           - ','
           - - !Ref PnRaddAltInputQueueName
             - !Ref RaddInternalCapCheckerQueueName
+            - !Ref RaddAltStoreLocatorQueueName
         AlarmArns: !Join
           - ','
           - - !GetAtt RaddMicroservice.Outputs.FatalLogsMetricAlarmArn

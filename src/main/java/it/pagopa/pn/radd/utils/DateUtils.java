@@ -16,13 +16,17 @@ public class DateUtils {
 
     public static String formatDate(Date date)  {
         if (date == null) return null;
-        LocalDateTime dateTime =  LocalDateTime.ofInstant(date.toInstant(), italianZoneId);
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        return dateTime.format(formatter);
+        Instant instant = date.toInstant();
+        return instant.toString();
     }
 
     public static Date parseDateString(String date) {
         if (StringUtils.isBlank(date)) return null;
+        // se la data finisce per Z, mi aspetto che sia un Istant
+        if (date.endsWith("Z"))
+            return Date.from(Instant.parse(date));
+
+        // altrimenti è stata salvata nel formato italiano
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         LocalDateTime localDate = LocalDateTime.parse(date, formatter);
         ZonedDateTime time = localDate.atZone(italianZoneId);

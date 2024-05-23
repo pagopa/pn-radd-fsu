@@ -419,6 +419,9 @@ Resources:
         AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
         MinTasksNumber: !Ref MinTasksNumber
         MaxTasksNumber: !Ref MaxTasksNumber
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        MountEfs: !Ref MountEfs
+        WireTapLogActivation: !Ref WireTapLogActivation
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -468,6 +471,8 @@ Resources:
         ContainerEnvEntry44: !Sub 'PN_RADD_EVENTBUS_NAME=arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus'
         ContainerEnvEntry45: !Sub 'PN_RADD_MAX_DYNAMO_DB_QUERY_SIZE=${PnRaddMaxDynamoDBQuerySize}'
         ContainerEnvEntry46: !Sub 'PN_RADD_MAX_PAGE_NUMBER=${PnRaddMaxPageNumber}'
+        ContainerEnvEntry47: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry48: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

@@ -70,6 +70,7 @@ public class SafeStorageEventServiceTest {
         raddRegistryImportEntity.setFileKey("testKey");
         raddRegistryImportEntity.setRequestId("RequestId");
         raddRegistryImportEntity.setCxId("CxId");
+        raddRegistryImportEntity.setStatus("TO_PROCESS");
         when(pnRaddRegistryImportDAO.getItemByFileKey(any())).thenReturn(Mono.just(raddRegistryImportEntity));
         when(pnRaddRegistryImportDAO.updateStatus(any(), any(), any())).thenReturn(Mono.just(raddRegistryImportEntity));
         when(raddRegistryRequestDAO.writeCsvAddresses(any(), any())).thenReturn(Mono.empty());
@@ -125,5 +126,37 @@ public class SafeStorageEventServiceTest {
 
         StepVerifier.create(result).verifyComplete();
         verify(pnRaddRegistryImportDAO, times(1)).updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.REJECTED, "Malformed CSV");
+    }
+
+    @Test
+    public void shouldHandleSafeStorageResponseErrorAndRollback() throws IOException {
+        File file = new File("src/test/resources", "radd-registry.csv");
+        InputStream inputStream = new FileInputStream(file);
+        FileDownloadResponseDto response = new FileDownloadResponseDto();
+        response.setKey("testKey");
+        FileDownloadInfoDto fileDownloadInfoDto = new FileDownloadInfoDto();
+        fileDownloadInfoDto.setUrl("testUrl");
+        response.setDownload(fileDownloadInfoDto);
+
+        when(safeStorageClient.getFile("testKey")).thenReturn(Mono.just(response));
+        when(documentDownloadClient.downloadContent("testUrl")).thenReturn(Mono.just(inputStream.readAllBytes()));
+
+        RaddRegistryImportEntity raddRegistryImportEntity = new RaddRegistryImportEntity();
+        raddRegistryImportEntity.setFileKey("testKey");
+        raddRegistryImportEntity.setRequestId("RequestId");
+        raddRegistryImportEntity.setCxId("CxId");
+        raddRegistryImportEntity.setStatus("TO_PROCESS");
+
+        when(pnRaddRegistryImportDAO.getItemByFileKey(any())).thenReturn(Mono.just(raddRegistryImportEntity));
+        when(raddRegistryRequestDAO.writeCsvAddresses(any(), any())).thenReturn(Mono.empty());
+        when(raddRegistryRequestDAO.createEntity(any())).thenReturn(Mono.empty());
+
+        when(pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.TAKEN_CHARGE, null)).thenReturn(Mono.just(raddRegistryImportEntity));
+        when(pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.PENDING, null)).thenThrow(new RuntimeException());
+
+        Mono<Void> result = safeStorageEventService.handleSafeStorageResponse(response);
+
+        StepVerifier.create(result).verifyError(RuntimeException.class);
+        verify(pnRaddRegistryImportDAO, times(1)).updateStatusWithFileKey("testKey", RaddRegistryImportStatus.TO_PROCESS);
     }
 }

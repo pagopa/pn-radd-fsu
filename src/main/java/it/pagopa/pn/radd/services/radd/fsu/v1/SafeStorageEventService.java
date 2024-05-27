@@ -7,6 +7,7 @@ import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.middleware.msclient.DocumentDownloadClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
@@ -51,6 +52,7 @@ public class SafeStorageEventService {
         String fileKey = response.getKey();
         return pnRaddRegistryImportDAO.getItemByFileKey(fileKey)
                 .switchIfEmpty(Mono.error(new RaddImportException(String.format("Import request for FileKey [%s] does not exist", fileKey))))
+                .map(importEntity -> checkIfImportEntityIsInValidStatus(importEntity, fileKey))
                 .flatMap(raddRegistryImportEntity -> pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.TAKEN_CHARGE, null))
                 .zipWhen(raddRegistryImportEntity -> retrieveAndProcessFile(fileKey))
                 .flatMap(tuple -> {
@@ -72,8 +74,20 @@ public class SafeStorageEventService {
                 .flatMap(importEntity -> pnRaddRegistryImportDAO.updateStatus(importEntity, RaddRegistryImportStatus.PENDING, null))
                 .doOnError(throwable -> log.error("Error during import csv for fileKey [{}]", fileKey, throwable))
                 .onErrorResume(RaddImportException.class, e -> Mono.empty())
+                .onErrorResume(throwable -> {
+                    log.error("Error during import csv for fileKey: {}, start rollback of raddRegistryImportEntity with status TO_PROCESS", fileKey);
+                    return pnRaddRegistryImportDAO.updateStatusWithFileKey(fileKey, RaddRegistryImportStatus.TO_PROCESS)
+                            .then(Mono.error(throwable));
+                })
                 .then();
 
+    }
+
+    private RaddRegistryImportEntity checkIfImportEntityIsInValidStatus(RaddRegistryImportEntity importEntity, String fileKey) {
+        if (RaddRegistryImportStatus.TO_PROCESS.name().equals(importEntity.getStatus())) {
+            return importEntity;
+        }
+        throw new RaddImportException(String.format("Import request for FileKey [%s] is not in TO_PROCESS status", fileKey));
     }
 
     private Mono<List<RaddRegistryRequest>> retrieveAndProcessFile(String fileKey) {

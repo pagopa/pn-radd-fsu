@@ -4,7 +4,6 @@ import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import it.pagopa.pn.radd.pojo.RaddRegistryImportStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -71,6 +70,12 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
         entity.setError(error);
         entity.setUpdatedAt(Instant.now());
         return updateItem(entity);
+    }
+
+    @Override
+    public Mono<RaddRegistryImportEntity> updateStatusWithFileKey(String fileKey, RaddRegistryImportStatus status) {
+        return getItemByFileKey(fileKey)
+                .flatMap(entity -> updateStatus(entity, status, null));
     }
 
 

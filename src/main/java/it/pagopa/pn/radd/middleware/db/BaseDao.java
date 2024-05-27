@@ -3,8 +3,8 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
-import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -111,10 +111,10 @@ public abstract class BaseDao<T> {
         if (maxElements != null) {
             qeRequest.limit(maxElements);
         }
-        if (!StringUtils.isBlank(expression)){
+        if (!StringUtils.isBlank(expression)) {
             qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
         }
-        if (StringUtils.isNotBlank(index)){
+        if (StringUtils.isNotBlank(index)) {
             return Flux.from(this.tableAsync.index(index).query(qeRequest.build()).flatMapIterable(Page::items));
         }
         return Flux.from(this.tableAsync.query(qeRequest.build()).flatMapIterable(Page::items));
@@ -130,7 +130,7 @@ public abstract class BaseDao<T> {
         if (maxElements != null) {
             qeRequest.limit(maxElements);
         }
-        if (!StringUtils.isBlank(expression)){
+        if (!StringUtils.isBlank(expression)) {
             qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
         }
 
@@ -160,6 +160,17 @@ public abstract class BaseDao<T> {
         }
     }
 
+    public Mono<Page<T>> scan(Integer limit, Map<String, AttributeValue> lastEvaluatedKey) {
+        ScanEnhancedRequest.Builder scRequest = ScanEnhancedRequest
+                .builder()
+                .limit(limit);
+
+        if (!CollectionUtils.isEmpty(lastEvaluatedKey)) {
+            scRequest.exclusiveStartKey(lastEvaluatedKey);
+        }
+        return Mono.from(tableAsync.scan(scRequest.build()));
+    }
+
     protected Mono<Void> putItemsWithConditions(List<T> entities, Expression expression, Class<T> entityClass) {
         return Flux.fromIterable(entities)
                 .flatMap(entity -> putItemWithConditions(entity, expression, entityClass))
@@ -169,13 +180,13 @@ public abstract class BaseDao<T> {
 
 
     protected <T> Mono<ResultPaginationDto<T, String>> getByFilterPaginated(QueryConditional conditional,
-                                                                          String index,
-                                                                          Map<String, AttributeValue> values,
-                                                                          Map<String, String> names,
-                                                                          String filterExpression,
-                                                                          Integer pageSize,
-                                                                          Map<String, AttributeValue> lastEvaluatedKey,
-                                                                          Function<T, PnLastEvaluatedKey> internalKeyMakerFn) {
+                                                                            String index,
+                                                                            Map<String, AttributeValue> values,
+                                                                            Map<String, String> names,
+                                                                            String filterExpression,
+                                                                            Integer pageSize,
+                                                                            Map<String, AttributeValue> lastEvaluatedKey,
+                                                                            Function<T, PnLastEvaluatedKey> internalKeyMakerFn) {
         QueryEnhancedRequest.Builder query = QueryEnhancedRequest
                 .builder()
                 .queryConditional(conditional);
@@ -197,10 +208,10 @@ public abstract class BaseDao<T> {
     }
 
     private <T, K> Mono<ResultPaginationDto<T, K>> query(String index,
-                              QueryEnhancedRequest.Builder queryEnhancedRequestBuilder,
-                              ResultPaginationDto<T, K> resultPaginationDto,
-                              int limit,
-                              Map<String, AttributeValue> lastEvaluatedKey) {
+                                                         QueryEnhancedRequest.Builder queryEnhancedRequestBuilder,
+                                                         ResultPaginationDto<T, K> resultPaginationDto,
+                                                         int limit,
+                                                         Map<String, AttributeValue> lastEvaluatedKey) {
         if (lastEvaluatedKey != null) {
             queryEnhancedRequestBuilder.exclusiveStartKey(lastEvaluatedKey);
         }
@@ -224,14 +235,14 @@ public abstract class BaseDao<T> {
         ResultPaginationDto<T, String> result = new ResultPaginationDto<>();
         result.setNextPagesKey(new ArrayList<>());
 
-        if(queryResult != null) {
+        if (queryResult != null) {
             result.setResultsPage(queryResult.stream()
                     .limit(limit)
                     .toList());
         }
         result.setMoreResult(moreResults);
 
-        for (int i = 1; i <= raddFsuConfig.getMaxPageNumber(); i++){
+        for (int i = 1; i <= raddFsuConfig.getMaxPageNumber(); i++) {
             int index = limit * i;
             if (queryResult.size() <= index) {
                 break;

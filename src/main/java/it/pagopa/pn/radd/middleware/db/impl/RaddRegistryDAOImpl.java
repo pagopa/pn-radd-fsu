@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -162,5 +163,25 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         }
 
         return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, names, query.toString(), limit, lastEvaluatedKey != null ? lastEvaluatedKey.getInternalLastEvaluatedKey() : null, SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
+    }
+
+    @Override
+    public Mono<Page<RaddRegistryEntity>> scanRegistries(Integer limit, String lastKey) {
+        log.info("Start scan RaddRegistryEntity - limit: [{}] and lastKey: [{}].", limit, lastKey);
+
+        PnLastEvaluatedKey lastEvaluatedKey = null;
+        if (StringUtils.isNotEmpty(lastKey)) {
+            try {
+                lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
+            } catch (JsonProcessingException e) {
+                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        e);
+            }
+        } else {
+            log.debug("First page search");
+        }
+
+        return scan(limit, lastEvaluatedKey != null ? lastEvaluatedKey.getInternalLastEvaluatedKey() : null);
     }
 }

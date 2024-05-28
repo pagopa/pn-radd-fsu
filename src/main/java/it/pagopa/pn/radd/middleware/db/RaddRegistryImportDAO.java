@@ -11,7 +11,6 @@ public interface RaddRegistryImportDAO {
     Mono<RaddRegistryImportEntity> getRegistryImportByCxIdAndRequestId(String xPagopaPnCxId, String requestId);
     Flux<RaddRegistryImportEntity> getRegistryImportByCxIdFilterByStatus(String cxId, String requestId, RaddRegistryImportStatus importStatus);
     Mono<RaddRegistryImportEntity> updateStatus(RaddRegistryImportEntity entity, RaddRegistryImportStatus status, String error);
-    Mono<RaddRegistryImportEntity> updateStatusWithFileKey(String fileKey, RaddRegistryImportStatus status);
     Flux<RaddRegistryImportEntity> findWithStatusPending();
     Mono<RaddRegistryImportEntity> updateStatusAndTtl(RaddRegistryImportEntity entity, Long ttl, RaddRegistryImportStatus status);
     Mono<RaddRegistryImportEntity> getItemByFileKey(String fileKey);

@@ -157,6 +157,8 @@ public class SafeStorageEventServiceTest {
         Mono<Void> result = safeStorageEventService.handleSafeStorageResponse(response);
 
         StepVerifier.create(result).verifyError(RuntimeException.class);
-        verify(pnRaddRegistryImportDAO, times(1)).updateStatusWithFileKey("testKey", RaddRegistryImportStatus.TO_PROCESS);
+        verify(pnRaddRegistryImportDAO, times(1)).updateStatus(any(), eq(RaddRegistryImportStatus.TO_PROCESS), any());
+        verify(pnRaddRegistryImportDAO, times(1)).updateStatus(any(), eq(RaddRegistryImportStatus.PENDING), any());
+        verify(pnRaddRegistryImportDAO, times(1)).updateStatus(any(), eq(RaddRegistryImportStatus.TAKEN_CHARGE), any());
     }
 }

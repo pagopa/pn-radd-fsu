@@ -73,13 +73,6 @@ public class RaddRegistryImportDAOImpl extends BaseDao<RaddRegistryImportEntity>
     }
 
     @Override
-    public Mono<RaddRegistryImportEntity> updateStatusWithFileKey(String fileKey, RaddRegistryImportStatus status) {
-        return getItemByFileKey(fileKey)
-                .flatMap(entity -> updateStatus(entity, status, null));
-    }
-
-
-    @Override
     public Flux<RaddRegistryImportEntity> findWithStatusPending() {
         Key key = Key.builder().partitionValue(RaddRegistryImportStatus.PENDING.name()).build();
         QueryConditional conditional = QueryConditional.keyEqualTo(key);

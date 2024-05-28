@@ -78,10 +78,10 @@ public class RaddRegistryUtils {
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         registryEntity.setExternalCode(raddRegistryOriginalRequest.getExternalCode());
-        if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
             registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
-        if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
             registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
         }
 
@@ -109,10 +109,10 @@ public class RaddRegistryUtils {
         registryEntity.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
         registryEntity.setCapacity(raddRegistryOriginalRequest.getCapacity());
         registryEntity.setExternalCode(raddRegistryOriginalRequest.getExternalCode());
-        if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getStartValidity())) {
             registryEntity.setStartValidity(Instant.parse(raddRegistryOriginalRequest.getStartValidity()));
         }
-        if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
+        if(StringUtils.isNotBlank(raddRegistryOriginalRequest.getEndValidity())) {
             registryEntity.setEndValidity(Instant.parse(raddRegistryOriginalRequest.getEndValidity()));
         }
 
@@ -188,7 +188,6 @@ public class RaddRegistryUtils {
     public String retrieveAddressManagerApiKey() {
         return secretService.getSecret(pnRaddFsuConfig.getAddressManagerApiKeySecret());
     }
-
     public PnEvaluatedZipCodeEvent mapToEventMessage(Set<TimeInterval> timeIntervals, String zipCode) {
         return PnEvaluatedZipCodeEvent.builder().detail(
                 PnAttachmentsConfigEventPayload
@@ -272,7 +271,8 @@ public class RaddRegistryUtils {
         return intersection;
     }
 
-    public static Set<TimeInterval> mergeIntervals(TimeInterval[] timeIntervals) {
+    public static Set<TimeInterval> mergeIntervals(TimeInterval[] timeIntervals)
+    {
         if (timeIntervals.length <= 0) {
             return Set.of();
         }
@@ -316,7 +316,7 @@ public class RaddRegistryUtils {
 
     public RequestResponse mapToRequestResponse(ResultPaginationDto<RaddRegistryRequestEntity, String> resultPaginationDto) {
         RequestResponse result = new RequestResponse();
-        if (resultPaginationDto.getResultsPage() != null) {
+        if(resultPaginationDto.getResultsPage() != null) {
             result.setItems(resultPaginationDto.getResultsPage().stream()
                     .map(raddRegistryRequestEntity -> {
                         RegistryRequestResponse registryRequestResponse = new RegistryRequestResponse();
@@ -341,7 +341,7 @@ public class RaddRegistryUtils {
     private OriginalRequest convertToOriginalRequest(RaddRegistryOriginalRequest raddRegistryOriginalRequest) {
         OriginalRequest originalRequest = new OriginalRequest();
 
-        if (raddRegistryOriginalRequest == null) {
+        if(raddRegistryOriginalRequest == null) {
             return originalRequest;
         }
 
@@ -351,10 +351,11 @@ public class RaddRegistryUtils {
         try {
             GeoLocation geoLocation = new GeoLocation();
             if (StringUtils.isNotBlank(raddRegistryOriginalRequest.getGeoLocation())) {
-                geoLocation = objectMapperUtil.toObject(raddRegistryOriginalRequest.getGeoLocation(), GeoLocation.class);
+                geoLocation=objectMapperUtil.toObject(raddRegistryOriginalRequest.getGeoLocation(), GeoLocation.class);
             }
             originalRequest.setGeoLocation(geoLocation);
-        } catch (PnInternalException e) {
+        }
+        catch (PnInternalException e) {
             log.debug("There are no valid geolocation data for this registry request.");
         }
         originalRequest.setOpeningTime(raddRegistryOriginalRequest.getOpeningTime());
@@ -383,7 +384,7 @@ public class RaddRegistryUtils {
 
     public RegistriesResponse mapRegistryEntityToRegistry(ResultPaginationDto<RaddRegistryEntity, String> resultPaginationDto) {
         RegistriesResponse result = new RegistriesResponse();
-        if (resultPaginationDto.getResultsPage() != null) {
+        if(resultPaginationDto.getResultsPage() != null) {
             result.setRegistries(resultPaginationDto.getResultsPage().stream()
                     .map(entity -> {
                         Registry registry = new Registry();
@@ -393,7 +394,7 @@ public class RaddRegistryUtils {
                         registry.setDescription(entity.getDescription());
                         registry.setPhoneNumber(entity.getPhoneNumber());
                         try {
-                            if (StringUtils.isNotBlank(entity.getGeoLocation())) {
+                            if(StringUtils.isNotBlank(entity.getGeoLocation())) {
                                 GeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), GeoLocation.class);
                                 geoLocation.setLatitude(geoLocation.getLatitude());
                                 geoLocation.setLongitude(geoLocation.getLongitude());
@@ -403,7 +404,9 @@ public class RaddRegistryUtils {
                             log.debug("Registry with cxId = {} and registryId = {} has not valid geoLocation", entity.getCxId(), entity.getRegistryId(), e);
                         }
                         registry.setOpeningTime(entity.getOpeningTime());
-                        registry.setStartValidity(Date.from(entity.getStartValidity()));
+                        if(entity.getStartValidity() != null) {
+                            registry.setStartValidity(Date.from(entity.getStartValidity()));
+                        }
                         if (entity.getEndValidity() != null) {
                             registry.setEndValidity(Date.from(entity.getEndValidity()));
                         }
@@ -417,14 +420,15 @@ public class RaddRegistryUtils {
         result.setMoreResult(resultPaginationDto.isMoreResult());
         return result;
     }
-
     private Address mapNormalizedAddressToAddress(NormalizedAddressEntity normalizedAddress) {
         Address address = new Address();
-        address.addressRow(normalizedAddress.getAddressRow());
-        address.cap(normalizedAddress.getCap());
-        address.pr(normalizedAddress.getPr());
-        address.city(normalizedAddress.getCity());
-        address.country(normalizedAddress.getCountry());
+        if (Objects.nonNull(normalizedAddress)) {
+            address.addressRow(normalizedAddress.getAddressRow());
+            address.cap(normalizedAddress.getCap());
+            address.pr(normalizedAddress.getPr());
+            address.city(normalizedAddress.getCity());
+            address.country(normalizedAddress.getCountry());
+        }
         return address;
     }
 
@@ -441,7 +445,9 @@ public class RaddRegistryUtils {
     public StoreRegistriesResponse mapToStoreRegistriesResponse(Page<RaddRegistryEntity> registries) {
         StoreRegistriesResponse storeRegistriesResponse = new StoreRegistriesResponse();
         storeRegistriesResponse.setRegistries(mapRegistryEntityToRegistryStore(registries.items()));
-        storeRegistriesResponse.setLastKey(STORE_REGISTRY_LAST_EVALUATED_KEY.apply(registries.lastEvaluatedKey()).serializeInternalLastEvaluatedKey());
+        if (registries.lastEvaluatedKey() != null) {
+            storeRegistriesResponse.setLastKey(STORE_REGISTRY_LAST_EVALUATED_KEY.apply(registries.lastEvaluatedKey()).serializeInternalLastEvaluatedKey());
+        }
         log.info("StoreRegistriesResponse created with {} registries", storeRegistriesResponse.getRegistries().size());
         return storeRegistriesResponse;
     }

@@ -111,10 +111,10 @@ public abstract class BaseDao<T> {
         if (maxElements != null) {
             qeRequest.limit(maxElements);
         }
-        if (!StringUtils.isBlank(expression)) {
+        if (!StringUtils.isBlank(expression)){
             qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
         }
-        if (StringUtils.isNotBlank(index)) {
+        if (StringUtils.isNotBlank(index)){
             return Flux.from(this.tableAsync.index(index).query(qeRequest.build()).flatMapIterable(Page::items));
         }
         return Flux.from(this.tableAsync.query(qeRequest.build()).flatMapIterable(Page::items));
@@ -130,7 +130,7 @@ public abstract class BaseDao<T> {
         if (maxElements != null) {
             qeRequest.limit(maxElements);
         }
-        if (!StringUtils.isBlank(expression)) {
+        if (!StringUtils.isBlank(expression)){
             qeRequest.filterExpression(Expression.builder().expression(expression).expressionValues(expressionValues).expressionNames(expressionNames).build());
         }
 
@@ -180,13 +180,13 @@ public abstract class BaseDao<T> {
 
 
     protected <T> Mono<ResultPaginationDto<T, String>> getByFilterPaginated(QueryConditional conditional,
-                                                                            String index,
-                                                                            Map<String, AttributeValue> values,
-                                                                            Map<String, String> names,
-                                                                            String filterExpression,
-                                                                            Integer pageSize,
-                                                                            Map<String, AttributeValue> lastEvaluatedKey,
-                                                                            Function<T, PnLastEvaluatedKey> internalKeyMakerFn) {
+                                                                          String index,
+                                                                          Map<String, AttributeValue> values,
+                                                                          Map<String, String> names,
+                                                                          String filterExpression,
+                                                                          Integer pageSize,
+                                                                          Map<String, AttributeValue> lastEvaluatedKey,
+                                                                          Function<T, PnLastEvaluatedKey> internalKeyMakerFn) {
         QueryEnhancedRequest.Builder query = QueryEnhancedRequest
                 .builder()
                 .queryConditional(conditional);
@@ -208,10 +208,10 @@ public abstract class BaseDao<T> {
     }
 
     private <T, K> Mono<ResultPaginationDto<T, K>> query(String index,
-                                                         QueryEnhancedRequest.Builder queryEnhancedRequestBuilder,
-                                                         ResultPaginationDto<T, K> resultPaginationDto,
-                                                         int limit,
-                                                         Map<String, AttributeValue> lastEvaluatedKey) {
+                              QueryEnhancedRequest.Builder queryEnhancedRequestBuilder,
+                              ResultPaginationDto<T, K> resultPaginationDto,
+                              int limit,
+                              Map<String, AttributeValue> lastEvaluatedKey) {
         if (lastEvaluatedKey != null) {
             queryEnhancedRequestBuilder.exclusiveStartKey(lastEvaluatedKey);
         }
@@ -235,14 +235,14 @@ public abstract class BaseDao<T> {
         ResultPaginationDto<T, String> result = new ResultPaginationDto<>();
         result.setNextPagesKey(new ArrayList<>());
 
-        if (queryResult != null) {
+        if(queryResult != null) {
             result.setResultsPage(queryResult.stream()
                     .limit(limit)
                     .toList());
         }
         result.setMoreResult(moreResults);
 
-        for (int i = 1; i <= raddFsuConfig.getMaxPageNumber(); i++) {
+        for (int i = 1; i <= raddFsuConfig.getMaxPageNumber(); i++){
             int index = limit * i;
             if (queryResult.size() <= index) {
                 break;

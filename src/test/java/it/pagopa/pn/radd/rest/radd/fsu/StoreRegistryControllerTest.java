@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistriesResponse;
-import it.pagopa.pn.radd.services.radd.fsu.v1.StoreLocatorService;
+import it.pagopa.pn.radd.services.radd.fsu.v1.StoreRegistryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class StoreRegistryControllerTest {
     WebTestClient webTestClient;
 
     @MockBean
-    private StoreLocatorService storeLocatorService;
+    private StoreRegistryService storeRegistryService;
 
     public static final String LIMIT = "limit";
     public static final String LASTKEY = "lastKey";
@@ -34,7 +34,7 @@ public class StoreRegistryControllerTest {
     void retrieveStoreRegistries() {
         String path = "/radd-net-private/api/v1/store";
         StoreRegistriesResponse response = new StoreRegistriesResponse();
-        when(storeLocatorService.retrieveStoreRegistries(any(), any())).thenReturn(Mono.just(response));
+        when(storeRegistryService.retrieveStoreRegistries(any(), any())).thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)
                 .header(LIMIT, "1000")

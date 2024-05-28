@@ -27,8 +27,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = {StoreLocatorService.class})
-public class StoreLocatorServiceTest {
+@ContextConfiguration(classes = {StoreRegistryService.class})
+public class StoreRegistryServiceTest {
 
     @Mock
     RaddRegistryDAO raddRegistryDAO;
@@ -38,11 +38,11 @@ public class StoreLocatorServiceTest {
     private PnRaddFsuConfig pnRaddFsuConfig;
 
     @InjectMocks
-    private StoreLocatorService storeLocatorService;
+    private StoreRegistryService storeRegistryService;
 
     @BeforeEach
     void setUp() {
-        storeLocatorService = new StoreLocatorService(raddRegistryDAO, new RaddRegistryUtils(new ObjectMapperUtil(new ObjectMapper()), pnRaddFsuConfig, secretService));
+        storeRegistryService = new StoreRegistryService(raddRegistryDAO, new RaddRegistryUtils(new ObjectMapperUtil(new ObjectMapper()), pnRaddFsuConfig, secretService));
     }
 
 
@@ -59,7 +59,7 @@ public class StoreLocatorServiceTest {
 
         when(raddRegistryDAO.scanRegistries(any(), any())).thenReturn(Mono.just(Page.create(registryEntities, lastEvaluetadKey)));
 
-        StepVerifier.create(storeLocatorService.retrieveStoreRegistries(1000, "lastKey"))
+        StepVerifier.create(storeRegistryService.retrieveStoreRegistries(1000, "lastKey"))
                 .expectNextMatches(storeRegistriesResponse -> storeRegistriesResponse.getRegistries().size() == 1 &&
                         storeRegistriesResponse.getRegistries().get(0).getGeoLocation().getLongitude().equals("52.241") &&
                         storeRegistriesResponse.getRegistries().get(0).getAddress().getCity().equals("city") &&

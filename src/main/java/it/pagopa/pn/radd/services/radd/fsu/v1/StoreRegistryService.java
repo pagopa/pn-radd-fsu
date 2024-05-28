@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @CustomLog
-public class StoreLocatorService {
+public class StoreRegistryService {
 
     private final RaddRegistryDAO raddRegistryDAO;
     private final RaddRegistryUtils raddRegistryUtils;

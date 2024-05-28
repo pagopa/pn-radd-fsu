@@ -23,12 +23,15 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
@@ -40,6 +43,17 @@ public class RaddRegistryUtils {
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final SecretService secretService;
+
+    private final static Function<Map<String, AttributeValue>, PnLastEvaluatedKey> STORE_REGISTRY_LAST_EVALUATED_KEY = (stringAttributeValueMap) -> {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(stringAttributeValueMap.get(RaddRegistryEntity.COL_CXID).s());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryEntity.COL_REGISTRY_ID, AttributeValue.builder().s(stringAttributeValueMap.get(RaddRegistryEntity.COL_REGISTRY_ID).s()).build(),
+                RaddRegistryEntity.COL_CXID, AttributeValue.builder().s(stringAttributeValueMap.get(RaddRegistryEntity.COL_CXID).s()).build()
+        ));
+        return pageLastEvaluatedKey;
+    };
+
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -424,11 +438,19 @@ public class RaddRegistryUtils {
         return address;
     }
 
-    public List<RegistryStore> mapRegistryEntityToRegistryStore(List<RaddRegistryEntity> raddRegistryEntities) {
+    public StoreRegistriesResponse mapToStoreRegistriesResponse(Page<RaddRegistryEntity> registries) {
+        StoreRegistriesResponse storeRegistriesResponse = new StoreRegistriesResponse();
+        storeRegistriesResponse.setRegistries(mapRegistryEntityToRegistryStore(registries.items()));
+        storeRegistriesResponse.setLastKey(STORE_REGISTRY_LAST_EVALUATED_KEY.apply(registries.lastEvaluatedKey()).serializeInternalLastEvaluatedKey());
+        log.info("StoreRegistriesResponse created with {} registries", storeRegistriesResponse.getRegistries().size());
+        return storeRegistriesResponse;
+    }
+
+    public List<StoreRegistry> mapRegistryEntityToRegistryStore(List<RaddRegistryEntity> raddRegistryEntities) {
         return raddRegistryEntities.stream()
                 .map(raddRegistryEntity ->
                 {
-                    RegistryStore registryStore = new RegistryStore();
+                    StoreRegistry registryStore = new StoreRegistry();
                     registryStore.setAddress(mapNormalizedAddressToAddress(raddRegistryEntity.getNormalizedAddress()));
                     registryStore.setDescription(raddRegistryEntity.getDescription());
                     registryStore.setPhoneNumber(raddRegistryEntity.getPhoneNumber());
@@ -448,5 +470,4 @@ public class RaddRegistryUtils {
                     return registryStore;
                 }).toList();
     }
-
 }

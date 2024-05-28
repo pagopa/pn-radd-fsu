@@ -12,17 +12,13 @@ info:
   description: >-
 
 servers:
-  - url: https://api.radd.notifichedigitali.it
-    description: Ambiente di produzione
-  - url: https://api.radd.uat.notifichedigitali.it
-    description: Ambiente di collaudo UAT
-
+  - url: https://tbd/
 
 paths:
   /radd-net-private/api/v1/store:
     get:
       tags:
-        - RegistryStore
+        - RegistryStorePrivate
       operationId: retrieveStoreRegistries
       description: API utilizzata per recuperare la lista paginata di anagrafiche RADD
       parameters:
@@ -37,24 +33,6 @@ paths:
                 $ref: '#/components/schemas/StoreRegistriesResponse'
         '400':
           description: Bad Request
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'remote-refs.yaml#/components/schemas/Problem'
-        '401':
-          description: Unauthorized
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'remote-refs.yaml#/components/schemas/Problem'
-        '403':
-          description: Forbidden
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'remote-refs.yaml#/components/schemas/Problem'
-        '405':
-          description: Not Allowed
           content:
             application/problem+json:
               schema:
@@ -80,6 +58,8 @@ components:
           description: Chiave per la paginazione
     StoreRegistry:
       type: object
+      required:
+        - address
       properties:
         description:
           type: string

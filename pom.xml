@@ -287,7 +287,7 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
-                            <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-store-registry.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-store-registry-private.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
                             <generateApiDocumentation>false</generateApiDocumentation>

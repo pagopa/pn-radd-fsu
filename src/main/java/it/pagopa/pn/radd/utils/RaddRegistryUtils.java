@@ -396,7 +396,7 @@ public class RaddRegistryUtils {
                             if (StringUtils.isNotBlank(entity.getGeoLocation())) {
                                 GeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), GeoLocation.class);
                                 geoLocation.setLatitude(geoLocation.getLatitude());
-                                geoLocation.setLongitude(geoLocation.getLatitude());
+                                geoLocation.setLongitude(geoLocation.getLongitude());
                                 registry.setGeoLocation(geoLocation);
                             }
                         } catch (PnInternalException e) {
@@ -458,7 +458,7 @@ public class RaddRegistryUtils {
                         if (StringUtils.isNotBlank(raddRegistryEntity.getGeoLocation())) {
                             GeoLocation geoLocation = objectMapperUtil.toObject(raddRegistryEntity.getGeoLocation(), GeoLocation.class);
                             geoLocation.setLatitude(geoLocation.getLatitude());
-                            geoLocation.setLongitude(geoLocation.getLatitude());
+                            geoLocation.setLongitude(geoLocation.getLongitude());
                             registryStore.setGeoLocation(geoLocation);
                         }
                     } catch (PnInternalException e) {

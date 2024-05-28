@@ -105,4 +105,53 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
                 .verify();
     }*/
 
+    @Test
+    void scanRegistriesLastKeyNull() {
+        RaddRegistryEntity entity = getRegistryEntity();
+
+        RaddRegistryEntity raddRegistryEntity = raddRegistryDAO.putItemIfAbsent(baseEntity).block();
+        RaddRegistryEntity raddRegistryEntity2 = raddRegistryDAO.putItemIfAbsent(entity).block();
+
+        StepVerifier.create(raddRegistryDAO.scanRegistries(0, null))
+                .expectNextMatches(raddRegistryEntityPage -> raddRegistryEntityPage.items().size() == 2 &&
+                        raddRegistryEntityPage.lastEvaluatedKey() == null &&
+                        raddRegistryEntityPage.items().contains(raddRegistryEntity) &&
+                        raddRegistryEntityPage.items().contains(raddRegistryEntity2))
+                .verifyComplete();
+    }
+
+    @Test
+    void scanRegistriesLastKeyNotNull() {
+        RaddRegistryEntity entity = getRegistryEntity();
+        String lastKey = "eyJlayI6InRlc3RDeElkIiwiaWsiOnsicmVnaXN0cnlJZCI6InRlc3RSZWdpc3RyeUlkIiwiY3hJZCI6InRlc3RDeElkIn19";
+
+        RaddRegistryEntity raddRegistryEntity = raddRegistryDAO.putItemIfAbsent(baseEntity).block();
+        RaddRegistryEntity raddRegistryEntity2 = raddRegistryDAO.putItemIfAbsent(entity).block();
+
+        StepVerifier.create(raddRegistryDAO.scanRegistries(1, lastKey))
+                .expectNextMatches(raddRegistryEntityPage -> raddRegistryEntityPage.items().size() == 1 &&
+                        raddRegistryEntityPage.lastEvaluatedKey() != null)
+                .verifyComplete();
+    }
+
+    private RaddRegistryEntity getRegistryEntity() {
+        RaddRegistryEntity entity = new RaddRegistryEntity();
+        entity.setRegistryId("testRegistryId2");
+        entity.setCxId("testCxId2");
+        entity.setRequestId("testRequestId2");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country2");
+        addressEntity.setPr("pr2");
+        addressEntity.setCity("city2");
+        addressEntity.setCap("cap2");
+        entity.setNormalizedAddress(addressEntity);
+        entity.setDescription("testDescription2");
+        entity.setPhoneNumber("testPhoneNumber2");
+        entity.setGeoLocation("testGeoLocation2");
+        entity.setZipCode("testZipCode2");
+        entity.setOpeningTime("testOpeningTime2");
+        entity.setStartValidity(Instant.now());
+        entity.setEndValidity(Instant.now().plusSeconds(3600));
+        return entity;
+    }
 }

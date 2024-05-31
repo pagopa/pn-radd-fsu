@@ -23,12 +23,15 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 
 import static it.pagopa.pn.radd.pojo.RaddRegistryImportStatus.TO_PROCESS;
 
@@ -40,6 +43,17 @@ public class RaddRegistryUtils {
     private final ObjectMapperUtil objectMapperUtil;
     private final PnRaddFsuConfig pnRaddFsuConfig;
     private final SecretService secretService;
+
+    private final static Function<Map<String, AttributeValue>, PnLastEvaluatedKey> STORE_REGISTRY_LAST_EVALUATED_KEY = (stringAttributeValueMap) -> {
+        PnLastEvaluatedKey pageLastEvaluatedKey = new PnLastEvaluatedKey();
+        pageLastEvaluatedKey.setExternalLastEvaluatedKey(stringAttributeValueMap.get(RaddRegistryEntity.COL_CXID).s());
+        pageLastEvaluatedKey.setInternalLastEvaluatedKey(Map.of(
+                RaddRegistryEntity.COL_REGISTRY_ID, AttributeValue.builder().s(stringAttributeValueMap.get(RaddRegistryEntity.COL_REGISTRY_ID).s()).build(),
+                RaddRegistryEntity.COL_CXID, AttributeValue.builder().s(stringAttributeValueMap.get(RaddRegistryEntity.COL_CXID).s()).build()
+        ));
+        return pageLastEvaluatedKey;
+    };
+
 
     public Mono<RaddRegistryEntity> mergeNewRegistryEntity(RaddRegistryEntity preExistingRegistryEntity, RaddRegistryRequestEntity newRegistryRequestEntity) {
         return Mono.fromCallable(() -> {
@@ -383,15 +397,17 @@ public class RaddRegistryUtils {
                             if(StringUtils.isNotBlank(entity.getGeoLocation())) {
                                 GeoLocation geoLocation = objectMapperUtil.toObject(entity.getGeoLocation(), GeoLocation.class);
                                 geoLocation.setLatitude(geoLocation.getLatitude());
-                                geoLocation.setLongitude(geoLocation.getLatitude());
+                                geoLocation.setLongitude(geoLocation.getLongitude());
                                 registry.setGeoLocation(geoLocation);
                             }
                         } catch (PnInternalException e) {
                             log.debug("Registry with cxId = {} and registryId = {} has not valid geoLocation", entity.getCxId(), entity.getRegistryId(), e);
                         }
                         registry.setOpeningTime(entity.getOpeningTime());
-                        registry.setStartValidity(Date.from(entity.getStartValidity()));
-                        if(entity.getEndValidity() != null) {
+                        if(entity.getStartValidity() != null) {
+                            registry.setStartValidity(Date.from(entity.getStartValidity()));
+                        }
+                        if (entity.getEndValidity() != null) {
                             registry.setEndValidity(Date.from(entity.getEndValidity()));
                         }
                         registry.setExternalCode(entity.getExternalCode());
@@ -406,11 +422,13 @@ public class RaddRegistryUtils {
     }
     private Address mapNormalizedAddressToAddress(NormalizedAddressEntity normalizedAddress) {
         Address address = new Address();
-        address.addressRow(normalizedAddress.getAddressRow());
-        address.cap(normalizedAddress.getCap());
-        address.pr(normalizedAddress.getPr());
-        address.city(normalizedAddress.getCity());
-        address.country(normalizedAddress.getCountry());
+        if (Objects.nonNull(normalizedAddress)) {
+            address.addressRow(normalizedAddress.getAddressRow());
+            address.cap(normalizedAddress.getCap());
+            address.pr(normalizedAddress.getPr());
+            address.city(normalizedAddress.getCity());
+            address.country(normalizedAddress.getCountry());
+        }
         return address;
     }
 
@@ -424,4 +442,38 @@ public class RaddRegistryUtils {
         return address;
     }
 
+    public StoreRegistriesResponse mapToStoreRegistriesResponse(Page<RaddRegistryEntity> registries) {
+        StoreRegistriesResponse storeRegistriesResponse = new StoreRegistriesResponse();
+        storeRegistriesResponse.setRegistries(mapRegistryEntityToRegistryStore(registries.items()));
+        if (registries.lastEvaluatedKey() != null) {
+            storeRegistriesResponse.setLastKey(STORE_REGISTRY_LAST_EVALUATED_KEY.apply(registries.lastEvaluatedKey()).serializeInternalLastEvaluatedKey());
+        }
+        log.info("StoreRegistriesResponse created with {} registries", storeRegistriesResponse.getRegistries().size());
+        return storeRegistriesResponse;
+    }
+
+    public List<StoreRegistry> mapRegistryEntityToRegistryStore(List<RaddRegistryEntity> raddRegistryEntities) {
+        return raddRegistryEntities.stream()
+                .map(raddRegistryEntity ->
+                {
+                    StoreRegistry registryStore = new StoreRegistry();
+                    registryStore.setAddress(mapNormalizedAddressToAddress(raddRegistryEntity.getNormalizedAddress()));
+                    registryStore.setDescription(raddRegistryEntity.getDescription());
+                    registryStore.setPhoneNumber(raddRegistryEntity.getPhoneNumber());
+                    try {
+                        if (StringUtils.isNotBlank(raddRegistryEntity.getGeoLocation())) {
+                            GeoLocation geoLocation = objectMapperUtil.toObject(raddRegistryEntity.getGeoLocation(), GeoLocation.class);
+                            geoLocation.setLatitude(geoLocation.getLatitude());
+                            geoLocation.setLongitude(geoLocation.getLongitude());
+                            registryStore.setGeoLocation(geoLocation);
+                        }
+                    } catch (PnInternalException e) {
+                        log.debug("Registry with cxId = {} and registryId = {} has not valid geoLocation", raddRegistryEntity.getCxId(), raddRegistryEntity.getRegistryId(), e);
+                    }
+                    registryStore.setOpeningTime(raddRegistryEntity.getOpeningTime());
+                    registryStore.setExternalCode(raddRegistryEntity.getExternalCode());
+                    registryStore.setCapacity(raddRegistryEntity.getCapacity());
+                    return registryStore;
+                }).toList();
+    }
 }

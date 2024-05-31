@@ -3,8 +3,8 @@ package it.pagopa.pn.radd.middleware.db;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
-import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
+import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
@@ -158,6 +158,20 @@ public abstract class BaseDao<T> {
         } else {
             return Mono.from(tableAsync.query(qeRequest.build()));
         }
+    }
+
+    public Mono<Page<T>> scan(Integer limit, Map<String, AttributeValue> lastEvaluatedKey, Map<String, AttributeValue> values, String filterExpression, Map<String, String> names) {
+        ScanEnhancedRequest.Builder scRequest = ScanEnhancedRequest
+                .builder()
+                .limit(limit);
+
+        if (!CollectionUtils.isEmpty(lastEvaluatedKey)) {
+            scRequest.exclusiveStartKey(lastEvaluatedKey);
+        }
+        if (!StringUtils.isEmpty(filterExpression) && !CollectionUtils.isEmpty(values)) {
+            scRequest.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).expressionNames(names).build());
+        }
+        return Mono.from(tableAsync.scan(scRequest.build()));
     }
 
     protected Mono<Void> putItemsWithConditions(List<T> entities, Expression expression, Class<T> entityClass) {

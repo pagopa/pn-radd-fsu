@@ -1,9 +1,10 @@
 package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.config.RestExceptionHandler;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,10 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
     @Autowired
     @SpyBean
     private RaddRegistryDAO raddRegistryDAO;
+
+    @Autowired
+    @SpyBean
+    private RestExceptionHandler exceptionHandler;
     private RaddRegistryEntity baseEntity;
 
     @Autowired
@@ -95,7 +100,7 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
     }
 
     @Test
-    void scanRegistriesLastKeyNotNull() {
+    void scanRegistriesLastKeyNull() {
         RaddRegistryEntity entity =  getRegistryEntity("registryId3", "cxId3");
 
         baseDao.putItem(baseEntity).block();
@@ -104,6 +109,29 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
         StepVerifier.create(raddRegistryDAO.scanRegistries(1, null))
                 .expectNextMatches(raddRegistryEntityPage -> raddRegistryEntityPage.items().size() == 1 &&
                         raddRegistryEntityPage.lastEvaluatedKey() != null)
+                .verifyComplete();
+    }
+
+    @Test
+    void scanRegistriesInvalidLastKeyNotNull() {
+        RaddRegistryEntity entity =  getRegistryEntity("registryId3", "cxId3");
+
+        baseDao.putItem(baseEntity).block();
+        baseDao.putItem(entity).block();
+
+        Assertions.assertThrows(RaddGenericException.class, () -> raddRegistryDAO.scanRegistries(1, "test"));
+    }
+
+    @Test
+    void scanRegistriesLastKeyNotNull() {
+        RaddRegistryEntity entity =  getRegistryEntity("registryId3", "cxId3");
+
+        baseDao.putItem(baseEntity).block();
+        baseDao.putItem(entity).block();
+
+        StepVerifier.create(raddRegistryDAO.scanRegistries(1,
+                        "eyJlayI6IlRBY3hpZCIsImlrIjp7InJlZ2lzdHJ5SWQiOiI4ZGMxZWQwYS0wZTFjLTNmYTctOTlmOC1hOGEzNTczYWY0ODMiLCJjeElkIjoiVEFjeGlkIn19"))
+                .expectNextMatches(raddRegistryEntityPage -> raddRegistryEntityPage.items().isEmpty())
                 .verifyComplete();
     }
 

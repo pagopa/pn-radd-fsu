@@ -13,14 +13,19 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -75,6 +80,22 @@ public class RestExceptionHandler {
         problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
         problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
         return Mono.just(ResponseEntity.status(ex.getStatus())
+                .body(problem));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Mono<ResponseEntity<Problem>> constraintViolationException(ConstraintViolationException ex){
+        log.error(ex.getMessage());
+        Problem problem = new Problem();
+        problem.setType(ex.getMessage());
+        problem.setStatus(HttpStatus.BAD_REQUEST.value());
+        problem.setTitle(ex.getMessage());
+        if(CollectionUtils.isEmpty(ex.getConstraintViolations())) {
+            problem.setDetail(ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining()));
+        }
+        problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
+        problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(problem));
     }
 

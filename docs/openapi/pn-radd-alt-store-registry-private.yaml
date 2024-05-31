@@ -91,6 +91,8 @@ components:
       schema:
         type: integer
         default: 1000
+        minimum: 1
+        maximum: 1000
     lastKey:
       name: lastKey
       in: query

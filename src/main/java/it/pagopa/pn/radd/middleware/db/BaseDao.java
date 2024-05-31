@@ -160,13 +160,16 @@ public abstract class BaseDao<T> {
         }
     }
 
-    public Mono<Page<T>> scan(Integer limit, Map<String, AttributeValue> lastEvaluatedKey) {
+    public Mono<Page<T>> scan(Integer limit, Map<String, AttributeValue> lastEvaluatedKey, Map<String, AttributeValue> values, String filterExpression, Map<String, String> names) {
         ScanEnhancedRequest.Builder scRequest = ScanEnhancedRequest
                 .builder()
                 .limit(limit);
 
         if (!CollectionUtils.isEmpty(lastEvaluatedKey)) {
             scRequest.exclusiveStartKey(lastEvaluatedKey);
+        }
+        if (!StringUtils.isEmpty(filterExpression) && !CollectionUtils.isEmpty(values)) {
+            scRequest.filterExpression(Expression.builder().expression(filterExpression).expressionValues(values).expressionNames(names).build());
         }
         return Mono.from(tableAsync.scan(scRequest.build()));
     }

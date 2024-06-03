@@ -22,6 +22,9 @@
     "EvaluatedZipCodeConfigType": "ZIPCODE",
     "EvaluatedZipCodeConfigNumber": "1",
     "PnRaddMaxPageNumber": "10",
-    "PnRaddMaxDynamoDBQuerySize": "1000"
+    "PnRaddMaxDynamoDBQuerySize": "1000",
+    "PnCronAnalyzer": "* */1 * * * *",
+    "WireTapLogActivation": "false",
+    "MountEfs": "false"
   }
 }

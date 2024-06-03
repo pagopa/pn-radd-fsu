@@ -524,6 +524,7 @@ Resources:
               - dynamodb:TransactGetItems
               - dynamodb:TransactWriteItems
               - dynamodb:UpdateItem
+              - dynamodb:Scan
             Resource:
               - !Sub "${RaddTransactionDynamoTableArn}"
               - !Sub "${RaddTransactionDynamoTableArn}/*"

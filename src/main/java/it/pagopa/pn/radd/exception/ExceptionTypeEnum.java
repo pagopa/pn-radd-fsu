@@ -43,7 +43,8 @@ public enum ExceptionTypeEnum {
     PHONE_NUMBER_ERROR("PHONE_NUMBER_ERROR","Il formato del numero di telefono non è corretto", 99),
     GEOLOCATION_ERROR("GEOLOCATION_ERROR","Il formato della geolocalizzazione non è corretto", 99),
     OPENING_TIME_ERROR("OPENING_TIME_ERROR","Il formato dell'orario di apertura non è corretto", 99),
-    CAPACITY_ERROR("CAPACITY_ERROR","Il formato della capacità non è corretto", 99);
+    CAPACITY_ERROR("CAPACITY_ERROR","Il formato della capacità non è corretto", 99),
+    ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY("PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY", "Impossibile deserializzare la lastEvaluatedKey", 99);
 
 
     private final String title;

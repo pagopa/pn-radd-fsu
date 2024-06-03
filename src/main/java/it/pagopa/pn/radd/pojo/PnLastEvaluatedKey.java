@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.Base64Utils;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
@@ -16,12 +18,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
+
 
 public class PnLastEvaluatedKey {
 
     private static final ObjectWriter objectWriter = new ObjectMapper().writerFor( KeyPair.class );
     private static final ObjectReader objectReader = new ObjectMapper().readerFor( KeyPair.class );
-    public static final String ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY = "PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY";
+
 
     @ToString.Include
     private String externalLastEvaluatedKey;
@@ -66,9 +70,9 @@ public class PnLastEvaluatedKey {
             result = objectWriter.writeValueAsString( toSerialize );
             result = Base64Utils.encodeToUrlSafeString( result.getBytes(StandardCharsets.UTF_8) );
         } catch ( JsonProcessingException e ) {
-            throw new PnInternalException( "Unable to serialize internal LastEvaluatedKey",
+            throw new RaddGenericException(
                     ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
-                    e );
+                    HttpStatus.BAD_REQUEST);
         }
         return result;
     }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
@@ -11,6 +13,7 @@ import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 
 
 @Repository
@@ -209,9 +211,9 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
             try {
                 lastKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastEvaluatedKey);
             } catch (JsonProcessingException e) {
-                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
-                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
-                        e);
+                throw new RaddGenericException(
+                        ExceptionTypeEnum.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        HttpStatus.BAD_REQUEST);
             }
         } else {
             log.debug("First page search");

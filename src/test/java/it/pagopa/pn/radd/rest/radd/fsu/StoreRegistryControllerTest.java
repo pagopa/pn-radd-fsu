@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistriesResponse;
+import it.pagopa.pn.radd.config.RestExceptionHandler;
 import it.pagopa.pn.radd.services.radd.fsu.v1.StoreRegistryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +17,7 @@ import reactor.core.publisher.Mono;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {StoreRegistryController.class})
+@ContextConfiguration(classes = {StoreRegistryController.class, RestExceptionHandler.class})
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = {StoreRegistryController.class})
 public class StoreRegistryControllerTest {
@@ -27,9 +28,6 @@ public class StoreRegistryControllerTest {
     @MockBean
     private StoreRegistryService storeRegistryService;
 
-    public static final String LIMIT = "limit";
-    public static final String LASTKEY = "lastKey";
-
     @Test
     void retrieveStoreRegistries() {
         String path = "/radd-net-private/api/v1/store";
@@ -37,10 +35,20 @@ public class StoreRegistryControllerTest {
         when(storeRegistryService.retrieveStoreRegistries(any(), any())).thenReturn(Mono.just(response));
         webTestClient.get()
                 .uri(path)
-                .header(LIMIT, "1000")
-                .header(LASTKEY, "lastKey")
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk();
+    }
+
+    @Test
+    void retrieveStoreRegistriesInvalidLimitParameter() {
+        String path = "/radd-net-private/api/v1/store?limit=1001";
+        StoreRegistriesResponse response = new StoreRegistriesResponse();
+        when(storeRegistryService.retrieveStoreRegistries(any(), any())).thenReturn(Mono.just(response));
+        webTestClient.get()
+                .uri(path)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

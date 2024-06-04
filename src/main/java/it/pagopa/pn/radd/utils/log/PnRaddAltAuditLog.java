@@ -30,7 +30,7 @@ public class PnRaddAltAuditLog {
     }
 
     public void generateFailure(String msg, Object... arguments) {
-        this.logEvent.generateFailure(msg, arguments).log();
+        this.logEvent.generateFailure(msg + " - " + context.logContext(), arguments).log();
     }
 
     public void generateWarning(String msg, Object... arguments) {

@@ -25,7 +25,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddUidResult = pnRaddAltLogContext.addUid("1234");
 
         // Assert
-        assertEquals("uid=1234 ", actualAddUidResult.logContext());
+        assertEquals("uid=1234", actualAddUidResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddUidResult);
     }
 
@@ -41,7 +41,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddCxIdResult = pnRaddAltLogContext.addCxId("42");
 
         // Assert
-        assertEquals("cxId=42 ", actualAddCxIdResult.logContext());
+        assertEquals("cxId=42", actualAddCxIdResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddCxIdResult);
     }
 
@@ -57,7 +57,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddCxTypeResult = pnRaddAltLogContext.addCxType("Cx Type");
 
         // Assert
-        assertEquals("cxType=Cx Type ", actualAddCxTypeResult.logContext());
+        assertEquals("cxType=Cx Type", actualAddCxTypeResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddCxTypeResult);
     }
 
@@ -73,7 +73,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddRecipientInternalIdResult = pnRaddAltLogContext.addRecipientInternalId("42");
 
         // Assert
-        assertEquals("recipientInternalId=42 ", actualAddRecipientInternalIdResult.logContext());
+        assertEquals("recipientInternalId=42", actualAddRecipientInternalIdResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddRecipientInternalIdResult);
     }
 
@@ -89,7 +89,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddDelegateInternalIdResult = pnRaddAltLogContext.addDelegateInternalId("42");
 
         // Assert
-        assertEquals("delegateInternalId=42 ", actualAddDelegateInternalIdResult.logContext());
+        assertEquals("delegateInternalId=42", actualAddDelegateInternalIdResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddDelegateInternalIdResult);
     }
 
@@ -105,7 +105,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddTransactionIdResult = pnRaddAltLogContext.addTransactionId("42");
 
         // Assert
-        assertEquals("transactionId=42 ", actualAddTransactionIdResult.logContext());
+        assertEquals("transactionId=42", actualAddTransactionIdResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddTransactionIdResult);
     }
 
@@ -121,7 +121,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddRequestFileKeyResult = pnRaddAltLogContext.addRequestFileKey("Request File Key");
 
         // Assert
-        assertEquals("requestFileKey=Request File Key ", actualAddRequestFileKeyResult.logContext());
+        assertEquals("requestFileKey=Request File Key", actualAddRequestFileKeyResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddRequestFileKeyResult);
     }
 
@@ -137,7 +137,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddDownloadFilekeysResult = pnRaddAltLogContext.addDownloadFilekeys(new ArrayList<>());
 
         // Assert
-        assertEquals("downloadedFilekeys=[  ] ", actualAddDownloadFilekeysResult.logContext());
+        assertEquals("downloadedFilekeys=[  ]", actualAddDownloadFilekeysResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddDownloadFilekeysResult);
     }
 
@@ -153,7 +153,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddAarFilekeysResult = pnRaddAltLogContext.addAarFilekeys(new ArrayList<>());
 
         // Assert
-        assertEquals("aarFilekeys=[  ] ", actualAddAarFilekeysResult.logContext());
+        assertEquals("aarFilekeys=[  ]", actualAddAarFilekeysResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddAarFilekeysResult);
     }
 
@@ -169,7 +169,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddResponseResultResult = pnRaddAltLogContext.addResponseResult(true);
 
         // Assert
-        assertEquals("result=true ", actualAddResponseResultResult.logContext());
+        assertEquals("result=true", actualAddResponseResultResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddResponseResultResult);
     }
 
@@ -184,7 +184,7 @@ class PnRaddAltLogContextDiffblueTest {
                 .addResponseStatus(new ActInquiryResponseStatus().toString());
 
         // Assert
-        assertEquals("status=ActInquiryResponseStatus(code=null, message=null) ",
+        assertEquals("status=ActInquiryResponseStatus(code=null, message=null)",
                 actualAddResponseStatusResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddResponseStatusResult);
     }
@@ -200,7 +200,7 @@ class PnRaddAltLogContextDiffblueTest {
                 .addResponseStatus(new ResponseStatus().toString());
 
         // Assert
-        assertEquals("status=ResponseStatus(code=null, message=null) ", actualAddResponseStatusResult.logContext());
+        assertEquals("status=ResponseStatus(code=null, message=null)", actualAddResponseStatusResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddResponseStatusResult);
     }
 
@@ -215,7 +215,7 @@ class PnRaddAltLogContextDiffblueTest {
                 .addResponseStatus(new TransactionResponseStatus().toString());
 
         // Assert
-        assertEquals("status=TransactionResponseStatus(code=null, message=null) ",
+        assertEquals("status=TransactionResponseStatus(code=null, message=null)",
                 actualAddResponseStatusResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddResponseStatusResult);
     }
@@ -232,7 +232,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddOperationIdResult = pnRaddAltLogContext.addOperationId("42");
 
         // Assert
-        assertEquals("operationId=42 ", actualAddOperationIdResult.logContext());
+        assertEquals("operationId=42", actualAddOperationIdResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddOperationIdResult);
     }
 
@@ -248,7 +248,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddIunResult = pnRaddAltLogContext.addIun("Iun");
 
         // Assert
-        assertEquals("iun=Iun ", actualAddIunResult.logContext());
+        assertEquals("iun=Iun", actualAddIunResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddIunResult);
     }
 
@@ -264,7 +264,7 @@ class PnRaddAltLogContextDiffblueTest {
         PnRaddAltLogContext actualAddIunsResult = pnRaddAltLogContext.addIuns(new ArrayList<>());
 
         // Assert
-        assertEquals("iuns=[  ] ", actualAddIunsResult.logContext());
+        assertEquals("iuns=[  ]", actualAddIunsResult.logContext());
         assertSame(pnRaddAltLogContext, actualAddIunsResult);
     }
 

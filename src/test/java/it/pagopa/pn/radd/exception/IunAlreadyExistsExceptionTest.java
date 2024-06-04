@@ -1,10 +1,9 @@
 package it.pagopa.pn.radd.exception;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class IunAlreadyExistsExceptionTest {
     /**
@@ -14,7 +13,7 @@ class IunAlreadyExistsExceptionTest {
     void testConstructor() {
         IunAlreadyExistsException actualIunAlreadyExistsException = new IunAlreadyExistsException();
         assertEquals(HttpStatus.BAD_REQUEST, actualIunAlreadyExistsException.getStatus());
-        assertNull(actualIunAlreadyExistsException.getMessage());
+        assertNotNull(actualIunAlreadyExistsException.getMessage());
         assertNull(actualIunAlreadyExistsException.getExtra());
         assertEquals(ExceptionTypeEnum.ALREADY_COMPLETE_PRINT, actualIunAlreadyExistsException.getExceptionType());
     }

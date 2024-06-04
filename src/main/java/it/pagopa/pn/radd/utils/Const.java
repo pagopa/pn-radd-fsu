@@ -30,6 +30,12 @@ public class Const {
     public static final String NOT_VALID_FISCAL_CODE = "CF non valido";
     public static final String NOT_FOUND_DOCUMENT = "Documenti non più disponibili";
     public static final String ALREADY_COMPLETE_PRINT = "Stampa già eseguita";
+    public static final String START_ACT_INQUIRY = "Start ACT Inquiry";
+    public static final String START_AOR_INQUIRY = "Start AOR Inquiry";
+    public static final String END_ACT_INQUIRY = "End ACT Inquiry";
+    public static final String END_AOR_INQUIRY = "End AOR Inquiry";
+    public static final String END_ACT_INQUIRY_WITH_ERROR = "End ACT Inquiry with error {}";
+    public static final String END_AOR_INQUIRY_WITH_ERROR = "End AOR Inquiry with error {}";
 
     /* Transaction message */
     public static final String NOT_EXISTS_OPERATION = "Transazione inesistente";
@@ -51,11 +57,30 @@ public class Const {
     public static final String ZIP_ATTACHMENT_URL_NOT_FOUND = "ZIP ATTACHMENT URL NOT FOUND";
 
     /* ActService */
-    public static final String ENDED_ACT_START_TRANSACTION_WITH_ERROR = "Ended ACT startTransaction with error {}";
+    public static final String START_ACT_START_TRANSACTION = "Start ACT startTransaction";
+    public static final String START_ACT_COMPLETE_TRANSACTION = "Start ACT completeTransaction";
+    public static final String START_ACT_ABORT_TRANSACTION = "Start ACT abortTransaction";
+    public static final String END_ACT_START_TRANSACTION = "End ACT starTransaction";
+    public static final String END_ACT_START_TRANSACTION_WITH_ERROR = "End ACT startTransaction with error {}";
+    public static final String END_ACT_ABORT_TRANSACTION = "End ACT abortTransaction";
+    public static final String END_ACT_ABORT_TRANSACTION_WITH_ERROR = "End ACT abortTransaction with error {}";
+    public static final String END_ACT_COMPLETE_TRANSACTION = "End ACT completeTransaction";
+    public static final String END_ACT_COMPLETE_TRANSACTION_WITH_ERROR = "End ACT completeTransaction with error {}";
     public static final String CONTENT_TYPE_PDF = "application/pdf";
     public static final String SAFESTORAGE_PREFIX = "safestorage://";
 
     public static final String REMOVED_FROM_LATEST_IMPORT = "Removed from latest import";
+
+    /* AorService */
+    public static final String START_AOR_START_TRANSACTION = "Start AOR startTransaction";
+    public static final String END_AOR_START_TRANSACTION = "End AOR starTransaction";
+    public static final String END_AOR_START_TRANSACTION_WITH_ERROR = "End AOR startTransaction with error {}";
+    public static final String START_AOR_ABORT_TRANSACTION = "Start AOR abortTransaction";
+    public static final String END_AOR_ABORT_TRANSACTION = "End AOR abortTransaction";
+    public static final String END_AOR_ABORT_TRANSACTION_WITH_ERROR = "End AOR abortTransaction with error {}";
+    public static final String START_AOR_COMPLETE_TRANSACTION = "Start AOR completeTransaction";
+    public static final String END_AOR_COMPLETE_TRANSACTION = "End AOR completeTransaction";
+    public static final String END_AOR_COMPLETE_TRANSACTION_WITH_ERROR = "End AOR completeTransaction with error {}";
 
 
     /* Document type external mapping */

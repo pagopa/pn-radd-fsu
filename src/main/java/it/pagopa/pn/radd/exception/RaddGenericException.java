@@ -15,16 +15,16 @@ public class RaddGenericException extends RuntimeException {
     public RaddGenericException(ExceptionTypeEnum exceptionType) {
         super(exceptionType.getMessage());
         this.exceptionType = exceptionType;
+        this.message = exceptionType.getMessage();
         this.status = HttpStatus.BAD_REQUEST;
-        this.message = null;
         this.extra = null;
     }
 
     public RaddGenericException(ExceptionTypeEnum exceptionType, Object extra){
         super(exceptionType.getMessage());
         this.exceptionType = exceptionType;
+        this.message = exceptionType.getMessage();
         this.status = HttpStatus.BAD_REQUEST;
-        this.message = null;
         this.extra = extra;
     }
 

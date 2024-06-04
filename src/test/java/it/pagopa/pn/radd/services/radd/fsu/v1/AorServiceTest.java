@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import de.neuland.assertj.logging.ExpectedLogging;
+import de.neuland.assertj.logging.ExpectedLoggingAssertions;
+import it.pagopa.pn.commons.log.PnAuditLog;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.ResponsePaperNotificationFailedDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadInfoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -53,6 +57,8 @@ class AorServiceTest {
     private PnSafeStorageClient pnSafeStorageClient;
     @Spy
     private TransactionDataMapper transactionDataMapper;
+    @RegisterExtension
+    ExpectedLogging logging = ExpectedLogging.forSource(PnAuditLog.class);
 
     private AbortTransactionRequest abortTransactionRequest;
     private CompleteTransactionRequest completeTransactionRequest;
@@ -123,7 +129,7 @@ class AorServiceTest {
 
         FileDownloadResponseDto file1 = new FileDownloadResponseDto();
         FileDownloadInfoDto infoDto = new FileDownloadInfoDto();
-        infoDto.setUrl("https://aws.com");
+        infoDto.setUrl("http://safestorage/PN_AAR_0000?");
         file1.setDownload(infoDto);
         Mockito.when(pnSafeStorageClient.getFile("//url:safestorage"))
                 .thenReturn(Mono.just(file1));
@@ -136,7 +142,8 @@ class AorServiceTest {
         // assertNotNull(response.getUrlList());
         //  assertFalse(response.getUrlList().isEmpty());
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
-
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR startTransaction - uid=uid cxId=1 cxType=PF operationId=12345 requestFileKey=file-key-test");
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] SUCCESS - End AOR starTransaction - uid=uid cxId=1 cxType=PF operationId=12345 transactionId=PF#1#12345 recipientInternalId=PF-4fc75df3-0913-407e-bdaa-e50329708b7d delegateInternalId=null requestFileKey=file-key-test downloadedFilekeys=[ PN_AAR_0000 ] iuns=[ ABC-123-IUN ] status=StartTransactionResponseStatus(code=0, message=OK, retryAfter=null)");
     }
 
 
@@ -152,13 +159,17 @@ class AorServiceTest {
 
     @Test
     void testCompleteWhenDaoNotFindThenReturnResponseKO() {
-        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenThrow(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST));
+        completeTransactionRequest.setOperationId("OperationIdTestNotExist");
+        Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(Mono.error(new RaddGenericException(ExceptionTypeEnum.TRANSACTION_NOT_EXIST)));
         CompleteTransactionResponse response = aorService.completeTransaction("uid", completeTransactionRequest, CxTypeAuthFleet.valueOf("PF"), "cxId").block();
 
         assertNotNull(response);
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=OperationIdTestNotExist");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error Transazione inesistente - uid=uid cxId=cxId cxType=PF operationId=OperationIdTestNotExist status=TransactionResponseStatus(code=1, message=Transazione inesistente)");
     }
 
     @Test
@@ -171,6 +182,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_2, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_COMPLETED.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error La transazione risulta già completa - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta già completa)");
     }
 
     @Test
@@ -183,6 +196,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_2, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_ABORTED.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error La transazione risulta annullata - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta annullata)");
     }
 
     @Test
@@ -195,6 +210,9 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ERROR_STATUS.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error La transazione risulta in errore - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=La transazione risulta in errore)");
+
     }
 
     @Test
@@ -209,6 +227,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error Lo stato della transazione non è stato aggiornato - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=Lo stato della transazione non è stato aggiornato)");
     }
 
     @Test
@@ -222,6 +242,8 @@ class AorServiceTest {
         assertNotNull(response);
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] SUCCESS - End AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=0, message=OK)");
     }
 
     // ---------------- //
@@ -252,6 +274,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR abortTransaction with error Transazione inesistente - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=1, message=Transazione inesistente)");
     }
 
     @Test
@@ -263,6 +287,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_2, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_COMPLETED.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR abortTransaction with error La transazione risulta già completa - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta già completa)");
     }
 
     @Test
@@ -275,6 +301,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_ABORTED.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR abortTransaction with error La transazione risulta annullata - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=La transazione risulta annullata)");
     }
 
     @Test
@@ -287,6 +315,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ERROR_STATUS.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR abortTransaction with error La transazione risulta in errore - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=La transazione risulta in errore)");
     }
 
     @Test
@@ -301,6 +331,8 @@ class AorServiceTest {
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS.getMessage(), response.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR abortTransaction with error Lo stato della transazione non è stato aggiornato - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=Lo stato della transazione non è stato aggiornato)");
     }
 
     @Test
@@ -314,6 +346,8 @@ class AorServiceTest {
         assertNotNull(response);
         assertNotNull(response.getStatus());
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] SUCCESS - End AOR abortTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=0, message=OK)");
     }
 
     // -------------------- //
@@ -332,6 +366,8 @@ class AorServiceTest {
                     fail("Bad type exception");
                     return null;
                 }).block();
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORINQUIRY] BEFORE - Start AOR Inquiry - uid=uid cxId=cxId cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORINQUIRY] FAILURE - End AOR Inquiry with error Non ci sono notifiche non consegnate per questo codice fiscale - uid=uid cxId=cxId cxType=PF recipientInternalId=PF-4fc75df3-0913-407e-bdaa-e50329708b7d status=ResponseStatus(code=99, message=Non ci sono notifiche non consegnate per questo codice fiscale)");
     }
 
     @Test
@@ -350,13 +386,16 @@ class AorServiceTest {
         assertFalse(inquiryResponse.getResult());
         assertEquals(new BigDecimal(99), inquiryResponse.getStatus().getCode().getValue());
         assertEquals(ExceptionTypeEnum.NO_NOTIFICATIONS_FAILED_FOR_CF.getMessage(), inquiryResponse.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORINQUIRY] BEFORE - Start AOR Inquiry - uid=uid cxId=cxId cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORINQUIRY] FAILURE - End AOR Inquiry with error Non ci sono notifiche non consegnate per questo codice fiscale - uid=uid cxId=cxId cxType=PF recipientInternalId=PF-4fc75df3-0913-407e-bdaa-e50329708b7d status=ResponseStatus(code=99, message=Non ci sono notifiche non consegnate per questo codice fiscale)");
     }
 
     @Test
     void testWhenSearchListReturnOK() {
         ResponsePaperNotificationFailedDtoDto response1 = new ResponsePaperNotificationFailedDtoDto();
         response1.setRecipientInternalId(ENSURE_FC);
-
+        response1.setIun("ABC-456-IUN");
+        response1.setAarUrl("//safeStorage:PN_AAR_0000");
         ResponsePaperNotificationFailedDtoDto response2 = new ResponsePaperNotificationFailedDtoDto();
         response2.setRecipientInternalId("testCF2");
         Mockito.when(pnDeliveryPushClient.getPaperNotificationFailed(Mockito.any())).thenReturn(Flux.just(response1, response2));
@@ -365,6 +404,8 @@ class AorServiceTest {
         log.info("Response {}", inquiryResponse);
         assertNotNull(inquiryResponse);
         assertTrue(inquiryResponse.getResult());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORINQUIRY] BEFORE - Start AOR Inquiry - uid=uid cxId=cxId cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORINQUIRY] SUCCESS - End AOR Inquiry - uid=uid cxId=cxId cxType=PF recipientInternalId=PF-4fc75df3-0913-407e-bdaa-e50329708b7d aarFilekeys=[ //safeStorage:PN_AAR_0000 ] iuns=[ ABC-456-IUN ] result=true status=ResponseStatus(code=0, message=OK)");
     }
 
     @Test

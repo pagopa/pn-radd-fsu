@@ -78,7 +78,7 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof RaddGenericException){
-                assertNull(((RaddGenericException) exception).getMessage());
+                assertNotNull(((RaddGenericException) exception).getMessage());
                 return Mono.empty();
             }
             fail("Badly type exception");
@@ -110,7 +110,7 @@ class PnSafeStorageClientTest extends BaseTest.WithMockServer {
         Mono<FileDownloadResponseDto> monoResponse = pnSafeStorageClient.getFile(fileKey);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof RaddGenericException){
-                assertNull(((RaddGenericException) exception).getMessage());
+                assertNotNull(((RaddGenericException) exception).getMessage());
                 return Mono.empty();
             }
             fail("Badly type exception");

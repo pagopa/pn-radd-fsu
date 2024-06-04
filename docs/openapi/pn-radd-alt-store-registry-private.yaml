@@ -1,0 +1,101 @@
+openapi: 3.0.1
+info:
+  termsOfService: https://notifichedigitali.pagopa.it/radd/index.html
+  title: 'Piattaforma Notifiche: API private per store locator'
+  x-summary: 'Piattaforma Notifiche:  API private per store locator'
+  version: '1.0.0'
+  contact:
+    email: pn-supporto-radd@pagopa.it
+  license:
+    name: Licenza di PN
+    url: 'https://notifichedigitali.pagopa.it/radd/index.html'
+  description: >-
+
+servers:
+  - url: https://tbd/
+
+paths:
+  /radd-net-private/api/v1/store:
+    get:
+      tags:
+        - RegistryStorePrivate
+      operationId: retrieveStoreRegistries
+      description: API utilizzata per recuperare la lista paginata di anagrafiche RADD
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/lastKey'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreRegistriesResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
+components:
+  schemas:
+    StoreRegistriesResponse:
+      type: object
+      properties:
+        registries:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreRegistry'
+        lastKey:
+          type: string
+          description: Chiave per la paginazione
+    StoreRegistry:
+      type: object
+      required:
+        - address
+      properties:
+        description:
+          type: string
+          description: Descrizione dello sportello.
+          example: Sportello ABC.
+        address:
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/Address'
+        phoneNumber:
+          type: string
+          description: Numero di telefono dello sportello.
+          example: "+39 0123456789"
+        geoLocation:
+          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/GeoLocation'
+        openingTime:
+          type: string
+          description: Orario di apertura dello sportello.
+          example: "mon=10:00-13:00_14:00-20:00#tue=10:00-20:00#"
+        externalCode:
+          type: string
+          description: Identificativo punto ritiro SEND
+          example: "123456"
+        capacity:
+          description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
+          example: 100
+  parameters:
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 1000
+        minimum: 1
+        maximum: 1000
+    lastKey:
+      name: lastKey
+      in: query
+      required: false
+      schema:
+        type: string

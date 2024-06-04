@@ -1,6 +1,8 @@
 package it.pagopa.pn.radd.middleware.db;
 
 import it.pagopa.pn.radd.config.BaseTest;
+import it.pagopa.pn.radd.config.RestExceptionHandler;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import org.junit.jupiter.api.Assertions;
@@ -21,7 +23,14 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
     @Autowired
     @SpyBean
     private RaddRegistryDAO raddRegistryDAO;
+
+    @Autowired
+    @SpyBean
+    private RestExceptionHandler exceptionHandler;
     private RaddRegistryEntity baseEntity;
+
+    @Autowired
+    private BaseDao<RaddRegistryEntity> baseDao;
     @Mock
     DynamoDbAsyncClient dynamoDbAsyncClient;
     @Mock
@@ -48,21 +57,22 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
     }
     @Test
     void testPutItemIfAbsent(){
-        RaddRegistryEntity response= raddRegistryDAO.putItemIfAbsent(baseEntity).block();
-        RaddRegistryEntity foundResponse= raddRegistryDAO.find(baseEntity.getRegistryId(), baseEntity.getCxId()).block();
+        RaddRegistryEntity registryEntity = getRegistryEntity("registryId1", "cxId1");
+        RaddRegistryEntity response= raddRegistryDAO.putItemIfAbsent(registryEntity).block();
+        RaddRegistryEntity foundResponse= raddRegistryDAO.find(registryEntity.getRegistryId(), registryEntity.getCxId()).block();
         Assertions.assertEquals(response,foundResponse);
         assertNotNull(response);
-        Assertions.assertEquals(baseEntity.getCxId(), response.getCxId());
-        Assertions.assertEquals(baseEntity.getRegistryId(), response.getRegistryId());
-        Assertions.assertEquals(baseEntity.getRequestId(), response.getRequestId());
-        Assertions.assertEquals(baseEntity.getNormalizedAddress(), response.getNormalizedAddress());
-        Assertions.assertEquals(baseEntity.getDescription(), response.getDescription());
-        Assertions.assertEquals(baseEntity.getPhoneNumber(), response.getPhoneNumber());
-        Assertions.assertEquals(baseEntity.getGeoLocation(), response.getGeoLocation());
-        Assertions.assertEquals(baseEntity.getZipCode(), response.getZipCode());
-        Assertions.assertEquals(baseEntity.getOpeningTime(), response.getOpeningTime());
-        Assertions.assertEquals(baseEntity.getStartValidity(), response.getStartValidity());
-        Assertions.assertEquals(baseEntity.getEndValidity(), response.getEndValidity());
+        Assertions.assertEquals(registryEntity.getCxId(), response.getCxId());
+        Assertions.assertEquals(registryEntity.getRegistryId(), response.getRegistryId());
+        Assertions.assertEquals(registryEntity.getRequestId(), response.getRequestId());
+        Assertions.assertEquals(registryEntity.getNormalizedAddress(), response.getNormalizedAddress());
+        Assertions.assertEquals(registryEntity.getDescription(), response.getDescription());
+        Assertions.assertEquals(registryEntity.getPhoneNumber(), response.getPhoneNumber());
+        Assertions.assertEquals(registryEntity.getGeoLocation(), response.getGeoLocation());
+        Assertions.assertEquals(registryEntity.getZipCode(), response.getZipCode());
+        Assertions.assertEquals(registryEntity.getOpeningTime(), response.getOpeningTime());
+        Assertions.assertEquals(registryEntity.getStartValidity(), response.getStartValidity());
+        Assertions.assertEquals(registryEntity.getEndValidity(), response.getEndValidity());
     }
     @Test
     void testUpdateRegistryEntity(){
@@ -83,26 +93,66 @@ class RaddRegistryDAOImplTest extends BaseTest.WithLocalStack {
         objct.setOpeningTime("testOpeningTime");
         objct.setStartValidity(Instant.now());
         objct.setEndValidity(Instant.now().plusSeconds(3600));
-        RaddRegistryEntity response= raddRegistryDAO.putItemIfAbsent(objct).block();
+        baseDao.putItem(objct).block();
         StepVerifier.create(raddRegistryDAO.updateRegistryEntity(objct))
                 .expectNextMatches(entity -> entity.getCxId().equals(objct.getCxId()) && entity.getRegistryId().equals(objct.getRegistryId()))
                 .verifyComplete();
     }
-//Todo: Fix the exception cases
-    /*@Test
-    void testUpdateRegistryEntityError() {
-        StepVerifier.create(raddRegistryDAO.updateRegistryEntity(null))
-                .expectErrorMatches(ex ->
-                        ex instanceof RaddGenericException raddExc && raddExc.getExceptionType() == ExceptionTypeEnum.MISSING_REQUIRED_PARAMETER
-                )
-                .verify();
-    }
-    @Test
-    void testPutItemIfAbsentError(){
-        StepVerifier.create(raddRegistryDAO.putItemIfAbsent(null))
-                .expectErrorMatches(ex ->
-                        ex instanceof IllegalArgumentException)
-                .verify();
-    }*/
 
+    @Test
+    void scanRegistriesLastKeyNull() {
+        RaddRegistryEntity entity =  getRegistryEntity("registryId3", "cxId3");
+
+        baseDao.putItem(baseEntity).block();
+        baseDao.putItem(entity).block();
+
+        StepVerifier.create(raddRegistryDAO.scanRegistries(1, null))
+                .expectNextMatches(raddRegistryEntityPage -> raddRegistryEntityPage.items().size() == 1 &&
+                        raddRegistryEntityPage.lastEvaluatedKey() != null)
+                .verifyComplete();
+    }
+
+    @Test
+    void scanRegistriesInvalidLastKeyNotNull() {
+        RaddRegistryEntity entity =  getRegistryEntity("registryId3", "cxId3");
+
+        baseDao.putItem(baseEntity).block();
+        baseDao.putItem(entity).block();
+
+        Assertions.assertThrows(RaddGenericException.class, () -> raddRegistryDAO.scanRegistries(1, "test"));
+    }
+
+    @Test
+    void scanRegistriesLastKeyNotNull() {
+        RaddRegistryEntity entity =  getRegistryEntity("registryId3", "cxId3");
+
+        baseDao.putItem(baseEntity).block();
+        baseDao.putItem(entity).block();
+
+        StepVerifier.create(raddRegistryDAO.scanRegistries(1,
+                        "eyJlayI6IlRBY3hpZCIsImlrIjp7InJlZ2lzdHJ5SWQiOiI4ZGMxZWQwYS0wZTFjLTNmYTctOTlmOC1hOGEzNTczYWY0ODMiLCJjeElkIjoiVEFjeGlkIn19"))
+                .expectNextMatches(raddRegistryEntityPage -> raddRegistryEntityPage.items().isEmpty())
+                .verifyComplete();
+    }
+
+    private RaddRegistryEntity getRegistryEntity(String registryId, String cxId) {
+        RaddRegistryEntity entity = new RaddRegistryEntity();
+        entity.setRegistryId(registryId);
+        entity.setCxId(cxId);
+        entity.setRequestId("testRequestId2");
+        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
+        addressEntity.setCountry("country2");
+        addressEntity.setPr("pr2");
+        addressEntity.setCity("city2");
+        addressEntity.setCap("cap2");
+        entity.setNormalizedAddress(addressEntity);
+        entity.setDescription("testDescription2");
+        entity.setPhoneNumber("testPhoneNumber2");
+        entity.setGeoLocation("testGeoLocation2");
+        entity.setZipCode("testZipCode2");
+        entity.setOpeningTime("testOpeningTime2");
+        entity.setStartValidity(Instant.now());
+        entity.setEndValidity(Instant.now().plusSeconds(3600));
+        return entity;
+    }
 }

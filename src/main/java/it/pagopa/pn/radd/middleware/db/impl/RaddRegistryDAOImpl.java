@@ -4,30 +4,35 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
-import static it.pagopa.pn.radd.pojo.PnLastEvaluatedKey.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY;
 import static it.pagopa.pn.radd.utils.Const.REQUEST_ID_PREFIX;
 import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayToday;
 
@@ -122,9 +127,9 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
             try {
                 lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
             } catch (JsonProcessingException e) {
-                throw new PnInternalException("Unable to deserialize lastEvaluatedKey",
+                throw new RaddGenericException(
                         ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
-                        e);
+                        HttpStatus.BAD_REQUEST);
             }
         } else {
             log.debug("First page search");
@@ -162,5 +167,31 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
         }
 
         return getByFilterPaginated(conditional, RaddRegistryEntity.CXID_REQUESTID_INDEX, map, names, query.toString(), limit, lastEvaluatedKey != null ? lastEvaluatedKey.getInternalLastEvaluatedKey() : null, SELF_REGISTRY_REQUEST_LAST_EVALUATED_KEY_MAKER);
+    }
+
+    @Override
+    public Mono<Page<RaddRegistryEntity>> scanRegistries(Integer limit, String lastKey) {
+        log.info("Start scan RaddRegistryEntity - limit: [{}] and lastKey: [{}].", limit, lastKey);
+
+        Map<String, String> names = new HashMap<>();
+        names.put("#endValidity", RaddRegistryEntity.COL_END_VALIDITY);
+        Map<String, AttributeValue> values = new HashMap<>();
+        values.put(":today", AttributeValue.builder().s(String.valueOf(getStartOfDayToday())).build());
+        String query = ":today < #endValidity OR attribute_not_exists(#endValidity)";
+
+        PnLastEvaluatedKey lastEvaluatedKey = null;
+        if (StringUtils.isNotEmpty(lastKey)) {
+            try {
+                lastEvaluatedKey = PnLastEvaluatedKey.deserializeInternalLastEvaluatedKey(lastKey);
+            } catch (JsonProcessingException e) {
+                throw new RaddGenericException(
+                        ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY,
+                        HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            log.debug("First page search");
+        }
+
+        return scan(limit, lastEvaluatedKey != null ? lastEvaluatedKey.getInternalLastEvaluatedKey() : null, values, query, names);
     }
 }

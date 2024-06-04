@@ -1,5 +1,8 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
+import de.neuland.assertj.logging.ExpectedLogging;
+import de.neuland.assertj.logging.ExpectedLoggingAssertions;
+import it.pagopa.pn.commons.log.PnAuditLog;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.*;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.*;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
@@ -24,6 +27,7 @@ import it.pagopa.pn.radd.utils.OperationTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -70,6 +74,9 @@ class ActServiceStartTransactionTest {
 
     @Spy
     private TransactionDataMapper transactionDataMapper;
+
+    @RegisterExtension
+    ExpectedLogging logging = ExpectedLogging.forSource(PnAuditLog.class);
 
 
     private ActStartTransactionRequest createActStartTransactionRequest(){
@@ -151,22 +158,22 @@ class ActServiceStartTransactionTest {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getRecipientTaxId(), request.getRecipientType().getValue())).thenReturn(Mono.just("recipientTaxIdResult"));
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(request.getDelegateTaxId(), Const.PF)).thenReturn(Mono.just("delegateTaxIdResult"));
         Mockito.when(raddTransactionDAOImpl.createRaddTransaction(any(), any())).thenReturn(Mono.just(raddTransactionEntity));
-        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(0));
-        FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto () ;
+        Mockito.when(raddTransactionDAOImpl.countFromIunAndStatus(any(), any())).thenReturn(Mono.just(0));
+        FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto();
         Mockito.when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(new NotificationHistoryResponseDto()));
 
-        Mockito.when(safeStorage.getFile (any())).thenReturn(Mono.just(fileDownloadResponseDto));
+        Mockito.when(safeStorage.getFile(any())).thenReturn(Mono.just(fileDownloadResponseDto));
         Mockito.when(safeStorage.updateFileMetadata(any())).thenReturn(Mono.just(new OperationResultCodeResponseDto()));
         SentNotificationV23Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
-        notificationAttachmentDownloadMetadataResponseDto.setUrl("UrlDocument");
-        Mockito.when(pnDeliveryClient.getPresignedUrlDocument (any(), any(), any())).thenReturn(Mono.just(notificationAttachmentDownloadMetadataResponseDto));
+        notificationAttachmentDownloadMetadataResponseDto.setUrl("http://safestorage/UrlDocument?");
+        Mockito.when(pnDeliveryClient.getPresignedUrlDocument(any(), any(), any())).thenReturn(Mono.just(notificationAttachmentDownloadMetadataResponseDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto1 = new NotificationAttachmentDownloadMetadataResponseDto();
-        notificationAttachmentDownloadMetadataResponseDto1.setUrl("UrlPayment");
+        notificationAttachmentDownloadMetadataResponseDto1.setUrl("http://safestorage/UrlPayment?");
         Mockito.when(pnDeliveryPushClient.getNotificationLegalFacts(any(), any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
         LegalFactDownloadMetadataWithContentTypeResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataWithContentTypeResponseDto();
-        legalFactDownloadMetadataResponseDto.setUrl("UrlLegalFact");
+        legalFactDownloadMetadataResponseDto.setUrl("http://safestorage/UrlLegalFact?");
         legalFactDownloadMetadataResponseDto.setContentType("application/pdf");
         Mockito.when(pnDeliveryPushClient.getLegalFact(any(), any(), any(), any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
 
@@ -175,6 +182,8 @@ class ActServiceStartTransactionTest {
         assertNotNull(startTransactionResponse);
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0, startTransactionResponse.getStatus().getCode());
         assertEquals(Const.OK, startTransactionResponse.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] BEFORE - Start ACT startTransaction - uid=test cxId=cxId cxType=PG operationId=Id");
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] SUCCESS - End ACT starTransaction - uid=test cxId=cxId cxType=PG operationId=Id transactionId=PG#cxId#Id recipientInternalId=recipientTaxIdResult delegateInternalId=delegateTaxIdResult iun=testIun downloadedFilekeys=[ coverFileUrl, UrlDocument, UrlLegalFact ] status=StartTransactionResponseStatus(code=0, message=OK, retryAfter=null)");
     }
 
     @Test
@@ -214,6 +223,8 @@ class ActServiceStartTransactionTest {
         assertNotNull(startTransactionResponse);
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_2, startTransactionResponse.getStatus().getCode());
         assertEquals(new BigDecimal(20), startTransactionResponse.getStatus().getRetryAfter());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] BEFORE - Start ACT startTransaction - uid=test cxId=cxId cxType=PG operationId=Id");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTTRAN] FAILURE - End ACT startTransaction with error Documento non disponibile per il download - uid=test cxId=cxId cxType=PG operationId=Id transactionId=PG#cxId#Id recipientInternalId=recipientTaxIdResult delegateInternalId=delegateTaxIdResult iun=testIun status=StartTransactionResponseStatus(code=2, message=Documento non disponibile per il download, retryAfter=20)");
     }
 
     @Test
@@ -231,6 +242,8 @@ class ActServiceStartTransactionTest {
         assertNotNull(startTransactionResponse);
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_99, startTransactionResponse.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.IUN_NOT_FOUND.getMessage(), startTransactionResponse.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] BEFORE - Start ACT startTransaction - uid=test cxId=cxId cxType=PG operationId=Id");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTTRAN] FAILURE - End ACT startTransaction with error Iun not found with params - uid=test cxId=cxId cxType=PG operationId=Id recipientInternalId=recipientTaxIdResult delegateInternalId=delegateTaxIdResult status=StartTransactionResponseStatus(code=99, message=Iun not found with params, retryAfter=null)");
     }
 
     @Test
@@ -247,6 +260,8 @@ class ActServiceStartTransactionTest {
 
         StepVerifier.create(actService.startTransaction("test", "cxId", CxTypeAuthFleet.PG, request))
                 .expectError(PnRaddException.class).verify();
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] BEFORE - Start ACT startTransaction - uid=test cxId=cxId cxType=PG operationId=Id");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTTRAN] FAILURE - End ACT startTransaction with error Internal server Error - uid=test cxId=cxId cxType=PG operationId=Id recipientInternalId=recipientTaxIdResult delegateInternalId=delegateTaxIdResult");
     }
 
 
@@ -272,7 +287,8 @@ class ActServiceStartTransactionTest {
         assertNotNull(startTransactionResponse);
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_5, startTransactionResponse.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST.getMessage(), startTransactionResponse.getStatus().getMessage());
-
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] BEFORE - Start ACT startTransaction - uid=test cxId=cxId cxType=PG operationId=Id");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTTRAN] FAILURE - End ACT startTransaction with error Transazione già esistente o con stato completed o aborted - uid=test cxId=cxId cxType=PG operationId=Id recipientInternalId=recipientTaxIdResult delegateInternalId=delegateTaxIdResult status=StartTransactionResponseStatus(code=5, message=Transazione già esistente o con stato completed o aborted, retryAfter=null)");
     }
 
 }

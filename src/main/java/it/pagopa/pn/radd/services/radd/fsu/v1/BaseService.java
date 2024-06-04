@@ -20,7 +20,6 @@ import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-import static it.pagopa.pn.radd.utils.Const.KO;
 
 @CustomLog
 public class BaseService {
@@ -94,7 +93,7 @@ public class BaseService {
                     entity.setErrorReason((ex.getMessage() == null) ? "Generic message" : ex.getMessage());
                     if(ex instanceof RaddGenericException raddGenericException){
                         entity.setErrorReason(raddGenericException.getExceptionType().getMessage());
-                        log.error("Error message {}", raddGenericException.getMessage(), raddGenericException);
+                        log.error("Error message {}", raddGenericException.getMessage());
                     } else if (ex instanceof PnRaddException pnRaddException){
                         entity.setErrorReason(pnRaddException.getWebClientEx().getMessage());
                     }

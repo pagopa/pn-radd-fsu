@@ -7,11 +7,13 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@EnableScheduling
 @Configuration
 @ConfigurationProperties(prefix = "pn.radd")
 @Import(SharedAutoConfiguration.class)

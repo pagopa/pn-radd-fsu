@@ -100,8 +100,9 @@ public class PnRaddAltLogContext {
     }
 
     public String logContext() {
-        return uid + cxId + cxType + operationId + transactionId + recipientInternalId + delegateInternalId + requestFileKey
+        String context = uid + cxId + cxType + operationId + transactionId + recipientInternalId + delegateInternalId + requestFileKey
                 + iun + downloadedFilekeys + aarFilekeys + iuns + result + status;
+        return context.trim();
     }
 
 

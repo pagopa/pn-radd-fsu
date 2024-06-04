@@ -15,16 +15,16 @@ public class RaddGenericException extends RuntimeException {
     public RaddGenericException(ExceptionTypeEnum exceptionType) {
         super(exceptionType.getMessage());
         this.exceptionType = exceptionType;
-        this.status = null;
-        this.message = null;
+        this.message = exceptionType.getMessage();
+        this.status = HttpStatus.BAD_REQUEST;
         this.extra = null;
     }
 
     public RaddGenericException(ExceptionTypeEnum exceptionType, Object extra){
         super(exceptionType.getMessage());
         this.exceptionType = exceptionType;
-        this.status = null;
-        this.message = null;
+        this.message = exceptionType.getMessage();
+        this.status = HttpStatus.BAD_REQUEST;
         this.extra = extra;
     }
 
@@ -32,7 +32,7 @@ public class RaddGenericException extends RuntimeException {
         super(exceptionType.getMessage());
         this.exceptionType = exceptionType;
         this.message = exceptionType.getMessage();
-        this.status = status;
+        this.status = status==null?HttpStatus.BAD_REQUEST:status;
         this.extra = null;
     }
 
@@ -40,7 +40,7 @@ public class RaddGenericException extends RuntimeException {
         super(message);
         this.exceptionType = null;
         this.message = message;
-        this.status = null;
+        this.status = HttpStatus.INTERNAL_SERVER_ERROR;
         this.extra = null;
     }
 

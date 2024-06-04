@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 class IunAlreadyExistsExceptionTest {
     /**
@@ -12,7 +13,7 @@ class IunAlreadyExistsExceptionTest {
     @Test
     void testConstructor() {
         IunAlreadyExistsException actualIunAlreadyExistsException = new IunAlreadyExistsException();
-        assertNull(actualIunAlreadyExistsException.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, actualIunAlreadyExistsException.getStatus());
         assertNull(actualIunAlreadyExistsException.getMessage());
         assertNull(actualIunAlreadyExistsException.getExtra());
         assertEquals(ExceptionTypeEnum.ALREADY_COMPLETE_PRINT, actualIunAlreadyExistsException.getExceptionType());

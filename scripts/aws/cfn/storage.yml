@@ -294,7 +294,7 @@ Resources:
         AlarmSNSTopicName: !Ref AlarmSNSTopicName
         VisibilityTimeout: 180
         MaxReceiveCount: 10
-        DelaySeconds: 1
+        DelaySeconds: 3
 
   # Shared lock handling table
   ShedLockTable:

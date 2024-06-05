@@ -12,7 +12,7 @@ class ZipAttachmentNotFoundExceptionTest {
     @Test
     void testConstructor() {
         ZipAttachmentNotFoundException actualIunAlreadyExistsException = new ZipAttachmentNotFoundException();
-        assertEquals(HttpStatus.NOT_FOUND, actualIunAlreadyExistsException.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, actualIunAlreadyExistsException.getStatus());
         assertNotNull(actualIunAlreadyExistsException.getMessage());
         assertNull(actualIunAlreadyExistsException.getExtra());
         assertEquals(ExceptionTypeEnum.ZIP_ATTACHMENT_URL_NOT_FOUND, actualIunAlreadyExistsException.getExceptionType());

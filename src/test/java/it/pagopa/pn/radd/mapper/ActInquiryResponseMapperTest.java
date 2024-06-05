@@ -48,7 +48,7 @@ class ActInquiryResponseMapperTest {
         ex = new RaddGenericException("Error");
         response = ActInquiryResponseMapper.fromException(ex);
         status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
-        assertEquals("Error", response.getStatus().getMessage());
+        assertEquals("Si è verificato un errore", response.getStatus().getMessage());
     }
 
     /**
@@ -88,7 +88,7 @@ class ActInquiryResponseMapperTest {
         assertFalse(actualFromExceptionResult.getResult());
         ActInquiryResponseStatus status = actualFromExceptionResult.getStatus();
         assertEquals(ActInquiryResponseStatus.CodeEnum.NUMBER_99, status.getCode());
-        assertEquals("An error occurred", status.getMessage());
+        assertEquals("Si è verificato un errore", status.getMessage());
     }
 
     /**

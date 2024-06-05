@@ -21,6 +21,7 @@ public enum ExceptionTypeEnum {
     DOCUMENT_UPLOAD_ERROR("DOCUMENT_UPLOAD_ERROR", "si è verificato un errore durante il caricamento", 99),
     DOCUMENT_UNAVAILABLE("DOCUMENT_UNAVAILABLE", "Documenti non disponibili", 4),
     VERSION_ID_VALIDATION("VERSION_ID_VALIDATION", "Version id non corrispondono", 99),
+    ZIP_ATTACHMENT_URL_NOT_FOUND("ZIP_ATTACHMENT_URL_NOT_FOUND", "Allegato non valido", 99),
     DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Documenti non più disponibili", 2),
     ALREADY_COMPLETE_PRINT("ALREADY_COMPLETE_PRINT", "Stampa già eseguita", 3),
     INVALID_INPUT("CF_OR_QRCODE_NOT_VALID", "Input non valido", 10),

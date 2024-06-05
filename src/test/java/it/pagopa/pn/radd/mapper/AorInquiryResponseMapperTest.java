@@ -32,7 +32,7 @@ class AorInquiryResponseMapperTest {
         AORInquiryResponse response = AorInquiryResponseMapper.fromException(ex);
         assertEquals(ex.getExceptionType().getMessage(), response.getStatus().getMessage());
 
-        ex = new RaddGenericException("Error message");
+        ex = new RaddGenericException("Si è verificato un errore");
         response = AorInquiryResponseMapper.fromException(ex);
         assertEquals(ex.getMessage(), response.getStatus().getMessage());
     }

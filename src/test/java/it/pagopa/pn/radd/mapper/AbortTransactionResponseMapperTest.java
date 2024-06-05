@@ -47,6 +47,6 @@ class AbortTransactionResponseMapperTest {
         ex = new RaddGenericException("Error");
         response = AbortTransactionResponseMapper.fromException(ex);
         status.setCode(TransactionResponseStatus.CodeEnum.NUMBER_99);
-        assertEquals("Error", response.getStatus().getMessage());
+        assertEquals("Si è verificato un errore", response.getStatus().getMessage());
     }
 }

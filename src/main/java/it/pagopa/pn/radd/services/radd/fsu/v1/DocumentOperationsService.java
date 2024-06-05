@@ -7,6 +7,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
+import it.pagopa.pn.radd.exception.ZipAttachmentNotFoundException;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
@@ -82,7 +83,7 @@ public class DocumentOperationsService {
             return documentDownloadClient.downloadContent(zipUrl)
                     .map(ZipUtils::extractPdfFromZip);
         }
-        throw new RaddGenericException(ZIP_ATTACHMENT_URL_NOT_FOUND);
+        throw new ZipAttachmentNotFoundException();
     }
 
     @NotNull

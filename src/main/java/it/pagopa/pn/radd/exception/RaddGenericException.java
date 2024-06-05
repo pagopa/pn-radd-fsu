@@ -3,6 +3,8 @@ package it.pagopa.pn.radd.exception;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.GENERIC_ERROR;
+
 @Getter
 public class RaddGenericException extends RuntimeException {
 
@@ -38,7 +40,7 @@ public class RaddGenericException extends RuntimeException {
 
     public RaddGenericException(String message){
         super(message);
-        this.exceptionType = null;
+        this.exceptionType = GENERIC_ERROR;
         this.message = message;
         this.status = HttpStatus.INTERNAL_SERVER_ERROR;
         this.extra = null;

@@ -219,13 +219,13 @@ components:
           items:
             $ref: '#/components/schemas/RegistryRequestResponse'
         moreResult:
-          description: Indica se sono presenti ulteriori pagine di risultati
+          description: Indica se sono presenti ulteriori pagine di risultati oltre a quelle restituite dalle chiavi contenute nel campo __nextPagesKey__.
           type: boolean
         nextPagesKey:
           description: >-
-            Elenco, non esaustivo, delle chiavi da usare per richiedere le 
-            pagine di risultati successive a quella corrente. <br/>
-            Valorizzato solo se il campo __moreResult__ ha valore __true__.
+            Elenco delle chiavi da utilizzare per richiedere le pagine di risultati successive a quella corrente. 
+            L'ordine delle chiavi restituite equivale all'ordine delle pagine di risultati.
+            Se __moreResult__ è true, sono presenti ulteriori pagine di risultati oltre a quelle restituite dalle chiavi contenute in questo campo.
           type: array
           items:
             type: string

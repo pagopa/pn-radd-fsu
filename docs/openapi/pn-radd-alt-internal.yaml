@@ -892,6 +892,32 @@ components:
               type: number
               enum: [0,2,3,4,10,80,99]
 
+    ErrorResponse:
+      description: Risposta di errore
+      properties:
+        type:
+          type: string
+          description: descrizione tipologia errore
+        status:
+          type: number
+          description: codice http dell'errore
+        title:
+          type: string
+          description: descrizione errore
+        detail:
+          type: string
+          description: dettaglio errore
+        traceId:
+          type: string
+          description: id traccia
+        timestamp:
+          type: string
+          description: timestamp dell'evento
+        errors:
+          type: array
+          description: dettagli relativi all'errore
+          items:
+            type: string
 
   parameters:
     uid:
@@ -970,16 +996,40 @@ components:
   responses:
     Forbidden:
       description: Forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Invalid:
       description: Bad Request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     NotAllowed:
       description: Method not allowed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     InternalError:
       description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
       description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
 
 #  securitySchemes: # ONLY EXTERNAL
 #    bearerAuth: # ONLY EXTERNAL

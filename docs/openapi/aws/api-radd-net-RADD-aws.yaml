@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: +oizh5RtxsJc8NO1KFlkiBurbHZ7kOW+UO9VYZyT0kM=
+  version: tOO4+qMxKXRn6WrWgjWO1nvvAQ1ryUbNB4dM06qmVUw=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -1734,6 +1734,32 @@ components:
                 - 10
                 - 80
                 - 99
+    ErrorResponse:
+      description: Risposta di errore
+      properties:
+        type:
+          type: string
+          description: descrizione tipologia errore
+        status:
+          type: number
+          description: codice http dell'errore
+        title:
+          type: string
+          description: descrizione errore
+        detail:
+          type: string
+          description: dettaglio errore
+        traceId:
+          type: string
+          description: id traccia
+        timestamp:
+          type: string
+          description: timestamp dell'evento
+        errors:
+          type: array
+          description: dettagli relativi all'errore
+          items:
+            type: string
     CreateRegistryRequest:
       type: object
       required:

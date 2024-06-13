@@ -169,7 +169,7 @@ class AorServiceTest {
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_1, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_EXIST.getMessage(), response.getStatus().getMessage());
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=OperationIdTestNotExist");
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error Transazione inesistente - uid=uid cxId=cxId cxType=PF operationId=OperationIdTestNotExist status=TransactionResponseStatus(code=1, message=Transazione inesistente)");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR completeTransaction with error Transazione inesistente - uid=uid cxId=cxId cxType=PF operationId=OperationIdTestNotExist status=TransactionResponseStatus(code=1, message=Transazione inesistente)");
     }
 
     @Test
@@ -183,7 +183,7 @@ class AorServiceTest {
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_2, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_COMPLETED.getMessage(), response.getStatus().getMessage());
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error La transazione risulta già completa - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta già completa)");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR completeTransaction with error La transazione risulta già completa - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta già completa)");
     }
 
     @Test
@@ -197,7 +197,7 @@ class AorServiceTest {
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_2, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ALREADY_ABORTED.getMessage(), response.getStatus().getMessage());
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error La transazione risulta annullata - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta annullata)");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR completeTransaction with error La transazione risulta annullata - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=2, message=La transazione risulta annullata)");
     }
 
     @Test
@@ -211,7 +211,7 @@ class AorServiceTest {
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_ERROR_STATUS.getMessage(), response.getStatus().getMessage());
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error La transazione risulta in errore - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=La transazione risulta in errore)");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR completeTransaction with error La transazione risulta in errore - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=La transazione risulta in errore)");
 
     }
 
@@ -228,7 +228,7 @@ class AorServiceTest {
         assertEquals(TransactionResponseStatus.CodeEnum.NUMBER_99, response.getStatus().getCode());
         assertEquals(ExceptionTypeEnum.TRANSACTION_NOT_UPDATE_STATUS.getMessage(), response.getStatus().getMessage());
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORTRAN] BEFORE - Start AOR completeTransaction - uid=uid cxId=cxId cxType=PF operationId=1234AOR");
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End ACT completeTransaction with error Lo stato della transazione non è stato aggiornato - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=Lo stato della transazione non è stato aggiornato)");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORTRAN] FAILURE - End AOR completeTransaction with error Lo stato della transazione non è stato aggiornato - uid=uid cxId=cxId cxType=PF operationId=1234AOR status=TransactionResponseStatus(code=99, message=Lo stato della transazione non è stato aggiornato)");
     }
 
     @Test

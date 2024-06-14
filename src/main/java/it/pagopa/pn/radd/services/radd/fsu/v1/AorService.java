@@ -122,7 +122,7 @@ public class AorService extends BaseService {
                         Mono.just(CompleteTransactionResponseMapper.fromException(ex))
                                 .doOnNext(completeTransactionResponse -> {
                                     pnRaddAltAuditLog.getContext().addResponseStatus(completeTransactionResponse.getStatus().toString());
-                                    pnRaddAltAuditLog.generateFailure(END_ACT_COMPLETE_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                                    pnRaddAltAuditLog.generateFailure(END_AOR_COMPLETE_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                                 })
                 );
     }

@@ -130,8 +130,8 @@ public class ActService extends BaseService {
 
     private Mono<Integer> checkIunIsAlreadyExistsInCompleted(String iun, String recipientId) {
         return this.raddTransactionDAO.countFromIunAndStatus(iun, recipientId)
-                .filter(counter -> counter == 0)
-                .switchIfEmpty(Mono.error(new IunAlreadyExistsException()))
+                .filter(counter -> pnRaddFsuConfig.getMaxPrintRequests() == 0 || counter < pnRaddFsuConfig.getMaxPrintRequests())
+                .switchIfEmpty(Mono.error(new IunAlreadyExistsException(pnRaddFsuConfig.getMaxPrintRequests())))
                 .doOnError(err -> log.error(err.getMessage()));
     }
 

@@ -136,11 +136,11 @@ class StartTransactionResponseMapperTest {
     @Test
     void testFromException4() {
         StartTransactionResponse actualFromExceptionResult = StartTransactionResponseMapper
-                .fromException(new IunAlreadyExistsException());
+                .fromException(new IunAlreadyExistsException(1));
         assertNull(actualFromExceptionResult.getDownloadUrlList());
         StartTransactionResponseStatus status = actualFromExceptionResult.getStatus();
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_3, status.getCode());
-        assertEquals("Stampa già eseguita", status.getMessage());
+        assertEquals("Limite di 1 stampa superato", status.getMessage());
     }
 
     /**

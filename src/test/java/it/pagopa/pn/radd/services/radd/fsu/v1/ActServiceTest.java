@@ -5,6 +5,7 @@ import de.neuland.assertj.logging.ExpectedLoggingAssertions;
 import it.pagopa.pn.commons.log.PnAuditLog;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
 import it.pagopa.pn.radd.exception.PnRaddException;
@@ -33,7 +34,6 @@ import reactor.test.StepVerifier;
 
 import java.util.Date;
 
-import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.ALREADY_COMPLETE_PRINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,6 +60,9 @@ class ActServiceTest  {
 
     @Mock
     PnDeliveryClient pnDeliveryClient;
+
+    @Mock
+    PnRaddFsuConfig pnRaddFsuConfig;
 
     CompleteTransactionRequest completeRequest;
     RaddTransactionEntity baseEntity;
@@ -177,7 +180,7 @@ class ActServiceTest  {
     }
 
     @Test
-    void testStartTransactionReturnErrorBecauseAlreadyExistsQrCodeInCompleted() {
+    void testStartTransactionReturnErrorBecauseAlreadyExistsQrCodeInCompletedAndPrintsAreLimitedTo1() {
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.setOperationId("id");
         startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
@@ -192,17 +195,16 @@ class ActServiceTest  {
         when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("123"));
         when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("123"));
 
-        // si presuppone che in questo caso non esista già l'operazione RADD
-
+        when(pnRaddFsuConfig.getMaxPrintRequests()).thenReturn(1);
         when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(1));
 
         StartTransactionResponse response = actService.startTransaction("id","cxId",CxTypeAuthFleet.PF, startTransactionRequest).block();
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isNotNull();
         assertThat(response.getStatus().getCode()).isEqualTo(StartTransactionResponseStatus.CodeEnum.NUMBER_3);
-        assertThat(response.getStatus().getMessage()).isEqualTo(new RaddGenericException(ALREADY_COMPLETE_PRINT).getExceptionType().getMessage());
+        assertThat(response.getStatus().getMessage()).isEqualTo("Limite di 1 stampa superato");
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTTRAN] BEFORE - Start ACT startTransaction - uid=id cxId=cxId cxType=PF operationId=id");
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTTRAN] FAILURE - End ACT startTransaction with error Stampa già eseguita - uid=id cxId=cxId cxType=PF operationId=id recipientInternalId=123 status=StartTransactionResponseStatus(code=3, message=Stampa già eseguita, retryAfter=null)");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTTRAN] FAILURE - End ACT startTransaction with error Limite di 1 stampa superato - uid=id cxId=cxId cxType=PF operationId=id recipientInternalId=123 status=StartTransactionResponseStatus(code=3, message=Limite di 1 stampa superato, retryAfter=null)");
     }
 
 
@@ -325,17 +327,6 @@ class ActServiceTest  {
     void testAbortTransactionReturnError(){
         StepVerifier.create(actService.actInquiry("test","", CxTypeAuthFleet.PG,"test","test", "test", "test"))
                 .expectError(PnInvalidInputException.class).verify();
-    }
-
-    //@Test
-    void testWhenAbortFunctionParametersAreInvalid(){
-        AbortTransactionRequest abortTransactionRequest= new AbortTransactionRequest();
-        abortTransactionRequest.setOperationId("");
-        Mono<AbortTransactionResponse> response = actService.abortTransaction("", CxTypeAuthFleet.valueOf("PF"),"cxId",abortTransactionRequest );
-        response.onErrorResume( PnInvalidInputException.class, exception ->{
-            assertEquals("Alcuni paramentri come operazione id o data di operazione non sono valorizzate", exception.getMessage());
-            return Mono.empty();
-        }).block();
     }
 
     @Test

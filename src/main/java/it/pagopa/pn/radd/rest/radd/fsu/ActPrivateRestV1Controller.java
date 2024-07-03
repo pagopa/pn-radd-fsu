@@ -26,7 +26,7 @@ public class ActPrivateRestV1Controller implements ActOperationsApi {
     }
 
     @Override
-    public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<StartTransactionResponse>> startActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String xPagopaPnCxRole, Mono<ActStartTransactionRequest> actStartTransactionRequest, ServerWebExchange exchange) {
         return actStartTransactionRequest
                 .zipWhen(request -> actService.startTransaction(uid, xPagopaPnCxId, xPagopaPnCxType, request), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
@@ -35,14 +35,14 @@ public class ActPrivateRestV1Controller implements ActOperationsApi {
     @Override
     public Mono<ResponseEntity<CompleteTransactionResponse>> completeActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<CompleteTransactionRequest> completeTransactionRequest, ServerWebExchange exchange) {
         return completeTransactionRequest
-                .zipWhen(req -> actService.completeTransaction(uid,req,xPagopaPnCxType,xPagopaPnCxId), (req, resp) -> resp)
+                .zipWhen(req -> actService.completeTransaction(uid, req, xPagopaPnCxType, xPagopaPnCxId), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 
     @Override
     public Mono<ResponseEntity<AbortTransactionResponse>> abortActTransaction(String uid, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, Mono<AbortTransactionRequest> abortTransactionRequest, ServerWebExchange exchange) {
         return abortTransactionRequest
-                .zipWhen(req -> actService.abortTransaction(uid, xPagopaPnCxType,xPagopaPnCxId,req), (req,resp) -> resp)
+                .zipWhen(req -> actService.abortTransaction(uid, xPagopaPnCxType, xPagopaPnCxId, req), (req, resp) -> resp)
                 .map(m -> ResponseEntity.status(HttpStatus.OK).body(m));
     }
 }

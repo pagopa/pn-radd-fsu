@@ -303,6 +303,7 @@ paths:
       parameters:
         - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
         - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -432,6 +433,7 @@ paths:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       #NO EXTERNAL
     post:
       tags:
         - actOperations
@@ -536,6 +538,7 @@ paths:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       #NO EXTERNAL
     post:
       tags:
         - aorOperations
@@ -733,7 +736,6 @@ components:
         - operationId
         - recipientTaxId
         - recipientType
-        - fileKey
         - checksum
       properties:
         versionToken:

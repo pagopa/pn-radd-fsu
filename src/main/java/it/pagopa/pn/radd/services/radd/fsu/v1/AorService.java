@@ -147,7 +147,7 @@ public class AorService extends BaseService {
                         .addDelegateInternalId(transactionData.getEnsureDelegateId()))
                 .flatMap(transactionData -> setIunsOfNotificationFailed(transactionData, pnRaddAltAuditLog))
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
-                .flatMap(this::verifyCheckSum)
+                .flatMap(transactionData -> verifyCheckSum(transactionData, null))
                 .flatMap(transactionData ->
                         this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
                                 .map(urls -> {

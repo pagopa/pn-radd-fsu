@@ -104,7 +104,7 @@ class DocumentOperationsRestV1ControllerTest {
         DocumentUploadRequest req = new DocumentUploadRequest();
 
         String path = "/radd-net/api/v1/documents/upload";
-        Mockito.when(documentOperationsService.createFile(Mockito.any() ))
+        Mockito.when(documentOperationsService.createFile(Mockito.any(), Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.post()
                 .uri(path)

@@ -24,7 +24,6 @@ import javax.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 
@@ -48,6 +47,12 @@ public class RestExceptionHandler {
         log.error(ex.getDescription());
         return Mono.just(ResponseEntity.status(HttpStatus.valueOf(ex.getStatus()))
                 .body(rs));
+    }
+
+    @ExceptionHandler(PnRaddForbiddenException.class)
+    public Mono<ResponseEntity<Void>> pnRaddForbiddenException(PnRaddForbiddenException ex){
+        return Mono.just(ResponseEntity.status(ex.getStatus())
+                .build());
     }
 
     @ExceptionHandler(PnInvalidInputException.class)

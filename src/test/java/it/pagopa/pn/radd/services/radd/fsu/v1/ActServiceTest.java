@@ -6,10 +6,7 @@ import it.pagopa.pn.commons.log.PnAuditLog;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
@@ -28,7 +25,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -141,20 +140,60 @@ class ActServiceTest  {
         startTransactionRequest.setOperationId("id");
         startTransactionRequest.setOperationId("id");
         startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setIun("iun");
         startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
         TransactionData transactionData = new TransactionData();
         transactionData.setQrCode("qrcode");
         transactionData.setIun("iun");
-        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, startTransactionRequest) )
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest) )
                 .expectError(PnInvalidInputException.class).verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorResponseStatusExceptionNoFileKey(){
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setIun("iun");
+        startTransactionRequest.setFileKey(null);
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        transactionData.setIun("iun");
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo fileKey obbligatorio mancante".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorResponseStatusExceptionNoFileKe(){
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setIun("iun");
+        startTransactionRequest.setFileKey("fileKey");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        transactionData.setIun("iun");
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD", startTransactionRequest) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo fileKey inaspettato".equals(throwable.getMessage()))
+                .verify();
     }
 
     @Test
     void testStartTransactionReturnError(){
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.recipientType(ActStartTransactionRequest.RecipientTypeEnum.PG);
-        Mono<StartTransactionResponse> response = actService.startTransaction("test", "123", CxTypeAuthFleet.PG, startTransactionRequest);
+        startTransactionRequest.setFileKey("fileKey");
+        Mono<StartTransactionResponse> response = actService.startTransaction("test", "123", CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest);
         response.onErrorResume(PnInvalidInputException.class, exception -> {
             log.info("Exception {}", exception.getReason());
             assertEquals("Operation id non valorizzato", exception.getReason());
@@ -164,7 +203,7 @@ class ActServiceTest  {
         startTransactionRequest.setOperationId("TestOperationId");
 
 
-        Mono<StartTransactionResponse> response2 = actService.startTransaction("test", "cxId",CxTypeAuthFleet.PG, startTransactionRequest);
+        Mono<StartTransactionResponse> response2 = actService.startTransaction("test", "cxId",CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest);
         response2.onErrorResume(PnInvalidInputException.class, exception -> {
             assertEquals("Codice fiscale non valorizzato", exception.getReason());
             return Mono.empty();
@@ -172,7 +211,7 @@ class ActServiceTest  {
 
         startTransactionRequest.setRecipientTaxId("abc342psoeo22");
 
-        Mono<StartTransactionResponse> response3 = actService.startTransaction("test","cxId",CxTypeAuthFleet.PG, startTransactionRequest);
+        Mono<StartTransactionResponse> response3 = actService.startTransaction("test","cxId",CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest);
         response3.onErrorResume(PnInvalidInputException.class, exception -> {
             assertEquals("Né IUN nè QrCode valorizzati", exception.getReason());
             return Mono.empty();
@@ -186,6 +225,7 @@ class ActServiceTest  {
         startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
         startTransactionRequest.setRecipientTaxId("taxId");
         startTransactionRequest.setIun("iun");
+        startTransactionRequest.setFileKey("fileKey");
         TransactionData transactionData = new TransactionData();
         transactionData.setQrCode(startTransactionRequest.getQrCode());
         transactionData.setRecipientId("234");
@@ -198,7 +238,7 @@ class ActServiceTest  {
         when(pnRaddFsuConfig.getMaxPrintRequests()).thenReturn(1);
         when(raddTransactionDAOImpl.countFromIunAndStatus(any(),any())).thenReturn(Mono.just(1));
 
-        StartTransactionResponse response = actService.startTransaction("id","cxId",CxTypeAuthFleet.PF, startTransactionRequest).block();
+        StartTransactionResponse response = actService.startTransaction("id","cxId",CxTypeAuthFleet.PF, "RADD_UPLOADER", startTransactionRequest).block();
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isNotNull();
         assertThat(response.getStatus().getCode()).isEqualTo(StartTransactionResponseStatus.CodeEnum.NUMBER_3);

@@ -37,7 +37,7 @@ public class RestExceptionHandler {
 
 
     @ExceptionHandler(PnException.class)
-    public Mono<ResponseEntity<Problem>> pnExceptionHandler(PnException ex){
+    public Mono<ResponseEntity<Problem>> pnExceptionHandler(PnException ex) {
         Problem rs = new Problem();
         rs.setStatus(ex.getStatus());
         rs.setTitle(ex.getMessage());
@@ -55,8 +55,22 @@ public class RestExceptionHandler {
                 .build());
     }
 
+    @ExceptionHandler(PnRaddBadRequestException.class)
+    public Mono<ResponseEntity<Problem>> pnRaddBadRequestException(PnRaddBadRequestException ex) {
+        Problem rs = new Problem();
+        rs.setType(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        rs.setStatus(HttpStatus.BAD_REQUEST.value());
+        rs.setTitle(ex.getMessage());
+        rs.setDetail(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        rs.setTimestamp(OffsetDateTime.now());
+        settingTraceId(rs);
+        log.error(ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST.value())
+                .body(rs));
+    }
+
     @ExceptionHandler(PnInvalidInputException.class)
-    public Mono<ResponseEntity<Problem>> pnInvalidInputHandler(PnInvalidInputException ex){
+    public Mono<ResponseEntity<Problem>> pnInvalidInputHandler(PnInvalidInputException ex) {
         log.error(ex.getReason());
         Problem rs = new Problem();
         rs.setStatus(HttpStatus.BAD_REQUEST.value());
@@ -68,14 +82,14 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(PnRaddException.class)
-    public Mono<ResponseEntity<String>> pnInvalidInputHandler(PnRaddException ex){
+    public Mono<ResponseEntity<String>> pnInvalidInputHandler(PnRaddException ex) {
         log.error(ex.getWebClientEx().getResponseBodyAsString());
         return Mono.just(ResponseEntity.status(ex.getWebClientEx().getStatusCode())
                 .body((ex.getWebClientEx().getResponseBodyAsString())));
     }
 
     @ExceptionHandler(RaddGenericException.class)
-    public Mono<ResponseEntity<Problem>> pnRaddGenericException(RaddGenericException ex){
+    public Mono<ResponseEntity<Problem>> pnRaddGenericException(RaddGenericException ex) {
         log.error(ex.getMessage());
         Problem problem = new Problem();
         problem.setType(ex.getStatus().getReasonPhrase());
@@ -89,13 +103,13 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public Mono<ResponseEntity<Problem>> constraintViolationException(ConstraintViolationException ex){
+    public Mono<ResponseEntity<Problem>> constraintViolationException(ConstraintViolationException ex) {
         log.error(ex.getMessage());
         Problem problem = new Problem();
         problem.setType(ex.getMessage());
         problem.setStatus(HttpStatus.BAD_REQUEST.value());
         problem.setTitle(ex.getMessage());
-        if(CollectionUtils.isEmpty(ex.getConstraintViolations())) {
+        if (CollectionUtils.isEmpty(ex.getConstraintViolations())) {
             problem.setDetail(ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining()));
         }
         problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
@@ -105,7 +119,7 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(RaddImportException.class)
-    public Mono<ResponseEntity<Problem>> pnRaddImportException(RaddImportException ex){
+    public Mono<ResponseEntity<Problem>> pnRaddImportException(RaddImportException ex) {
         log.error(ex.getMessage());
         Problem problem = new Problem();
         problem.setType(ex.getStatus().getReasonPhrase());
@@ -124,7 +138,7 @@ public class RestExceptionHandler {
         try {
             PnSafeStoreExModel model = this.objectMapper.readValue(ex.getWebClientEx().getResponseBodyAsString(), PnSafeStoreExModel.class);
             rs.title(model.getResultDescription());
-            if (model.getErrorList() != null){
+            if (model.getErrorList() != null) {
                 rs.setErrors(new ArrayList<>());
                 model.getErrorList().forEach(item -> {
                     ProblemError error = new ProblemError();
@@ -147,19 +161,19 @@ public class RestExceptionHandler {
 
     }
 
-    private HttpStatus extractStatus(String value){
-        if (value != null && !Strings.isBlank(value)){
+    private HttpStatus extractStatus(String value) {
+        if (value != null && !Strings.isBlank(value)) {
             String maybeNumber = value.substring(0, 3);
             try {
                 return HttpStatus.valueOf(Integer.parseInt(maybeNumber));
-            }catch (NumberFormatException ex){
+            } catch (NumberFormatException ex) {
                 log.debug("Not number");
             }
         }
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    private void settingTraceId(Problem problem){
+    private void settingTraceId(Problem problem) {
         try {
             problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
         } catch (Exception e) {

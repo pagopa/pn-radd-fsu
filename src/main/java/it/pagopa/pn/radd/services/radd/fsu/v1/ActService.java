@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.pojo.NotificationAttachment.AttachmentType.*;
 import static it.pagopa.pn.radd.utils.Const.*;
+import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -135,7 +136,7 @@ public class ActService extends BaseService {
                 .doOnError(err -> log.error(err.getMessage()));
     }
 
-    public Mono<StartTransactionResponse> startTransaction(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, ActStartTransactionRequest request) {
+    public Mono<StartTransactionResponse> startTransaction(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxRole, ActStartTransactionRequest request) {
         PnRaddAltAuditLog pnRaddAltAuditLog = PnRaddAltAuditLog.builder()
                 .eventType(PnAuditLogEventType.AUD_RADD_ACTTRAN)
                 .msg(START_ACT_START_TRANSACTION)
@@ -147,11 +148,12 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId)
+        return verifyRole(xPagopaPnCxRole, request)
+                .then(validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> {
                     pnRaddAltAuditLog.getContext().addRecipientInternalId(transactionData.getEnsureRecipientId());
-                    if(StringUtils.hasText(transactionData.getEnsureDelegateId())) {
+                    if (StringUtils.hasText(transactionData.getEnsureDelegateId())) {
                         pnRaddAltAuditLog.getContext().addDelegateInternalId(transactionData.getEnsureDelegateId());
                     }
                 })
@@ -164,7 +166,7 @@ public class ActService extends BaseService {
                         pnRaddAltAuditLog.getContext().addTransactionId(transactionData.getTransactionId())
                                 .addIun(transactionData.getIun())
                 )
-                .flatMap(this::verifyCheckSum)
+                .flatMap(transactionData -> verifyCheckSum(transactionData, xPagopaPnCxRole))
                 .zipWhen(transaction -> hasDocumentsAvailable(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
                         (tupla, response) -> Tuples.of(tupla.getT1(), response))
@@ -184,6 +186,10 @@ public class ActService extends BaseService {
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.error(ex));
                 })
+                .onErrorResume(PnRaddBadRequestException.class, ex -> {
+                    pnRaddAltAuditLog.generateFailure(END_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    return Mono.error(ex);
+                })
                 .onErrorResume(isStartTransactionAcceptedException, ex ->
                         Mono.just(StartTransactionResponseMapper.fromException((RaddGenericException) ex))
                                 .doOnNext(startTransactionResponse -> {
@@ -198,6 +204,16 @@ public class ActService extends BaseService {
                             pnRaddAltAuditLog.generateFailure(END_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                         }));
     }
+
+    private Mono<Void> verifyRole(String xPagopaPnCxRole, ActStartTransactionRequest request) {
+        if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && !StringUtils.hasText(request.getFileKey())) {
+            return Mono.error(new PnRaddBadRequestException("Campo fileKey obbligatorio mancante"));
+        } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.hasText(request.getFileKey())) {
+            return Mono.error(new PnRaddBadRequestException("Campo fileKey inaspettato"));
+        }
+        return Mono.empty();
+    }
+
 
     @NotNull
     private Mono<StartTransactionResponse> retrieveDocumentsAndAttachments(ActStartTransactionRequest request, Tuple2<TransactionData, SentNotificationV23Dto> transactionAndSentNotification) {

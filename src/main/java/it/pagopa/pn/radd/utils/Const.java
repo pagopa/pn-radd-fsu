@@ -69,6 +69,7 @@ public class Const {
     public static final String CONTENT_TYPE_PDF = "application/pdf";
     public static final String SAFESTORAGE_PREFIX = "safestorage://";
 
+
     public static final String REMOVED_FROM_LATEST_IMPORT = "Removed from latest import";
 
     /* AorService */
@@ -104,6 +105,10 @@ public class Const {
     public static final String MISSING_ADDRESS_REQUIRED_FIELD = "I dati relativi a indirizzo, cap, città e provincia sono obbligatori";
     public static final String START_VALIDITY_PARSING_ERROR = "C'è stato un errore nel parsing della data di startValidity";
     public static final String END_VALIDITY_PARSING_ERROR = "C'è stato un errore nel parsing della data di endValidity";
+
+    /* BaseService */
+    public static final String MISSING_FILE_KEY_REQUIRED = "Campo fileKey obbligatorio mancante";
+    public static final String UNEXPECTED_FILE_KEY = "Campo fileKey inaspettato";
 
 
 

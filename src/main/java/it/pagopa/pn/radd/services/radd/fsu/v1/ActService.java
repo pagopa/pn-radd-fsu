@@ -150,7 +150,7 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return verifyRole(xPagopaPnCxRole, request)
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey())
                 .then(validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> {
@@ -207,14 +207,6 @@ public class ActService extends BaseService {
                         }));
     }
 
-    private Mono<Void> verifyRole(String xPagopaPnCxRole, ActStartTransactionRequest request) {
-        if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && !StringUtils.hasText(request.getFileKey())) {
-            return Mono.error(new PnRaddBadRequestException("Campo fileKey obbligatorio mancante"));
-        } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.hasText(request.getFileKey())) {
-            return Mono.error(new PnRaddBadRequestException("Campo fileKey inaspettato"));
-        }
-        return Mono.empty();
-    }
 
 
     @NotNull

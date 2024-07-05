@@ -34,6 +34,7 @@ import java.util.Optional;
 
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
+import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Service
@@ -155,7 +156,7 @@ public class DocumentOperationsService {
     }
 
     private static void checkRole(String xPagopaPnCxRole) {
-        if (!Objects.equals(xPagopaPnCxRole, String.valueOf(RaddRole.RADD_UPLOADER))) {
+        if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole)) {
             log.error("Access denied for role: {}", xPagopaPnCxRole);
             throw new PnRaddForbiddenException("Accesso negato.", HttpStatus.FORBIDDEN.value());
         }

@@ -3,6 +3,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.PnRaddBadRequestException;
 import it.pagopa.pn.radd.exception.PnRaddException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
@@ -20,6 +21,9 @@ import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
+import static it.pagopa.pn.radd.utils.Const.MISSING_FILE_KEY_REQUIRED;
+import static it.pagopa.pn.radd.utils.Const.UNEXPECTED_FILE_KEY;
+import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 
 @CustomLog
 public class BaseService {
@@ -116,6 +120,15 @@ public class BaseService {
         } else if (StringUtils.equals(entity.getStatus(), RaddTransactionStatusEnum.ERROR.name())) {
             throw new RaddGenericException(TRANSACTION_ERROR_STATUS);
         }
+    }
+
+    protected Mono<Void> verifyRoleForStarTransaction(String xPagopaPnCxRole, String fileKey) {
+        if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isBlank(fileKey)) {
+            return Mono.error(new PnRaddBadRequestException(MISSING_FILE_KEY_REQUIRED));
+        } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isNotBlank(fileKey)) {
+            return Mono.error(new PnRaddBadRequestException(UNEXPECTED_FILE_KEY));
+        }
+        return Mono.empty();
     }
 
 

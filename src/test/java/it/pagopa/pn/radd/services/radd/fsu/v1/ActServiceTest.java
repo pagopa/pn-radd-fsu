@@ -25,9 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -151,7 +149,7 @@ class ActServiceTest  {
     }
 
     @Test
-    void testStartTransactionReturnErrorResponseStatusExceptionNoFileKey(){
+    void testStartTransactionReturnErrorResponseStatusExceptionRaddUploaderWithNoFileKey(){
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.setQrCode("qrcode");
         startTransactionRequest.setOperationId("id");
@@ -170,7 +168,7 @@ class ActServiceTest  {
     }
 
     @Test
-    void testStartTransactionReturnErrorResponseStatusExceptionNoFileKe(){
+    void testStartTransactionReturnErrorResponseStatusExceptionRaddStandardWithFileKey(){
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.setQrCode("qrcode");
         startTransactionRequest.setOperationId("id");

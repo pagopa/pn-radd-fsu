@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.pojo.NotificationAttachment.AttachmentType.*;
 import static it.pagopa.pn.radd.utils.Const.*;
-import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
 import static org.springframework.util.StringUtils.hasText;
 

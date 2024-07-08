@@ -34,7 +34,6 @@ import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.RETRY_AFTER;
 import static it.pagopa.pn.radd.mapper.StartTransactionResponseMapper.getDownloadUrls;
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
-import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 
 @Slf4j
 @Service

@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
 import static it.pagopa.pn.radd.pojo.NotificationAttachment.AttachmentType.*;
 import static it.pagopa.pn.radd.utils.Const.*;
-import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 import static it.pagopa.pn.radd.utils.Utils.getDocumentDownloadUrl;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -148,7 +147,7 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return verifyRole(xPagopaPnCxRole, request)
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey())
                 .then(validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> {
@@ -205,14 +204,6 @@ public class ActService extends BaseService {
                         }));
     }
 
-    private Mono<Void> verifyRole(String xPagopaPnCxRole, ActStartTransactionRequest request) {
-        if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && !StringUtils.hasText(request.getFileKey())) {
-            return Mono.error(new PnRaddBadRequestException("Campo fileKey obbligatorio mancante"));
-        } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.hasText(request.getFileKey())) {
-            return Mono.error(new PnRaddBadRequestException("Campo fileKey inaspettato"));
-        }
-        return Mono.empty();
-    }
 
 
     @NotNull

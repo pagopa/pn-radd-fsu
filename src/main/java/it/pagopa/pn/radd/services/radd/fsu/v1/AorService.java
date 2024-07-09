@@ -127,7 +127,7 @@ public class AorService extends BaseService {
                 );
     }
 
-    public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId) {
+    public Mono<StartTransactionResponse> startTransaction(String uid, AorStartTransactionRequest request, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxId, String xPagopaPnCxRole) {
         PnRaddAltAuditLog pnRaddAltAuditLog = PnRaddAltAuditLog.builder()
                 .eventType(PnAuditLogEventType.AUD_RADD_AORTRAN)
                 .msg(START_AOR_START_TRANSACTION)
@@ -140,14 +140,14 @@ public class AorService extends BaseService {
                 )
                 .build()
                 .log();
-
-        return validationAorStartTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId)
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey())
+                .then(validationAorStartTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> pnRaddAltAuditLog.getContext().addRecipientInternalId(transactionData.getEnsureRecipientId())
                         .addDelegateInternalId(transactionData.getEnsureDelegateId()))
                 .flatMap(transactionData -> setIunsOfNotificationFailed(transactionData, pnRaddAltAuditLog))
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
-                .flatMap(transactionData -> verifyCheckSum(transactionData, null))
+                .flatMap(transactionData -> verifyCheckSum(transactionData, xPagopaPnCxRole))
                 .flatMap(transactionData ->
                         this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
                                 .map(urls -> {
@@ -174,6 +174,10 @@ public class AorService extends BaseService {
                                     pnRaddAltAuditLog.generateFailure(END_AOR_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                                 })
                 )
+                .onErrorResume(PnRaddBadRequestException.class, ex -> {
+                    pnRaddAltAuditLog.generateFailure(END_AOR_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    return Mono.error(ex);
+                })
                 .onErrorResume(RaddGenericException.class, ex -> this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.AOR, xPagopaPnCxType, xPagopaPnCxId)
                                 .map(entity -> StartTransactionResponseMapper.fromException(ex))
                                 .doOnNext(startTransactionResponse -> {

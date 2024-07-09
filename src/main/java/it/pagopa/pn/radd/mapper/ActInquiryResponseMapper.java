@@ -39,6 +39,7 @@ public class ActInquiryResponseMapper {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_4);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_3);
+            status.setMessage(ex.getMessage());
         } else {
             status.setCode(ActInquiryResponseStatus.CodeEnum.NUMBER_99);
         }

@@ -20,6 +20,7 @@ class AorPrivateRestV1ControllerTest {
 
     public static final String PN_PAGOPA_CX_ID = "x-pagopa-pn-cx-id";
     public static final String PN_PAGOPA_CX_TYPE = "x-pagopa-pn-cx-type";
+    public static final String PN_PAGOPA_CX_ROLE = "x-pagopa-pn-cx-role";
     public static final String PN_PAGOPA_UID = "uid";
 
     @Autowired
@@ -69,7 +70,7 @@ class AorPrivateRestV1ControllerTest {
 
         String path = "/radd-net/api/v1/aor/transaction/start";
         Mockito.when(aorService
-                .startTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+                .startTransaction(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
         ).thenReturn(Mono.just(response));
 
         webTestClient.post()
@@ -77,6 +78,7 @@ class AorPrivateRestV1ControllerTest {
                 .header(PN_PAGOPA_UID, "myUid")
                 .header(PN_PAGOPA_CX_ID, "cxId")
                 .header(PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ROLE, "role")
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(req), AorStartTransactionRequest.class)
                 .exchange()

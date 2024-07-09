@@ -70,8 +70,8 @@ class RegistrySelfControllerTest {
         address.setCity("city");
         address.setCountry("country");
         address.setPr("province");
-        createRegistryRequest.setDescription("descrizione del registro");
-        createRegistryRequest.setPhoneNumber("3333333333");
+        createRegistryRequest.setPhoneNumber("phoneNumber");
+        createRegistryRequest.setDescription("description");
         createRegistryRequest.setAddress(address);
         CreateRegistryResponse createRegistryResponse = new CreateRegistryResponse();
         when(registrySelfService.addRegistry(any(), any())).thenReturn(Mono.just(createRegistryResponse));

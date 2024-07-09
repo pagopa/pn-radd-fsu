@@ -11,6 +11,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.PnRaddBadRequestException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
@@ -19,6 +20,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnDataVaultClient;
 import it.pagopa.pn.radd.middleware.msclient.PnDeliveryPushClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.utils.Const;
+import it.pagopa.pn.radd.utils.RaddRole;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,12 +95,30 @@ class AorServiceTest {
     @Test
     void testStartWhenValidateRequestThenThrowInvalidInputException() {
         AorStartTransactionRequest request = new AorStartTransactionRequest();
-        StepVerifier.create(aorService.startTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId"))
+        request.setFileKey("test");
+        StepVerifier.create(aorService.startTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)))
                 .expectError(PnInvalidInputException.class).verify();
 
         request.setOperationId("1234AOR");
-        StepVerifier.create(aorService.startTransaction("uid", request, it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId"))
+        StepVerifier.create(aorService.startTransaction("uid", request, it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)))
                 .expectError(PnInvalidInputException.class).verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorRaddUploaderWithoutFileKey(){
+        AorStartTransactionRequest request = new AorStartTransactionRequest();
+        StepVerifier.create(aorService.startTransaction("uid",request,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo fileKey obbligatorio mancante".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorRaddStandardWithFileKey(){
+        StepVerifier.create(aorService.startTransaction("uid",startTransactionRequest,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_STANDARD)))
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo fileKey inaspettato".equals(throwable.getMessage()))
+                .verify();
     }
 
     @Test
@@ -136,7 +156,7 @@ class AorServiceTest {
 
         Mockito.when(pnRaddFsuConfig.getApplicationBasepath()).thenReturn("123");
 
-        StartTransactionResponse response = this.aorService.startTransaction("uid", startTransactionRequest, CxTypeAuthFleet.valueOf("PF"), "1").block();
+        StartTransactionResponse response = this.aorService.startTransaction("uid", startTransactionRequest, CxTypeAuthFleet.valueOf("PF"), "1",String.valueOf(RaddRole.RADD_UPLOADER)).block();
 
         assertNotNull(response);
         // assertNotNull(response.getUrlList());

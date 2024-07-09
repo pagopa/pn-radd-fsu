@@ -41,6 +41,7 @@ public class PnRaddFsuConfig {
 
     private Long registryImportUploadFileTtl;
     private Integer maxPageNumber;
+    private Integer maxPrintRequests;
 
 
     private String evaluatedZipCodeConfigType;

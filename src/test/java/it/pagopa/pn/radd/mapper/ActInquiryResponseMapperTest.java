@@ -70,11 +70,24 @@ class ActInquiryResponseMapperTest {
     @Test
     void testFromException2() {
         ActInquiryResponse actualFromExceptionResult = ActInquiryResponseMapper
-                .fromException(new IunAlreadyExistsException());
+                .fromException(new IunAlreadyExistsException(1));
         assertFalse(actualFromExceptionResult.getResult());
         ActInquiryResponseStatus status = actualFromExceptionResult.getStatus();
         assertEquals(ActInquiryResponseStatus.CodeEnum.NUMBER_3, status.getCode());
-        assertEquals("Stampa già eseguita", status.getMessage());
+        assertEquals("Limite di 1 stampa superato", status.getMessage());
+    }
+
+    /**
+     * Method under test: {@link ActInquiryResponseMapper#fromException(RaddGenericException)}
+     */
+    @Test
+    void testFromException3() {
+        ActInquiryResponse actualFromExceptionResult = ActInquiryResponseMapper
+                .fromException(new IunAlreadyExistsException(2));
+        assertFalse(actualFromExceptionResult.getResult());
+        ActInquiryResponseStatus status = actualFromExceptionResult.getStatus();
+        assertEquals(ActInquiryResponseStatus.CodeEnum.NUMBER_3, status.getCode());
+        assertEquals("Limite di 2 stampe superato", status.getMessage());
     }
 
 

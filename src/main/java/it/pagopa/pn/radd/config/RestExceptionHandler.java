@@ -14,9 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolation;
@@ -24,6 +27,7 @@ import javax.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -130,6 +134,28 @@ public class RestExceptionHandler {
         problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
         return Mono.just(ResponseEntity.status(ex.getStatus())
                 .body(problem));
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<Problem>> pnRaddImportException(WebExchangeBindException ex) {
+        log.error(ex.getMessage());
+        Problem problem = new Problem();
+        problem.setStatus(HttpStatus.BAD_REQUEST.value());
+        problem.setTitle(getErrorsMessages(ex.getAllErrors()));
+        problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
+        problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(problem));
+    }
+
+    private String getErrorsMessages(List<ObjectError> allErrors) {
+        return allErrors.stream().map(error -> {
+            try {
+                return ((FieldError) error).getField() + " " + error.getDefaultMessage();
+            } catch (Exception e) {
+                return error.getDefaultMessage();
+            }
+        }).collect(Collectors.joining("; "));
     }
 
     @ExceptionHandler(PnSafeStorageException.class)

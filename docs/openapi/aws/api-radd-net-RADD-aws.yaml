@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: tOO4+qMxKXRn6WrWgjWO1nvvAQ1ryUbNB4dM06qmVUw=
+  version: AFfT8NTASCa52S0GahCnuSM43AF/ly+jHgNZ2xD002w=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -1349,16 +1349,6 @@ components:
       required: false
       schema:
         type: string
-    status:
-      name: status
-      description: Identificativo dello sportello RADD
-      in: query
-      schema:
-        type: string
-        enum:
-          - ACTIVE
-          - REJECTED
-          - PENDING
     registryId:
       name: registryId
       description: Identificativo dello sportello RADD
@@ -1828,13 +1818,17 @@ components:
           items:
             $ref: '#/components/schemas/Registry'
         moreResult:
-          description: Indica se sono presenti ulteriori pagine di risultati oltre a quelle restituite dalle chiavi contenute nel campo __nextPagesKey__.
+          description: >-
+            Indica se sono presenti ulteriori pagine di risultati oltre a quelle
+            restituite dalle chiavi contenute nel campo __nextPagesKey__.
           type: boolean
         nextPagesKey:
           description: >-
-            Elenco delle chiavi da utilizzare per richiedere le pagine di risultati successive a quella corrente. 
-            L'ordine delle chiavi restituite equivale all'ordine delle pagine di risultati.
-            Se __moreResult__ è true, sono presenti ulteriori pagine di risultati oltre a quelle restituite dalle chiavi contenute in questo campo.
+            Elenco delle chiavi da utilizzare per richiedere le pagine di
+            risultati successive a quella corrente.  L'ordine delle chiavi
+            restituite equivale all'ordine delle pagine di risultati. Se
+            __moreResult__ è true, sono presenti ulteriori pagine di risultati
+            oltre a quelle restituite dalle chiavi contenute in questo campo.
           type: array
           items:
             type: string
@@ -1885,22 +1879,6 @@ components:
             Numero massimo di pratiche mensili che il punto di Ritiro SEND può
             gestire.
           example: 100
-    VerifyRequestResponse:
-      type: object
-      properties:
-        requestId:
-          type: string
-          description: Identificativo univoco della richiesta di censimento
-        status:
-          type: string
-          description: >-
-            Stato della richiesta (possibili valori = NOT_WORKED, PENDING,
-            ACCEPTED, REJECTED, DELETED)
-          example: REJECTED
-        error:
-          type: string
-          description: Eventuale errore, popolato solo in caso di status = REJECTED.
-          example: csv malformato
     Address:
       type: object
       required:
@@ -2009,6 +1987,22 @@ components:
       required:
         - status
         - errors
+    VerifyRequestResponse:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: Identificativo univoco della richiesta di censimento
+        status:
+          type: string
+          description: >-
+            Stato della richiesta (possibili valori =
+            TO_PROCESS,PENDING,DONE,REPLACED,REJECTED)
+          example: REJECTED
+        error:
+          type: string
+          description: Eventuale errore, popolato solo in caso di status = REJECTED.
+          example: csv malformato
     RequestResponse:
       type: object
       properties:
@@ -2017,13 +2011,17 @@ components:
           items:
             $ref: '#/components/schemas/RegistryRequestResponse'
         moreResult:
-          description: Indica se sono presenti ulteriori pagine di risultati
+          description: >-
+            Indica se sono presenti ulteriori pagine di risultati oltre a quelle
+            restituite dalle chiavi contenute nel campo __nextPagesKey__.
           type: boolean
         nextPagesKey:
           description: >-
-            Elenco, non esaustivo, delle chiavi da usare per richiedere le 
-            pagine di risultati successive a quella corrente. <br/> Valorizzato
-            solo se il campo __moreResult__ ha valore __true__.
+            Elenco delle chiavi da utilizzare per richiedere le pagine di
+            risultati successive a quella corrente.  L'ordine delle chiavi
+            restituite equivale all'ordine delle pagine di risultati. Se
+            __moreResult__ è true, sono presenti ulteriori pagine di risultati
+            oltre a quelle restituite dalle chiavi contenute in questo campo.
           type: array
           items:
             type: string
@@ -2048,7 +2046,9 @@ components:
           description: data aggiornamento del record
         status:
           type: string
-          description: stato della richiesta
+          description: >-
+            stato della richiesta (possibili valori = NOT_WORKED, PENDING,
+            ACCEPTED, REJECTED, DELETED)
           example: ACCEPTED
         error:
           type: string

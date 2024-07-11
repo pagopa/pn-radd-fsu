@@ -87,6 +87,33 @@ class RegistrySelfControllerTest {
                 .expectStatus().isOk();
     }
 
+    @Test
+    void createReqistryErrorObbligatoryDescriptionAndPhoneNumber() {
+        String path = "/radd-net/api/v1/registry";
+
+        CreateRegistryRequest createRegistryRequest = new CreateRegistryRequest();
+        Address address = new Address();
+        address.setAddressRow("addressRow");
+        address.setCap("00100");
+        address.setCity("city");
+        address.setCountry("country");
+        address.setPr("province");
+        createRegistryRequest.setAddress(address);
+        CreateRegistryResponse createRegistryResponse = new CreateRegistryResponse();
+        when(registrySelfService.addRegistry(any(), any())).thenReturn(Mono.just(createRegistryResponse));
+
+        webTestClient.post()
+                .uri(path)
+                .header(PN_PAGOPA_UID, "myUid")
+                .header(PN_PAGOPA_CX_ID, "cxId")
+                .header(PN_PAGOPA_CX_TYPE, "PA")
+                .body(Mono.just(createRegistryRequest), CreateRegistryRequest.class)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
 
     @Test
     void retrieveRegistries() {

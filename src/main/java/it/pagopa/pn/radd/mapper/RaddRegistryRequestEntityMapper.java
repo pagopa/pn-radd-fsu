@@ -23,8 +23,9 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
-import static it.pagopa.pn.radd.utils.Const.MISSING_ADDRESS_REQUIRED_FIELD;
+import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.DateUtils.convertDateToInstantAtStartOfDay;
 
 @RequiredArgsConstructor
@@ -61,6 +62,7 @@ public class RaddRegistryRequestEntityMapper {
         if (request.getGeoLocation() != null) {
             originalRequest.setGeoLocation(objectMapperUtil.toJson(request.getGeoLocation()));
         }
+
         originalRequest.setPhoneNumber(request.getPhoneNumber());
         originalRequest.setExternalCode(request.getExternalCode());
         originalRequest.setCapacity(request.getCapacity());
@@ -128,6 +130,10 @@ public class RaddRegistryRequestEntityMapper {
             originalRequest.setGeoLocation(objectMapperUtil.toJson(retrieveGeoLocationObject(request.getCoordinateGeoReferenziali())));
         }
 
+        if (!StringUtils.isEmpty(request.getTelefono()) && !Pattern.compile(REGEX_PHONENUMBER).matcher(request.getTelefono()).matches()) {
+            errors.add(WRONG_PHONE_NUMBER_FORMAT);
+        }
+
         originalRequest.setPhoneNumber(request.getTelefono());
         originalRequest.setExternalCode(request.getExternalCode());
         originalRequest.setCapacity(request.getCapacita());
@@ -180,6 +186,12 @@ public class RaddRegistryRequestEntityMapper {
     private void checkRequiredFieldsAndUpdateError(WrappedRaddRegistryOriginalRequest originalRequest) {
         if (checkAddressFields(originalRequest)) {
             originalRequest.getErrors().add(MISSING_ADDRESS_REQUIRED_FIELD);
+        }
+        if (StringUtils.isBlank(originalRequest.getRequest().getDescription())) {
+            originalRequest.getErrors().add(MISSING_DESCRIPTION_REQUIRED_FIELD);
+        }
+        if (StringUtils.isBlank(originalRequest.getRequest().getPhoneNumber())) {
+            originalRequest.getErrors().add(MISSING_PHONE_NUMBER_REQUIRED_FIELD);
         }
     }
 

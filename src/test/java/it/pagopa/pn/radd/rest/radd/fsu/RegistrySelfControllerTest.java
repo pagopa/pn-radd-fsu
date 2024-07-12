@@ -1,6 +1,7 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.radd.config.RestExceptionHandler;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.services.radd.fsu.v1.RegistrySelfService;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {RegistrySelfController.class})
+@ContextConfiguration(classes = {RegistrySelfController.class, RestExceptionHandler.class})
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = {RegistryController.class})
 class RegistrySelfControllerTest {

@@ -34,12 +34,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestControllerAdvice(annotations = RestController.class)
 public class RestExceptionHandler {
-
     public static final String MDC_TRACE_ID_KEY = "trace_id";
     @Autowired
     private ObjectMapper objectMapper;
-
-
     @ExceptionHandler(PnException.class)
     public Mono<ResponseEntity<Problem>> pnExceptionHandler(PnException ex) {
         Problem rs = new Problem();

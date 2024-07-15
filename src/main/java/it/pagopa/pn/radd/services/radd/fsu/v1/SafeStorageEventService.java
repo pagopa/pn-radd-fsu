@@ -3,7 +3,6 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.RaddImportException;
-import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.mapper.RaddRegistryRequestEntityMapper;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryImportDAO;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryRequestDAO;
@@ -52,9 +51,7 @@ public class SafeStorageEventService {
         String fileKey = response.getKey();
         return pnRaddRegistryImportDAO.getItemByFileKey(fileKey)
                 .switchIfEmpty(Mono.error(new RaddImportException(String.format("Import request for FileKey [%s] does not exist", fileKey))))
-                .flatMap(importEntity -> handleRaddRegistryImport(importEntity, fileKey)
-                        .onErrorResume(throwable -> handleResetStatusToProcess(importEntity, throwable))
-                )
+                .flatMap(importEntity -> handleRaddRegistryImport(importEntity, fileKey))
                 .doOnError(throwable -> log.error("Error during import csv for fileKey [{}]", fileKey, throwable))
                 .onErrorResume(RaddImportException.class, e -> Mono.empty())
                 .then();
@@ -63,7 +60,6 @@ public class SafeStorageEventService {
 
     private Mono<Void> handleRaddRegistryImport(RaddRegistryImportEntity entity, String fileKey) {
         return Mono.fromSupplier(() -> checkIfImportEntityIsInValidStatus(entity, fileKey))
-                .flatMap(raddRegistryImportEntity -> pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.TAKEN_CHARGE, null))
                 .zipWhen(raddRegistryImportEntity -> retrieveAndProcessFile(fileKey))
                 .flatMap(tuple -> {
                     if (CollectionUtils.isEmpty(tuple.getT2())) {
@@ -73,7 +69,7 @@ public class SafeStorageEventService {
                     } else {
                         List<RaddRegistryRequestEntity> raddRegistryRequestEntities = raddRegistryRequestEntityMapper.retrieveRaddRegistryRequestEntity(tuple.getT2(), tuple.getT1());
                         log.info("Mapped {} original requests to registry request entities.", raddRegistryRequestEntities.size());
-                        Map<String, List<RaddRegistryRequestEntity>> map = groupingRaddRegistryRequest(tuple.getT1().getCxId(), tuple.getT1().getRequestId(), raddRegistryRequestEntities, 20);
+                        Map<String, List<RaddRegistryRequestEntity>> map = groupingRaddRegistryRequest(raddRegistryRequestEntities, 20);
                         log.info("Grouped {} registry request entities.", map.values().stream().mapToInt(List::size).sum());
                         return persistRaddRegistryRequest(map)
                                 .thenReturn(tuple.getT1())
@@ -85,17 +81,8 @@ public class SafeStorageEventService {
                 .then();
     }
 
-    private Mono<Void> handleResetStatusToProcess(RaddRegistryImportEntity entity, Throwable throwable) {
-        if(throwable instanceof RaddImportException) {
-            return Mono.error(throwable);
-        }
-        log.error("Error during import csv for fileKey: [{}], start rollback of raddRegistryImportEntity with status TO_PROCESS", entity.getFileKey());
-        return pnRaddRegistryImportDAO.updateStatus(entity, RaddRegistryImportStatus.TO_PROCESS, null)
-                .then(Mono.error(throwable));
-    }
-
     private RaddRegistryImportEntity checkIfImportEntityIsInValidStatus(RaddRegistryImportEntity importEntity, String fileKey) {
-        if (RaddRegistryImportStatus.TO_PROCESS.name().equals(importEntity.getStatus())) {
+        if (!RaddRegistryImportStatus.PENDING.name().equals(importEntity.getStatus())) {
             return importEntity;
         }
         throw new RaddImportException(String.format("Import request for FileKey [%s] is not in TO_PROCESS status", fileKey));
@@ -144,22 +131,18 @@ public class SafeStorageEventService {
 
     private Mono<Void> persistItemsAndSendEvent(Map.Entry<String, List<RaddRegistryRequestEntity>> entry) {
         String correlationId = entry.getKey();
-        return raddRegistryRequestDAO.writeCsvAddresses(entry.getValue(), entry.getKey())
+        return raddRegistryRequestDAO.persistCsvAddresses(entry.getValue(), entry.getKey())
                 .thenReturn(correlationId)
                 .flatMap(s -> Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId)))
                 .onErrorResume(throwable -> {
                     log.error("Error during persistItemsAndSendEvent --> ", throwable);
-                    if(throwable instanceof TransactionAlreadyExistsException){
-                        return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId))
-                                .thenReturn(Mono.empty());
-                    }
                     return Mono.fromRunnable(() -> correlationIdEventsProducer.sendCorrelationIdEvent(correlationId))
                             .then(Mono.error(throwable));
                 })
                 .then();
     }
 
-    private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(String cxId, String requestId, List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {
+    private Map<String, List<RaddRegistryRequestEntity>> groupingRaddRegistryRequest(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, int numberOfElements) {
         final AtomicInteger counter = new AtomicInteger();
 
         Map<String, List<RaddRegistryRequestEntity>> map = raddRegistryRequestEntities.stream()

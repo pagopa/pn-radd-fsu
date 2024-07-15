@@ -2,7 +2,6 @@ package it.pagopa.pn.radd.middleware.db.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
-import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.RaddGenericException;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
-import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
@@ -181,14 +179,9 @@ public class RaddRegistryRequestDAOImpl extends BaseDao<RaddRegistryRequestEntit
     }
 
     @Override
-    public Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId) {
+    public Mono<Void> persistCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId) {
         raddRegistryRequestEntities.forEach(raddRegistryRequestEntity -> raddRegistryRequestEntity.setCorrelationId(correlationId));
-
-        Expression condition = Expression.builder()
-                .expression("attribute_not_exists(pk)")
-                .build();
-
-        return putItemsWithConditions(raddRegistryRequestEntities, condition, RaddRegistryRequestEntity.class);
+        return putItems(raddRegistryRequestEntities);
     }
 
     @Override

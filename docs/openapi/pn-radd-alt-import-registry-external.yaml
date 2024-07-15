@@ -205,7 +205,7 @@ components:
           description: Identificativo univoco della richiesta di censimento
         status:
           type: string
-          description: Stato della richiesta (possibili valori = NOT_WORKED, PENDING, ACCEPTED, REJECTED, DELETED)
+          description: Stato della richiesta (possibili valori = TO_PROCESS,PENDING,DONE,REPLACED,REJECTED)
           example: REJECTED
         error:
           type: string
@@ -248,7 +248,7 @@ components:
           description: data aggiornamento del record
         status:
           type: string
-          description: stato della richiesta
+          description: stato della richiesta (possibili valori = NOT_WORKED, PENDING, ACCEPTED, REJECTED, DELETED)
           example: ACCEPTED
         error:
           type: string

@@ -1,8 +1,6 @@
 package it.pagopa.pn.radd.middleware.db;
 
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
-import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.RegistryRequestStatus;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import reactor.core.publisher.Flux;
@@ -12,7 +10,7 @@ import java.util.List;
 
 public interface RaddRegistryRequestDAO {
 
-    Mono<Void> writeCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId);
+    Mono<Void> persistCsvAddresses(List<RaddRegistryRequestEntity> raddRegistryRequestEntities, String correlationId);
 
     Flux<RaddRegistryRequestEntity> getAllFromCorrelationId(String correlationId, String state);
 

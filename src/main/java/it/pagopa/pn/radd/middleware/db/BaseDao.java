@@ -174,9 +174,9 @@ public abstract class BaseDao<T> {
         return Mono.from(tableAsync.scan(scRequest.build()));
     }
 
-    protected Mono<Void> putItemsWithConditions(List<T> entities, Expression expression, Class<T> entityClass) {
+    protected Mono<Void> putItems(List<T> entities) {
         return Flux.fromIterable(entities)
-                .flatMap(entity -> putItemWithConditions(entity, expression, entityClass))
+                .flatMap(this::putItem)
                 .doOnError(throwable -> log.error("Error during putItemsWithConditions --> ", throwable))
                 .then();
     }

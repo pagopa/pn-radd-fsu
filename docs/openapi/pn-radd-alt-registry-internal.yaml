@@ -369,29 +369,8 @@ components:
         capacity:
           description: Numero massimo di pratiche mensili che il punto di Ritiro SEND può gestire.
           example: 100
-    VerifyRequestResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          description: Stato della richiesta
-          example: REJECTED
-        error:
-          type: string
-          description: Eventuale errore, popolato solo in caso di status = REJECTED.
-          example: "csv malformato"
 
   parameters:
-    status:
-      name: status
-      description: Identificativo dello sportello RADD
-      in: query
-      schema:
-        type: string
-        enum:
-          - ACTIVE
-          - REJECTED
-          - PENDING
     registryId:
       name: registryId
       description: Identificativo dello sportello RADD

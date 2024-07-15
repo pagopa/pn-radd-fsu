@@ -73,7 +73,7 @@ public class SafeStorageEventServiceTest {
         raddRegistryImportEntity.setStatus("TO_PROCESS");
         when(pnRaddRegistryImportDAO.getItemByFileKey(any())).thenReturn(Mono.just(raddRegistryImportEntity));
         when(pnRaddRegistryImportDAO.updateStatus(any(), any(), any())).thenReturn(Mono.just(raddRegistryImportEntity));
-        when(raddRegistryRequestDAO.writeCsvAddresses(any(), any())).thenReturn(Mono.empty());
+        when(raddRegistryRequestDAO.persistCsvAddresses(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryRequestDAO.createEntity(any())).thenReturn(Mono.empty());
         when(safeStorageClient.getFile("testKey")).thenReturn(Mono.just(response));
         when(documentDownloadClient.downloadContent("testUrl")).thenReturn(Mono.just(inputStream.readAllBytes()));
@@ -119,7 +119,6 @@ public class SafeStorageEventServiceTest {
         when(pnRaddRegistryImportDAO.getItemByFileKey(any())).thenReturn(Mono.just(raddRegistryImportEntity));
 
 
-        when(pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.TAKEN_CHARGE, null)).thenReturn(Mono.just(raddRegistryImportEntity));
         when(pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.REJECTED, "Malformed CSV")).thenReturn(Mono.just(raddRegistryImportEntity));
 
         Mono<Void> result = safeStorageEventService.handleSafeStorageResponse(response);
@@ -148,17 +147,14 @@ public class SafeStorageEventServiceTest {
         raddRegistryImportEntity.setStatus("TO_PROCESS");
 
         when(pnRaddRegistryImportDAO.getItemByFileKey(any())).thenReturn(Mono.just(raddRegistryImportEntity));
-        when(raddRegistryRequestDAO.writeCsvAddresses(any(), any())).thenReturn(Mono.empty());
+        when(raddRegistryRequestDAO.persistCsvAddresses(any(), any())).thenReturn(Mono.empty());
         when(raddRegistryRequestDAO.createEntity(any())).thenReturn(Mono.empty());
 
-        when(pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.TAKEN_CHARGE, null)).thenReturn(Mono.just(raddRegistryImportEntity));
         when(pnRaddRegistryImportDAO.updateStatus(raddRegistryImportEntity, RaddRegistryImportStatus.PENDING, null)).thenThrow(new RuntimeException());
 
         Mono<Void> result = safeStorageEventService.handleSafeStorageResponse(response);
 
         StepVerifier.create(result).verifyError(RuntimeException.class);
-        verify(pnRaddRegistryImportDAO, times(1)).updateStatus(any(), eq(RaddRegistryImportStatus.TO_PROCESS), any());
         verify(pnRaddRegistryImportDAO, times(1)).updateStatus(any(), eq(RaddRegistryImportStatus.PENDING), any());
-        verify(pnRaddRegistryImportDAO, times(1)).updateStatus(any(), eq(RaddRegistryImportStatus.TAKEN_CHARGE), any());
     }
 }

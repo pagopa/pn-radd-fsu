@@ -205,6 +205,7 @@ info:
       -  `metadati_delegato.json` file JSON* degli estremi del documento di identità del delegato.
       -  `delega.pdf` Scansione della delega (solo in caso di delega). File di tipo “PDF/A”.
       -  `visura.pdf` Scansione della visura (solo in caso di destinatario persona giuridica). File di tipo “PDF/A”.
+      -  `autodichiarazione.pdf` Autodichiarazione compilata e firmata dal legale rappresentante (solo in caso di destinatario persona giuridica). File di tipo “PDF/A”.
     
       I file JSON contenenti gli estremi del documento d'identità 
       devono rispettare le specifiche dello JSON schema: [json-schema-identity-doc-info.json](https://github.com/pagopa/pn-radd-alt/blob/5ae3b1c5c8517b42795d64b78590e8ceacf6aee5/docs/openapi/json-schema-identity-doc-info.json).

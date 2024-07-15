@@ -206,6 +206,7 @@ info:
       -  `metadati_delegato.json` file JSON* degli estremi del documento di identità del delegato.
       -  `delega.pdf` Scansione della delega (solo in caso di delega). File di tipo “PDF/A”.
       -  `visura.pdf` Scansione della visura (solo in caso di destinatario persona giuridica). File di tipo “PDF/A”.
+      -  `autodichiarazione.pdf` Autodichiarazione compilata e firmata dal legale rappresentante (solo in caso di destinatario persona giuridica). File di tipo “PDF/A”.
     
       I file JSON contenenti gli estremi del documento d'identità 
       devono rispettare le specifiche dello JSON schema: [json-schema-identity-doc-info.json](https://github.com/pagopa/pn-radd-alt/blob/5ae3b1c5c8517b42795d64b78590e8ceacf6aee5/docs/openapi/json-schema-identity-doc-info.json).
@@ -303,6 +304,7 @@ paths:
       parameters:
         - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
         - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+        - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -375,6 +377,8 @@ paths:
       tags:
         - actOperations
       operationId: actInquiry
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'                       # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.querystring.recipientTaxId}' # NO EXTERNAL
       description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni tramite iun o qrCode.
       responses:
         200:
@@ -406,6 +410,8 @@ paths:
       tags:
         - aorOperations
       operationId: aorInquiry
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'       # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.querystring.recipientTaxId}' # NO EXTERNAL
       description: API utilizzata per la verifica della presenza a sistema di avvisi di avvenuta ricezione per il cliente.
       responses:
         200:
@@ -432,10 +438,13 @@ paths:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       #NO EXTERNAL
     post:
       tags:
         - actOperations
       operationId: startActTransaction
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'     # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.body.recipientTaxId}' # NO EXTERNAL
       description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna dell'atto e delle eventuali attestazioni.
       requestBody:
         content:
@@ -536,11 +545,14 @@ paths:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
+      - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       #NO EXTERNAL
     post:
       tags:
         - aorOperations
       operationId: startAorTransaction
-      description: API utilizzata per la richiesta di avvio delloperazione di scaricamento e consegna degli avvisi di avvenuta ricezione.
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'    # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.body.recipientTaxId}'    # NO EXTERNAL
+      description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna degli avvisi di avvenuta ricezione.
       requestBody:
         content:
           application/json:
@@ -733,7 +745,6 @@ components:
         - operationId
         - recipientTaxId
         - recipientType
-        - fileKey
         - checksum
       properties:
         versionToken:

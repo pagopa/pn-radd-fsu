@@ -9,6 +9,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRespo
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.ResponseStatus;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.PnInvalidInputException;
+import it.pagopa.pn.radd.exception.PnRaddForbiddenException;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
@@ -20,6 +21,7 @@ import it.pagopa.pn.radd.middleware.msclient.PnDeliveryClient;
 import it.pagopa.pn.radd.middleware.msclient.PnSafeStorageClient;
 import it.pagopa.pn.radd.utils.Const;
 import it.pagopa.pn.radd.utils.PdfGenerator;
+import it.pagopa.pn.radd.utils.RaddRole;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Test;
@@ -273,7 +275,7 @@ class DocumentOperationsServiceTest {
         Mockito.when(pnSafeStorageClient.createFile( any(), any())
         ).thenReturn(Mono.error( new RaddGenericException(DOCUMENT_UPLOAD_ERROR)));
         when(pnRaddFsuConfig.getSafeStorageDocType()).thenReturn("test");
-        Mono<DocumentUploadResponse> response = documentOperationsService.createFile(Mono.just(bundleId) );
+        Mono<DocumentUploadResponse> response = documentOperationsService.createFile(Mono.just(bundleId),String.valueOf(RaddRole.RADD_UPLOADER));
         response.onErrorResume(ex ->{
             if (ex instanceof RaddGenericException){
                 log.info(((RaddGenericException) ex).getExceptionType().getMessage());
@@ -296,7 +298,7 @@ class DocumentOperationsServiceTest {
         when(pnRaddFsuConfig.getSafeStorageDocType()).thenReturn("test");
         Mockito.when(pnSafeStorageClient.createFile(Mockito.any(), Mockito.any())
         ).thenReturn( Mono.just(fileCreationResponseDto) );
-        DocumentUploadResponse response = documentOperationsService.createFile(Mono.just(bundleId) ).block();
+        DocumentUploadResponse response = documentOperationsService.createFile(Mono.just(bundleId),String.valueOf(RaddRole.RADD_UPLOADER)).block();
         assertNotNull(response);
         assertEquals(ResponseStatus.CodeEnum.NUMBER_0, response.getStatus().getCode());
     }
@@ -304,12 +306,23 @@ class DocumentOperationsServiceTest {
     @Test
     void testWhenRequestIsNull(){
 
-        Mono <DocumentUploadResponse> response = documentOperationsService.createFile(null);
+        Mono <DocumentUploadResponse> response = documentOperationsService.createFile(null, String.valueOf(RaddRole.RADD_UPLOADER));
         response.onErrorResume( PnInvalidInputException.class, exception ->{
             assertEquals("Body non valido", exception.getMessage());
             return Mono.empty();
         }).block();
 
+    }
+
+    @Test
+    void testWhenRoleIsInvalidThenThrowsException(){
+        DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
+        assertThrows(PnRaddForbiddenException.class, () -> documentOperationsService.createFile(Mono.just(bundleId), String.valueOf(RaddRole.RADD_STANDARD)));
+    }
+    @Test
+    void testWhenRoleIsNullThenThrowsException(){
+        DocumentUploadRequest bundleId = new DocumentUploadRequest() ;
+        assertThrows(PnRaddForbiddenException.class, () -> documentOperationsService.createFile(Mono.just(bundleId), null));
     }
 
 }

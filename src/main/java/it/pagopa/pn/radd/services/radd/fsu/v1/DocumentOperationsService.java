@@ -7,10 +7,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadResponse;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.ZipAttachmentNotFoundException;
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
-import it.pagopa.pn.radd.exception.TransactionAlreadyExistsException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.DocumentUploadResponseMapper;
 import it.pagopa.pn.radd.middleware.db.OperationsIunsDAO;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
@@ -25,16 +22,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.HexFormat;
+import java.util.Objects;
 import java.util.Optional;
 
 import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.OperationTypeEnum.AOR;
+import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 import static it.pagopa.pn.radd.utils.Utils.transactionIdBuilder;
 
 @Service
@@ -139,11 +139,12 @@ public class DocumentOperationsService {
     }
 
 
-    public Mono<DocumentUploadResponse> createFile(Mono<DocumentUploadRequest> documentUploadRequest) {
+    public Mono<DocumentUploadResponse> createFile(Mono<DocumentUploadRequest> documentUploadRequest, String xPagopaPnCxRole) {
         if (documentUploadRequest == null) {
             log.error(MISSING_INPUT_PARAMETERS);
             return Mono.error(new PnInvalidInputException("Body non valido"));
         }
+        checkRole(xPagopaPnCxRole);
         FileCreationRequestDto request = getFileCreationRequestDto();
         // retrieve presigned url
         return documentUploadRequest
@@ -152,6 +153,13 @@ public class DocumentOperationsService {
                     log.info("Response presigned url : {}", item.getUploadUrl());
                     return DocumentUploadResponseMapper.fromResult(item);
                 }).onErrorResume(RaddGenericException.class, ex -> Mono.just(DocumentUploadResponseMapper.fromException(ex)));
+    }
+
+    private static void checkRole(String xPagopaPnCxRole) {
+        if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole)) {
+            log.error("Access denied for role: {}", xPagopaPnCxRole);
+            throw new PnRaddForbiddenException("Accesso negato.", HttpStatus.FORBIDDEN.value());
+        }
     }
 
     @NotNull

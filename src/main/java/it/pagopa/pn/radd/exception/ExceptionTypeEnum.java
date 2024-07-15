@@ -23,7 +23,7 @@ public enum ExceptionTypeEnum {
     VERSION_ID_VALIDATION("VERSION_ID_VALIDATION", "Version id non corrispondono", 99),
     ZIP_ATTACHMENT_URL_NOT_FOUND("ZIP_ATTACHMENT_URL_NOT_FOUND", "Allegato non valido", 99),
     DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Documenti non più disponibili", 2),
-    ALREADY_COMPLETE_PRINT("ALREADY_COMPLETE_PRINT", "Stampa già eseguita", 3),
+    ALREADY_COMPLETE_PRINT("ALREADY_COMPLETE_PRINT", "Limite di %s %s superato", 3),
     INVALID_INPUT("CF_OR_QRCODE_NOT_VALID", "Input non valido", 10),
     ENSURE_FISCAL_CODE_EMPTY("ENSURE_FISCAL_CODE_EMPTY", "Il codice fiscale non è stato anonimizzato", 99),
     OPERATION_TYPE_UNKNOWN("OPERATION TYPE UNKNOWN", "Il tipo di operazione è sconosciuto", 99),

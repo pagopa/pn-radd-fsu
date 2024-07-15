@@ -130,12 +130,12 @@ public class ActService extends BaseService {
 
     private Mono<Integer> checkIunIsAlreadyExistsInCompleted(String iun, String recipientId) {
         return this.raddTransactionDAO.countFromIunAndStatus(iun, recipientId)
-                .filter(counter -> counter == 0)
-                .switchIfEmpty(Mono.error(new IunAlreadyExistsException()))
+                .filter(counter -> pnRaddFsuConfig.getMaxPrintRequests() == 0 || counter < pnRaddFsuConfig.getMaxPrintRequests())
+                .switchIfEmpty(Mono.error(new IunAlreadyExistsException(pnRaddFsuConfig.getMaxPrintRequests())))
                 .doOnError(err -> log.error(err.getMessage()));
     }
 
-    public Mono<StartTransactionResponse> startTransaction(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, ActStartTransactionRequest request) {
+    public Mono<StartTransactionResponse> startTransaction(String uid, String xPagopaPnCxId, CxTypeAuthFleet xPagopaPnCxType, String xPagopaPnCxRole, ActStartTransactionRequest request) {
         PnRaddAltAuditLog pnRaddAltAuditLog = PnRaddAltAuditLog.builder()
                 .eventType(PnAuditLogEventType.AUD_RADD_ACTTRAN)
                 .msg(START_ACT_START_TRANSACTION)
@@ -147,11 +147,12 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId)
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey())
+                .then(validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> {
                     pnRaddAltAuditLog.getContext().addRecipientInternalId(transactionData.getEnsureRecipientId());
-                    if(StringUtils.hasText(transactionData.getEnsureDelegateId())) {
+                    if (StringUtils.hasText(transactionData.getEnsureDelegateId())) {
                         pnRaddAltAuditLog.getContext().addDelegateInternalId(transactionData.getEnsureDelegateId());
                     }
                 })
@@ -164,7 +165,7 @@ public class ActService extends BaseService {
                         pnRaddAltAuditLog.getContext().addTransactionId(transactionData.getTransactionId())
                                 .addIun(transactionData.getIun())
                 )
-                .flatMap(this::verifyCheckSum)
+                .flatMap(transactionData -> verifyCheckSum(transactionData, xPagopaPnCxRole))
                 .zipWhen(transaction -> hasDocumentsAvailable(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
                         (tupla, response) -> Tuples.of(tupla.getT1(), response))
@@ -184,6 +185,10 @@ public class ActService extends BaseService {
                     return this.settingErrorReason(ex, request.getOperationId(), OperationTypeEnum.ACT, xPagopaPnCxType, xPagopaPnCxId)
                             .flatMap(entity -> Mono.error(ex));
                 })
+                .onErrorResume(PnRaddBadRequestException.class, ex -> {
+                    pnRaddAltAuditLog.generateFailure(END_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
+                    return Mono.error(ex);
+                })
                 .onErrorResume(isStartTransactionAcceptedException, ex ->
                         Mono.just(StartTransactionResponseMapper.fromException((RaddGenericException) ex))
                                 .doOnNext(startTransactionResponse -> {
@@ -198,6 +203,8 @@ public class ActService extends BaseService {
                             pnRaddAltAuditLog.generateFailure(END_ACT_START_TRANSACTION_WITH_ERROR, ex.getMessage(), ex);
                         }));
     }
+
+
 
     @NotNull
     private Mono<StartTransactionResponse> retrieveDocumentsAndAttachments(ActStartTransactionRequest request, Tuple2<TransactionData, SentNotificationV23Dto> transactionAndSentNotification) {

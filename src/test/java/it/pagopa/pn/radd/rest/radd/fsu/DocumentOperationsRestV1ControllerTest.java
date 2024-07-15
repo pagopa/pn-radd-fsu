@@ -37,6 +37,7 @@ class DocumentOperationsRestV1ControllerTest {
 
     public static final String PN_PAGOPA_CX_ID = "x-pagopa-pn-cx-id";
     public static final String PN_PAGOPA_CX_TYPE = "x-pagopa-pn-cx-type";
+    public static final String PN_PAGOPA_CX_ROLE = "x-pagopa-pn-cx-role";
     public static final String PN_PAGOPA_UID = "uid";
 
     @Test
@@ -103,13 +104,14 @@ class DocumentOperationsRestV1ControllerTest {
         DocumentUploadRequest req = new DocumentUploadRequest();
 
         String path = "/radd-net/api/v1/documents/upload";
-        Mockito.when(documentOperationsService.createFile(Mockito.any() ))
+        Mockito.when(documentOperationsService.createFile(Mockito.any(), Mockito.anyString()))
                 .thenReturn(Mono.just(response));
         webTestClient.post()
                 .uri(path)
                 .header(PN_PAGOPA_UID, "myUid")
                 .header( PN_PAGOPA_CX_ID, "cxId")
                 .header( PN_PAGOPA_CX_TYPE, "PA")
+                .header(PN_PAGOPA_CX_ROLE, "role")
                 .body(Mono.just(req), DocumentUploadRequest.class)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()

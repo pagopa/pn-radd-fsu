@@ -76,6 +76,7 @@ public class StartTransactionResponseMapper {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_10);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.ALREADY_COMPLETE_PRINT) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_3);
+            status.setMessage(ex.getMessage());
         } else if (ex.getExceptionType() == ExceptionTypeEnum.TRANSACTION_ALREADY_EXIST) {
             status.setCode(StartTransactionResponseStatus.CodeEnum.NUMBER_5);
         } else if (ex.getExceptionType() == ExceptionTypeEnum.NOTIFICATION_CANCELLED) {

@@ -85,7 +85,7 @@ public class SafeStorageEventService {
         if (!RaddRegistryImportStatus.PENDING.name().equals(importEntity.getStatus())) {
             return importEntity;
         }
-        throw new RaddImportException(String.format("Import request for FileKey [%s] is not in TO_PROCESS status", fileKey));
+        throw new RaddImportException(String.format("Import request for FileKey [%s] is PENDING status", fileKey));
     }
 
     private Mono<List<RaddRegistryRequest>> retrieveAndProcessFile(String fileKey) {

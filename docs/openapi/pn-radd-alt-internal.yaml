@@ -377,8 +377,8 @@ paths:
       tags:
         - actOperations
       operationId: actInquiry
-      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'                       # NO EXTERNAL
-      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.querystring.recipientTaxId}' # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'
+      x-pagopa-pn-custom-throttling-value: '${method.request.querystring.recipientTaxId}'
       description: API utilizzata per la verifica della presenza a sistema di atti e attestazioni tramite iun o qrCode.
       responses:
         200:
@@ -410,8 +410,8 @@ paths:
       tags:
         - aorOperations
       operationId: aorInquiry
-      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'       # NO EXTERNAL
-      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.querystring.recipientTaxId}' # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'
+      x-pagopa-pn-custom-throttling-value: '${method.request.querystring.recipientTaxId}'
       description: API utilizzata per la verifica della presenza a sistema di avvisi di avvenuta ricezione per il cliente.
       responses:
         200:
@@ -443,8 +443,8 @@ paths:
       tags:
         - actOperations
       operationId: startActTransaction
-      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'     # NO EXTERNAL
-      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.body.recipientTaxId}' # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'
+      x-pagopa-pn-custom-throttling-value: '${method.request.body.recipientTaxId}'
       description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna dell'atto e delle eventuali attestazioni.
       requestBody:
         content:
@@ -550,8 +550,8 @@ paths:
       tags:
         - aorOperations
       operationId: startAorTransaction
-      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'    # NO EXTERNAL
-      x-pagopa-pn-custom-throttling-value: 'recTaxId_${method.request.body.recipientTaxId}'    # NO EXTERNAL
+      x-pagopa-pn-custom-throttling-group: 'radd-by-cf'
+      x-pagopa-pn-custom-throttling-value: '${method.request.body.recipientTaxId}'
       description: API utilizzata per la richiesta di avvio dell'operazione di scaricamento e consegna degli avvisi di avvenuta ricezione.
       requestBody:
         content:

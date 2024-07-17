@@ -147,7 +147,7 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey())
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey(), request.getChecksum())
                 .then(validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> {
@@ -165,7 +165,7 @@ public class ActService extends BaseService {
                         pnRaddAltAuditLog.getContext().addTransactionId(transactionData.getTransactionId())
                                 .addIun(transactionData.getIun())
                 )
-                .flatMap(transactionData -> verifyCheckSum(transactionData, xPagopaPnCxRole))
+                .flatMap(this::verifyCheckSum)
                 .zipWhen(transaction -> hasDocumentsAvailable(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
                         (tupla, response) -> Tuples.of(tupla.getT1(), response))

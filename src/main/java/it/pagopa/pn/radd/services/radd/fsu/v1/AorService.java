@@ -140,14 +140,14 @@ public class AorService extends BaseService {
                 )
                 .build()
                 .log();
-        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey())
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey(), request.getChecksum())
                 .then(validationAorStartTransaction(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> pnRaddAltAuditLog.getContext().addRecipientInternalId(transactionData.getEnsureRecipientId())
                         .addDelegateInternalId(transactionData.getEnsureDelegateId()))
                 .flatMap(transactionData -> setIunsOfNotificationFailed(transactionData, pnRaddAltAuditLog))
                 .flatMap(transaction -> this.createAorTransaction(uid, transaction))
-                .flatMap(transactionData -> verifyCheckSum(transactionData, xPagopaPnCxRole))
+                .flatMap(this::verifyCheckSum)
                 .flatMap(transactionData ->
                         this.getPresignedUrls(transactionData.getUrls()).sequential().collectList()
                                 .map(urls -> {

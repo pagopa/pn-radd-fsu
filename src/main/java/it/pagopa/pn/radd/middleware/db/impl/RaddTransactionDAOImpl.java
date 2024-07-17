@@ -135,7 +135,11 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
      */
     private Expression.Builder buildCommonConditionsAORAndACT(RaddTransactionEntity entity) {
         StringBuilder expressionFieldsNotPK = new StringBuilder().append(
-                "fileKey = :expectedFileKey AND recipientId = :expectedRecipientId AND operation_status <> :expectedCompleted AND operation_status <> :expectedAborted");
+                "recipientId = :expectedRecipientId AND operation_status <> :expectedCompleted AND operation_status <> :expectedAborted");
+
+        if(entity.getFileKey() != null) {
+            expressionFieldsNotPK.append(" AND fileKey = :expectedFileKey");
+        }
 
         if(entity.getDelegateId() != null) {
             expressionFieldsNotPK.append(" AND delegateId = :expectedDelegateId");
@@ -147,7 +151,6 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
         Expression.Builder builder = Expression.builder()
                 .expression(expressionFieldsNotPK.toString())
-                .putExpressionValue(":expectedFileKey", AttributeValue.builder().s(entity.getFileKey()).build())
                 .putExpressionValue(":expectedRecipientId", AttributeValue.builder().s(entity.getRecipientId()).build())
                 .putExpressionValue(":expectedCompleted", AttributeValue.builder().s(Const.COMPLETED).build())
                 .putExpressionValue(":expectedAborted", AttributeValue.builder().s(Const.ABORTED).build());
@@ -158,6 +161,9 @@ public class RaddTransactionDAOImpl extends BaseDao<RaddTransactionEntity> imple
 
         if(entity.getOperationStartDate() != null) {
             builder.putExpressionValue(":expectedOperationStartDate", AttributeValue.builder().s(entity.getOperationStartDate()).build());
+        }
+        if(entity.getFileKey() != null) {
+            builder.putExpressionValue(":expectedFileKey", AttributeValue.builder().s(entity.getFileKey()).build());
         }
 
         return builder;

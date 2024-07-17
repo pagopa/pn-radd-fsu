@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: AFfT8NTASCa52S0GahCnuSM43AF/ly+jHgNZ2xD002w=
+  version: diMR3lNlMHIKbSYMjfN/1w0j9JGu6gRMiSBJknAieCA=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -153,6 +153,8 @@ paths:
       tags:
         - actOperations
       operationId: actInquiry
+      x-pagopa-pn-custom-throttling-group: radd-by-cf
+      x-pagopa-pn-custom-throttling-value: method.request.querystring.recipientTaxId
       description: >-
         API utilizzata per la verifica della presenza a sistema di atti e
         attestazioni tramite iun o qrCode.
@@ -215,6 +217,8 @@ paths:
       tags:
         - aorOperations
       operationId: aorInquiry
+      x-pagopa-pn-custom-throttling-group: radd-by-cf
+      x-pagopa-pn-custom-throttling-value: method.request.querystring.recipientTaxId
       description: >-
         API utilizzata per la verifica della presenza a sistema di avvisi di
         avvenuta ricezione per il cliente.
@@ -275,6 +279,8 @@ paths:
       tags:
         - actOperations
       operationId: startActTransaction
+      x-pagopa-pn-custom-throttling-group: radd-by-cf
+      x-pagopa-pn-custom-throttling-value: method.request.body.recipientTaxId
       description: >-
         API utilizzata per la richiesta di avvio dell'operazione di scaricamento
         e consegna dell'atto e delle eventuali attestazioni.
@@ -473,8 +479,10 @@ paths:
       tags:
         - aorOperations
       operationId: startAorTransaction
+      x-pagopa-pn-custom-throttling-group: radd-by-cf
+      x-pagopa-pn-custom-throttling-value: method.request.body.recipientTaxId
       description: >-
-        API utilizzata per la richiesta di avvio delloperazione di scaricamento
+        API utilizzata per la richiesta di avvio dell'operazione di scaricamento
         e consegna degli avvisi di avvenuta ricezione.
       requestBody:
         content:
@@ -1349,6 +1357,15 @@ components:
       required: false
       schema:
         type: string
+    cxRoleAuthFleet:
+      name: x-pagopa-pn-cx-role
+      in: header
+      description: User role
+      required: false
+      schema:
+        type: string
+        pattern: ^[ -~]*$
+        maxLength: 64
     registryId:
       name: registryId
       description: Identificativo dello sportello RADD
@@ -1508,8 +1525,6 @@ components:
         - operationId
         - recipientTaxId
         - recipientType
-        - fileKey
-        - checksum
       properties:
         versionToken:
           type: string
@@ -1754,6 +1769,8 @@ components:
       type: object
       required:
         - address
+        - description
+        - phoneNumber
       properties:
         address:
           $ref: '#/components/schemas/Address'

@@ -21,8 +21,7 @@ import org.apache.logging.log4j.util.Strings;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.radd.exception.ExceptionTypeEnum.*;
-import static it.pagopa.pn.radd.utils.Const.MISSING_FILE_KEY_REQUIRED;
-import static it.pagopa.pn.radd.utils.Const.UNEXPECTED_FILE_KEY;
+import static it.pagopa.pn.radd.utils.Const.*;
 import static it.pagopa.pn.radd.utils.RaddRole.RADD_UPLOADER;
 
 @CustomLog
@@ -53,15 +52,14 @@ public class BaseService {
                 });
     }
 
-    protected Mono<TransactionData> verifyCheckSum(TransactionData transaction, String xPagopaPnCxRole) {
-        return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
-            //Da decommentare dopo l'aggiornamento dell'interfaccia ss
-            //log.debug("Document status is : {}", response.getDocumentStatus());
-            //if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
-            //    throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
-            //}
-
-            if ("RADD_UPLOADER".equals(xPagopaPnCxRole)) {
+    protected Mono<TransactionData> verifyCheckSum(TransactionData transaction) {
+        if (transaction.getFileKey() != null) {
+            return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
+                //Da decommentare dopo l'aggiornamento dell'interfaccia ss
+                //log.debug("Document status is : {}", response.getDocumentStatus());
+                //if (!StringUtils.equals(response.getDocumentStatus(), Const.PRELOADED)){
+                //    throw new RaddGenericException(DOCUMENT_STATUS_VALIDATION, KO);
+                //}
                 log.debug("Document checksum is : {}", response.getChecksum());
                 if (Strings.isBlank(response.getChecksum()) ||
                         !response.getChecksum().equals(transaction.getChecksum())) {
@@ -69,9 +67,10 @@ public class BaseService {
                     log.error("Response contains Document version: {} checksum: {}", response.getVersionId(), response.getChecksum());
                     throw new RaddGenericException(CHECKSUM_VALIDATION);
                 }
-            }
-            return transaction;
-        });
+                return transaction;
+            });
+        }
+        return Mono.just(transaction);
     }
 
     protected Mono<TransactionData> updateFileMetadata(TransactionData transactionData) {
@@ -122,12 +121,19 @@ public class BaseService {
         }
     }
 
-    protected Mono<Void> verifyRoleForStarTransaction(String xPagopaPnCxRole, String fileKey) {
+    protected Mono<Void> verifyRoleForStarTransaction(String xPagopaPnCxRole, String fileKey, String checksum) {
         if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isBlank(fileKey)) {
             return Mono.error(new PnRaddBadRequestException(MISSING_FILE_KEY_REQUIRED));
         } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isNotBlank(fileKey)) {
             return Mono.error(new PnRaddBadRequestException(UNEXPECTED_FILE_KEY));
         }
+
+        if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isBlank(checksum)) {
+            return Mono.error(new PnRaddBadRequestException(MISSING_CHECKSUM_REQUIRED));
+        } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isNotBlank(checksum)) {
+            return Mono.error(new PnRaddBadRequestException(UNEXPECTED_CHECKSUM));
+        }
+
         return Mono.empty();
     }
 

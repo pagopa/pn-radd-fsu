@@ -112,6 +112,8 @@ public class Const {
     /* BaseService */
     public static final String MISSING_FILE_KEY_REQUIRED = "Campo fileKey obbligatorio mancante";
     public static final String UNEXPECTED_FILE_KEY = "Campo fileKey inaspettato";
+    public static final String MISSING_CHECKSUM_REQUIRED = "Campo checksum obbligatorio mancante";
+    public static final String UNEXPECTED_CHECKSUM = "Campo checksum inaspettato";
 
 
 

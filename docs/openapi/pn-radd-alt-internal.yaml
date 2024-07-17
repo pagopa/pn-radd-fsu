@@ -304,7 +304,7 @@ paths:
       parameters:
         - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
         - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-        - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       # NO EXTERNAL
+        - $ref: '#/components/parameters/cxRoleAuthFleet'                       # NO EXTERNAL
         - $ref: '#/components/parameters/uid'
       requestBody:
         content:
@@ -438,7 +438,7 @@ paths:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       #NO EXTERNAL
+      - $ref: '#/components/parameters/cxRoleAuthFleet'                       # NO EXTERNAL
     post:
       tags:
         - actOperations
@@ -545,7 +545,7 @@ paths:
       - $ref: '#/components/parameters/uid'
       - $ref: 'remote-refs.yaml#/components/parameters/cxTypeAuthFleet'       # NO EXTERNAL
       - $ref: 'remote-refs.yaml#/components/parameters/cxIdAuthFleet'         # NO EXTERNAL
-      - $ref: 'remote-refs.yaml#/components/parameters/cxRoleAuthFleet'       #NO EXTERNAL
+      - $ref: '#/components/parameters/cxRoleAuthFleet'                       # NO EXTERNAL
     post:
       tags:
         - aorOperations
@@ -1003,7 +1003,16 @@ components:
       required: false
       schema:
         type: string
-
+    cxRoleAuthFleet:
+      name: x-pagopa-pn-cx-role
+      in: header
+      description: User role
+      required: false
+      schema:
+        type: string
+        # ASCII printable characters
+        pattern: ^[ -~]*$
+        maxLength: 64
   responses:
     Forbidden:
       description: Forbidden

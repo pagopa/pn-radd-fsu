@@ -172,7 +172,10 @@ public class ActService extends BaseService {
                 .zipWhen(transactionAndResponse -> {
                     log.debug("Update file metadata");
                     TransactionData transaction = transactionAndResponse.getT1();
-                    return this.updateFileMetadata(transaction);
+                    if (transaction.getFileKey() != null) {
+                        return this.updateFileMetadata(transaction);
+                    }
+                    return Mono.just(transaction);
                 }, (in, out) -> in.getT2())
                 .map(response -> {
                     log.trace("START ACT TRANSACTION TOCK {}", new Date().getTime());

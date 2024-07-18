@@ -26,6 +26,6 @@
     "PnCronAnalyzer": "* */1 * * * *",
     "WireTapLogActivation": "false",
     "MountEfs": "false",
-    "MaxPrintRequests": "0"
+    "MaxPrintRequests": "1"
   }
 }

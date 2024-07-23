@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: diMR3lNlMHIKbSYMjfN/1w0j9JGu6gRMiSBJknAieCA=
+  version: 9uYdJD8gdKUqRfeelYsWDeAitgM5PfY+mSgicD13sfU=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -191,6 +191,8 @@ paths:
           integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
           integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
           integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
+          integration.request.header.x-pagopa-pn-custom-throttling-group: '''radd-by-cf'''
+          integration.request.header.x-pagopa-pn-custom-throttling-value: method.request.querystring.recipientTaxId
         passthroughBehavior: when_no_match
         connectionType: VPC_LINK
         timeoutInMillis: 29000
@@ -255,6 +257,8 @@ paths:
           integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
           integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
           integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
+          integration.request.header.x-pagopa-pn-custom-throttling-group: '''radd-by-cf'''
+          integration.request.header.x-pagopa-pn-custom-throttling-value: method.request.querystring.recipientTaxId
         passthroughBehavior: when_no_match
         connectionType: VPC_LINK
         timeoutInMillis: 29000
@@ -323,6 +327,8 @@ paths:
           integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
           integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
           integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
+          integration.request.header.x-pagopa-pn-custom-throttling-group: '''radd-by-cf'''
+          integration.request.header.x-pagopa-pn-custom-throttling-value: method.request.body.recipientTaxId
         passthroughBehavior: when_no_match
         connectionType: VPC_LINK
         timeoutInMillis: 29000
@@ -523,6 +529,8 @@ paths:
           integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
           integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
           integration.request.header.x-pagopa-pn-src-ch: context.authorizer.sourceChannel
+          integration.request.header.x-pagopa-pn-custom-throttling-group: '''radd-by-cf'''
+          integration.request.header.x-pagopa-pn-custom-throttling-value: method.request.body.recipientTaxId
         passthroughBehavior: when_no_match
         connectionType: VPC_LINK
         timeoutInMillis: 29000

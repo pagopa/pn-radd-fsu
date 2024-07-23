@@ -404,6 +404,22 @@ Parameters:
     Default: 0
     Description: 'Max number of print requests (0 means no limit)'
 
+  # Application throttling parameters
+  ApplicationLoadBalancerArn:
+    Type: String
+    Description: 'Application load balancer ARN'
+
+  MaxRequestPerThrottlingPeriod:
+    Type: Number
+    MinValue: 100
+    MaxValue: 2000000000
+    Description: 'Max request per throttling period'
+
+  ThrottlingPeriodSeconds:
+    Type: Number
+    AllowedValues: [60, 120, 300, 600]
+    Description: 'Throttling period in seconds'
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -576,6 +592,18 @@ Resources:
         IntendedUsage: RADD
         APIGatewayARNs: !GetAtt RaddAltMicroservicePublicAPI.Outputs.APIGatewayARN
         Limit: !Ref RaddWafLimit
+
+  # Rate limiting
+  RaddAltApiRateLimiting:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/applicative-throttling.yaml"
+      Parameters:
+        ApplicationLoadBalancerArn: !Ref ApplicationLoadBalancerArn
+        ThrottledPathsRegexp: '/radd-net/.*'
+        ThrottlingGroupString: 'pn-radd-alt'
+        MaxRequestPerThrottlingPeriod: !Ref MaxRequestPerThrottlingPeriod
+        ThrottlingPeriodSeconds: !Ref ThrottlingPeriodSeconds
 
   # Dashboard
   RaddAltMicroserviceCloudWatchDashboard:

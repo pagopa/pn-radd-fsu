@@ -26,6 +26,8 @@
     "PnCronAnalyzer": "* */1 * * * *",
     "WireTapLogActivation": "false",
     "MountEfs": "false",
-    "MaxPrintRequests": "10"
+    "MaxPrintRequests": "0",
+    "MaxRequestPerThrottlingPeriod": "100",
+    "ThrottlingPeriodSeconds": "60"
   }
 }

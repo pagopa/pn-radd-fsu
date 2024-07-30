@@ -169,14 +169,7 @@ public class ActService extends BaseService {
                 .zipWhen(transaction -> hasDocumentsAvailable(transaction.getIun()))
                 .zipWhen(transactionAndSentNotification -> retrieveDocumentsAndAttachments(request, transactionAndSentNotification),
                         (tupla, response) -> Tuples.of(tupla.getT1(), response))
-                .zipWhen(transactionAndResponse -> {
-                    log.debug("Update file metadata");
-                    TransactionData transaction = transactionAndResponse.getT1();
-                    if (transaction.getFileKey() != null) {
-                        return this.updateFileMetadata(transaction);
-                    }
-                    return Mono.just(transaction);
-                }, (in, out) -> in.getT2())
+                .zipWhen(transactionAndResponse -> this.updateFileMetadata(transactionAndResponse.getT1()), (in, out) -> in.getT2())
                 .map(response -> {
                     log.trace("START ACT TRANSACTION TOCK {}", new Date().getTime());
                     pnRaddAltAuditLog.getContext().addDownloadFilekeys(response.getDownloadUrlList()).addResponseStatus(response.getStatus().toString());

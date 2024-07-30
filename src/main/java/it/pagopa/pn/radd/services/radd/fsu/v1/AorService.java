@@ -155,7 +155,6 @@ public class AorService extends BaseService {
                                     return transactionData;
                                 })
                 )
-                .doOnNext(transactionData -> log.debug("Update file metadata"))
                 .flatMap(this::updateFileMetadata)
                 .doOnNext(transactionData -> log.debug("End AOR startTransaction"))
                 .map(data -> {

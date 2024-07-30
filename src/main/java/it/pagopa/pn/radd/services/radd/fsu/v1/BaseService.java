@@ -74,7 +74,12 @@ public class BaseService {
     }
 
     protected Mono<TransactionData> updateFileMetadata(TransactionData transactionData) {
-        return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey()).map(resp -> transactionData);
+        if (StringUtils.isNotBlank(transactionData.getFileKey())) {
+            log.debug("Update file metadata");
+            return this.safeStorageClient.updateFileMetadata(transactionData.getFileKey())
+                    .thenReturn(transactionData);
+        }
+        return Mono.just(transactionData);
     }
 
     protected Mono<String> getEnsureFiscalCode(String fiscalCode, String type) {
@@ -136,6 +141,5 @@ public class BaseService {
 
         return Mono.empty();
     }
-
 
 }

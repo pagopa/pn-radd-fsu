@@ -601,7 +601,7 @@ Resources:
       Parameters:
         ApplicationLoadBalancerArn: !Ref ApplicationLoadBalancerArn
         ThrottledPathsRegexp: '/radd-net/.*'
-        ThrottlingGroupString: 'pn-radd-alt'
+        ThrottlingGroupString: 'radd-by-cf'
         MaxRequestPerThrottlingPeriod: !Ref MaxRequestPerThrottlingPeriod
         ThrottlingPeriodSeconds: !Ref ThrottlingPeriodSeconds
 

@@ -605,6 +605,51 @@ Resources:
         MaxRequestPerThrottlingPeriod: !Ref MaxRequestPerThrottlingPeriod
         ThrottlingPeriodSeconds: !Ref ThrottlingPeriodSeconds
 
+  ######### WEB ACL ########
+  RaddAltBlockRegistryAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties: 
+      ResourceArn: !GetAtt RaddAltMicroservicePublicAPI.Outputs.APIGatewayARN
+      WebACLArn: !GetAtt RaddAltBlockRegistryAcl.Arn
+
+  RaddAltBlockRegistryAcl:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: RaddAltBlockRegistryAcl
+      Scope: REGIONAL
+      Description: WebACL che permette di inibire le chiamate al registry
+      DefaultAction:
+        Allow:
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: radd-alt-blocking-registry-webacl-metric
+      CustomResponseBodies:
+        BlockRegistry:
+          ContentType: TEXT_PLAIN
+          Content: Registry disabled
+      Rules:
+        - Name: BlockRADDregistry
+          Priority: 10
+          VisibilityConfig: 
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: BlockRADDregistry
+          Action: 
+            Block:
+              CustomResponse:
+                ResponseCode: 403
+                CustomResponseBodyKey: BlockRegistry
+          Statement: 
+            ByteMatchStatement: 
+              FieldToMatch:
+                UriPath: {}
+              PositionalConstraint: STARTS_WITH
+              SearchString: /radd-net/api/v1/registry
+              TextTransformations:
+                - Type: NONE
+                  Priority: 0
+
   # Dashboard
   RaddAltMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack

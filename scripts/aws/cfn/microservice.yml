@@ -634,7 +634,7 @@ Resources:
           VisibilityConfig: 
             SampledRequestsEnabled: true
             CloudWatchMetricsEnabled: true
-            MetricName: BlockRADDregistry
+            MetricName: Block-Radd-registry-metric
           Action: 
             Block:
               CustomResponse:

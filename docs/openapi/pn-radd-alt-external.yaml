@@ -715,7 +715,6 @@ components:
       description: Richiesta  di completamento operazione
       type: object
       required:
-        - versionToken
         - operationId
         - recipientTaxId
         - recipientType

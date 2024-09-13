@@ -147,7 +147,7 @@ public class ActService extends BaseService {
                 .build()
                 .log();
 
-        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey(), request.getChecksum())
+        return verifyRoleForStarTransaction(xPagopaPnCxRole, request.getFileKey(), request.getChecksum(), request.getVersionToken())
                 .then(validateAndSettingsData(uid, request, xPagopaPnCxType, xPagopaPnCxId))
                 .flatMap(this::getEnsureRecipientAndDelegate)
                 .doOnNext(transactionData -> {

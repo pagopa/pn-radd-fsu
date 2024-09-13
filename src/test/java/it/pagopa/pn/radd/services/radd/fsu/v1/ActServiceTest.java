@@ -169,6 +169,26 @@ class ActServiceTest  {
     }
 
     @Test
+    void testStartTransactionReturnErrorResponseStatusExceptionRaddUploaderWithNoVersionToken(){
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setIun("iun");
+        startTransactionRequest.setFileKey("fileKey");
+        startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        transactionData.setIun("iun");
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken obbligatorio mancante".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
     void testStartTransactionReturnErrorResponseStatusExceptionRaddStandardWithFileKey(){
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.setQrCode("qrcode");
@@ -184,6 +204,25 @@ class ActServiceTest  {
         StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD", startTransactionRequest) )
                 .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
                         "Campo fileKey inaspettato".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorResponseStatusExceptionRaddStandardWithVersionToken(){
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setIun("iun");
+        startTransactionRequest.setVersionToken("versionToken");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        transactionData.setIun("iun");
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD", startTransactionRequest) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken inaspettato".equals(throwable.getMessage()))
                 .verify();
     }
 

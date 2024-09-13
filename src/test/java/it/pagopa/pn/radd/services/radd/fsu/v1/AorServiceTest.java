@@ -123,6 +123,27 @@ class AorServiceTest {
     }
 
     @Test
+    void testStartTransactionReturnErrorRaddUploaderWithoutVersionToken(){
+        AorStartTransactionRequest request = new AorStartTransactionRequest();
+        request.setFileKey("fileKey");
+        request.setChecksum("checksum");
+        StepVerifier.create(aorService.startTransaction("uid",request,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken obbligatorio mancante".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorRaddStandardWithVerionToken(){
+        AorStartTransactionRequest request = new AorStartTransactionRequest();
+        request.setVersionToken("versionToken");
+        StepVerifier.create(aorService.startTransaction("uid",request,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_STANDARD)))
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken inaspettato".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
     void testStartOK() {
         Mockito.when(pnDataVaultClient.getEnsureFiscalCode(startTransactionRequest.getRecipientTaxId(), startTransactionRequest.getRecipientType().getValue()))
                 .thenReturn(Mono.just("PF-4fc75df3-0913-407e-bdaa-e50329708b7d"));

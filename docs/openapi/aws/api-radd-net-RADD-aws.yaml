@@ -1537,7 +1537,7 @@ components:
           type: string
           description: >-
             valore della versione del file restituito dall'operazione PUT di
-            updload.
+            updload (obbligatorio solo in caso di upload del file zip).
           example: OXSnS_28NF1sKiaZsniWHbqwX2LktjCd
         operationId:
           type: string

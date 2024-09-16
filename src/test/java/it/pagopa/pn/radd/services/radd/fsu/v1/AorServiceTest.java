@@ -97,6 +97,7 @@ class AorServiceTest {
         AorStartTransactionRequest request = new AorStartTransactionRequest();
         request.setFileKey("test");
         request.setChecksum("checksum");
+        request.setVersionToken("versionToken");
         StepVerifier.create(aorService.startTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)))
                 .expectError(PnInvalidInputException.class).verify();
 

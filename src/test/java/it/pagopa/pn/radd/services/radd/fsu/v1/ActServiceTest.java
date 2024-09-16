@@ -140,6 +140,7 @@ class ActServiceTest  {
         startTransactionRequest.setRecipientTaxId("taxId");
         startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setVersionToken("versionToken");
         startTransactionRequest.setIun("iun");
         startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
         TransactionData transactionData = new TransactionData();
@@ -232,6 +233,7 @@ class ActServiceTest  {
         startTransactionRequest.recipientType(ActStartTransactionRequest.RecipientTypeEnum.PG);
         startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setVersionToken("versionToken");
         Mono<StartTransactionResponse> response = actService.startTransaction("test", "123", CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest);
         response.onErrorResume(PnInvalidInputException.class, exception -> {
             log.info("Exception {}", exception.getReason());
@@ -266,6 +268,7 @@ class ActServiceTest  {
         startTransactionRequest.setIun("iun");
         startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setVersionToken("versionToken");
         TransactionData transactionData = new TransactionData();
         transactionData.setQrCode(startTransactionRequest.getQrCode());
         transactionData.setRecipientId("234");

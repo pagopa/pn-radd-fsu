@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: 9uYdJD8gdKUqRfeelYsWDeAitgM5PfY+mSgicD13sfU=
+  version: c7Xcn2YhTAGoYhFUKbZwC6NH0X2IDxXWpfgMlQpXz/E=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -1529,7 +1529,6 @@ components:
       description: Richiesta  di completamento operazione
       type: object
       required:
-        - versionToken
         - operationId
         - recipientTaxId
         - recipientType
@@ -1538,7 +1537,7 @@ components:
           type: string
           description: >-
             valore della versione del file restituito dall'operazione PUT di
-            updload.
+            updload (obbligatorio solo in caso di upload del file zip).
           example: OXSnS_28NF1sKiaZsniWHbqwX2LktjCd
         operationId:
           type: string

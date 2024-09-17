@@ -114,6 +114,8 @@ public class Const {
     public static final String UNEXPECTED_FILE_KEY = "Campo fileKey inaspettato";
     public static final String MISSING_CHECKSUM_REQUIRED = "Campo checksum obbligatorio mancante";
     public static final String UNEXPECTED_CHECKSUM = "Campo checksum inaspettato";
+    public static final String MISSING_VERSION_TOKEN_REQUIRED = "Campo versionToken obbligatorio mancante";
+    public static final String UNEXPECTED_VERSION_TOKEN = "Campo versionToken inaspettato";
 
 
 

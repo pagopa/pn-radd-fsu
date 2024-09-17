@@ -126,7 +126,7 @@ public class BaseService {
         }
     }
 
-    protected Mono<Void> verifyRoleForStarTransaction(String xPagopaPnCxRole, String fileKey, String checksum) {
+    protected Mono<Void> verifyRoleForStarTransaction(String xPagopaPnCxRole, String fileKey, String checksum, String versionToken) {
         if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isBlank(fileKey)) {
             return Mono.error(new PnRaddBadRequestException(MISSING_FILE_KEY_REQUIRED));
         } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isNotBlank(fileKey)) {
@@ -137,6 +137,12 @@ public class BaseService {
             return Mono.error(new PnRaddBadRequestException(MISSING_CHECKSUM_REQUIRED));
         } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isNotBlank(checksum)) {
             return Mono.error(new PnRaddBadRequestException(UNEXPECTED_CHECKSUM));
+        }
+
+        if (String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isBlank(versionToken)) {
+            return Mono.error(new PnRaddBadRequestException(MISSING_VERSION_TOKEN_REQUIRED));
+        } else if (!String.valueOf(RADD_UPLOADER).equals(xPagopaPnCxRole) && StringUtils.isNotBlank(versionToken)) {
+            return Mono.error(new PnRaddBadRequestException(UNEXPECTED_VERSION_TOKEN));
         }
 
         return Mono.empty();

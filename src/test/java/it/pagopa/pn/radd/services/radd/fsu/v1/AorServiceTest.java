@@ -97,6 +97,7 @@ class AorServiceTest {
         AorStartTransactionRequest request = new AorStartTransactionRequest();
         request.setFileKey("test");
         request.setChecksum("checksum");
+        request.setVersionToken("versionToken");
         StepVerifier.create(aorService.startTransaction("uid", request, CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)))
                 .expectError(PnInvalidInputException.class).verify();
 
@@ -119,6 +120,27 @@ class AorServiceTest {
         StepVerifier.create(aorService.startTransaction("uid",startTransactionRequest,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_STANDARD)))
                 .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
                         "Campo fileKey inaspettato".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorRaddUploaderWithoutVersionToken(){
+        AorStartTransactionRequest request = new AorStartTransactionRequest();
+        request.setFileKey("fileKey");
+        request.setChecksum("checksum");
+        StepVerifier.create(aorService.startTransaction("uid",request,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_UPLOADER)) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken obbligatorio mancante".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
+    void testStartTransactionReturnErrorRaddStandardWithVerionToken(){
+        AorStartTransactionRequest request = new AorStartTransactionRequest();
+        request.setVersionToken("versionToken");
+        StepVerifier.create(aorService.startTransaction("uid",request,CxTypeAuthFleet.valueOf("PF"), "xPagopaPnCxId",String.valueOf(RaddRole.RADD_STANDARD)))
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken inaspettato".equals(throwable.getMessage()))
                 .verify();
     }
 

@@ -140,6 +140,7 @@ class ActServiceTest  {
         startTransactionRequest.setRecipientTaxId("taxId");
         startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setVersionToken("versionToken");
         startTransactionRequest.setIun("iun");
         startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
         TransactionData transactionData = new TransactionData();
@@ -169,6 +170,26 @@ class ActServiceTest  {
     }
 
     @Test
+    void testStartTransactionReturnErrorResponseStatusExceptionRaddUploaderWithNoVersionToken(){
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setIun("iun");
+        startTransactionRequest.setFileKey("fileKey");
+        startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        transactionData.setIun("iun");
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken obbligatorio mancante".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
     void testStartTransactionReturnErrorResponseStatusExceptionRaddStandardWithFileKey(){
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.setQrCode("qrcode");
@@ -188,11 +209,31 @@ class ActServiceTest  {
     }
 
     @Test
+    void testStartTransactionReturnErrorResponseStatusExceptionRaddStandardWithVersionToken(){
+        ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
+        startTransactionRequest.setQrCode("qrcode");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setOperationId("id");
+        startTransactionRequest.setRecipientTaxId("taxId");
+        startTransactionRequest.setIun("iun");
+        startTransactionRequest.setVersionToken("versionToken");
+        startTransactionRequest.setRecipientType(ActStartTransactionRequest.RecipientTypeEnum.PF);
+        TransactionData transactionData = new TransactionData();
+        transactionData.setQrCode("qrcode");
+        transactionData.setIun("iun");
+        StepVerifier.create(actService.startTransaction("id",  "cxId",CxTypeAuthFleet.PG, "RADD", startTransactionRequest) )
+                .expectErrorMatches(throwable -> throwable instanceof PnRaddBadRequestException &&
+                        "Campo versionToken inaspettato".equals(throwable.getMessage()))
+                .verify();
+    }
+
+    @Test
     void testStartTransactionReturnError(){
         ActStartTransactionRequest startTransactionRequest = new ActStartTransactionRequest();
         startTransactionRequest.recipientType(ActStartTransactionRequest.RecipientTypeEnum.PG);
         startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setVersionToken("versionToken");
         Mono<StartTransactionResponse> response = actService.startTransaction("test", "123", CxTypeAuthFleet.PG, "RADD_UPLOADER", startTransactionRequest);
         response.onErrorResume(PnInvalidInputException.class, exception -> {
             log.info("Exception {}", exception.getReason());
@@ -227,6 +268,7 @@ class ActServiceTest  {
         startTransactionRequest.setIun("iun");
         startTransactionRequest.setFileKey("fileKey");
         startTransactionRequest.setChecksum("checksum");
+        startTransactionRequest.setVersionToken("versionToken");
         TransactionData transactionData = new TransactionData();
         transactionData.setQrCode(startTransactionRequest.getQrCode());
         transactionData.setRecipientId("234");

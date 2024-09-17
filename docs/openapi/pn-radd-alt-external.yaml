@@ -715,13 +715,14 @@ components:
       description: Richiesta  di completamento operazione
       type: object
       required:
+        - versionToken
         - operationId
         - recipientTaxId
         - recipientType
       properties:
         versionToken:
           type: string
-          description: valore della versione del file restituito dall'operazione PUT di updload (obbligatorio solo in caso di upload del file zip).
+          description: valore della versione del file restituito dall'operazione PUT di updload.
           example: "OXSnS_28NF1sKiaZsniWHbqwX2LktjCd"
         operationId:
           type: string

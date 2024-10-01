@@ -7,6 +7,9 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
+  EnvironmentType:
+    Type: String
+
   AlarmSNSTopicArn:
     Type: String
     Description: ARN of alarm topic
@@ -420,6 +423,9 @@ Parameters:
     AllowedValues: [60, 120, 300, 600]
     Description: 'Throttling period in seconds'
 
+Conditions:
+  IsNotUatEnv: !Not [!Equals [!Ref EnvironmentType, 'uat']]
+
 Resources:
 
   # PN-Radd-Fsu microservice
@@ -604,6 +610,53 @@ Resources:
         ThrottlingGroupString: 'radd-by-cf'
         MaxRequestPerThrottlingPeriod: !Ref MaxRequestPerThrottlingPeriod
         ThrottlingPeriodSeconds: !Ref ThrottlingPeriodSeconds
+
+  ######## WEB ACL ########
+  RaddAltBlockRegistryAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Condition: IsNotUatEnv
+    Properties: 
+      ResourceArn: !GetAtt RaddAltMicroservicePublicAPI.Outputs.APIGatewayARN
+      WebACLArn: !GetAtt RaddAltBlockRegistryAcl.Arn
+
+  RaddAltBlockRegistryAcl:
+    Type: AWS::WAFv2::WebACL
+    Condition: IsNotUatEnv
+    Properties:
+      Name: RaddAltBlockRegistryAcl
+      Scope: REGIONAL
+      Description: WebACL che permette di inibire le chiamate al registry
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: radd-alt-blocking-registry-webacl-metric
+      CustomResponseBodies:
+        BlockRegistry:
+          ContentType: TEXT_PLAIN
+          Content: Registry disabled
+      Rules:
+        - Name: BlockRADDregistry
+          Priority: 10
+          VisibilityConfig: 
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: radd-alt-blocking-registry-webacl-rule-metric
+          Action: 
+            Block:
+              CustomResponse:
+                ResponseCode: 403
+                CustomResponseBodyKey: BlockRegistry
+          Statement: 
+            ByteMatchStatement: 
+              FieldToMatch:
+                UriPath: {}
+              PositionalConstraint: STARTS_WITH
+              SearchString: /radd-net/api/v1/registry
+              TextTransformations:
+                - Type: NONE
+                  Priority: 0
 
   # Dashboard
   RaddAltMicroserviceCloudWatchDashboard:

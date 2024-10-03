@@ -53,7 +53,7 @@ public class BaseService {
     }
 
     protected Mono<TransactionData> verifyCheckSum(TransactionData transaction) {
-        if (transaction.getFileKey() != null) {
+        if (StringUtils.isNotBlank(transaction.getFileKey())) {
             return this.safeStorageClient.getFile(transaction.getFileKey()).map(response -> {
                 //Da decommentare dopo l'aggiornamento dell'interfaccia ss
                 //log.debug("Document status is : {}", response.getDocumentStatus());

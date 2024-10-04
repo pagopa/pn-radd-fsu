@@ -7,9 +7,6 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
-  EnvironmentType:
-    Type: String
-
   AlarmSNSTopicArn:
     Type: String
     Description: ARN of alarm topic
@@ -423,8 +420,12 @@ Parameters:
     AllowedValues: [60, 120, 300, 600]
     Description: 'Throttling period in seconds'
 
-Conditions:
-  IsNotUatEnv: !Not [!Equals [!Ref EnvironmentType, 'uat']]
+  BlockImportLocations:
+    Type: String
+    Default: true
+
+  Conditions:
+    isImportLocationsBlocked: [!Equals [!Ref BlockImportLocations, 'true']]
 
 Resources:
 
@@ -614,14 +615,14 @@ Resources:
   ######## WEB ACL ########
   RaddAltBlockRegistryAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
-    Condition: IsNotUatEnv
+    Condition: isImportLocationsBlocked
     Properties: 
       ResourceArn: !GetAtt RaddAltMicroservicePublicAPI.Outputs.APIGatewayARN
       WebACLArn: !GetAtt RaddAltBlockRegistryAcl.Arn
 
   RaddAltBlockRegistryAcl:
     Type: AWS::WAFv2::WebACL
-    Condition: IsNotUatEnv
+    Condition: isImportLocationsBlocked
     Properties:
       Name: RaddAltBlockRegistryAcl
       Scope: REGIONAL

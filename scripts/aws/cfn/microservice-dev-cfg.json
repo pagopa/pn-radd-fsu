@@ -28,6 +28,7 @@
     "MountEfs": "false",
     "MaxPrintRequests": "10",
     "MaxRequestPerThrottlingPeriod": "100",
-    "ThrottlingPeriodSeconds": "60"
+    "ThrottlingPeriodSeconds": "60",
+    "BlockImportLocations": "false"
   }
 }

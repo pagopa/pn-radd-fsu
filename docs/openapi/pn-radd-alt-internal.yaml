@@ -931,12 +931,12 @@ components:
   parameters:
     uid:
       name: uid
-      description: Identificativo pseudo-anonimizzato dell'operatore RADD
+      description: Identificativo pseudo-anonimizzato dell'operatore RADD deve contenere l'id utente e l'id sede che corrisponde al campo externalCode dell’anagrafica delle sedi separati dal carattere @.
       in: header
       required: true
       schema:
         type: string
-      example: 00001-000-2024_02_02T00:00:00
+      example: USR1029@UFFRO129
     recipientTaxId:
       name: recipientTaxId
       description: Codice Fiscale Destinatario

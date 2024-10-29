@@ -38,7 +38,7 @@ public class PnDeliveryPushClient extends BaseClient {
     private final PnRaddFsuConfig pnRaddFsuConfig;
 
 
-    public Flux<LegalFactListElementDto> getNotificationLegalFacts(String recipientInternalId, String iun) {
+    public Flux<LegalFactListElementV20Dto> getNotificationLegalFacts(String recipientInternalId, String iun) {
         CxTypeAuthFleetDto cxType = null;
         return this.legalFactsApi.getNotificationLegalFactsPrivate( recipientInternalId, iun, null, cxType, null)
                 .retryWhen(
@@ -48,10 +48,10 @@ public class PnDeliveryPushClient extends BaseClient {
                 .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 
-    public Mono<LegalFactDownloadMetadataWithContentTypeResponseDto> getLegalFact(String recipientInternalId, String iun, LegalFactCategoryDto categoryDto, String legalFactId) {
+    public Mono<LegalFactDownloadMetadataWithContentTypeResponseDto> getLegalFact(String recipientInternalId, String iun, String legalFactId) {
         log.trace("GET LEGAL FACT TICK {}", new Date().getTime());
         CxTypeAuthFleetDto cxType = null;
-        return this.legalFactsApi.getLegalFactPrivate(recipientInternalId,iun, categoryDto, legalFactId, null, cxType, null)
+        return this.legalFactsApi.getLegalFactByIdPrivate(recipientInternalId, iun, legalFactId, null, cxType, null)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(250))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

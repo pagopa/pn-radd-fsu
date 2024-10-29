@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryV20Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryV20Dto;
 import org.junit.jupiter.api.Test;
 
 class LegalFactInfoTest {
@@ -40,13 +41,13 @@ class LegalFactInfoTest {
     @Test
     void testCanEqual3() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -58,7 +59,7 @@ class LegalFactInfoTest {
      *
      * <ul>
      *   <li>default or parameterless constructor of {@link LegalFactInfo}
-     *   <li>{@link LegalFactInfo#setCategory(LegalFactCategoryDto)}
+     *   <li>{@link LegalFactInfo#setCategory(LegalFactCategoryV20Dto)}
      *   <li>{@link LegalFactInfo#setContentType(String)}
      *   <li>{@link LegalFactInfo#setKey(String)}
      *   <li>{@link LegalFactInfo#setUrl(String)}
@@ -72,12 +73,12 @@ class LegalFactInfoTest {
     @Test
     void testConstructor() {
         LegalFactInfo actualLegalFactInfo = new LegalFactInfo();
-        actualLegalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        actualLegalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         actualLegalFactInfo.setContentType("text/plain");
         actualLegalFactInfo.setKey("Key");
         actualLegalFactInfo.setUrl("https://example.org/example");
         String actualToStringResult = actualLegalFactInfo.toString();
-        assertEquals(LegalFactCategoryDto.SENDER_ACK, actualLegalFactInfo.getCategory());
+        assertEquals(LegalFactCategoryV20Dto.SENDER_ACK, actualLegalFactInfo.getCategory());
         assertEquals("text/plain", actualLegalFactInfo.getContentType());
         assertEquals("Key", actualLegalFactInfo.getKey());
         assertEquals("https://example.org/example", actualLegalFactInfo.getUrl());
@@ -333,7 +334,7 @@ class LegalFactInfoTest {
     @Test
     void testEquals14() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
@@ -346,7 +347,7 @@ class LegalFactInfoTest {
     @Test
     void testEquals15() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
@@ -364,7 +365,7 @@ class LegalFactInfoTest {
     @Test
     void testEquals16() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
@@ -384,13 +385,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals17() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -411,7 +412,7 @@ class LegalFactInfoTest {
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -424,13 +425,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals19() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.DIGITAL_DELIVERY);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.DIGITAL_DELIVERY);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -443,13 +444,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals20() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("Not all who wander are lost");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -462,13 +463,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals21() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType(null);
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -481,13 +482,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals22() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("https://example.org/example");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -500,13 +501,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals23() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey(null);
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -519,13 +520,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals24() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("Key");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -538,13 +539,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals25() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl(null);
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -588,13 +589,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals27() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType(null);
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType(null);
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl("https://example.org/example");
@@ -614,13 +615,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals28() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey(null);
         legalFactInfo.setUrl("https://example.org/example");
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey(null);
         legalFactInfo2.setUrl("https://example.org/example");
@@ -640,13 +641,13 @@ class LegalFactInfoTest {
     @Test
     void testEquals29() {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
-        legalFactInfo.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo.setContentType("text/plain");
         legalFactInfo.setKey("Key");
         legalFactInfo.setUrl(null);
 
         LegalFactInfo legalFactInfo2 = new LegalFactInfo();
-        legalFactInfo2.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        legalFactInfo2.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactInfo2.setContentType("text/plain");
         legalFactInfo2.setKey("Key");
         legalFactInfo2.setUrl(null);

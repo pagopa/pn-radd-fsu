@@ -133,12 +133,12 @@ class ActServiceStartTransactionTest {
         return sentNotificationDto;
     }
 
-    private Stream<LegalFactListElementDto> createLegalFactListElementDto(){
+    private Stream<LegalFactListElementV20Dto> createLegalFactListElementDto(){
 
-        LegalFactsIdDto legalFactsIdDto = new LegalFactsIdDto();
-        legalFactsIdDto.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        LegalFactsIdV20Dto legalFactsIdDto = new LegalFactsIdV20Dto();
+        legalFactsIdDto.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactsIdDto.setKey("Key");
-        LegalFactListElementDto legalFactListElementDto = new LegalFactListElementDto();
+        LegalFactListElementV20Dto legalFactListElementDto = new LegalFactListElementV20Dto();
         legalFactListElementDto.setTaxId("recTaxId");
         legalFactListElementDto.setLegalFactsId(legalFactsIdDto);
 
@@ -175,7 +175,7 @@ class ActServiceStartTransactionTest {
         LegalFactDownloadMetadataWithContentTypeResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataWithContentTypeResponseDto();
         legalFactDownloadMetadataResponseDto.setUrl("http://safestorage/UrlLegalFact?");
         legalFactDownloadMetadataResponseDto.setContentType("application/pdf");
-        Mockito.when(pnDeliveryPushClient.getLegalFact(any(), any(), any(), any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
+        Mockito.when(pnDeliveryPushClient.getLegalFact(any(), any(), any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
 
         Mockito.when(raddTransactionDAOImpl.updateZipAttachments(any(), any())).thenReturn(Mono.just(raddTransactionEntity));
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", "cxId", CxTypeAuthFleet.PG, "RADD_UPLOADER", request).block();
@@ -210,7 +210,7 @@ class ActServiceStartTransactionTest {
         legalFactDownloadMetadataResponseDto.setUrl("UrlLegalFact");
         legalFactDownloadMetadataResponseDto.setContentType("application/pdf");
         legalFactDownloadMetadataResponseDto.setRetryAfter(new BigDecimal(20));
-        Mockito.when(pnDeliveryPushClient.getLegalFact(any(), any(), any(), any()))
+        Mockito.when(pnDeliveryPushClient.getLegalFact(any(), any(), any()))
                 .thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(any(), any(), any(), any())).thenReturn(Mono.just(new RaddTransactionEntity()));

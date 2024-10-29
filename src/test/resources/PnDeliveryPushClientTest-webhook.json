@@ -135,7 +135,7 @@
   },
   {
     "httpRequest": {
-      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/legal-facts/PEC_RECEIPT/98765",
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/download/legal-facts/98765",
       "queryStringParameters" : {
         "recipientInternalId" : [ "854Bgs31a" ]
       },
@@ -153,7 +153,7 @@
   },
   {
     "httpRequest": {
-      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/legal-facts/PEC_RECEIPT/98765",
+      "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/download/legal-facts/98765",
       "queryStringParameters" : {
         "recipientInternalId" : [ "" ]
       },

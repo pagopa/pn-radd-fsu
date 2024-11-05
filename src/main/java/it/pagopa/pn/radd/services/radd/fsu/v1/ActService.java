@@ -4,9 +4,9 @@ import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationPaymentItemDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryV20Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactListElementDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactListElementV20Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationStatusDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
@@ -312,7 +312,6 @@ public class ActService extends BaseService {
                 .flatMap(item ->
                         pnDeliveryPushClient.getLegalFact(transaction.getEnsureRecipientId(),
                                         transaction.getIun(),
-                                        item.getLegalFactsId().getCategory(),
                                         item.getLegalFactsId().getKey())
                                 .filter(legalFact -> CONTENT_TYPE_PDF.equals(legalFact.getContentType()) ||
                                         CONTENT_TYPE_ZIP.equals(legalFact.getContentType()))
@@ -339,19 +338,19 @@ public class ActService extends BaseService {
 
     @NotNull
     private static String getDocumentType(LegalFactInfo legalFactInfo) {
-        return LegalFactCategoryDto.PEC_RECEIPT.equals(legalFactInfo.getCategory()) ||
-                LegalFactCategoryDto.ANALOG_DELIVERY.equals(legalFactInfo.getCategory()) ?
+        return LegalFactCategoryV20Dto.PEC_RECEIPT.equals(legalFactInfo.getCategory()) ||
+                LegalFactCategoryV20Dto.ANALOG_DELIVERY.equals(legalFactInfo.getCategory()) ?
                 DocumentTypeEnum.LEGAL_FACT_EXTERNAL.name() :
                 DocumentTypeEnum.LEGAL_FACT.name();
     }
 
     @NotNull
-    private static Predicate<LegalFactListElementDto> filterLegalFacts(TransactionData transaction) {
-        return legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT;
+    private static Predicate<LegalFactListElementV20Dto> filterLegalFacts(TransactionData transaction) {
+        return legalFact -> legalFact.getLegalFactsId().getCategory() != LegalFactCategoryV20Dto.PEC_RECEIPT;
     }
 
     @NotNull
-    private static LegalFactInfo getLegalFactInfo(LegalFactListElementDto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
+    private static LegalFactInfo getLegalFactInfo(LegalFactListElementV20Dto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
         if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0) {
             log.debug("Found legal fact with retry after {}", legalFact.getRetryAfter());
             throw new RaddGenericException(RETRY_AFTER, legalFact.getRetryAfter());
@@ -361,7 +360,7 @@ public class ActService extends BaseService {
     }
 
     @NotNull
-    private static LegalFactInfo createLegalFactInfo(LegalFactListElementDto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
+    private static LegalFactInfo createLegalFactInfo(LegalFactListElementV20Dto item, LegalFactDownloadMetadataWithContentTypeResponseDto legalFact) {
         LegalFactInfo legalFactInfo = new LegalFactInfo();
         if (CONTENT_TYPE_ZIP.equals(legalFact.getContentType())) {
             legalFactInfo.setKey(removeSafeStoragePrefix(item.getLegalFactsId().getKey()));

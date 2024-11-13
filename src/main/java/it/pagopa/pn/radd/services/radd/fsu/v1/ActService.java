@@ -7,7 +7,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNo
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryV20Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactListElementV20Dto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationStatusDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationStatusV26Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.*;
@@ -519,7 +519,7 @@ public class ActService extends BaseService {
     private Mono<String> hasNotificationsCancelled(String iun) {
         return this.pnDeliveryPushClient.getNotificationHistory(iun)
                 .flatMap(response -> {
-                    if (response.getNotificationStatus() == NotificationStatusDto.CANCELLED) {
+                    if (response.getNotificationStatus() == NotificationStatusV26Dto.CANCELLED) {
                         return Mono.error(new RaddGenericException(NOTIFICATION_CANCELLED));
                     }
                     return Mono.just(iun);

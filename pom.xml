@@ -475,7 +475,7 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
-                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery-push/92beeb82aac748f858c0d38bd87c4c97aee52b6e/docs/openapi/api-private.yaml</inputSpec>
+                            <inputSpec>https://raw.githubusercontent.com/pagopa/pn-delivery-push/29b903369952f7e410bb9065e9e940bb6631d285/docs/openapi/api-private.yaml</inputSpec>
                             <generatorName>java</generatorName>
                             <library>webclient</library>
                             <generateApiDocumentation>false</generateApiDocumentation>

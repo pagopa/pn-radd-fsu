@@ -3,7 +3,7 @@ package it.pagopa.pn.radd.services.radd.fsu.v1;
 import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationPaymentItemDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactCategoryV20Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.LegalFactListElementV20Dto;
@@ -203,7 +203,7 @@ public class ActService extends BaseService {
 
 
     @NotNull
-    private Mono<StartTransactionResponse> retrieveDocumentsAndAttachments(ActStartTransactionRequest request, Tuple2<TransactionData, SentNotificationV23Dto> transactionAndSentNotification) {
+    private Mono<StartTransactionResponse> retrieveDocumentsAndAttachments(ActStartTransactionRequest request, Tuple2<TransactionData, SentNotificationV24Dto> transactionAndSentNotification) {
         log.debug("Retrieving document and attachments");
         Flux<DownloadUrl> urlDocuments = getUrlDoc(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
         Flux<DownloadUrl> urlAttachments = getUrlsAttachments(transactionAndSentNotification.getT1(), transactionAndSentNotification.getT2());
@@ -400,7 +400,7 @@ public class ActService extends BaseService {
         return downloadUrl;
     }
 
-    private Flux<DownloadUrl> getUrlDoc(TransactionData transaction, SentNotificationV23Dto sentDTO) {
+    private Flux<DownloadUrl> getUrlDoc(TransactionData transaction, SentNotificationV24Dto sentDTO) {
         return Flux.fromStream(sentDTO.getDocuments().stream())
                 .flatMap(doc -> this.pnDeliveryClient.getPresignedUrlDocument(transaction.getIun(), doc.getDocIdx(), transaction.getEnsureRecipientId())
                         .map(notificationMetadata -> new NotificationAttachment(DOCUMENT, notificationMetadata))
@@ -425,7 +425,7 @@ public class ActService extends BaseService {
         }
     }
 
-    private Flux<DownloadUrl> getUrlsAttachments(TransactionData transactionData, SentNotificationV23Dto sentDTO) {
+    private Flux<DownloadUrl> getUrlsAttachments(TransactionData transactionData, SentNotificationV24Dto sentDTO) {
         if (sentDTO.getRecipients().isEmpty())
             return Flux.empty();
         return Flux.fromStream(sentDTO.getRecipients().stream())
@@ -506,7 +506,7 @@ public class ActService extends BaseService {
         return Mono.just(true);
     }
 
-    private Mono<SentNotificationV23Dto> hasDocumentsAvailable(String iun) {
+    private Mono<SentNotificationV24Dto> hasDocumentsAvailable(String iun) {
         return this.pnDeliveryClient.getNotifications(iun)
                 .flatMap(response -> {
                     if (response.getDocumentsAvailable() != null && Boolean.FALSE.equals(response.getDocumentsAvailable())) {

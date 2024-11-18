@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationRecipientV23Dto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
@@ -82,7 +82,7 @@ class DocumentOperationsServiceTest {
         raddTransactionEntity.setStatus(Const.STARTED);
         raddTransactionEntity.setIun("123");
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -108,7 +108,7 @@ class DocumentOperationsServiceTest {
         raddTransactionEntity.setStatus(Const.STARTED);
         raddTransactionEntity.setZipAttachments(Map.of("123", "123"));
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -133,7 +133,7 @@ class DocumentOperationsServiceTest {
         raddTransactionEntity.setStatus(Const.STARTED);
         raddTransactionEntity.setIun("123");
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -158,13 +158,13 @@ class DocumentOperationsServiceTest {
     }
 
     @Test
-    void documentDownloadAORNoRecipientTest() throws IOException {
+    void documentDownloadAORNoRecipientTest() {
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setRecipientId("123");
         raddTransactionEntity.setStatus(Const.STARTED);
         raddTransactionEntity.setIun("123");
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -195,12 +195,12 @@ class DocumentOperationsServiceTest {
     }
 
     @Test
-    void documentDownloadValidateErrorTest() throws IOException {
+    void documentDownloadValidateErrorTest() {
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setRecipientId("123");
         raddTransactionEntity.setStatus(Const.STARTED);
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -213,12 +213,12 @@ class DocumentOperationsServiceTest {
     }
 
     @Test
-    void documentDownloadValidateErrorTest2() throws IOException {
+    void documentDownloadValidateErrorTest2() {
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setRecipientId("123");
         raddTransactionEntity.setStatus(Const.STARTED);
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -231,12 +231,12 @@ class DocumentOperationsServiceTest {
     }
 
     @Test
-    void documentDownloadAbortedStatusErrorTest() throws IOException {
+    void documentDownloadAbortedStatusErrorTest() {
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setRecipientId("123");
         raddTransactionEntity.setStatus(Const.ABORTED);
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");
@@ -250,12 +250,12 @@ class DocumentOperationsServiceTest {
     }
 
     @Test
-    void documentDownloadPdfGeneratorErrorTest() throws IOException {
+    void documentDownloadPdfGeneratorErrorTest() {
         RaddTransactionEntity raddTransactionEntity = new RaddTransactionEntity();
         raddTransactionEntity.setRecipientId("123");
         raddTransactionEntity.setStatus(Const.STARTED);
 
-        SentNotificationV23Dto sentNotificationV21Dto = new SentNotificationV23Dto();
+        SentNotificationV24Dto sentNotificationV21Dto = new SentNotificationV24Dto();
         NotificationRecipientV23Dto notificationRecipientV21Dto = new NotificationRecipientV23Dto();
         notificationRecipientV21Dto.setInternalId("123");
         notificationRecipientV21Dto.setDenomination("denomination");

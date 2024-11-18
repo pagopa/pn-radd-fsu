@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationRecipientV23Dto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV23Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
@@ -29,7 +29,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.HexFormat;
-import java.util.Objects;
 import java.util.Optional;
 
 import static it.pagopa.pn.radd.utils.Const.*;
@@ -92,7 +91,7 @@ public class DocumentOperationsService {
                 .map(sentNotificationV23Dto -> checkRecipientIdAndCreatePdf(sentNotificationV23Dto, raddTansactionEntity.getRecipientId()));
     }
 
-    private byte @NotNull [] checkRecipientIdAndCreatePdf(SentNotificationV23Dto sentNotificationV23Dto, String internalId) {
+    private byte @NotNull [] checkRecipientIdAndCreatePdf(SentNotificationV24Dto sentNotificationV23Dto, String internalId) {
         Optional<NotificationRecipientV23Dto> recipient = sentNotificationV23Dto.getRecipients().stream()
                 .filter(notificationRecipient -> internalId.equals(notificationRecipient.getInternalId()))
                 .findFirst();

@@ -114,7 +114,7 @@ class ActServiceStartTransactionTest {
         return fileDownloadResponseDto ;
     }
 
-    private SentNotificationV23Dto createSentNotificationDto(){
+    private SentNotificationV24Dto createSentNotificationDto(){
         NotificationPaymentItemDto notificationPaymentInfoDto = new NotificationPaymentItemDto();
         notificationPaymentInfoDto.setPagoPa(new PagoPaPaymentDto());
 
@@ -125,7 +125,7 @@ class ActServiceStartTransactionTest {
         NotificationDocumentDto notificationDocumentDto =new NotificationDocumentDto();
         notificationDocumentDto.setDocIdx("0");
 
-        SentNotificationV23Dto sentNotificationDto = new SentNotificationV23Dto ();
+        SentNotificationV24Dto sentNotificationDto = new SentNotificationV24Dto ();
         sentNotificationDto.setRecipients(List.of(notificationRecipientDto));
         sentNotificationDto.setDocuments(List.of(notificationDocumentDto));
 
@@ -164,7 +164,7 @@ class ActServiceStartTransactionTest {
 
         Mockito.when(safeStorage.getFile(any())).thenReturn(Mono.just(fileDownloadResponseDto));
         Mockito.when(safeStorage.updateFileMetadata(any())).thenReturn(Mono.just(new OperationResultCodeResponseDto()));
-        SentNotificationV23Dto sentNotificationDto = createSentNotificationDto();
+        SentNotificationV24Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto.setUrl("http://safestorage/UrlDocument?");
@@ -198,7 +198,7 @@ class ActServiceStartTransactionTest {
         Mockito.when(raddTransactionDAOImpl.createRaddTransaction(any(), any())).thenReturn(Mono.just(raddTransactionEntity));
         FileDownloadResponseDto fileDownloadResponseDto = createFileDownloadResponseDto () ;
         Mockito.when(safeStorage.getFile (any())).thenReturn(Mono.just(fileDownloadResponseDto));
-        SentNotificationV23Dto sentNotificationDto = createSentNotificationDto();
+        SentNotificationV24Dto sentNotificationDto = createSentNotificationDto();
         Mockito.when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationDto));
         NotificationAttachmentDownloadMetadataResponseDto notificationAttachmentDownloadMetadataResponseDto = new NotificationAttachmentDownloadMetadataResponseDto();
         notificationAttachmentDownloadMetadataResponseDto.setUrl("UrlDocument");

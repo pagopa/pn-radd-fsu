@@ -4,6 +4,9 @@ import de.neuland.assertj.logging.ExpectedLogging;
 import de.neuland.assertj.logging.ExpectedLoggingAssertions;
 import it.pagopa.pn.commons.log.PnAuditLog;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationHistoryResponseDto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationStatusV26Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.*;
@@ -432,6 +435,54 @@ class ActServiceTest  {
         assertEquals(ExceptionTypeEnum.IUN_NOT_FOUND.getMessage(), monoResponse.getStatus().getMessage());
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTINQUIRY] BEFORE - Start ACT Inquiry - uid=test cxId=123 cxType=PF");
         ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTINQUIRY] FAILURE - End ACT Inquiry with error Iun not found with params - uid=test cxId=123 cxType=PF recipientInternalId=ABCDEF12G34H567I status=ActInquiryResponseStatus(code=99, message=Iun not found with params)");
+    }
+
+    @Test
+    void testActInquiryWhenNotificationIsCancelled() {
+        when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
+        ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();
+        responseCheckAarDtoDto.setIun("iun");
+        when(pnDeliveryClient.getCheckAar(any(), any(), any())).thenReturn(Mono.just(responseCheckAarDtoDto));
+        when(raddTransactionDAOImpl.countFromIunAndStatus(any(), any())).thenReturn(Mono.just(1));
+        when(pnRaddFsuConfig.getMaxPrintRequests()).thenReturn(0);
+
+        NotificationHistoryResponseDto notificationHistoryResponseDto = new NotificationHistoryResponseDto();
+        notificationHistoryResponseDto.setNotificationStatus(NotificationStatusV26Dto.CANCELLED);
+        when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(notificationHistoryResponseDto));
+        ActInquiryResponse monoResponse = actService.actInquiry("test","123", CxTypeAuthFleet.PF,"test","PF", "test", "").block();
+        assertNotNull(monoResponse);
+        assertNotNull(monoResponse.getResult());
+        assertEquals(false, monoResponse.getResult());
+        assertEquals(ExceptionTypeEnum.NOTIFICATION_CANCELLED.getMessage(), monoResponse.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTINQUIRY] BEFORE - Start ACT Inquiry - uid=test cxId=123 cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTINQUIRY] FAILURE - End ACT Inquiry with error Questa notifica è stata annullata dall’ente mittente - uid=test cxId=123 cxType=PF recipientInternalId=ABCDEF12G34H567I iun=iun status=ActInquiryResponseStatus(code=80, message=Questa notifica è stata annullata dall’ente mittente)");
+    }
+
+    @Test
+    void testActInquiryWhenNotificationHasNotDocumentsAvailable() {
+        when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
+        ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();
+        responseCheckAarDtoDto.setIun("iun");
+        when(pnDeliveryClient.getCheckAar(any(), any(), any())).thenReturn(Mono.just(responseCheckAarDtoDto));
+        when(raddTransactionDAOImpl.countFromIunAndStatus(any(), any())).thenReturn(Mono.just(1));
+        when(pnRaddFsuConfig.getMaxPrintRequests()).thenReturn(0);
+
+        NotificationHistoryResponseDto notificationHistoryResponseDto = new NotificationHistoryResponseDto();
+        notificationHistoryResponseDto.setNotificationStatus(NotificationStatusV26Dto.DELIVERED);
+        when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(notificationHistoryResponseDto));
+
+        SentNotificationV24Dto sentNotificationV23Dto = new SentNotificationV24Dto();
+        sentNotificationV23Dto.setDocumentsAvailable(false);
+        when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV23Dto));
+
+        ActInquiryResponse monoResponse = actService.actInquiry("test","123", CxTypeAuthFleet.PF,"test","PF", "test", "").block();
+
+        assertNotNull(monoResponse);
+        assertNotNull(monoResponse.getResult());
+        assertEquals(false, monoResponse.getResult());
+        assertEquals(ExceptionTypeEnum.DOCUMENT_UNAVAILABLE.getMessage(), monoResponse.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTINQUIRY] BEFORE - Start ACT Inquiry - uid=test cxId=123 cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_ACTINQUIRY] FAILURE - End ACT Inquiry with error Documenti non disponibili - uid=test cxId=123 cxType=PF recipientInternalId=ABCDEF12G34H567I iun=iun status=ActInquiryResponseStatus(code=4, message=Documenti non disponibili)");
     }
 
     @Test

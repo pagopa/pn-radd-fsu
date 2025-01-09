@@ -263,11 +263,11 @@ info:
     
       NOTA:
     
-      -  Non va passato il JWT per l’autenticazione.
+      -  Per la chiamata di upload non risulta necessario valorizzare il token JWT per l’autenticazione.
       -  Se l'operazione di upload è stata eseguita con successo, si otterrà come 
            risposta http status 200 OK.
-      -  Nell'header di questa risposta, si otterrà il campo *x-amz-version-id* che dovrà 
-           essere utilizzato per l’operazione seguente ([startActTransaction](#/actOperations/startActTransaction) / [startAorTransaction](#/aorOperations/startAorTransaction)), nel campo *versionToken* in corrispondenza del documento ad esso associato.
+      -  Nell'header della risposta si otterrà il campo *x-amz-version-id* il cui valore dovrà
+           essere valorizzato  nel campo *versionToken* della successiva operazione  ([startActTransaction](#/actOperations/startActTransaction) / [startAorTransaction](#/aorOperations/startAorTransaction)) in corrispondenza del documento ad esso associato.
   
 
   contact:

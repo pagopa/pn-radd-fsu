@@ -3,6 +3,9 @@
     "SafeStorageCxId": "pn-radd-fsu",
     "SafeStorageDocType": "PN_RADD_FSU_ATTACHMENT",
     "MaxTasksNumber": "1",
-    "AttemptBatchWriter": "3"
+    "AttemptBatchWriter": "3",
+    "PnCronAnalyzer": "* */1 * * * *",
+    "WireTapLogActivation": "false",
+    "MountEfs": "false"
   }
 }

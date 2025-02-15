@@ -104,6 +104,33 @@ Parameters:
     Type: String
     Description: 'Application load balancer security group'
 
+  # Logging parameters
+  WireTapLogActivation:
+    Type: String
+    Default: false
+    Description: Activation of wire logs
+    AllowedValues:
+      - true
+      - false
+
+  PnCronAnalyzer:
+    Type: String
+    Default: '-'
+    Description: Cron for which you send the metric to CloudWatch
+
+  # EFS parameters
+  FargateEFSFileSystemID:
+    Type: String
+    Description: "EFS Filesystem"
+
+  MountEfs:
+    Type: String
+    Default: false
+    AllowedValues:
+      - "true"
+      - "false"
+
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -213,6 +240,9 @@ Resources:
         AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
         MinTasksNumber: !Ref MinTasksNumber
         MaxTasksNumber: !Ref MaxTasksNumber
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        MountEfs: !Ref MountEfs
+        WireTapLogActivation: !Ref WireTapLogActivation
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -229,6 +259,8 @@ Resources:
         ContainerEnvEntry10: !Sub 'PN_RADD_ATTEMPTBATCHWRITER=${AttemptBatchWriter}'
         ContainerEnvEntry11: !Sub 'PN_RADD_SAFESTORAGEDOCTYPE=${SafeStorageDocType}'
         ContainerEnvEntry12: !Sub 'AWS_DYNAMODB_IUNSOPERATIONS_TABLE=${OperationsAndIunsDynamoTableName}'
+        ContainerEnvEntry13: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry14: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         MappedPaths: '/radd/*,/radd-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

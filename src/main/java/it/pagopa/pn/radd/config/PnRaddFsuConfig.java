@@ -6,10 +6,12 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Getter
 @Setter
 @Configuration
+@EnableScheduling
 @ConfigurationProperties(prefix = "pn.radd")
 @Import(SharedAutoConfiguration.class)
 public class PnRaddFsuConfig {

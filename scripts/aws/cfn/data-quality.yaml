@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Data quality template, creates a nested stack for Glue Table and Crawler for pn-radd-transaction-alt (Targeted NULLs, Map fix)
+Description: Data quality template, creates a nested stack for Glue Table and Crawler for pn-radd-transaction-alt 
 
 Parameters:
   TemplateBucketBaseUrl:

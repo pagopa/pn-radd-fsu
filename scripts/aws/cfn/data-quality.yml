@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Data quality template, creates a nested stack for Glue Table and Crawler for pn-radd-transaction-alt 
+
+Parameters:
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: The S3 bucket from which to fetch the templates used by this stack.
+  GlueServiceRoleArn:
+    Type: String
+    Description: Service role for the Glue Crawler.
+  LogsBucketName:
+    Type: String
+    Description: Logs bucket name
+  GlueDatabaseName:
+    Description: Name of the Glue Database
+    Type: String
+  RaddTransactionDynamoTableName:
+    Type: String
+    Description: |
+      DynamoDb table name for pn-radd-transaction-alt, valorized by the related output
+      in the storage.yaml template, used also for identifying the S3 bucket
+      directory where related CDC files are stored.
+
+  RaddTransactionGlueTableName:
+    Type: String
+    AllowedPattern: '^[a-z_]+$'
+    ConstraintDescription: |
+       Glue table name for pn-radd-transaction-alt, accept only lowercase values and underscores.
+    Default: pn_radd_transaction_alt
+
+Resources:
+  PnRaddTransactionDataQualityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/cdc-glue.yaml"
+      Parameters:
+        DynamoTableName: !Ref RaddTransactionDynamoTableName
+        GlueTableName: !Ref RaddTransactionGlueTableName
+        GlueServiceRoleArn: !Ref GlueServiceRoleArn
+        LogsBucketName: !Ref LogsBucketName
+        GlueDatabaseName: !Ref GlueDatabaseName
+        DynamoDBKeysStructure: |
+            struct<transactionId:struct<S:string>,operationType:struct<S:string>>
+        DynamoDBNewImageStructure: |
+            struct<
+              transactionId:struct<S:string>,
+              operationType:struct<S:string>,
+              checksum:struct<S:string>,
+              errorReason:struct<NULL:boolean,S:string>,
+              fileKey:struct<S:string>,
+              iun:struct<S:string>,
+              operationId:struct<S:string>,
+              operationStartDate:struct<S:string>,
+              operationEndDate:struct<NULL:boolean,S:string>,
+              operation_status:struct<S:string>,
+              qrCode:struct<NULL:boolean,S:string>,
+              recipientId:struct<S:string>,
+              recipientType:struct<S:string>,
+              uid:struct<S:string>,
+              versionToken:struct<S:string>,
+              zipAttachments:struct<
+                  NULL:boolean, 
+                  M:array<struct<
+                      key:string, 
+                      value:struct<NULL:boolean,S:string>
+                  >>
+              >
+            >

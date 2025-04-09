@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationRecipientV23Dto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationRecipientV24Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV25Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.CxTypeAuthFleet;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.DocumentUploadRequest;
@@ -88,11 +88,11 @@ public class DocumentOperationsService {
     @NotNull
     private Mono<byte[]> createCoverFile(RaddTransactionEntity raddTansactionEntity, String iun) {
         return pnDeliveryClient.getNotifications(iun)
-                .map(sentNotificationV23Dto -> checkRecipientIdAndCreatePdf(sentNotificationV23Dto, raddTansactionEntity.getRecipientId()));
+                .map(sentNotificationV25Dto -> checkRecipientIdAndCreatePdf(sentNotificationV25Dto, raddTansactionEntity.getRecipientId()));
     }
 
-    private byte @NotNull [] checkRecipientIdAndCreatePdf(SentNotificationV24Dto sentNotificationV23Dto, String internalId) {
-        Optional<NotificationRecipientV23Dto> recipient = sentNotificationV23Dto.getRecipients().stream()
+    private byte @NotNull [] checkRecipientIdAndCreatePdf(SentNotificationV25Dto sentNotificationV25Dto, String internalId) {
+        Optional<NotificationRecipientV24Dto> recipient = sentNotificationV25Dto.getRecipients().stream()
                 .filter(notificationRecipient -> internalId.equals(notificationRecipient.getInternalId()))
                 .findFirst();
         if (recipient.isPresent()) {
@@ -101,7 +101,7 @@ public class DocumentOperationsService {
         throw new RaddGenericException(ERROR_NO_RECIPIENT);
     }
 
-    private byte @NotNull [] generatePdf(NotificationRecipientV23Dto recipient) {
+    private byte @NotNull [] generatePdf(NotificationRecipientV24Dto recipient) {
         try {
             return pdfGenerator.generateCoverFile(recipient.getDenomination());
         } catch (IOException e) {

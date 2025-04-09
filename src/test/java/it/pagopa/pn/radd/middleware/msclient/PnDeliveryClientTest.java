@@ -2,7 +2,7 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV25Dto;
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnRaddException;
@@ -52,7 +52,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetNotifications() {
         String iun = "LJLH-GNTJ-DVXR-202209-J-1";
-        Mono<SentNotificationV24Dto> monoResponse = pnDeliveryClient.getNotifications(iun);
+        Mono<SentNotificationV25Dto> monoResponse = pnDeliveryClient.getNotifications(iun);
         monoResponse.map(response -> {
             assertNotEquals(0, response.getRecipients().size());
             assertEquals(iun, response.getIun());
@@ -80,7 +80,7 @@ class PnDeliveryClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetNotificationsCode400() {
         String iun = "LJLH-GNTJ";
-        Mono<SentNotificationV24Dto> response = pnDeliveryClient.getNotifications(iun);
+        Mono<SentNotificationV25Dto> response = pnDeliveryClient.getNotifications(iun);
         response.onErrorResume(PnRaddException.class, exception -> {
             assertEquals(400, exception.getWebClientEx().getStatusCode().value());
             return Mono.empty();

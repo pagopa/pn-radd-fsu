@@ -4,7 +4,7 @@ import de.neuland.assertj.logging.ExpectedLogging;
 import de.neuland.assertj.logging.ExpectedLoggingAssertions;
 import it.pagopa.pn.commons.log.PnAuditLog;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV25Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationHistoryResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndeliverypush.v1.dto.NotificationStatusV26Dto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
@@ -471,7 +471,7 @@ class ActServiceTest  {
         notificationHistoryResponseDto.setNotificationStatus(NotificationStatusV26Dto.DELIVERED);
         when(pnDeliveryPushClient.getNotificationHistory(any())).thenReturn(Mono.just(notificationHistoryResponseDto));
 
-        SentNotificationV24Dto sentNotificationV23Dto = new SentNotificationV24Dto();
+        SentNotificationV25Dto sentNotificationV23Dto = new SentNotificationV25Dto();
         sentNotificationV23Dto.setDocumentsAvailable(false);
         when(pnDeliveryClient.getNotifications(any())).thenReturn(Mono.just(sentNotificationV23Dto));
 

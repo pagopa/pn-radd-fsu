@@ -5,7 +5,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.api.Intern
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.RequestCheckAarDtoDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.ResponseCheckAarDtoDto;
-import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV24Dto;
+import it.pagopa.pn.radd.alt.generated.openapi.msclient.pndelivery.v1.dto.SentNotificationV25Dto;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
 import it.pagopa.pn.radd.exception.PnRaddException;
@@ -63,7 +63,7 @@ public class PnDeliveryClient extends BaseClient {
                 });
     }
 
-    public Mono<SentNotificationV24Dto> getNotifications(String iun) {
+    public Mono<SentNotificationV25Dto> getNotifications(String iun) {
         log.trace("GET NOTIFICATIONS TICK {}", new Date().getTime());
         return this.deliveryApi.getSentNotificationPrivate(iun)
                 .retryWhen(

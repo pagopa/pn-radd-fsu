@@ -45,6 +45,7 @@ public class PnDeliveryPushClient extends BaseClient {
                         Retry.backoff(2, Duration.ofMillis(250))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 )
+                .distinct(legalFactListElementV20Dto -> legalFactListElementV20Dto.getLegalFactsId().getKey())
                 .onErrorResume(WebClientResponseException.class, ex -> Mono.error(new PnRaddException(ex)));
     }
 

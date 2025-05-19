@@ -37,6 +37,22 @@ class PnDeliveryPushClientTest extends BaseTest.WithMockServer {
     }
 
     @Test
+    void testGetNotificationLegalFactsWithDuplicates() {
+        String recipientInternalId = "521Tvr56b", iun = "MDCA-BRSZ-UVTR-202412-G-2";
+        Flux<LegalFactListElementV20Dto> fluxResponse = pnDeliveryPushClient.getNotificationLegalFacts(recipientInternalId, iun);
+        fluxResponse.collectList().map(response -> {
+            // The http mock for this scenario returns 2 elements, but they are duplicates so the method should return only one
+            assertEquals(1, response.size());
+            response.forEach(element -> {
+                assertEquals("MDCA-BRSZ-UVTR-202412-G-2", element.getIun());
+                assertEquals("abc", element.getLegalFactsId().getKey());
+                assertEquals("1234567890", element.getTaxId());
+            });
+            return Mono.empty();
+        }).block();
+    }
+
+    @Test
     void testGetNotificationLegalFactsCode400() {
         String recipientInternalId = "", iun = "LJLH-GNTJ-DVXR-202209-J-1";
         Flux<LegalFactListElementV20Dto> response = pnDeliveryPushClient.getNotificationLegalFacts(recipientInternalId, iun);

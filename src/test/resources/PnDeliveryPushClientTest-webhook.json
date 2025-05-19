@@ -113,6 +113,36 @@
   },
   {
     "httpRequest": {
+      "path": "/delivery-push-private/MDCA-BRSZ-UVTR-202412-G-2/legal-facts",
+      "queryStringParameters" : {
+        "recipientInternalId" : [ "521Tvr56b" ]
+      },
+      "method": "GET"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": [
+        {
+          "taxId": "1234567890",
+          "iun": "MDCA-BRSZ-UVTR-202412-G-2",
+          "legalFactsId": {
+            "key": "abc",
+            "category": "SENDER_ACK"
+          }
+        },
+        {
+          "taxId": "1234567890",
+          "iun": "MDCA-BRSZ-UVTR-202412-G-2",
+          "legalFactsId": {
+            "key": "abc",
+            "category": "SENDER_ACK"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "httpRequest": {
       "path": "/delivery-push-private/LJLH-GNTJ-DVXR-202209-J-1/legal-facts",
       "queryStringParameters" : {
         "recipientInternalId" : [ "" ]

@@ -49,6 +49,7 @@ Resources:
               errorReason:struct<NULL:boolean,S:string>,
               fileKey:struct<S:string>,
               iun:struct<S:string>,
+              delegateId:struct<S:string>,
               operationId:struct<S:string>,
               operationStartDate:struct<S:string>,
               operationEndDate:struct<NULL:boolean,S:string>,

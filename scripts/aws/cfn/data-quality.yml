@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Data quality template, creates a nested stack for Glue Table and Crawler for pn-radd-transaction-alt 
+Description: Data quality template, creates a nested stack for Glue Table and Crawler for pn-radd-alt related tables
 
 Parameters:
   TemplateBucketBaseUrl:
@@ -20,13 +20,24 @@ Parameters:
       DynamoDb table name for pn-radd-transaction-alt, valorized by the related output
       in the storage.yaml template, used also for identifying the S3 bucket
       directory where related CDC files are stored.
-
   RaddTransactionGlueTableName:
     Type: String
     AllowedPattern: '^[a-z_]+$'
     ConstraintDescription: |
        Glue table name for pn-radd-transaction-alt, accept only lowercase values and underscores.
     Default: pn_radd_transaction_alt
+  RaddRegistryDynamoTableName:
+    Type: String
+    Description: |
+      DynamoDb table name for pn-RaddRegistry, valorized by the related output
+      in the storage.yaml template, used also for identifying the S3 bucket
+      directory where related CDC files are stored.
+  RaddRegistryGlueTableName:
+    Type: String
+    AllowedPattern: '^[a-z_]+$'
+    ConstraintDescription: |
+       Glue table name for pn-RaddRegistry, accept only lowercase values and underscores.
+    Default: pn_radd_registry
 
 Resources:
   PnRaddTransactionDataQualityStack:
@@ -66,4 +77,38 @@ Resources:
                       value:struct<NULL:boolean,S:string>
                   >>
               >
+            >
+
+  PnRaddRegistryDataQualityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/cdc-glue.yaml"
+      Parameters:
+        DynamoTableName: !Ref RaddRegistryDynamoTableName
+        GlueTableName: !Ref RaddRegistryGlueTableName
+        GlueServiceRoleArn: !Ref GlueServiceRoleArn
+        LogsBucketName: !Ref LogsBucketName
+        GlueDatabaseName: !Ref GlueDatabaseName
+        DynamoDBKeysStructure: |
+            struct<registryId:struct<S:string>,cxId:struct<S:string>>
+        DynamoDBNewImageStructure: |
+            struct<
+              registryId:struct<S:string>,
+              cxId:struct<S:string>,
+              requestId:struct<S:string>,
+              description:struct<S:string>,
+              externalCode:struct<S:string>,
+              zipCode:struct<S:string>,
+              phoneNumber:struct<S:string>,
+              openingTime:struct<S:string>,
+              startValidity:struct<S:string>,
+              capacity:struct<NULL:boolean,S:string>,
+              endValidity:struct<NULL:boolean,S:string>,
+              normalizedAddress:struct<M:struct<
+                  addressRow:struct<S:string>,
+                  city:struct<S:string>,
+                  cap:struct<S:string>,
+                  pr:struct<S:string>,
+                  country:struct<S:string>
+              >>
             >

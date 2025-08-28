@@ -1,0 +1,839 @@
+openapi: 3.0.1
+info:
+  title: >-
+    ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
+  version: BQuDBaQbe3TD8AVOxckBYwME2Rr5xDn7TquPT/3fnY0=
+servers:
+  - url: https://${stageVariables.DnsName}/{basePath}
+    variables:
+      basePath:
+        default: /${stageVariables.ServiceApiPath}
+    x-amazon-apigateway-endpoint-configuration:
+      disableExecuteApiEndpoint: true
+paths:
+  /api/v2/registry:
+    get:
+      tags:
+        - Registry
+      description: >-
+        API utilizzata per il recupero di tutti i punti di ritiro di un partner,
+        con paginazione lato DynamoDB.
+      operationId: retrieveRegistries
+      x-api-permissions:
+        - radd-registry-read
+      parameters:
+        - $ref: '#/components/parameters/cxIdAuthFleet'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/lastKey'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRegistryResponseV2'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security:
+        - pn-auth-fleet_backofficeAuthorizer: []
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v2/registry
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
+          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
+          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
+          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
+          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
+          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
+          integration.request.header.x-pagopa-pn-src-ch: '''BACKOFFICE'''
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+    post:
+      tags:
+        - Registry
+      description: API utilizzata per la richiesta di attivazione nuova anagrafica RADD
+      operationId: addRegistry
+      x-api-permissions:
+        - radd-registry-write
+      parameters:
+        - $ref: '#/components/parameters/cxIdAuthFleet'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRegistryRequestV2'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryV2'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security:
+        - pn-auth-fleet_backofficeAuthorizer: []
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v2/registry
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
+          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
+          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
+          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
+          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
+          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
+          integration.request.header.x-pagopa-pn-src-ch: '''BACKOFFICE'''
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+    options:
+      operationId: Options for /api/v2/registry API CORS
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v2/registry
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters: {}
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+  /api/v2/registry/{locationId}:
+    patch:
+      tags:
+        - Registry
+      description: API utilizzata per la modifica di un'anagrafica RADD
+      operationId: updateRegistry
+      x-api-permissions:
+        - radd-registry-write
+      parameters:
+        - $ref: '#/components/parameters/cxIdAuthFleet'
+        - $ref: '#/components/parameters/locationId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRegistryRequestV2'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryV2'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Not found - Punto di ritiro SEND non trovato
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security:
+        - pn-auth-fleet_backofficeAuthorizer: []
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v2/registry/{locationId}
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
+          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
+          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
+          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
+          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
+          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
+          integration.request.header.x-pagopa-pn-src-ch: '''BACKOFFICE'''
+          integration.request.path.locationId: method.request.path.locationId
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+    delete:
+      tags:
+        - Registry
+      description: API utilizzata per la cancellazione di un punto di ritiro di un partner
+      operationId: deleteRegistry
+      x-api-permissions:
+        - radd-registry-write
+      parameters:
+        - $ref: '#/components/parameters/cxIdAuthFleet'
+        - $ref: '#/components/parameters/locationId'
+      responses:
+        '204':
+          description: Ok
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '405':
+          description: Not Allowed
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security:
+        - pn-auth-fleet_backofficeAuthorizer: []
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v2/registry/{locationId}
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
+          integration.request.header.x-pagopa-pn-cx-role: context.authorizer.cx_role
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
+          integration.request.header.x-pagopa-pn-jti: context.authorizer.cx_jti
+          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
+          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
+          integration.request.header.x-pagopa-pn-src-ch-details: context.authorizer.sourceChannelDetails
+          integration.request.header.x-pagopa-pn-src-ch: '''BACKOFFICE'''
+          integration.request.path.locationId: method.request.path.locationId
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+    options:
+      operationId: Options for /api/v2/registry/{locationId} API CORS
+      x-amazon-apigateway-integration:
+        uri: >-
+          http://${stageVariables.ApplicationLoadBalancerDomain}:8080/${stageVariables.ServiceApiPath}/api/v2/registry/{locationId}
+        connectionId: ${stageVariables.NetworkLoadBalancerLink}
+        httpMethod: ANY
+        requestParameters:
+          integration.request.path.locationId: method.request.path.locationId
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        timeoutInMillis: 29000
+        type: http_proxy
+components:
+  parameters:
+    registryId:
+      name: registryId
+      description: Identificativo dello sportello RADD
+      in: path
+      required: true
+      schema:
+        type: string
+      example: cxId#uuid
+    locationId:
+      name: locationId
+      description: Identificativo della sede del punto di ritiro
+      in: path
+      required: true
+      schema:
+        type: string
+    partnerId:
+      name: partnerId
+      description: C.F. del partner erogatore
+      in: header
+      required: true
+      schema:
+        type: string
+    limit:
+      name: limit
+      description: Numero massimo di elementi da restituire per pagina
+      in: query
+      required: false
+      schema:
+        type: number
+    lastKey:
+      name: lastKey
+      description: >-
+        Chiave dell’ultimo elemento restituito per ottenere la pagina successiva
+        (ExclusiveStartKey DynamoDB)
+      in: query
+      required: false
+      schema:
+        type: string
+    endDate:
+      name: endDate
+      description: Data fine validità sportello
+      in: query
+      required: true
+      schema:
+        type: string
+      example: '2024-06-21T00:00:00.000Z'
+    requestId:
+      name: requestId
+      description: Identificativo univoco della richiesta di censimento (CSV o CRUD)
+      in: header
+      required: true
+      schema:
+        type: string
+    cap:
+      name: cap
+      description: CAP
+      in: query
+      required: false
+      schema:
+        type: string
+    city:
+      name: city
+      description: Città
+      in: query
+      required: false
+      schema:
+        type: string
+    pr:
+      name: pr
+      description: Provincia
+      in: query
+      required: false
+      schema:
+        type: string
+    externalCode:
+      name: externalCode
+      description: Identificativo punto ritiro SEND indicato dal client
+      in: query
+      required: false
+      schema:
+        type: string
+    cxIdAuthFleet:
+      name: x-pagopa-pn-cx-id
+      in: header
+      description: Customer/Receiver Identifier
+      required: true
+      schema:
+        type: string
+        pattern: ^[ -~]*$
+        maxLength: 64
+  schemas:
+    CreateRegistryRequestV2:
+      type: object
+      required:
+        - address
+        - description
+        - phoneNumbers
+        - externalCodes
+      properties:
+        address:
+          $ref: '#/components/schemas/AddressV2'
+        description:
+          type: string
+          description: Descrizione del punto di ritiro.
+          example: Sportello ABC.
+        phoneNumbers:
+          type: array
+          description: Lista dei numeri di telefono del punto di ritiro.
+          example:
+            - '+390123456789'
+            - '3921573273'
+          minItems: 1
+          maxItems: 2
+          items:
+            type: string
+            pattern: ^(\+?\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$
+        email:
+          type: string
+          description: Indirizzo email del punto di ritiro
+          pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+          example: mail@esempio.it
+        openingTime:
+          type: string
+          description: Orario di apertura del punto di ritiro nel formato opening_hours
+          example: Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00
+        startValidity:
+          type: string
+          description: >-
+            Data di inizio di validità del punto di ritiro in formato
+            (yyyy-MM-dd), se non inviata viene considerata la data corrente.
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          example: '2024-03-21'
+        endValidity:
+          type: string
+          description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          example: '2024-03-21'
+        externalCodes:
+          type: array
+          items:
+            type: string
+            description: Identificativo univoco dell’ufficio/postazione nella sede
+        appointmentRequired:
+          type: boolean
+          description: Variabile booleana per indicare se necessario prendere appuntamento
+        website:
+          type: string
+          description: Link al sito del punto di ritiro
+          pattern: ^(https?:\/\/)?([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}(\/[^\s]*)?$
+        partnerType:
+          type: string
+          description: Tipologia del punto di ritiro
+          pattern: CAF
+    UpdateRegistryRequestV2:
+      type: object
+      properties:
+        externalCodes:
+          type: array
+          items:
+            type: string
+            description: Identificativo univoco dell’ufficio/postazione nella sede
+        description:
+          type: string
+          description: Descrizione aggiornata dello sportello.
+          example: Registro aggiornato dello sportello.
+        openingTime:
+          type: string
+          description: Orario di apertura del punto di ritiro nel formato opening_hours
+          example: Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00
+        phoneNumbers:
+          type: array
+          description: Lista dei numeri di telefono del punto di ritiro.
+          example:
+            - '+390123456789'
+            - '3921573273'
+          minItems: 1
+          maxItems: 2
+          items:
+            type: string
+            pattern: ^(\+?\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$
+        endValidity:
+          type: string
+          description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          example: '2024-03-21'
+        appointmentRequired:
+          type: boolean
+          description: Variabile booleana per indicare se necessario prendere appuntamento
+        website:
+          type: string
+          description: Link al sito del punto di ritiro
+          pattern: ^(https?:\/\/)?([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}(\/[^\s]*)?$
+        email:
+          type: string
+          description: Indirizzo email del punto di ritiro
+          pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+          example: mail@esempio.it
+    GetRegistryResponseV2:
+      type: object
+      properties:
+        items:
+          type: array
+          description: Lista dei punti di ritiro trovati
+          items:
+            $ref: '#/components/schemas/RegistryV2'
+        lastKey:
+          type: string
+          description: Chiave dell’ultimo elemento restituito (LastEvaluatedKey DynamoDB)
+    AddressV2:
+      type: object
+      required:
+        - addressRow
+        - cap
+        - city
+        - province
+      properties:
+        addressRow:
+          type: string
+          description: Indirizzo completo
+          example: Via Roma 123
+          pattern: ^[a-zA-Z0-9\s\.,''-]{5,100}$
+        cap:
+          type: string
+          description: CAP (Codice di Avviamento Postale).
+          example: 100
+          pattern: ^\d{5}$
+        city:
+          type: string
+          description: Città.
+          example: Roma
+        province:
+          type: string
+          description: Provincia.
+          example: RM
+          pattern: ^[A-Z]{2}$
+        country:
+          type: string
+          description: Paese.
+          example: Italia
+    GeoLocation:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: string
+          description: Latitudine della posizione geografica dello sportello.
+          example: '41.9028'
+        longitude:
+          type: string
+          description: Longitudine della posizione geografica dello sportello.
+          example: '12.4964'
+    NormalizedAddress:
+      allOf:
+        - $ref: '#/components/schemas/AddressV2'
+        - $ref: '#/components/schemas/GeoLocation'
+        - type: object
+          required:
+            - biasPoint
+          properties:
+            biasPoint:
+              description: >-
+                Punti di bias per la normalizzazione dell'indirizzo restituiti
+                dal servizio di geocoding in valori compresi tra 0 e 1.
+              type: object
+              properties:
+                addressNumber:
+                  type: number
+                  description: Numero civico dell’indirizzo
+                  minimum: 0
+                  maximum: 1
+                country:
+                  type: number
+                  description: Stato
+                  minimum: 0
+                  maximum: 1
+                locality:
+                  type: number
+                  description: Località o città
+                  minimum: 0
+                  maximum: 1
+                postalCode:
+                  type: number
+                  description: CAP
+                  minimum: 0
+                  maximum: 1
+                subRegion:
+                  type: number
+                  description: Provincia o regione
+                  minimum: 0
+                  maximum: 1
+                overall:
+                  type: number
+                  description: Valore complessivo del bias point
+                  minimum: 0
+                  maximum: 1
+    RegistryV2:
+      type: object
+      properties:
+        normalizedAddress:
+          $ref: '#/components/schemas/NormalizedAddress'
+        partnerId:
+          type: string
+          description: C.F. del partner erogatore
+          pattern: ^([0-9]{11})$
+        locationId:
+          type: string
+          description: Identificativo univoco della sede del punto di ritiro.
+          pattern: >-
+            ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: 123e4567-e89b-12d3-a456-426614174000
+        description:
+          type: string
+          description: Descrizione del punto di ritiro.
+          example: Sportello ABC.
+          maxLength: 200
+        phoneNumbers:
+          type: array
+          description: Lista dei numeri di telefono del punto di ritiro.
+          example:
+            - '+390123456789'
+            - '3921573273'
+          minItems: 1
+          maxItems: 2
+          items:
+            type: string
+            pattern: ^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$
+        email:
+          type: string
+          description: Indirizzo email del punto di ritiro
+          pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+          example: mail@esempio.it
+        openingTime:
+          type: string
+          description: Orario di apertura del punto di ritiro nel formato opening_hours
+          example: Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00
+        startValidity:
+          type: string
+          description: >-
+            Data di inizio di validità del punto di ritiro in formato
+            (yyyy-MM-dd), se non inviata viene considerata la data corrente.
+          example: '2024-03-21'
+        endValidity:
+          type: string
+          description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).
+          example: '2024-03-21'
+        externalCodes:
+          type: array
+          items:
+            type: string
+            description: Identificativo univoco dell’ufficio/postazione nella sede
+        appointmentRequired:
+          type: boolean
+          description: Variabile booleana per indicare se necessario prendere appuntamento
+        website:
+          type: string
+          description: Link al sito del punto di ritiro
+        partnerType:
+          type: string
+          description: Tipologia del punto di ritiro
+          pattern: CAF
+        creationTimestamp:
+          type: string
+          description: Istante di creazione del punto di ritiro
+          format: date-time
+        updateTimestamp:
+          type: string
+          description: Istante dell'ultima modifica del punto di ritiro
+          format: date-time
+    ProblemError:
+      properties:
+        code:
+          description: Internal code of the error, in human-readable format
+          example: >-
+            PN_PARAMETER_TOO_LONG | PN_PARAMETER_TOO_SHORT | PN_DUPLICATE_ENTRY
+            | etc...
+          type: string
+        element:
+          description: Parameter or request body field name for validation error
+          example: body.order.item[2].quantity
+          type: string
+        detail:
+          description: >-
+            A human readable explanation specific to this occurrence of the
+            problem.
+          example: Parameter not valid
+          maxLength: 1024
+          type: string
+      required:
+        - code
+    Problem:
+      properties:
+        type:
+          description: URI reference of type definition
+          type: string
+        status:
+          description: >-
+            The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          type: number
+          example: 503
+          maximum: 600
+          minimum: 100
+          exclusiveMaximum: true
+        title:
+          description: >-
+            A short, summary of the problem type. Written in english and
+            readable
+          example: Service Unavailable
+          maxLength: 64
+          pattern: ^[ -~]{0,64}$
+          type: string
+        detail:
+          description: A human readable explanation of the problem.
+          example: Request took too long to complete.
+          maxLength: 4096
+          pattern: ^.{0,4096}$
+          type: string
+        traceId:
+          description: Internal support identifier associated to error
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        timestamp:
+          description: date and time referred to UTC
+          example: '2022-07-27T12:22:33.444Z'
+          type: string
+          format: date-time
+        errors:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ProblemError'
+      required:
+        - status
+        - errors
+  responses:
+    Forbidden:
+      description: Forbidden
+    NotFound:
+      description: Not found
+    Invalid:
+      description: Bad Request
+    NotAllowed:
+      description: Method not allowed
+    InternalError:
+      description: Internal Server Error
+    Unauthorized:
+      description: Unauthorized
+  securitySchemes:
+    pn-auth-fleet_backofficeAuthorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: custom
+      x-amazon-apigateway-authorizer:
+        authorizerUri: >-
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:pn-backofficeAuthorizerLambda/invocations
+        authorizerResultTtlInSeconds: 300
+        type: token
+tags:
+  - name: Registry
+x-amazon-apigateway-gateway-responses:
+  DEFAULT_5XX:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Strict-Transport-Security: '''max-age=31536000; includeSubDomains; preload'''
+  DEFAULT_4XX:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Strict-Transport-Security: '''max-age=31536000; includeSubDomains; preload'''
+  BAD_REQUEST_PARAMETERS:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Access-Control-Expose-Headers: '''x-amzn-trace-id'''
+      gatewayresponse.header.Strict-Transport-Security: '''max-age=31536000; includeSubDomains; preload'''
+    responseTemplates:
+      application/json: >-
+        {"status": 400, "title": "VALIDATION ERROR", "traceId":
+        "$context.xrayTraceId", "errors": [ { "code": "PN_INVALID_PARAMETERS",
+        "detail": "Validation errors: $context.error.validationErrorString" } ]}
+  BAD_REQUEST_BODY:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Access-Control-Expose-Headers: '''x-amzn-trace-id'''
+      gatewayresponse.header.Strict-Transport-Security: '''max-age=31536000; includeSubDomains; preload'''
+    responseTemplates:
+      application/json: >-
+        {"status": 400, "title": "VALIDATION ERROR", "traceId":
+        "$context.xrayTraceId", "errors": [ { "code": "PN_INVALID_BODY",
+        "detail": "Validation errors: $context.error.validationErrorString" } ]}
+x-amazon-apigateway-request-validators:
+  basic:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params-only:
+    validateRequestBody: false
+    validateRequestParameters: true
+x-amazon-apigateway-request-validator: basic

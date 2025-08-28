@@ -42,6 +42,10 @@ Parameters:
   VpcId:
     Type: String
     Description: 'VpcId where the microservice is going to be deployed'
+
+  VpcEgressSubnetsIds:
+    Type: String
+    Description: 'subnets where to install PN-CORE'
   
   EcsDefaultSecurityGroup:
     Type: String
@@ -427,6 +431,10 @@ Parameters:
       - "false"
     Default: true
 
+  AwsGeoRegionCode:
+    Type: String
+    Description: 'AWS region code for Geoplaces client'
+
 Conditions:
   IsImportLocationsBlocked: !Equals [!Ref BlockImportLocations, 'true']
 
@@ -505,9 +513,10 @@ Resources:
         ContainerEnvEntry47: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry48: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerEnvEntry49: !Sub 'PN_RADD_MAX_PRINT_REQUESTS=${MaxPrintRequests}'
-        MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*'
+        ContainerEnvEntry50: !Sub 'AWS_GEO_REGIONCODE=${AwsGeoRegionCode}'
+        MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*,/radd-bo/*'
         ECSClusterName: !Ref ECSClusterName
-        Subnets: !Ref SubnetsIds
+        Subnets: !Ref VpcEgressSubnetsIds
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
@@ -574,6 +583,12 @@ Resources:
               - events:PutEvents
             Resource:
               - !Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${ProjectName}-CoreEventBus
+          - Effect: Allow
+            Action:
+              - geo-places:Geocode
+            Resource:
+              - !Sub arn:aws:geo-places:${AwsGeoRegionCode}::provider/default
+
 
   # Expose PN-Radd-Alt microservice public API with API-GW for RADD usage
   RaddAltMicroservicePublicAPI:
@@ -601,6 +616,34 @@ Resources:
         WAFName: !Sub '${ProjectName}-radd-alt-radd'
         IntendedUsage: RADD
         APIGatewayARNs: !GetAtt RaddAltMicroservicePublicAPI.Outputs.APIGatewayARN
+        Limit: !Ref RaddWafLimit
+
+  # Expose PN-Radd-Alt microservice public API with API-GW for BACKOFFICE usage
+  RaddAltMicroserviceBoPublicAPI:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service-openapi.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-radd-alt'
+        IntendedUsage: BACKOFFICE
+        DnsName: !Ref RaddApiDnsName
+        ProjectName: !Ref ProjectName
+        ServiceApiPath: 'radd-bo'
+        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        OpenApiBucketName: !Ref MicroserviceBucketName
+        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/aws/api-radd-bo-BO-aws.yaml
+
+  RaddAltMicroservicePublicBoApiWaf:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-waf-acl.yaml"
+      Parameters:
+        WAFName: !Sub '${ProjectName}-radd-alt-bo'
+        IntendedUsage: BACKOFFICE
+        APIGatewayARNs: !GetAtt RaddAltMicroserviceBoPublicAPI.Outputs.APIGatewayARN
         Limit: !Ref RaddWafLimit
 
   # Rate limiting

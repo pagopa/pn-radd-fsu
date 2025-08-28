@@ -79,7 +79,7 @@ class RaddRegistryUtilsTest {
         preExistingRegistryEntity.setGeoLocation("Geo Location");
         NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
         addressEntity.setCountry("country");
-        addressEntity.setPr("pr");
+        addressEntity.setProvince("pr");
         addressEntity.setCity("city");
         addressEntity.setCap("cap");
         preExistingRegistryEntity.setNormalizedAddress(addressEntity);
@@ -800,7 +800,7 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setGeoLocation("Geo Location");
         NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
         addressEntity.setCountry("country");
-        addressEntity.setPr("pr");
+        addressEntity.setProvince("pr");
         addressEntity.setCity("city");
         addressEntity.setCap("cap");
         raddRegistryEntity.setNormalizedAddress(addressEntity);
@@ -837,7 +837,7 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setGeoLocation("Geo Location");
         NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
         addressEntity.setCountry("country");
-        addressEntity.setPr("pr");
+        addressEntity.setProvince("pr");
         addressEntity.setCity("city");
         addressEntity.setCap("cap");
         raddRegistryEntity.setNormalizedAddress(addressEntity);
@@ -855,7 +855,7 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity2.setGeoLocation("it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity");
         NormalizedAddressEntity addressEntity2 = new NormalizedAddressEntity();
         addressEntity.setCountry("country2");
-        addressEntity.setPr("pr2");
+        addressEntity.setProvince("pr2");
         addressEntity.setCity("city2");
         addressEntity.setCap("cap2");
         raddRegistryEntity2.setNormalizedAddress(addressEntity2);
@@ -909,7 +909,7 @@ class RaddRegistryUtilsTest {
         raddRegistryEntity.setGeoLocation("Geo Location");
         NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
         addressEntity.setCountry("country");
-        addressEntity.setPr("pr");
+        addressEntity.setProvince("pr");
         addressEntity.setCity("city");
         addressEntity.setCap("cap");
         raddRegistryEntity.setNormalizedAddress(addressEntity);

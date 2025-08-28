@@ -38,6 +38,14 @@ public class RaddGenericException extends RuntimeException {
         this.extra = null;
     }
 
+    public RaddGenericException(ExceptionTypeEnum exceptionType, String message, HttpStatus status) {
+        super(message);
+        this.exceptionType = exceptionType;
+        this.message = message;
+        this.status = status==null?HttpStatus.BAD_REQUEST:status;
+        this.extra = null;
+    }
+
     public RaddGenericException(String message){
         super(message);
         this.exceptionType = GENERIC_ERROR;

@@ -9,10 +9,7 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.Fil
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.OperationResultCodeResponseDto;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
-import it.pagopa.pn.radd.exception.PnInvalidInputException;
-import it.pagopa.pn.radd.exception.PnRaddBadRequestException;
-import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.exception.*;
 import it.pagopa.pn.radd.mapper.TransactionDataMapper;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.db.impl.RaddTransactionDAOImpl;
@@ -32,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -411,6 +409,22 @@ class AorServiceTest {
                 }).block();
         ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORINQUIRY] BEFORE - Start AOR Inquiry - uid=uid cxId=cxId cxType=PF");
         ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("[AUD_RADD_AORINQUIRY] FAILURE - End AOR Inquiry with error Non ci sono notifiche non consegnate per questo codice fiscale - uid=uid cxId=cxId cxType=PF recipientInternalId=PF-4fc75df3-0913-407e-bdaa-e50329708b7d status=ResponseStatus(code=99, message=Non ci sono notifiche non consegnate per questo codice fiscale)");
+    }
+
+    @Test
+    void testAorInquiryWhenDataVaultCallFails() {
+        Mockito.when(pnDataVaultClient.getEnsureFiscalCode(Mockito.any(), Mockito.any())).thenReturn(Mono.error(new PnRaddException(WebClientResponseException.create(500, "Internal server Error", null, null, null, null))));
+        aorService.aorInquiry("uid", "FRMTTR76M06B715E", "PF", CxTypeAuthFleet.valueOf("PF"), "cxId")
+                .onErrorResume(ex -> {
+                    if (ex instanceof RaddGenericException) {
+                        assertNotNull(((RaddGenericException) ex).getExceptionType());
+                        assertEquals(ExceptionTypeEnum.GENERIC_ERROR, ((RaddGenericException) ex).getExceptionType());
+                    }
+                    fail("Bad type exception");
+                    return null;
+                }).block();
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_AORINQUIRY] BEFORE - Start AOR Inquiry - uid=uid cxId=cxId cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*\\[AUD_RADD_AORINQUIRY\\] FAILURE - End AOR Inquiry with error.*");
     }
 
     @Test

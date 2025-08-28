@@ -92,6 +92,7 @@ public class ActService extends BaseService {
                     raddAltAuditLog.getContext().addResponseResult(response.getResult()).addResponseStatus(response.getStatus().toString());
                     raddAltAuditLog.generateSuccessWithContext(END_ACT_INQUIRY);
                 })
+                .onErrorMap(PnRaddException.class, e -> new RaddGenericException(e.getMessage()))
                 .onErrorResume(RaddGenericException.class, ex ->
                         Mono.just(ActInquiryResponseMapper.fromException(ex))
                                 .doOnNext(response -> {

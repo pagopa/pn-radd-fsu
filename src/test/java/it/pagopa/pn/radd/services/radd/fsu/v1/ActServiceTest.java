@@ -438,6 +438,18 @@ class ActServiceTest  {
     }
 
     @Test
+    void testActInquiryWhenDataVaultCallFails() {
+        when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.error(new PnRaddException(WebClientResponseException.create(500, "Internal server Error", null, null, null, null))));
+        ActInquiryResponse monoResponse = actService.actInquiry("test","123", CxTypeAuthFleet.PF,"test","PF", "test", "").block();
+        assertNotNull(monoResponse);
+        assertNotNull(monoResponse.getResult());
+        assertEquals(false, monoResponse.getResult());
+        assertEquals(ExceptionTypeEnum.GENERIC_ERROR.getMessage(), monoResponse.getStatus().getMessage());
+        ExpectedLoggingAssertions.assertThat(logging).hasInfoMessage("[AUD_RADD_ACTINQUIRY] BEFORE - Start ACT Inquiry - uid=test cxId=123 cxType=PF");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*\\[AUD_RADD_ACTINQUIRY\\] FAILURE - End ACT Inquiry with error.*");
+    }
+
+    @Test
     void testActInquiryWhenNotificationIsCancelled() {
         when(pnDataVaultClient.getEnsureFiscalCode(any(), any())).thenReturn(Mono.just("ABCDEF12G34H567I"));
         ResponseCheckAarDtoDto responseCheckAarDtoDto = new ResponseCheckAarDtoDto();

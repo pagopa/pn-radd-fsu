@@ -2,7 +2,6 @@ package it.pagopa.pn.radd.middleware.db.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.util.StringUtils;
-import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
 import it.pagopa.pn.radd.exception.RaddGenericException;
 import it.pagopa.pn.radd.middleware.db.BaseDao;
@@ -10,7 +9,6 @@ import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.CustomLog;
@@ -26,7 +24,6 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -155,10 +152,10 @@ public class RaddRegistryDAOImpl extends BaseDao<RaddRegistryEntity> implements 
             query.add(String.format("#%s.#%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_CITY, NormalizedAddressEntity.COL_CITY));
         }
         if (io.micrometer.core.instrument.util.StringUtils.isNotEmpty(pr)) {
-            map.put(":" + NormalizedAddressEntity.COL_PR, AttributeValue.builder().s(pr).build());
-            names.put("#" + NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR);
+            map.put(":" + NormalizedAddressEntity.COL_PROVINCE, AttributeValue.builder().s(pr).build());
+            names.put("#" + NormalizedAddressEntity.COL_PROVINCE, NormalizedAddressEntity.COL_PROVINCE);
             names.put("#" + RaddRegistryEntity.COL_NORMALIZED_ADDRESS, RaddRegistryEntity.COL_NORMALIZED_ADDRESS);
-            query.add(String.format("#%s.#%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PR, NormalizedAddressEntity.COL_PR));
+            query.add(String.format("#%s.#%s = :%s", RaddRegistryEntity.COL_NORMALIZED_ADDRESS, NormalizedAddressEntity.COL_PROVINCE, NormalizedAddressEntity.COL_PROVINCE));
         }
         if (StringUtils.isNotEmpty(externalCode)) {
             map.put(":" + RaddRegistryEntity.COL_EXTERNAL_CODE, AttributeValue.builder().s(externalCode).build());

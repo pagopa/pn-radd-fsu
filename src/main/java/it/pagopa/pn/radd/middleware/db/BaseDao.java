@@ -7,6 +7,7 @@ import it.pagopa.pn.radd.pojo.PnLastEvaluatedKey;
 import it.pagopa.pn.radd.pojo.ResultPaginationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,6 +16,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import javax.management.Attribute;
 import java.util.*;
 import java.util.function.Function;
 
@@ -148,7 +150,7 @@ public abstract class BaseDao<T> {
         });
     }
 
-    private Mono<Page<T>> constructAndExecuteQuery(QueryEnhancedRequest.Builder qeRequest, Map<String, AttributeValue> lastKey, String index) {
+    protected Mono<Page<T>> constructAndExecuteQuery(QueryEnhancedRequest.Builder qeRequest, Map<String, AttributeValue> lastKey, String index) {
         if (!CollectionUtils.isEmpty(lastKey)) {
             qeRequest.exclusiveStartKey(lastKey);
         }
@@ -280,6 +282,10 @@ public abstract class BaseDao<T> {
         );
 
         return Mono.fromFuture(this.dynamoDbEnhancedAsyncClient.transactWriteItems(transactionWriteRequest.build()));
+    }
+
+    protected Mono<T> deleteItem(Key key) {
+        return Mono.fromFuture(() -> tableAsync.deleteItem(r -> r.key(key)));
     }
 
 }

@@ -80,6 +80,7 @@ public class AorService extends BaseService {
                     pnRaddAltAuditLog.getContext().addResponseResult(aorInquiryResponse.getResult()).addResponseStatus(aorInquiryResponse.getStatus().toString());
                     pnRaddAltAuditLog.generateSuccessWithContext(END_AOR_INQUIRY);
                 })
+                .onErrorMap(PnRaddException.class, e -> new RaddGenericException(e.getMessage()))
                 .onErrorResume(RaddGenericException.class, ex ->
                         Mono.just(AorInquiryResponseMapper.fromException(ex))
                                 .doOnNext(aorInquiryResponse -> {

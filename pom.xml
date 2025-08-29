@@ -19,9 +19,10 @@
         <tag>HEAD</tag>
     </scm>
     <properties>
+        <awssdk.version>2.29.4</awssdk.version>
         <java.version>17</java.version>
         <jacoco.min.line.cover.ratio>0.01</jacoco.min.line.cover.ratio>
-        <pagopa.codegen.version>v01.05.00</pagopa.codegen.version>
+        <pagopa.codegen.version>v01.14.00</pagopa.codegen.version>
     </properties>
 
     <dependencies>
@@ -183,6 +184,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/geoplaces -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>geoplaces</artifactId>
+            <version>${awssdk.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -327,7 +335,7 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
-                            <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-registry-internal.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/docs/openapi/pn-radd-alt-registry-v2-internal.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
                             <generateApiDocumentation>false</generateApiDocumentation>

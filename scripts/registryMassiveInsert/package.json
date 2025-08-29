@@ -1,0 +1,17 @@
+{
+  "name": "registrymassiveinsert",
+  "version": "1.0.0",
+  "description": "Script per l'insert massivo di registry",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.848.0",
+    "axios": "^1.6.0",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

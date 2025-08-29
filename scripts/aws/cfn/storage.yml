@@ -28,6 +28,10 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
+  LogRetention:
+    Type: Number
+    Default: 14
+
   AlarmSNSTopicName:
     Type: String
 
@@ -255,6 +259,30 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  RaddRegistryDynamoTableV2:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-RaddRegistryV2'
+      AttributeDefinitions:
+        - AttributeName: "partnerId"
+          AttributeType: "S"
+        - AttributeName: "locationId"
+          AttributeType: "S"
+      KeySchema:
+          - AttributeName: "partnerId"
+            KeyType: "HASH"
+          - AttributeName: "locationId"
+            KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !Ref CdcKinesisSourceStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
 
   # Coda per interna per valutazione cap
   # NB: usati i valori di default per: DeadLetterQueueName, MessageRetentionPeriod, DeadLetterMessageRetentionPeriod
@@ -274,11 +302,12 @@ Resources:
   RaddLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
-    DeletionPolicy: Retain    
+    DeletionPolicy: Retain
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
       Parameters:
         LogGroupName: !Sub '${ProjectName}-radd-alt'
+        LogGroupRetention: !Ref LogRetention
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
   # Coda interna per costruzione evento da inviare ad address manager
@@ -348,11 +377,11 @@ Outputs:
 
   RaddRegistryDynamoTableName:
     Description: Name of dynamodb table containing radd registry
-    Value: !Ref RaddRegistryDynamoTable
+    Value: !Ref RaddRegistryDynamoTableV2
 
   RaddRegistryDynamoTableArn:
     Description: ARN of dynamodb table containing radd registry
-    Value: !Sub '${RaddRegistryDynamoTable.Arn}'
+    Value: !Sub '${RaddRegistryDynamoTableV2.Arn}'
 
   # RaddInternalCapCheckerQueue Queue
   RaddInternalCapCheckerQueueName:

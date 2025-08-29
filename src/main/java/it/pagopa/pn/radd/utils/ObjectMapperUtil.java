@@ -30,4 +30,13 @@ public class ObjectMapperUtil {
             throw new PnInternalException(ERROR_MESSAGE_RADD_ALT_JSON_PROCESSING, ERROR_CODE_RADD_ALT_JSON_PROCESSING, e);
         }
     }
+
+    public <T> T convert(Object toConvert, Class<T> newClass) {
+        try {
+            return objectMapper.convertValue(toConvert, newClass);
+        } catch (Exception e) {
+            throw new PnInternalException(ERROR_MESSAGE_RADD_ALT_JSON_PROCESSING, ERROR_CODE_RADD_ALT_JSON_PROCESSING, e);
+
+        }
+    }
 }

@@ -7,11 +7,13 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.time.Duration;
 
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.DYNAMODB;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 /**
  * Classe che permette di creare un container Docker di LocalStack.
@@ -23,17 +25,17 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 public class LocalStackTestConfig {
 
     static LocalStackContainer localStack =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack:1.0.4")
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack:4.0.3")
                     .asCompatibleSubstituteFor("localstack/localstack"))
-                    .withServices(DYNAMODB)
-                    .withClasspathResourceMapping("testcontainers/init.sh",
-                            "/docker-entrypoint-initaws.d/make-storages.sh", BindMode.READ_ONLY)
+                    .withServices(DYNAMODB, SQS)
+                    .withCopyToContainer(MountableFile.forClasspathResource("testcontainers/init.sh", 775),
+                            "/etc/localstack/init/ready.d/make-storages.sh")
                     .withClasspathResourceMapping("testcontainers/credentials",
-                            "/root/.aws/credentials", BindMode.READ_ONLY)
+                                                  "/root/.aws/credentials", BindMode.READ_ONLY)
                     .withNetworkAliases("localstack")
                     .withNetwork(Network.builder().build())
                     .waitingFor(Wait.forLogMessage(".*Initialization terminated.*", 1)
-                            .withStartupTimeout(Duration.ofSeconds(180)));
+                                    .withStartupTimeout(Duration.ofSeconds(180)));
 
     static {
         localStack.start();

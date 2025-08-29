@@ -8,6 +8,9 @@ import it.pagopa.pn.radd.exception.RaddGenericException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +24,31 @@ public class Utils {
     private Utils() {
     }
 
+    public static String generateUUIDFromString(String input) {
+        try {
+            // Hash SHA-1 dei dati della richiesta
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] bytes = md.digest(input.getBytes(StandardCharsets.UTF_8));
+
+            bytes[6] &= 0x0f;  // clear version
+            bytes[6] |= 0x50;  // set to version 5
+            bytes[8] &= 0x3f;  // clear variant
+            bytes[8] |= (byte) 0x80;  // set to IETF variant
+
+            long msb = 0;
+            long lsb = 0;
+            for (int i = 0; i < 8; i++) {
+                msb = (msb << 8) | (bytes[i] & 0xff);
+            }
+            for (int i = 8; i < 16; i++) {
+                lsb = (lsb << 8) | (bytes[i] & 0xff);
+            }
+
+            return new UUID(msb, lsb).toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Errore nella generazione del UUID", e);
+        }
+    }
 
     public static boolean checkPersonType(String personType) {
         return StringUtils.equals(personType, Const.PF) || StringUtils.equals(personType, Const.PG);

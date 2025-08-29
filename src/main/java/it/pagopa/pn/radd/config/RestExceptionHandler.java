@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 import javax.validation.ConstraintViolation;
@@ -29,6 +30,8 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 
 @Slf4j
@@ -96,7 +99,7 @@ public class RestExceptionHandler {
         problem.setType(ex.getStatus().getReasonPhrase());
         problem.setStatus(ex.getStatus().value());
         problem.setTitle(ex.getExceptionType().getTitle());
-        problem.setDetail(ex.getExceptionType().getMessage());
+        problem.setDetail(ex.getMessage());
         problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
         problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
         return Mono.just(ResponseEntity.status(ex.getStatus())
@@ -116,6 +119,20 @@ public class RestExceptionHandler {
         problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
         problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(problem));
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    public Mono<ResponseEntity<Problem>> serverWebInputException(ServerWebInputException ex) {
+        log.error(ex.getMessage());
+        Problem problem = new Problem();
+        problem.setType(ex.getStatus().getReasonPhrase());
+        problem.setStatus(BAD_REQUEST.value());
+        problem.setTitle(ex.getReason());
+        problem.setDetail(ex.getMostSpecificCause().getMessage());
+        problem.setTimestamp(OffsetDateTime.now(ZoneOffset.UTC));
+        problem.setTraceId(MDC.get(MDC_TRACE_ID_KEY));
+        return Mono.just(ResponseEntity.status(BAD_REQUEST)
                 .body(problem));
     }
 

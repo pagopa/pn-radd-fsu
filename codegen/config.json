@@ -8,6 +8,16 @@
                 "pn-radd-alt-import-registry-internal.yaml"
             ],
             "servicePath": "radd-net"
+        },
+        {
+            "intendedUsage": "BO",
+            "commonFiles": [
+                "schemas-pn-radd-alt-registry.yaml"
+            ],
+            "openapiFiles": [
+                "pn-radd-alt-registry-v2-internal.yaml"
+            ],
+            "servicePath": "radd-bo"
         }
     ]
 }

@@ -1,13 +1,14 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.util.StringUtils;
-import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.middleware.db.RaddRegistryDAO;
+import it.pagopa.pn.radd.mapper.AddressMapper;
+import it.pagopa.pn.radd.mapper.NormalizedAddressMapper;
+import it.pagopa.pn.radd.mapper.RaddRegistryMapper;
+import it.pagopa.pn.radd.mapper.StoreRegistryMapper;
+import it.pagopa.pn.radd.middleware.db.RaddRegistryV2DAO;
+import it.pagopa.pn.radd.middleware.db.entities.AddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
-import it.pagopa.pn.radd.utils.ObjectMapperUtil;
-import it.pagopa.pn.radd.utils.RaddRegistryUtils;
+import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntityV2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,56 +32,59 @@ import static org.mockito.Mockito.when;
 public class StoreRegistryServiceTest {
 
     @Mock
-    RaddRegistryDAO raddRegistryDAO;
-    @Mock
-    private SecretService secretService;
-    @Mock
-    private PnRaddFsuConfig pnRaddFsuConfig;
+    RaddRegistryV2DAO raddRegistryDAO;
 
     @InjectMocks
     private StoreRegistryService storeRegistryService;
 
     @BeforeEach
     void setUp() {
-        storeRegistryService = new StoreRegistryService(raddRegistryDAO, new RaddRegistryUtils(new ObjectMapperUtil(new ObjectMapper()), pnRaddFsuConfig, secretService));
+        NormalizedAddressMapper normalizedAddressMapper = new NormalizedAddressMapper();
+        storeRegistryService = new StoreRegistryService(raddRegistryDAO, new StoreRegistryMapper(new RaddRegistryMapper(normalizedAddressMapper), normalizedAddressMapper, new AddressMapper()));
     }
 
+    private RaddRegistryEntityV2 getRegistryEntity() {
+        RaddRegistryEntityV2 registryEntity = new RaddRegistryEntityV2();
+        registryEntity.setPartnerId("partnerId");
+        registryEntity.setLocationId("locationId");
+        registryEntity.setDescription("testDescription");
+        registryEntity.setOpeningTime("testOpeningTime");
+
+        NormalizedAddressEntity normalizedAddressEntity = new NormalizedAddressEntity();
+        normalizedAddressEntity.setCountry("country");
+        normalizedAddressEntity.setProvince("pr");
+        normalizedAddressEntity.setCity("city");
+        normalizedAddressEntity.setCap("cap");
+        registryEntity.setNormalizedAddress(normalizedAddressEntity);
+
+        AddressEntity addressEntity = new AddressEntity();
+        addressEntity.setCountry("country");
+        addressEntity.setProvince("pr");
+        addressEntity.setCity("city");
+        addressEntity.setCap("cap");
+        addressEntity.setAddressRow("addressRow");
+        registryEntity.setAddress(addressEntity);
+
+        return registryEntity;
+    }
 
     @Test
     void retrieveStoreRegistries() {
-        RaddRegistryEntity registryEntity = getRegistryEntity();
-        List<RaddRegistryEntity> registryEntities = List.of(registryEntity);
-        Map<String, AttributeValue> lastEvaluetadKey = Map.of("cxId", AttributeValue.builder()
-                        .s("testCxId")
-                        .build(),
-                "registryId", AttributeValue.builder()
-                        .s("testRegistryId")
-                        .build());
+        RaddRegistryEntityV2 registryEntity = getRegistryEntity();
+        List<RaddRegistryEntityV2> registryEntities = List.of(registryEntity);
+        Map<String, AttributeValue> lastEvaluetadKey = Map.of("partnerId", AttributeValue.builder()
+                                                                                         .s("partnerId")
+                                                                                         .build(),
+                                                              "locationId", AttributeValue.builder()
+                                                                                          .s("locationId")
+                                                                                          .build());
 
         when(raddRegistryDAO.scanRegistries(any(), any())).thenReturn(Mono.just(Page.create(registryEntities, lastEvaluetadKey)));
 
         StepVerifier.create(storeRegistryService.retrieveStoreRegistries(1000, "lastKey"))
-                .expectNextMatches(storeRegistriesResponse -> storeRegistriesResponse.getRegistries().size() == 1 &&
-                        storeRegistriesResponse.getRegistries().get(0).getGeoLocation().getLongitude().equals("52.241") &&
-                        storeRegistriesResponse.getRegistries().get(0).getAddress().getCity().equals("city") &&
-                        StringUtils.isNotEmpty(storeRegistriesResponse.getLastKey()))
-                .verifyComplete();
+                    .expectNextMatches(storeRegistriesResponse -> storeRegistriesResponse.getRegistries().size() == 1 &&
+                                                                  StringUtils.isNotEmpty(storeRegistriesResponse.getLastKey()))
+                    .verifyComplete();
     }
 
-    private RaddRegistryEntity getRegistryEntity() {
-        RaddRegistryEntity registryEntity = new RaddRegistryEntity();
-        registryEntity.setDescription("testDescription");
-        registryEntity.setPhoneNumber("testPhoneNumber");
-        registryEntity.setExternalCode("testExternalCode");
-        registryEntity.setCapacity("testCapacity");
-        registryEntity.setGeoLocation("{\"latitude\": \"41.210\", \"longitude\": \"52.241\"}");
-        registryEntity.setOpeningTime("testOpeningTime");
-        NormalizedAddressEntity addressEntity = new NormalizedAddressEntity();
-        addressEntity.setCountry("country");
-        addressEntity.setPr("pr");
-        addressEntity.setCity("city");
-        addressEntity.setCap("cap");
-        registryEntity.setNormalizedAddress(addressEntity);
-        return registryEntity;
-    }
 }

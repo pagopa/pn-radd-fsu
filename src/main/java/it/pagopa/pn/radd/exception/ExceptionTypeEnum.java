@@ -8,6 +8,7 @@ public enum ExceptionTypeEnum {
     DATE_NOTICE_ERROR("DATE_NOTICE_ERROR","La data di fine validità non rispetta il preavviso minimo richiesto", 99),
     DATE_INTERVAL_ERROR("DATE_INTERVAL_ERROR","La data di fine validità non può essere precedente alla data di inizio validità", 99),
     DATE_INVALID_ERROR("DATE_INVALID_ERROR","formato della data non valido", 99),
+    START_VALIDITY_IN_THE_PAST("START_VALIDITY_IN_THE_PAST","La data 'startValidity' è nel passato", 99),
     IUN_NOT_FOUND("IUN_NOT_FOUND", "Iun not found with params", 99),
     TRANSACTION_NOT_SAVED("TRANSACTION_NOT_SAVED", "La transazione non è stata salvata", 99),
     TRANSACTION_NOT_EXIST("TRANSACTION_NOT_EXIST", "Transazione inesistente", 99),
@@ -36,17 +37,20 @@ public enum ExceptionTypeEnum {
     TRANSACTIONS_NOT_FOUND_FOR_CF("TRANSACTIONS_NOT_FOUND_FOR_CF", "Non ci sono transazioni per questo codice fiscale", 99),
     DATE_VALIDATION_ERROR("DATE_VALIDATION_ERROR", "Le date non sono compatibili", 99),
     DUPLICATE_REQUEST("DUPLICATE_REQUEST", "Richiesta Duplicata. il file inviato è già in fase di elaborazione", 99),
+    DUPLICATE_EXT_CODE("DUPLICATE_EXT_CODE", "External code duplicato.", 99),
     PENDING_REQUEST("PENDING_REQUEST", "Una precedente richiesta di import è ancora in corso", 99),
     MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "RequestId e CxId sono obbligatori", 99),
     IMPORT_REQUEST_NOT_FOUND("IMPORT_REQUEST_NOT_FOUND", "Richiesta di import non trovata", 99),
+    RADD_REGISTRY_ALREADY_EXISTS("RADD_REGISTRY_ALREADY_EXISTS", "Punto di ritiro SEND già esistente", 99),
     RADD_REGISTRY_NOT_FOUND("RADD_REGISTRY_NOT_FOUND","Punto di ritiro SEND non trovato",99 ),
     RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY("RADD_REGISTRY_UNSUPPORTED_LAST_EVALUATED_KEY", "Ultima chiave di paginazione non supportata.", 99),
     PHONE_NUMBER_ERROR("PHONE_NUMBER_ERROR","Il formato del numero di telefono non è corretto", 99),
     GEOLOCATION_ERROR("GEOLOCATION_ERROR","Il formato della geolocalizzazione non è corretto", 99),
     OPENING_TIME_ERROR("OPENING_TIME_ERROR","Il formato dell'orario di apertura non è corretto", 99),
-    CAPACITY_ERROR("CAPACITY_ERROR","Il formato della capacità non è corretto", 99),
-    ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY("PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY", "Impossibile deserializzare la lastEvaluatedKey", 99);
-
+    ERROR_CODE_PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY("PN_RADD_ALT_UNSUPPORTED_LAST_EVALUATED_KEY", "Impossibile deserializzare la lastEvaluatedKey", 99),
+    COORDINATES_NOT_FOUND("COORDINATES_NOT_FOUND", "Coordinate non trovate per l'indirizzo fornito", 99),
+    INVALID_URL("INVALID_URL", "L'URL non è valido.", 99),
+    INVALID_PARTNER_ID("INVALID_PARTNER_ID", "Il partnerId fornito non è valido. Deve essere un CF.", 99);
 
     private final String title;
     private final String message;

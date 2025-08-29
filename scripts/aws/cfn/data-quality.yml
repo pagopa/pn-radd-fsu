@@ -32,9 +32,8 @@ Parameters:
     Type: String
     Description: |
       DynamoDb table name for pn-RaddRegistryV2, 
-      valorized by the related output
-      in the storage.yaml template, used also for identifying the S3 bucket
-      directory where related CDC files are stored.
+      valorized by the related output in the storage.yaml template, 
+      used also for identifying the S3 bucket directory where related CDC files are stored.
       Note: Parameter name omits intentionally V2 suffix to match the storage.yml output for backward compatibility.
 
   RaddRegistryV2GlueTableName:

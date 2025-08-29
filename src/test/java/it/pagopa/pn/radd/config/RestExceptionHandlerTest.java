@@ -16,6 +16,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -212,5 +213,20 @@ class RestExceptionHandlerTests {
                 .expectNextMatches(response -> response.getStatusCode() == HttpStatus.BAD_REQUEST &&
                         response.getBody().getTitle().contains("field defaultMessage"))
                 .verifyComplete();
+    }
+
+    @Test
+    void serverWebInputException() {
+        ServerWebInputException exception = mock(ServerWebInputException.class);
+
+        when(exception.getStatus()).thenReturn(HttpStatus.BAD_REQUEST);
+        when(exception.getMessage()).thenReturn("Validation failed");
+        when(exception.getMostSpecificCause()).thenReturn(exception);
+
+        Mono<ResponseEntity<Problem>> result = restExceptionHandler.serverWebInputException(exception);
+
+        StepVerifier.create(result)
+                    .expectNextMatches(response -> response.getStatusCode() == HttpStatus.BAD_REQUEST)
+                    .verifyComplete();
     }
 }

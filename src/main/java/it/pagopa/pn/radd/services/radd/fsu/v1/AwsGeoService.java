@@ -31,9 +31,7 @@ public class AwsGeoService {
         GeocodeRequest request = buildGeocodeRequest(address, subRegion, postalCode, locality, country);
 
         return Mono.fromFuture(geoPlacesAsyncClient.geocode(request))
-                   .flatMap(response -> {
-                       return getCoordinateResult(response, address);
-                   })
+                   .flatMap(response -> getCoordinateResult(response, address))
                    .doOnError(e -> log.error("Error during AWS geolocation", e));
     }
 

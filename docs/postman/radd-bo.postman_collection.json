@@ -1,0 +1,1718 @@
+{
+	"info": {
+		"_postman_id": "133a5d52-17f6-4332-b9f8-3870c6cb7ccd",
+		"name": "Piattaforma Notifiche: API B2B per gli operatori RADD",
+		"description": "#Abstract API per la gestione delle richieste di censimento e modifica dei punti di ritiro SEND da parte degli operatori OPS.\nLe API permettono di: - richiedere l'attivazione di un nuovo punto di ritiro SEND - modificare un punto di ritiro SEND\n\nContact Support:\n Email: pn-supporto-radd@pagopa.it",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23963729"
+	},
+	"item": [
+		{
+			"name": "radd-bo",
+			"item": [
+				{
+					"name": "api",
+					"item": [
+						{
+							"name": "v2",
+							"item": [
+								{
+									"name": "registry",
+									"item": [
+										{
+											"name": "{locationId}",
+											"item": [
+												{
+													"name": "update Registry",
+													"request": {
+														"method": "PATCH",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "x-pagopa-pn-cx-id",
+																"value": "12345678901",
+																"type": "text"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"externalCodes\": [\n    \"EXT-xxx\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2030-01-01\",\n  \"appointmentRequired\": true,\n  \"website\": \"https://new-website.com\",\n  \"email\": \"mail@esempio.it\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry",
+																":locationId"
+															],
+															"variable": [
+																{
+																	"key": "locationId",
+																	"value": "locationId",
+																	"description": "(Required) Identificativo della sede del punto di ritiro"
+																}
+															]
+														},
+														"description": "API utilizzata per la modifica di un'anagrafica RADD"
+													},
+													"response": [
+														{
+															"name": "OK",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "OK",
+															"code": 200,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference #/components/schemas/RegistryV2 not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Bad Request",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Bad Request",
+															"code": 400,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Unauthorized",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Unauthorized",
+															"code": 401,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Forbidden",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Forbidden",
+															"code": 403,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Not found - Punto di ritiro SEND non trovato",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Not Found",
+															"code": 404,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Not Allowed",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Method Not Allowed",
+															"code": 405,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Conflict",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Conflict",
+															"code": 409,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Internal error",
+															"originalRequest": {
+																"method": "PATCH",
+																"header": [
+																	{
+																		"key": "Content-Type",
+																		"value": "application/json"
+																	},
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"body": {
+																	"mode": "raw",
+																	"raw": "{\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"description\": \"Registro aggiornato dello sportello.\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": true,\n  \"website\": \"w6cjkhu.Rno.8h2ZGfPMXbBHsIKwy95dF1exnku0.MCOHMLAaHjvTXu7tPwfQz6uKl7xzfVYi28BtwhmsrJEAgD-yThZZUZGzBs.a7c4lUc8xe.mCoLsuejqLjfHMr/80m]T@\",\n  \"email\": \"mail@esempio.it\"\n}",
+																	"options": {
+																		"raw": {
+																			"headerFamily": "json",
+																			"language": "json"
+																		}
+																	}
+																},
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Internal Server Error",
+															"code": 500,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														}
+													]
+												},
+												{
+													"name": "delete Registry",
+													"request": {
+														"method": "DELETE",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "x-pagopa-pn-cx-id",
+																"value": "12345678901",
+																"type": "text"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry",
+																":locationId"
+															],
+															"variable": [
+																{
+																	"key": "locationId",
+																	"value": "locationId",
+																	"description": "(Required) Identificativo della sede del punto di ritiro"
+																}
+															]
+														},
+														"description": "API utilizzata per la cancellazione di un punto di ritiro di un partner"
+													},
+													"response": [
+														{
+															"name": "Ok",
+															"originalRequest": {
+																"method": "DELETE",
+																"header": [
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "No Content",
+															"code": 204,
+															"_postman_previewlanguage": "text",
+															"header": [],
+															"cookie": [],
+															"body": ""
+														},
+														{
+															"name": "Bad Request",
+															"originalRequest": {
+																"method": "DELETE",
+																"header": [
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Bad Request",
+															"code": 400,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Unauthorized",
+															"originalRequest": {
+																"method": "DELETE",
+																"header": [
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Unauthorized",
+															"code": 401,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Forbidden",
+															"originalRequest": {
+																"method": "DELETE",
+																"header": [
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Forbidden",
+															"code": 403,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Not Allowed",
+															"originalRequest": {
+																"method": "DELETE",
+																"header": [
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Method Not Allowed",
+															"code": 405,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														},
+														{
+															"name": "Internal error",
+															"originalRequest": {
+																"method": "DELETE",
+																"header": [
+																	{
+																		"key": "Accept",
+																		"value": "application/problem+json"
+																	},
+																	{
+																		"key": "Authorization",
+																		"value": "Bearer <token>",
+																		"description": "Added as a part of security scheme: bearer"
+																	}
+																],
+																"url": {
+																	"raw": "{{baseUrl}}/radd-bo/api/v2/registry/:locationId",
+																	"host": [
+																		"{{baseUrl}}"
+																	],
+																	"path": [
+																		"radd-bo",
+																		"api",
+																		"v2",
+																		"registry",
+																		":locationId"
+																	],
+																	"variable": [
+																		{
+																			"key": "locationId"
+																		}
+																	]
+																}
+															},
+															"status": "Internal Server Error",
+															"code": 500,
+															"_postman_previewlanguage": "json",
+															"header": [
+																{
+																	"key": "Content-Type",
+																	"value": "application/problem+json"
+																}
+															],
+															"cookie": [],
+															"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+														}
+													]
+												}
+											]
+										},
+										{
+											"name": "retrieve Registries",
+											"request": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "x-pagopa-pn-cx-id",
+														"value": "12345678901",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1000&lastKey=lastKey",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"radd-bo",
+														"api",
+														"v2",
+														"registry"
+													],
+													"query": [
+														{
+															"key": "limit",
+															"value": "1000",
+															"description": "Numero massimo di elementi da restituire per pagina"
+														},
+														{
+															"key": "lastKey",
+															"value": "lastKey",
+															"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+														}
+													]
+												},
+												"description": "API utilizzata per il recupero di tutti i punti di ritiro di un partner, con paginazione lato DynamoDB."
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1792&lastKey=string",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															],
+															"query": [
+																{
+																	"key": "limit",
+																	"value": "1792",
+																	"description": "Numero massimo di elementi da restituire per pagina"
+																},
+																{
+																	"key": "lastKey",
+																	"value": "string",
+																	"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+																}
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"items\": [\n    {\n      \"value\": \"reference #/components/schemas/RegistryV2 not found in the OpenAPI spec\"\n    },\n    {\n      \"value\": \"reference #/components/schemas/RegistryV2 not found in the OpenAPI spec\"\n    }\n  ],\n  \"lastKey\": \"string\"\n}"
+												},
+												{
+													"name": "Bad Request",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1792&lastKey=string",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															],
+															"query": [
+																{
+																	"key": "limit",
+																	"value": "1792",
+																	"description": "Numero massimo di elementi da restituire per pagina"
+																},
+																{
+																	"key": "lastKey",
+																	"value": "string",
+																	"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+																}
+															]
+														}
+													},
+													"status": "Bad Request",
+													"code": 400,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Unauthorized",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1792&lastKey=string",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															],
+															"query": [
+																{
+																	"key": "limit",
+																	"value": "1792",
+																	"description": "Numero massimo di elementi da restituire per pagina"
+																},
+																{
+																	"key": "lastKey",
+																	"value": "string",
+																	"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+																}
+															]
+														}
+													},
+													"status": "Unauthorized",
+													"code": 401,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Forbidden",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1792&lastKey=string",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															],
+															"query": [
+																{
+																	"key": "limit",
+																	"value": "1792",
+																	"description": "Numero massimo di elementi da restituire per pagina"
+																},
+																{
+																	"key": "lastKey",
+																	"value": "string",
+																	"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+																}
+															]
+														}
+													},
+													"status": "Forbidden",
+													"code": 403,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Not Allowed",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1792&lastKey=string",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															],
+															"query": [
+																{
+																	"key": "limit",
+																	"value": "1792",
+																	"description": "Numero massimo di elementi da restituire per pagina"
+																},
+																{
+																	"key": "lastKey",
+																	"value": "string",
+																	"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+																}
+															]
+														}
+													},
+													"status": "Method Not Allowed",
+													"code": 405,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Internal error",
+													"originalRequest": {
+														"method": "GET",
+														"header": [
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry?limit=1792&lastKey=string",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															],
+															"query": [
+																{
+																	"key": "limit",
+																	"value": "1792",
+																	"description": "Numero massimo di elementi da restituire per pagina"
+																},
+																{
+																	"key": "lastKey",
+																	"value": "string",
+																	"description": "Chiave dell’ultimo elemento restituito per ottenere la pagina successiva (ExclusiveStartKey DynamoDB)"
+																}
+															]
+														}
+													},
+													"status": "Internal Server Error",
+													"code": 500,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												}
+											]
+										},
+										{
+											"name": "add Registry",
+											"event": [
+												{
+													"listen": "prerequest",
+													"script": {
+														"exec": [
+															"// Generate random externalCode\r",
+															"const randomNum = Math.floor(100000 + Math.random() * 900000);\r",
+															"const externalCode = `EXT${randomNum}`;\r",
+															"pm.variables.set(\"externalCode\", externalCode);\r",
+															"\r",
+															"// Helper function to format date as YYYY-MM-dd\r",
+															"function formatDate(date) {\r",
+															"    const year = date.getFullYear();\r",
+															"    const month = String(date.getMonth() + 1).padStart(2, '0');\r",
+															"    const day = String(date.getDate()).padStart(2, '0');\r",
+															"    return `${year}-${month}-${day}`;\r",
+															"}\r",
+															"\r",
+															"// Get today's date\r",
+															"const today = new Date();\r",
+															"const startValidity = formatDate(today);\r",
+															"pm.variables.set(\"startValidity\", startValidity);\r",
+															"\r",
+															"// Get date + 1 year\r",
+															"const nextYear = new Date(today);\r",
+															"nextYear.setFullYear(today.getFullYear() + 1);\r",
+															"const endValidity = formatDate(nextYear);\r",
+															"pm.variables.set(\"endValidity\", endValidity);\r",
+															""
+														],
+														"type": "text/javascript",
+														"packages": {}
+													}
+												},
+												{
+													"listen": "test",
+													"script": {
+														"exec": [
+															""
+														],
+														"type": "text/javascript",
+														"packages": {}
+													}
+												}
+											],
+											"request": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "x-pagopa-pn-cx-id",
+														"value": "12345678901",
+														"type": "text"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"address\": {\n        \"addressRow\": \"Piazza Venezia 5\",\n        \"cap\": \"00187\",\n        \"city\": \"Roma\",\n        \"province\": \"RM\",\n        \"country\": \"Italia\"\n    },\n    \"description\": \"Sportello ABC.\",\n    \"phoneNumbers\": [\n        \"+390123456789\",\n        \"3921573273\"\n    ],\n    \"email\": \"mail@esempio.it\",\n    \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n    \"startValidity\": \"{{startValidity}}\",\n    \"endValidity\": \"{{endValidity}}\",\n    \"externalCodes\": [\n        \"{{externalCode}}\"\n    ],\n    \"appointmentRequired\": false,\n    \"website\": \"https://website.com\",\n    \"partnerType\": \"CAF\"\n}",
+													"options": {
+														"raw": {
+															"headerFamily": "json",
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"radd-bo",
+														"api",
+														"v2",
+														"registry"
+													]
+												},
+												"description": "API utilizzata per la richiesta di attivazione nuova anagrafica RADD"
+											},
+											"response": [
+												{
+													"name": "OK",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "OK",
+													"code": 200,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference #/components/schemas/RegistryV2 not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Bad Request",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "Bad Request",
+													"code": 400,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Unauthorized",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "Unauthorized",
+													"code": 401,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Forbidden",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "Forbidden",
+													"code": 403,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Not Allowed",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "Method Not Allowed",
+													"code": 405,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Conflict",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "Conflict",
+													"code": 409,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												},
+												{
+													"name": "Internal error",
+													"originalRequest": {
+														"method": "POST",
+														"header": [
+															{
+																"key": "Content-Type",
+																"value": "application/json"
+															},
+															{
+																"key": "Accept",
+																"value": "application/problem+json"
+															},
+															{
+																"key": "Authorization",
+																"value": "Bearer <token>",
+																"description": "Added as a part of security scheme: bearer"
+															}
+														],
+														"body": {
+															"mode": "raw",
+															"raw": "{\n  \"address\": {\n    \"value\": \"reference #/components/schemas/AddressV2 not found in the OpenAPI spec\"\n  },\n  \"description\": \"Sportello ABC.\",\n  \"phoneNumbers\": [\n    \"+390123456789\",\n    \"3921573273\"\n  ],\n  \"externalCodes\": [\n    \"string\",\n    \"string\"\n  ],\n  \"email\": \"mail@esempio.it\",\n  \"openingTime\": \"Lun 09:00-13:00, 14:00-18:00; Mar 09:30-12:30; Mer 09:00-18:00\",\n  \"startValidity\": \"2024-03-21\",\n  \"endValidity\": \"2024-03-21\",\n  \"appointmentRequired\": false,\n  \"website\": \"http://3IP5ZSB7jDMbQOf6.CB3YdQWFqa9JOmY0PEkNS.kQfRiKjwctYyJO3UBhBp3dVw-wkfdsZqpcq8SrirEKKAiG4.8W0yS3Pp-DdtrZuv3MnEaeq.c.cjjIe1rQc3rteA.EUmW16ZE1T1bs-z1j7s-aKiOCHFa6.HR1qilwpkir3P0ExtAQ-LWUR8zzOMdpfhhK7fehbzPj9-K33RWUF.F-UdvAkdEEEKqSv.eXaOO1AD.7h104YBBY63j.uIgxVAQOEmcpeZrPQZxmxLyjTuURuYMqpy\",\n  \"partnerType\": \"CAF\"\n}",
+															"options": {
+																"raw": {
+																	"headerFamily": "json",
+																	"language": "json"
+																}
+															}
+														},
+														"url": {
+															"raw": "{{baseUrl}}/radd-bo/api/v2/registry",
+															"host": [
+																"{{baseUrl}}"
+															],
+															"path": [
+																"radd-bo",
+																"api",
+																"v2",
+																"registry"
+															]
+														}
+													},
+													"status": "Internal Server Error",
+													"code": 500,
+													"_postman_previewlanguage": "json",
+													"header": [
+														{
+															"key": "Content-Type",
+															"value": "application/problem+json"
+														}
+													],
+													"cookie": [],
+													"body": "{\n  \"value\": \"reference remote-refs.yaml#/components/schemas/Problem not found in the OpenAPI spec\"\n}"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{bearerToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://api.radd.dev.notifichedigitali.it"
+		}
+	]
+}

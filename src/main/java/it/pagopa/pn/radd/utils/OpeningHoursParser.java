@@ -13,6 +13,10 @@ import java.util.stream.Collectors;
 @CustomLog
 public class OpeningHoursParser {
 
+    private OpeningHoursParser() {
+        throw new IllegalStateException("OpeningHoursParser is a utility class");
+    }
+
     private static final List<String> VALID_DAYS_ORDERED = List.of("lun", "mar", "mer", "gio", "ven", "sab", "dom");
     private static final Pattern LINE_PATTERN = Pattern.compile(
             "(?i)^([a-z]{3})(?:-([a-z]{3}))?\\s+((?:\\d{2}:\\d{2}-\\d{2}:\\d{2})(?:\\s*,\\s*\\d{2}:\\d{2}-\\d{2}:\\d{2})*)$"

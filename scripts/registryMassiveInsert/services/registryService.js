@@ -16,7 +16,8 @@ class RegistryService {
 
   // Private helper to extract error message
   #getErrorMessage(error) {
-    return error?.response?.data?.detail || error.message;
+    if (error?.response?.data) return JSON.stringify(error.response.data);
+    else return error.message;
   }
 
   async getRegistriesByPartnerId(partnerId, headers = {}) {

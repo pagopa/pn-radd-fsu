@@ -10,6 +10,10 @@ import java.util.regex.Pattern;
 @CustomLog
 public class UrlSanitizer {
 
+    private UrlSanitizer() {
+        throw new IllegalStateException("UrlSanitizer is a utility class");
+    }
+
     private static final Pattern SAFE_CHARS = Pattern.compile("^[a-zA-Z0-9:/?#\\[\\]@!$&'()*+,;=_\\-.~%]*$");
     private static final Pattern SCHEME_REGEX = Pattern.compile("^[a-z][a-z0-9+.-]*://.*");
     private static final Pattern VALID_TLD_PATTERN = Pattern.compile(".*\\.[a-zA-Z]{2,}$");

@@ -28,7 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @CustomLog
-public class RaddRegistryV2DAOImplTest extends BaseTest.WithLocalStack {
+class RaddRegistryV2DAOImplTest extends BaseTest.WithLocalStack {
     @Autowired
     @SpyBean
     private RaddRegistryV2DAO raddRegistryDAO;
@@ -36,7 +36,6 @@ public class RaddRegistryV2DAOImplTest extends BaseTest.WithLocalStack {
     @Autowired
     @SpyBean
     private RestExceptionHandler exceptionHandler;
-    private RaddRegistryEntityV2 baseEntity;
 
     @Autowired
     private BaseDao<RaddRegistryEntityV2> baseDao;

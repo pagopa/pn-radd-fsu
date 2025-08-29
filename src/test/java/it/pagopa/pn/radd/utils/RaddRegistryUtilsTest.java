@@ -10,26 +10,32 @@ import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.No
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.addressmanager.v1.dto.NormalizeRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.radd.alt.generated.openapi.msclient.pnsafestorage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryUploadRequest;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RequestResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.radd.config.CachedSecretsManagerConsumer;
 import it.pagopa.pn.radd.config.PnRaddFsuConfig;
-import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryImportEntity;
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryRequestEntity;
+import it.pagopa.pn.radd.exception.ExceptionTypeEnum;
+import it.pagopa.pn.radd.exception.RaddGenericException;
+import it.pagopa.pn.radd.middleware.db.entities.*;
 import it.pagopa.pn.radd.middleware.queue.event.PnAddressManagerEvent;
 import it.pagopa.pn.radd.pojo.*;
+import it.pagopa.pn.radd.services.radd.fsu.v1.AwsGeoService;
 import it.pagopa.pn.radd.services.radd.fsu.v1.SecretService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import software.amazon.awssdk.services.geoplaces.model.AddressComponentMatchScores;
+import software.amazon.awssdk.services.geoplaces.model.ComponentMatchScores;
+import software.amazon.awssdk.services.geoplaces.model.MatchScoreDetails;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -252,12 +258,12 @@ class RaddRegistryUtilsTest {
         pnRaddFsuConfig.setRegistryImportUploadFileTtl(1L);
         ObjectMapperUtil objectMapperUtil = new ObjectMapperUtil(new ObjectMapper());
         RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
+                                                                    new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
         RegistryUploadRequest request = new RegistryUploadRequest();
 
         // Act
         RaddRegistryImportEntity actualPnRaddRegistryImportEntity = raddRegistryUtils.getPnRaddRegistryImportEntity("42",
-                request, new FileCreationResponseDto(), "42");
+                                                                                                                    request, new FileCreationResponseDto(), "42");
 
         // Assert
         assertEquals("42", actualPnRaddRegistryImportEntity.getCxId());
@@ -291,12 +297,12 @@ class RaddRegistryUtilsTest {
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
         pnRaddFsuConfig.setRegistryImportUploadFileTtl(1L);
         RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
+                                                                    new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
         RegistryUploadRequest request = new RegistryUploadRequest();
 
         // Act
         RaddRegistryImportEntity actualPnRaddRegistryImportEntity = raddRegistryUtils.getPnRaddRegistryImportEntity("42",
-                request, new FileCreationResponseDto(), "42");
+                                                                                                                    request, new FileCreationResponseDto(), "42");
 
         // Assert
         verify(objectMapper).writeValueAsString(Mockito.any());
@@ -330,12 +336,12 @@ class RaddRegistryUtilsTest {
         PnRaddFsuConfig pnRaddFsuConfig = new PnRaddFsuConfig();
         pnRaddFsuConfig.setRegistryImportUploadFileTtl(1L);
         RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
+                                                                    new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
         RegistryUploadRequest request = new RegistryUploadRequest();
 
         // Act
         RaddRegistryImportEntity actualPnRaddRegistryImportEntity = raddRegistryUtils.getPnRaddRegistryImportEntity("42",
-                request, new FileCreationResponseDto(), "42");
+                                                                                                                    request, new FileCreationResponseDto(), "42");
 
         // Assert
         verify(objectMapperUtil).toJson(Mockito.any());
@@ -465,7 +471,7 @@ class RaddRegistryUtilsTest {
 
         // Assert
         verify(objectMapperUtil, atLeast(1)).toObject(Mockito.any(),
-                Mockito.<Class<AddressManagerRequestAddress>>any());
+                                                      Mockito.<Class<AddressManagerRequestAddress>>any());
         assertEquals(2, actualRequestAddressFromOriginalRequest.size());
     }
 
@@ -956,7 +962,7 @@ class RaddRegistryUtilsTest {
         pnRaddFsuConfig.setEvaluatedZipCodeConfigNumber(10);
         ObjectMapperUtil objectMapperUtil = new ObjectMapperUtil(new ObjectMapper());
         RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
+                                                                    new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
 
         // Act and Assert
         assertTrue(raddRegistryUtils.findActiveIntervals(new ArrayList<>()).isEmpty());
@@ -972,7 +978,7 @@ class RaddRegistryUtilsTest {
         pnRaddFsuConfig.setEvaluatedZipCodeConfigNumber(1);
         ObjectMapperUtil objectMapperUtil = new ObjectMapperUtil(new ObjectMapper());
         RaddRegistryUtils raddRegistryUtils = new RaddRegistryUtils(objectMapperUtil, pnRaddFsuConfig,
-                new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
+                                                                    new SecretService(new CachedSecretsManagerConsumer(mock(SecretsManagerClient.class))));
 
         ArrayList<TimeInterval> timeIntervals = new ArrayList<>();
         Instant start = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
@@ -1027,11 +1033,11 @@ class RaddRegistryUtilsTest {
         // Arrange
         Instant start = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
         TimeInterval timeInterval = new TimeInterval(start,
-                LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
+                                                     LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
 
         Instant start2 = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
         TimeInterval timeInterval2 = new TimeInterval(start2,
-                LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
+                                                      LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant());
 
         Instant start3 = LocalDate.of(1970, 1, 1).atStartOfDay().atZone(ZoneOffset.UTC).toInstant();
 
@@ -1289,5 +1295,306 @@ class RaddRegistryUtilsTest {
         assertNull(result.getItems());
         assertEquals(0, result.getNextPagesKey().size());
         assertTrue(result.getMoreResult());
+    }
+
+    @Test
+    void testMapRegistryEntityToRegistry_success() {
+        RaddRegistryEntity entity = new RaddRegistryEntity();
+        entity.setRegistryId("reg123");
+        entity.setRequestId("req123");
+        entity.setDescription("Descrizione test");
+        entity.setPhoneNumber("1234567890");
+        entity.setOpeningTime("9-13");
+        entity.setStartValidity(Instant.parse("2023-01-01T00:00:00Z"));
+        entity.setEndValidity(Instant.parse("2023-12-31T23:59:59Z"));
+        entity.setExternalCode("EXT123");
+        entity.setCapacity("10");
+        entity.setCxId("CXID001");
+
+        NormalizedAddressEntity address = new NormalizedAddressEntity();
+        address.setAddressRow("Via Roma 1");
+        address.setCap("00100");
+        address.setProvince("RM");
+        address.setCity("Roma");
+        address.setCountry("IT");
+        entity.setNormalizedAddress(address);
+
+        GeoLocation geoLocation = new GeoLocation();
+        geoLocation.setLatitude("41.9028");
+        geoLocation.setLongitude("12.4964");
+        when(objectMapperUtil.toObject(anyString(), eq(GeoLocation.class))).thenReturn(geoLocation);
+
+        entity.setGeoLocation("{\"latitude\": \"41.9028\", \"longitude\": \"12.4964\"}");
+
+        ResultPaginationDto<RaddRegistryEntity, String> resultPaginationDto = new ResultPaginationDto<>();
+        resultPaginationDto.setResultsPage(List.of(entity));
+        List<String> nextPages = new ArrayList<>();
+        nextPages.add("NEXT_PAGE");
+        resultPaginationDto.setNextPagesKey(nextPages);
+        resultPaginationDto.setMoreResult(true);
+
+        RegistriesResponse response = raddRegistryUtils.mapRegistryEntityToRegistry(resultPaginationDto);
+
+        assertNotNull(response);
+        assertEquals(nextPages, response.getNextPagesKey());
+        assertEquals(1, response.getRegistries().size());
+
+        Registry registry = response.getRegistries().get(0);
+        assertEquals("reg123", registry.getRegistryId());
+        assertEquals("req123", registry.getRequestId());
+        assertEquals("Descrizione test", registry.getDescription());
+        assertEquals("1234567890", registry.getPhoneNumber());
+        assertEquals("9-13", registry.getOpeningTime());
+        assertEquals(Date.from(Instant.parse("2023-01-01T00:00:00Z")), registry.getStartValidity());
+        assertEquals(Date.from(Instant.parse("2023-12-31T23:59:59Z")), registry.getEndValidity());
+        assertEquals("EXT123", registry.getExternalCode());
+        assertEquals("10", registry.getCapacity());
+
+        assertNotNull(registry.getGeoLocation());
+        assertEquals("41.9028", registry.getGeoLocation().getLatitude());
+        assertEquals("12.4964", registry.getGeoLocation().getLongitude());
+
+        assertNotNull(registry.getAddress());
+        assertEquals("Via Roma 1", registry.getAddress().getAddressRow());
+        assertEquals("00100", registry.getAddress().getCap());
+        assertEquals("Roma", registry.getAddress().getCity());
+        assertEquals("RM", registry.getAddress().getPr());
+        assertEquals("IT", registry.getAddress().getCountry());
+    }
+
+    @Test
+    void testBuildRaddRegistryEntity_success() {
+        String partnerId = "12345678901";
+        String locationId = "location-001";
+        String uid = "user-abc";
+
+        CreateRegistryRequestV2 request = new CreateRegistryRequestV2();
+        request.setDescription("Test Description");
+        request.setPhoneNumbers(java.util.List.of("123456789"));
+        request.setOpeningTime("9-18");
+        request.setExternalCodes(java.util.List.of("EXT001"));
+        request.setStartValidity("2023-01-01");
+        request.setEndValidity("2023-12-31");
+        request.setEmail("test@example.com");
+        request.setAppointmentRequired(Boolean.TRUE);
+        request.setWebsite("https://example.com");
+        request.setPartnerType("PT");
+
+        AddressV2 address = new AddressV2();
+        address.setAddressRow("Via Roma 1, 10");
+        address.setCap("00100");
+        address.setCity("Roma");
+        address.setProvince("RM");
+        address.setCountry("IT");
+        request.setAddress(address);
+
+        AwsGeoService.CoordinatesResult coordinatesResult = new AwsGeoService.CoordinatesResult();
+        coordinatesResult.setAwsAddressRow("Via Roma 1, 10");
+        coordinatesResult.setAwsPostalCode("00100");
+        coordinatesResult.setAwsLocality("Roma");
+        coordinatesResult.setAwsSubRegion("RM");
+        coordinatesResult.setAwsCountry("IT");
+        coordinatesResult.setAwsLatitude("41");
+        coordinatesResult.setAwsLongitude("12");
+
+
+        RaddRegistryEntityV2 entity = RaddRegistryUtils.buildRaddRegistryEntity(
+                partnerId,
+                locationId,
+                uid,
+                request,
+                coordinatesResult);
+
+        assertNotNull(entity);
+        assertEquals(partnerId, entity.getPartnerId());
+        assertEquals(locationId, entity.getLocationId());
+        assertEquals("Test Description", entity.getDescription());
+        assertEquals("9-18", entity.getOpeningTime());
+        assertEquals("test@example.com", entity.getEmail());
+        assertEquals("https://example.com", entity.getWebsite());
+        assertEquals("PT", entity.getPartnerType());
+        assertEquals(uid, entity.getUid());
+        assertEquals(Boolean.TRUE, entity.getAppointmentRequired());
+        assertNotNull(entity.getCreationTimestamp());
+        assertNotNull(entity.getUpdateTimestamp());
+
+        assertEquals("Via Roma 1, 10", entity.getAddress().getAddressRow());
+        assertEquals("00100", entity.getAddress().getCap());
+        assertEquals("Roma", entity.getAddress().getCity());
+        assertEquals("RM", entity.getAddress().getProvince());
+        assertEquals("IT", entity.getAddress().getCountry());
+
+        assertNotNull(entity.getNormalizedAddress());
+        assertEquals("Via Roma 1, 10", entity.getNormalizedAddress().getAddressRow());
+        assertEquals("00100", entity.getNormalizedAddress().getCap());
+        assertEquals("Roma", entity.getNormalizedAddress().getCity());
+        assertEquals("RM", entity.getNormalizedAddress().getProvince());
+        assertEquals("IT", entity.getNormalizedAddress().getCountry());
+        assertEquals("41", entity.getNormalizedAddress().getLatitude());
+        assertEquals("12", entity.getNormalizedAddress().getLongitude());
+
+        assertTrue(entity.getModifiedAddress());
+    }
+
+    @Test
+    void testBuildBiasPointEntity_success() {
+        AddressComponentMatchScores addressComponentMatchScores = AddressComponentMatchScores.builder()
+                                                                                             .country(0.9)
+                                                                                             .addressNumber(0.8)
+                                                                                             .locality(0.85)
+                                                                                             .postalCode(0.75)
+                                                                                             .subRegion(0.65)
+                                                                                             .build();
+
+        ComponentMatchScores componentMatchScores = ComponentMatchScores.builder()
+                                                                        .address(addressComponentMatchScores)
+                                                                        .build();
+
+        MatchScoreDetails matchScoreDetails = MatchScoreDetails.builder()
+                                                               .overall(0.95)
+                                                               .components(componentMatchScores)
+                                                               .build();
+
+        BiasPointEntity result = invokeBuildBiasPointEntity(matchScoreDetails);
+
+        assertNotNull(result);
+        assertEquals(BigDecimal.valueOf(0.95), result.getOverall());
+        assertEquals(BigDecimal.valueOf(0.9), result.getCountry());
+        assertEquals(BigDecimal.valueOf(0.8), result.getAddressNumber());
+        assertEquals(BigDecimal.valueOf(0.85), result.getLocality());
+        assertEquals(BigDecimal.valueOf(0.75), result.getPostalCode());
+        assertEquals(BigDecimal.valueOf(0.65), result.getSubRegion());
+    }
+
+    @Test
+    void testBuildBiasPointEntity_nullInput() {
+        BiasPointEntity result = invokeBuildBiasPointEntity(null);
+
+        assertNotNull(result);  // deve comunque ritornare un oggetto
+        assertNull(result.getOverall());
+        assertNull(result.getCountry());
+        assertNull(result.getAddressNumber());
+        assertNull(result.getLocality());
+        assertNull(result.getPostalCode());
+        assertNull(result.getSubRegion());
+    }
+
+    @Test
+    void testBuildBiasPointEntity_partialComponents() {
+        MatchScoreDetails matchScoreDetails = MatchScoreDetails.builder()
+                                                               .overall(0.7)
+                                                               .components(ComponentMatchScores.builder().build()) // address = null
+                                                               .build();
+
+        BiasPointEntity result = invokeBuildBiasPointEntity(matchScoreDetails);
+
+        assertNotNull(result);
+        assertEquals(BigDecimal.valueOf(0.7), result.getOverall());
+        assertNull(result.getCountry());
+        assertNull(result.getAddressNumber());
+        assertNull(result.getLocality());
+        assertNull(result.getPostalCode());
+        assertNull(result.getSubRegion());
+    }
+
+    private BiasPointEntity invokeBuildBiasPointEntity(MatchScoreDetails matchScoreDetails) {
+        try {
+            var method = RaddRegistryUtils.class.getDeclaredMethod("buildBiasPointEntity", MatchScoreDetails.class);
+            method.setAccessible(true);
+            return (BiasPointEntity) method.invoke(null, matchScoreDetails);
+        } catch (Exception e) {
+            fail("Errore durante l'invocazione del metodo buildBiasPointEntity: " + e.getMessage());
+            return null;
+        }
+    }
+
+
+    @Test
+    void testValidPartnerId_doesNotThrow() {
+        // Arrange
+        String validPartnerId = "12345678901";
+
+        // Act & Assert
+        assertDoesNotThrow(() -> RaddRegistryUtils.validatePartnerId(validPartnerId));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12345", "1234567890123", "12345abc901"})
+    void testInvalidPartnerId_throwsException() {
+        String invalidPartnerId = "12345";
+
+        RaddGenericException exception = assertThrows(RaddGenericException.class, () ->
+                                                              RaddRegistryUtils.validatePartnerId(invalidPartnerId)
+                                                     );
+
+        assertEquals(ExceptionTypeEnum.INVALID_PARTNER_ID, exception.getExceptionType());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    }
+
+    @Test
+    void testUpdateAllFields() {
+        RaddRegistryEntityV2 entity = new RaddRegistryEntityV2();
+        entity.setStartValidity(Instant.parse("2024-01-01T00:00:00Z"));
+
+        UpdateRegistryRequestV2 request = new UpdateRegistryRequestV2();
+        request.setDescription("New description");
+        request.setEmail("test@example.com");
+        request.setOpeningTime("08:00-12:00");
+        request.setExternalCodes(List.of("EX123"));
+        request.setPhoneNumbers(List.of("123456789"));
+        request.setWebsite("https://newsite.it");
+        request.setAppointmentRequired(true);
+        request.setEndValidity("2025-01-01");
+
+        String uid = "updated-by-user";
+
+        RaddRegistryEntityV2 updated = RaddRegistryUtils.mapFieldToUpdate(entity, request, uid);
+
+        assertEquals("New description", updated.getDescription());
+        assertEquals("test@example.com", updated.getEmail());
+        assertEquals("08:00-12:00", updated.getOpeningTime());
+        assertEquals(List.of("EX123"), updated.getExternalCodes());
+        assertEquals(List.of("123456789"), updated.getPhoneNumbers());
+        assertEquals("https://newsite.it", updated.getWebsite());
+        assertEquals(true, updated.getAppointmentRequired());
+        assertEquals(Instant.parse("2025-01-01T00:00:00Z"), updated.getEndValidity());
+        assertEquals(uid, updated.getUid());
+        assertNotNull(updated.getUpdateTimestamp());
+    }
+
+    @Test
+    void testIgnoreNullAndBlankFields() {
+        RaddRegistryEntityV2 entity = new RaddRegistryEntityV2();
+        entity.setDescription("Original description");
+        entity.setEmail("original@example.com");
+        entity.setAppointmentRequired(false);
+
+        UpdateRegistryRequestV2 request = new UpdateRegistryRequestV2();
+        request.setDescription("");
+        request.setEmail(null);
+        request.setAppointmentRequired(null);
+
+        String uid = "user";
+
+        RaddRegistryEntityV2 updated = RaddRegistryUtils.mapFieldToUpdate(entity, request, uid);
+
+        assertEquals("Original description", updated.getDescription());
+        assertEquals("original@example.com", updated.getEmail());
+        assertEquals(false, updated.getAppointmentRequired());
+        assertEquals(uid, updated.getUid());
+        assertNotNull(updated.getUpdateTimestamp());
+    }
+
+    @Test
+    void testInvalidEndValidity_throwsException() {
+        RaddRegistryEntityV2 entity = new RaddRegistryEntityV2();
+        entity.setStartValidity(Instant.parse("2025-01-01T00:00:00Z"));
+
+        UpdateRegistryRequestV2 request = new UpdateRegistryRequestV2();
+        request.setEndValidity("2024-01-01");
+
+        assertThrows(RaddGenericException.class, () ->
+                             RaddRegistryUtils.mapFieldToUpdate(entity, request, "uid")
+                    );
     }
 }

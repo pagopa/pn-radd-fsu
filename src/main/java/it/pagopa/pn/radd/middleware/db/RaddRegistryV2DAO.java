@@ -1,6 +1,5 @@
 package it.pagopa.pn.radd.middleware.db;
 
-import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntityV2;
 import it.pagopa.pn.radd.pojo.RaddRegistryPage;
 import reactor.core.publisher.Flux;

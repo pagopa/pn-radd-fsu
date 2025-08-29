@@ -34,6 +34,12 @@ const RegistryService = require('./services/registryService');
   const usedLocationIds = new Set();
   const report = [];
 
+    if (!csvRegistries || csvRegistries.length === 0)
+    {
+      console.error('Il file CSV è vuoto o malformato. Deve contenere almeno una riga valida per aggiungere o aggiornare una sede.');
+      process.exit(1);
+    }
+
     for (const csvRegistry of csvRegistries) {
       const { locationId } = csvRegistry;
 

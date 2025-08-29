@@ -36,7 +36,6 @@ import static it.pagopa.pn.radd.utils.DateUtils.getStartOfDayToday;
 @Repository
 @CustomLog
 public class RaddRegistryV2DAOImpl extends BaseDao<RaddRegistryEntityV2> implements RaddRegistryV2DAO {
-    private final PnRaddFsuConfig pnRaddFsuConfig;
 
     public RaddRegistryV2DAOImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                  DynamoDbAsyncClient dynamoDbAsyncClient,
@@ -47,7 +46,6 @@ public class RaddRegistryV2DAOImpl extends BaseDao<RaddRegistryEntityV2> impleme
               raddFsuConfig,
               RaddRegistryEntityV2.class
              );
-        pnRaddFsuConfig = raddFsuConfig;
     }
 
     @Override

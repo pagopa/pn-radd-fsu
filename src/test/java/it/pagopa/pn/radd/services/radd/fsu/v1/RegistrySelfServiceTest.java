@@ -40,6 +40,7 @@ class RegistrySelfServiceTest {
     private RaddRegistryV2DAO raddRegistryDAO;
     @Mock
     private AwsGeoService awsGeoService;
+    @Mock
     private RegistrySelfService registrySelfService;
 
     private static final String PATTERN_FORMAT = "yyyy-MM-dd";
@@ -76,21 +77,6 @@ class RegistrySelfServiceTest {
                 raddRegistryMapper,
                 new RaddRegistryPageMapper(raddRegistryMapper)
         );
-    }
-
-    private GetRegistryResponseV2 getRegistryResponseV2() {
-
-        RegistryV2 registry = new RegistryV2();
-        registry.setPartnerId(PARTNER_ID);
-
-        List<RegistryV2> listRegistry = new ArrayList<>();
-        listRegistry.add(registry);
-
-        GetRegistryResponseV2 res = new GetRegistryResponseV2();
-        res.setItems(listRegistry);
-        res.setLastKey(LAST_KEY);
-
-        return res;
     }
 
     private RaddRegistryPage raddRegistryPage() {
@@ -154,9 +140,9 @@ class RegistrySelfServiceTest {
         when(raddRegistryDAO.updateRegistryEntity(entity)).thenReturn(Mono.just(entity));
 
         StepVerifier.create(registrySelfService.updateRegistry(PARTNER_ID, LOCATION_ID, PN_PAGOPA_UID, request))
-                .expectNextMatches(raddRegistryEntity -> entity.getDescription().equalsIgnoreCase(request.getDescription())
-                        && entity.getEmail().equalsIgnoreCase(request.getEmail()))
-                .verifyComplete();
+                    .expectNextMatches(raddRegistryEntity -> entity.getDescription().equalsIgnoreCase(request.getDescription())
+                                                             && entity.getEmail().equalsIgnoreCase(request.getEmail()))
+                    .verifyComplete();
     }
 
     @Test
@@ -166,7 +152,7 @@ class RegistrySelfServiceTest {
         when(raddRegistryDAO.find(PARTNER_ID, LOCATION_ID)).thenReturn(Mono.empty());
 
         StepVerifier.create(registrySelfService.updateRegistry(PARTNER_ID, LOCATION_ID, PN_PAGOPA_UID, new UpdateRegistryRequestV2()))
-                .verifyErrorMessage(ExceptionTypeEnum.RADD_REGISTRY_NOT_FOUND.getMessage());
+                    .verifyErrorMessage(ExceptionTypeEnum.RADD_REGISTRY_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -182,9 +168,9 @@ class RegistrySelfServiceTest {
 
         request.setExternalCodes(List.of("EXT1"));
         StepVerifier.create(registrySelfService.updateRegistry(PARTNER_ID, LOCATION_ID, PN_PAGOPA_UID, request))
-                .expectErrorMatches(throwable -> throwable instanceof RaddGenericException &&
-                        ((RaddGenericException) throwable).getExceptionType() == ExceptionTypeEnum.DUPLICATE_EXT_CODE)
-                .verify();
+                    .expectErrorMatches(throwable -> throwable instanceof RaddGenericException &&
+                                                     ((RaddGenericException) throwable).getExceptionType() == ExceptionTypeEnum.DUPLICATE_EXT_CODE)
+                    .verify();
     }
 
     @Test
@@ -220,4 +206,5 @@ class RegistrySelfServiceTest {
 
         StepVerifier.create(result).verifyComplete();
     }
+
 }

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: BQuDBaQbe3TD8AVOxckBYwME2Rr5xDn7TquPT/3fnY0=
+  version: cNxEZJsugrNUB50VSPGVLgblAjSd/a5MvOJTg9w2goE=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -640,6 +640,8 @@ components:
       properties:
         normalizedAddress:
           $ref: '#/components/schemas/NormalizedAddress'
+        address:
+          $ref: '#/components/schemas/AddressV2'
         partnerId:
           type: string
           description: C.F. del partner erogatore
@@ -665,7 +667,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$
+            pattern: ^(\+?\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$
         email:
           type: string
           description: Indirizzo email del punto di ritiro
@@ -680,10 +682,12 @@ components:
           description: >-
             Data di inizio di validità del punto di ritiro in formato
             (yyyy-MM-dd), se non inviata viene considerata la data corrente.
+          pattern: ^\d{4}-\d{2}-\d{2}$
           example: '2024-03-21'
         endValidity:
           type: string
           description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).
+          pattern: ^\d{4}-\d{2}-\d{2}$
           example: '2024-03-21'
         externalCodes:
           type: array

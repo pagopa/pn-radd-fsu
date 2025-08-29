@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.util.List;
 
@@ -95,18 +96,18 @@ public class RegistrySelfService {
                 .flatMap(entity ->
                         Flux.fromIterable(entity.getExternalCodes())
                                 .filter(externalCodes::contains)
-                                .next()
+                                .map(externalCode -> Tuples.of(externalCode, entity.getLocationId()))
                 )
-                .filter(externalCodes::contains)
                 .next() // Prende il primo codice esterno duplicato trovato, se esiste
-                .flatMap(duplicate -> Mono.error(new RaddGenericException(ExceptionTypeEnum.DUPLICATE_EXT_CODE,
-                        String.format("L'externalCode '%s' è già associato ad un'altra sede", duplicate),
+                .flatMap(dupInfo -> Mono.error(new RaddGenericException(ExceptionTypeEnum.DUPLICATE_EXT_CODE,
+                        String.format("L'externalCode '%s' è già associato alla sede con locationId '%s'", dupInfo.getT1(), dupInfo.getT2()),
                         HttpStatus.CONFLICT)))
                 .then();
     }
 
     public Mono<RaddRegistryEntityV2> deleteRegistry(String partnerId, String locationId) {
         return raddRegistryDAO.delete(partnerId, locationId)
+                                .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.RADD_REGISTRY_NOT_FOUND, HttpStatus.NOT_FOUND)))
                                 .doOnNext(deletedEntity -> log.info("Registry deleted: partnerId={}, locationId={}", partnerId, locationId))
                                 .doOnError(err -> log.error("Error deleting registry for partnerId={}, locationId={}", partnerId, locationId, err));
     }

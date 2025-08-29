@@ -1,7 +1,9 @@
 package it.pagopa.pn.radd.mapper;
 
+import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.AddressV2;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.NormalizedAddress;
 import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryV2;
+import it.pagopa.pn.radd.middleware.db.entities.AddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntityV2;
 import it.pagopa.pn.radd.utils.DateUtils;
@@ -18,11 +20,13 @@ class RaddRegistryMapperTest {
 
     private RaddRegistryMapper mapper;
     private NormalizedAddressMapper normalizedAddressMapper;
+    private AddressMapper addressMapper;
 
     @BeforeEach
     void setUp() {
         normalizedAddressMapper = mock(NormalizedAddressMapper.class);
-        mapper = new RaddRegistryMapper(normalizedAddressMapper);
+        addressMapper = mock(AddressMapper.class);
+        mapper = new RaddRegistryMapper(normalizedAddressMapper, addressMapper);
     }
 
     @Test
@@ -46,6 +50,7 @@ class RaddRegistryMapperTest {
 
         NormalizedAddress normalizedAddress = new NormalizedAddress();
         when(normalizedAddressMapper.toDto(any())).thenReturn(normalizedAddress);
+        when(addressMapper.toDto(any())).thenReturn(new AddressV2());
 
         RegistryV2 dto = mapper.toDto(entity);
 
@@ -60,6 +65,7 @@ class RaddRegistryMapperTest {
         assertEquals("2025-01-01", dto.getStartValidity());
         assertEquals("2025-02-01", dto.getEndValidity());
         assertEquals(normalizedAddress, dto.getNormalizedAddress());
+        assertNotNull(dto.getAddress());
     }
 
     @Test
@@ -89,6 +95,7 @@ class RaddRegistryMapperTest {
 
         NormalizedAddressEntity normalizedAddressEntity = new NormalizedAddressEntity();
         when(normalizedAddressMapper.toEntity(any())).thenReturn(normalizedAddressEntity);
+        when(addressMapper.toEntity(any())).thenReturn(new AddressEntity());
 
         RaddRegistryEntityV2 entity = mapper.toEntity(dto);
 
@@ -103,6 +110,7 @@ class RaddRegistryMapperTest {
         assertEquals(DateUtils.convertDateToInstantAtStartOfDay("2025-07-01"), entity.getStartValidity());
         assertEquals(DateUtils.convertDateToInstantAtStartOfDay("2025-10-01"), entity.getEndValidity());
         assertEquals(normalizedAddressEntity, entity.getNormalizedAddress());
+        assertNotNull(entity.getAddress());
     }
 
     @Test

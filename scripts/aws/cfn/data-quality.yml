@@ -40,7 +40,7 @@ Parameters:
     Type: String
     AllowedPattern: '^[a-z0-9_]+$'
     ConstraintDescription: |
-       Glue table name for pn-RaddRegistryV2, accept only lowercase values and underscores.
+       Glue table name for pn-RaddRegistryV2, accept only lowercase values numbers char and underscores.
     Default: pn_radd_registry_v2
 
 Resources:

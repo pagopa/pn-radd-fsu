@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class RaddRegistryMapper extends AbstractRegistryMapper {
 
     private final NormalizedAddressMapper normalizedAddressMapper;
+    private final AddressMapper addressMapper;
 
     public RegistryV2 toDto(RaddRegistryEntityV2 entity) {
         if (entity == null) {
@@ -33,6 +34,7 @@ public class RaddRegistryMapper extends AbstractRegistryMapper {
         dto.setOpeningTime(entity.getOpeningTime());
         dto.setStartValidity(toStringDate(entity.getStartValidity()));
         dto.setEndValidity(toStringDate(entity.getEndValidity()));
+        dto.setAddress(addressMapper.toDto(entity.getAddress()));
         dto.setNormalizedAddress(normalizedAddressMapper.toDto(entity.getNormalizedAddress()));
 
         return dto;
@@ -58,6 +60,7 @@ public class RaddRegistryMapper extends AbstractRegistryMapper {
         entity.setOpeningTime(dto.getOpeningTime());
         entity.setStartValidity(parseDateString(dto.getStartValidity()));
         entity.setEndValidity(parseDateString(dto.getEndValidity()));
+        entity.setAddress(addressMapper.toEntity(dto.getAddress()));
         entity.setNormalizedAddress(normalizedAddressMapper.toEntity(dto.getNormalizedAddress()));
 
         return entity;

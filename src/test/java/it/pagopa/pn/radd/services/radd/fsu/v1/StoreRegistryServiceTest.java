@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @ContextConfiguration(classes = {StoreRegistryService.class})
-public class StoreRegistryServiceTest {
+class StoreRegistryServiceTest {
 
     @Mock
     RaddRegistryV2DAO raddRegistryDAO;
@@ -40,7 +40,8 @@ public class StoreRegistryServiceTest {
     @BeforeEach
     void setUp() {
         NormalizedAddressMapper normalizedAddressMapper = new NormalizedAddressMapper();
-        storeRegistryService = new StoreRegistryService(raddRegistryDAO, new StoreRegistryMapper(new RaddRegistryMapper(normalizedAddressMapper), normalizedAddressMapper, new AddressMapper()));
+        AddressMapper addressMapper = new AddressMapper();
+        storeRegistryService = new StoreRegistryService(raddRegistryDAO, new StoreRegistryMapper(new RaddRegistryMapper(normalizedAddressMapper, addressMapper), normalizedAddressMapper, addressMapper));
     }
 
     private RaddRegistryEntityV2 getRegistryEntity() {

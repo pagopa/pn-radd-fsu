@@ -28,6 +28,21 @@ Parameters:
        Glue table name for pn-radd-transaction-alt, accept only lowercase values and underscores.
     Default: pn_radd_transaction_alt
 
+  RaddRegistryDynamoTableName:
+    Type: String
+    Description: |
+      DynamoDb table name for pn-RaddRegistryV2, 
+      valorized by the related output in the storage.yaml template, 
+      used also for identifying the S3 bucket directory where related CDC files are stored.
+      Note: Parameter name omits intentionally V2 suffix to match the storage.yml output for backward compatibility.
+
+  RaddRegistryV2GlueTableName:
+    Type: String
+    AllowedPattern: '^[a-z0-9_]+$'
+    ConstraintDescription: |
+       Glue table name for pn-RaddRegistryV2, accept only lowercase values numbers char and underscores.
+    Default: pn_radd_registry_v2
+
 Resources:
   PnRaddTransactionDataQualityStack:
     Type: AWS::CloudFormation::Stack
@@ -66,4 +81,60 @@ Resources:
                       value:struct<NULL:boolean,S:string>
                   >>
               >
+            >
+
+  PnRaddRegistryV2DataQualityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/cdc-glue.yaml"
+      Parameters:
+        DynamoTableName: !Ref RaddRegistryDynamoTableName
+        GlueTableName: !Ref RaddRegistryV2GlueTableName
+        GlueServiceRoleArn: !Ref GlueServiceRoleArn
+        LogsBucketName: !Ref LogsBucketName
+        GlueDatabaseName: !Ref GlueDatabaseName
+        DynamoDBKeysStructure: |
+            struct<partnerId:struct<S:string>,locationId:struct<S:string>>
+        DynamoDBNewImageStructure: |
+            struct<
+              partnerId:struct<S:string>,
+              locationId:struct<S:string>,
+              address:struct<M:struct<
+                addressRow:struct<S:string,NULL:boolean>,
+                cap:struct<S:string,NULL:boolean>,
+                city:struct<S:string,NULL:boolean>,
+                country:struct<S:string,NULL:boolean>,
+                province:struct<S:string,NULL:boolean>
+              >>,
+              appointmentRequired:struct<BOOL:boolean,NULL:boolean>,
+              creationTimestamp:struct<S:string>,
+              description:struct<S:string,NULL:boolean>,
+              email:struct<S:string,NULL:boolean>,
+              endValidity:struct<S:string,NULL:boolean>,
+              externalCodes:struct<L:array<struct<S:string>>,NULL:boolean>,
+              modifiedAddress:struct<BOOL:boolean,NULL:boolean>,
+              normalizedAddress:struct<M:struct<
+                addressRow:struct<S:string,NULL:boolean>,
+                cap:struct<S:string,NULL:boolean>,
+                city:struct<S:string,NULL:boolean>,
+                country:struct<S:string,NULL:boolean>,
+                province:struct<S:string,NULL:boolean>,
+                latitude:struct<S:string,NULL:boolean>,
+                longitude:struct<S:string,NULL:boolean>,
+                biasPoint:struct<M:struct<
+                  addressNumber:struct<N:string,NULL:boolean>,
+                  country:struct<N:string,NULL:boolean>,
+                  locality:struct<NULL:boolean>,
+                  overall:struct<N:string,NULL:boolean>,
+                  postalCode:struct<NULL:boolean>,
+                  subRegion:struct<N:string,NULL:boolean>
+                >,NULL:boolean>
+              >>,
+              openingTime:struct<S:string,NULL:boolean>,
+              partnerType:struct<S:string>,
+              phoneNumbers:struct<L:array<struct<S:string>>,NULL:boolean>,
+              startValidity:struct<S:string,NULL:boolean>,
+              uid:struct<S:string>,
+              updateTimestamp:struct<S:string>,
+              website:struct<S:string,NULL:boolean>
             >

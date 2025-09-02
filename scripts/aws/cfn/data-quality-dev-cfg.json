@@ -1,5 +1,6 @@
 {
   "Parameters" : {
-    "RaddTransactionGlueTableName": "pn_radd_transaction_alt"
+    "RaddTransactionGlueTableName": "pn_radd_transaction_alt",
+    "RaddRegistryV2GlueTableName": "pn_radd_registry_v2"
   }
 }

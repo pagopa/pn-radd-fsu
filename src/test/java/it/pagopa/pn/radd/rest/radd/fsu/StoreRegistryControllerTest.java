@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistriesResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.StoreRegistriesResponse;
 import it.pagopa.pn.radd.config.RestExceptionHandler;
 import it.pagopa.pn.radd.services.radd.fsu.v1.StoreRegistryService;
 import org.junit.jupiter.api.Test;

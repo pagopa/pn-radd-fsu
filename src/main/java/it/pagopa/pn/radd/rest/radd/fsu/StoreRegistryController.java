@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.rest.radd.fsu;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.api.RegistryStorePrivateApi;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistriesResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.api.RegistryStorePrivateApi;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.StoreRegistriesResponse;
 import it.pagopa.pn.radd.services.radd.fsu.v1.StoreRegistryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

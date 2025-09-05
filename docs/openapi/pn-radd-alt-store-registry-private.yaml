@@ -58,14 +58,14 @@ components:
           description: Chiave per la paginazione
     StoreRegistry:
       allOf:
-        - $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/RegistryV2'
+        - $ref: 'schemas-pn-radd-alt-registry-v2.yaml#/components/schemas/RegistryV2'
         - type: object
           properties:
             openingTime:
               type: object
               description: "Mappa degli orari di apertura per ciascun giorno (chiave: giorno, valore: orari)"
             address:
-              $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/AddressV2'
+              $ref: 'schemas-pn-radd-alt-registry-v2.yaml#/components/schemas/AddressV2'
               description: Indirizzo inserito dal partner, che può essere diverso da quello normalizzato.
 
   parameters:

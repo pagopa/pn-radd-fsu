@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.services.radd.fsu.v1;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistriesResponse;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistry;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.StoreRegistriesResponse;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.StoreRegistry;
 import it.pagopa.pn.radd.mapper.StoreRegistryMapper;
 import it.pagopa.pn.radd.middleware.db.RaddRegistryV2DAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntityV2;

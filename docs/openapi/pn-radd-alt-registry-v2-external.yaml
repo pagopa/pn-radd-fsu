@@ -26,13 +26,13 @@ servers:
     description: Ambiente di collaudo UAT
 
 tags:
-  - name: Registry
+  - name: RegistryV2
 
 paths:
   /radd-bo/api/v2/registry:
     get:
       tags:
-        - Registry
+        - RegistryV2
       description: >-
         API utilizzata per il recupero di tutti i punti di ritiro di un partner, con paginazione lato DynamoDB.
       operationId: retrieveRegistries
@@ -81,7 +81,7 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
     post:
       tags:
-        - Registry
+        - RegistryV2
       description: >-
         API utilizzata per la richiesta di attivazione nuova anagrafica RADD
       operationId: addRegistry
@@ -101,7 +101,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/RegistryV2'
+                $ref: 'schemas-pn-radd-alt-registry-v2.yaml#/components/schemas/RegistryV2'
         '400':
           description: Bad Request
           content:
@@ -143,7 +143,7 @@ paths:
   /radd-bo/api/v2/registry/{locationId}:
     patch:
       tags:
-        - Registry
+        - RegistryV2
       description: >-
         API utilizzata per la modifica di un'anagrafica RADD
       operationId: updateRegistry
@@ -164,7 +164,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/RegistryV2'
+                $ref: 'schemas-pn-radd-alt-registry-v2.yaml#/components/schemas/RegistryV2'
         '400':
           description: Bad Request
           content:
@@ -209,7 +209,7 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
     delete:
       tags:
-        - Registry
+        - RegistryV2
       description: >-
         API utilizzata per la cancellazione di un punto di ritiro di un partner
       operationId: deleteRegistry
@@ -263,7 +263,7 @@ components:
         - externalCodes
       properties:
         address:
-          $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/AddressV2'
+          $ref: 'schemas-pn-radd-alt-registry-v2.yaml#/components/schemas/AddressV2'
         description:
           type: string
           description: Descrizione del punto di ritiro.
@@ -365,7 +365,7 @@ components:
           type: array
           description: Lista dei punti di ritiro trovati
           items:
-            $ref: 'schemas-pn-radd-alt-registry.yaml#/components/schemas/RegistryV2'
+            $ref: 'schemas-pn-radd-alt-registry-v2.yaml#/components/schemas/RegistryV2'
         lastKey:
           type: string
           description: Chiave dell’ultimo elemento restituito (LastEvaluatedKey DynamoDB)

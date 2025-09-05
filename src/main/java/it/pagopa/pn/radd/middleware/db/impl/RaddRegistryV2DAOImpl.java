@@ -42,7 +42,7 @@ public class RaddRegistryV2DAOImpl extends BaseDao<RaddRegistryEntityV2> impleme
                                  PnRaddFsuConfig raddFsuConfig) {
         super(dynamoDbEnhancedAsyncClient,
               dynamoDbAsyncClient,
-              raddFsuConfig.getDao().getRaddRegistryTable(),
+              raddFsuConfig.getDao().getRaddRegistryTableV2(),
               raddFsuConfig,
               RaddRegistryEntityV2.class
              );

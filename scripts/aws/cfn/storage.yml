@@ -377,9 +377,17 @@ Outputs:
 
   RaddRegistryDynamoTableName:
     Description: Name of dynamodb table containing radd registry
+    Value: !Ref RaddRegistryDynamoTable
+
+  RaddRegistryDynamoTableV2Name:
+    Description: Name of dynamodb table containing radd registry
     Value: !Ref RaddRegistryDynamoTableV2
 
   RaddRegistryDynamoTableArn:
+    Description: ARN of dynamodb table containing radd registry
+    Value: !Sub '${RaddRegistryDynamoTable.Arn}'
+
+  RaddRegistryDynamoTableV2Arn:
     Description: ARN of dynamodb table containing radd registry
     Value: !Sub '${RaddRegistryDynamoTableV2.Arn}'
 

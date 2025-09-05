@@ -289,10 +289,10 @@
                                 <reactive>true</reactive>
                                 <skipDefaultInterface>false</skipDefaultInterface>
                                 <useTags>true</useTags>
-                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v1</basePackage>
-                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.dto</modelPackage>
-                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.api</apiPackage>
-                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.config</configPackage>
+                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v2</basePackage>
+                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v2.dto</modelPackage>
+                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v2.api</apiPackage>
+                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v2.config</configPackage>
                             </configOptions>
                         </configuration>
                     </execution>
@@ -351,10 +351,10 @@
                                 <reactive>true</reactive>
                                 <skipDefaultInterface>false</skipDefaultInterface>
                                 <useTags>true</useTags>
-                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v1</basePackage>
-                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.dto</modelPackage>
-                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.api</apiPackage>
-                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v1.config</configPackage>
+                                <basePackage>${project.groupId}.radd.alt.generated.openapi.server.v2</basePackage>
+                                <modelPackage>${project.groupId}.radd.alt.generated.openapi.server.v2.dto</modelPackage>
+                                <apiPackage>${project.groupId}.radd.alt.generated.openapi.server.v2.api</apiPackage>
+                                <configPackage>${project.groupId}.radd.alt.generated.openapi.server.v2.config</configPackage>
                             </configOptions>
                         </configuration>
                     </execution>

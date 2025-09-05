@@ -1,6 +1,6 @@
 package it.pagopa.pn.radd.mapper;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryV2;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.RegistryV2;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntityV2;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;

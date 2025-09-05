@@ -1,7 +1,7 @@
 package it.pagopa.pn.radd.mapper;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.NormalizedAddress;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.NormalizedAddressAllOfBiasPoint;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.NormalizedAddress;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.NormalizedAddressAllOfBiasPoint;
 import it.pagopa.pn.radd.middleware.db.entities.BiasPointEntity;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import org.junit.jupiter.api.BeforeEach;

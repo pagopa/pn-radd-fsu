@@ -1,10 +1,10 @@
 package it.pagopa.pn.radd.mapper;
 
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.RegistryV2;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.StoreRegistry;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.RegistryV2;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.StoreRegistry;
 import it.pagopa.pn.radd.middleware.db.entities.RaddRegistryEntityV2;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.NormalizedAddress;
-import it.pagopa.pn.radd.alt.generated.openapi.server.v1.dto.AddressV2;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.NormalizedAddress;
+import it.pagopa.pn.radd.alt.generated.openapi.server.v2.dto.AddressV2;
 import it.pagopa.pn.radd.middleware.db.entities.NormalizedAddressEntity;
 import it.pagopa.pn.radd.middleware.db.entities.AddressEntity;
 import it.pagopa.pn.radd.utils.DateUtils;

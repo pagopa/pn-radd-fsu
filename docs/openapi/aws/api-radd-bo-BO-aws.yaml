@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: cNxEZJsugrNUB50VSPGVLgblAjSd/a5MvOJTg9w2goE=
+  version: 2mWxxoj2aw1JPTOZeXbNDLTtU8IOcgNZF0sjsaTE8LQ=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -14,7 +14,7 @@ paths:
   /api/v2/registry:
     get:
       tags:
-        - Registry
+        - RegistryV2
       description: >-
         API utilizzata per il recupero di tutti i punti di ritiro di un partner,
         con paginazione lato DynamoDB.
@@ -84,7 +84,7 @@ paths:
         type: http_proxy
     post:
       tags:
-        - Registry
+        - RegistryV2
       description: API utilizzata per la richiesta di attivazione nuova anagrafica RADD
       operationId: addRegistry
       x-api-permissions:
@@ -175,7 +175,7 @@ paths:
   /api/v2/registry/{locationId}:
     patch:
       tags:
-        - Registry
+        - RegistryV2
       description: API utilizzata per la modifica di un'anagrafica RADD
       operationId: updateRegistry
       x-api-permissions:
@@ -261,7 +261,7 @@ paths:
         type: http_proxy
     delete:
       tags:
-        - Registry
+        - RegistryV2
       description: API utilizzata per la cancellazione di un punto di ritiro di un partner
       operationId: deleteRegistry
       x-api-permissions:
@@ -607,7 +607,7 @@ components:
               properties:
                 addressNumber:
                   type: number
-                  description: Numero civico dell’indirizzo
+                  description: Numero civico dell'indirizzo
                   minimum: 0
                   maximum: 1
                 country:
@@ -693,7 +693,7 @@ components:
           type: array
           items:
             type: string
-            description: Identificativo univoco dell’ufficio/postazione nella sede
+            description: Identificativo univoco dell'ufficio/postazione nella sede
         appointmentRequired:
           type: boolean
           description: Variabile booleana per indicare se necessario prendere appuntamento
@@ -803,7 +803,7 @@ components:
         authorizerResultTtlInSeconds: 300
         type: token
 tags:
-  - name: Registry
+  - name: RegistryV2
 x-amazon-apigateway-gateway-responses:
   DEFAULT_5XX:
     responseParameters:

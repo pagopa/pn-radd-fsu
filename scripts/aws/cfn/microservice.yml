@@ -120,9 +120,17 @@ Parameters:
     Type: String
     Description: 'Name of dynamodb table containing radd registries'
 
+  RaddRegistryDynamoTableV2Name:
+    Type: String
+    Description: 'Name of dynamodb table V2 containing radd registries'
+
   RaddRegistryDynamoTableArn:
     Type: String
     Description: 'ARN of dynamodb table containing radd registries'
+
+  RaddRegistryDynamoTableV2Arn:
+    Type: String
+    Description: 'ARN of dynamodb table V2 containing radd registries'
 
   RaddInternalCapCheckerQueueName:
     Type: String
@@ -514,6 +522,7 @@ Resources:
         ContainerEnvEntry48: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerEnvEntry49: !Sub 'PN_RADD_MAX_PRINT_REQUESTS=${MaxPrintRequests}'
         ContainerEnvEntry50: !Sub 'AWS_GEO_REGIONCODE=${AwsGeoRegionCode}'
+        ContainerEnvEntry51: !Sub 'PN_RADD_DAO_RADDREGISTRYTABLEV2=${RaddRegistryDynamoTableV2Name}'
         MappedPaths: '/radd-net/*,/radd-net-private/*,/radd-alt/*,/radd-bo/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcEgressSubnetsIds
@@ -577,6 +586,8 @@ Resources:
               - !Sub "${RaddRegistryImportDynamoTableArn}/*"
               - !Sub "${RaddRegistryDynamoTableArn}"
               - !Sub "${RaddRegistryDynamoTableArn}/*"
+              - !Sub "${RaddRegistryDynamoTableV2Arn}"
+              - !Sub "${RaddRegistryDynamoTableV2Arn}/*"
               - !Sub "${ShedLockTableArn}"
           - Effect: Allow
             Action:
@@ -719,6 +730,7 @@ Resources:
             - !Ref RaddRegistryRequestDynamoTableName
             - !Ref RaddRegistryImportDynamoTableName
             - !Ref RaddRegistryDynamoTableName
+            - !Ref RaddRegistryDynamoTableV2Name
         QueueArns: !Join
           - ','
           - - !Ref PnRaddAltInputQueueName

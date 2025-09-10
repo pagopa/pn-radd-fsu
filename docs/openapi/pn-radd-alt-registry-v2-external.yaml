@@ -277,7 +277,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{1,2}\d{6,7})$
+            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{5,9})$
         email:
           type: string
           description: Indirizzo email del punto di ritiro
@@ -342,7 +342,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{1,2}\d{6,7})$
+            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{5,9})$
         endValidity:
           type: string
           description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).

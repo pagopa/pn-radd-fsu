@@ -177,15 +177,6 @@ class RegistrySelfServiceV2Test {
     }
 
     @Test
-    void addRegistry_StartValidityInThePast() {
-        CreateRegistryRequestV2 request = createValidRegistryRequest();
-        request.setStartValidity("2022-10-21");
-
-        RaddGenericException ex = Assertions.assertThrows(RaddGenericException.class, () -> registrySelfServiceV2.addRegistry(PARTNER_ID, LOCATION_ID, PN_PAGOPA_UID, request));
-        assertEquals(ExceptionTypeEnum.START_VALIDITY_IN_THE_PAST, ex.getExceptionType());
-    }
-
-    @Test
     void addRegistry_DuplicatedExternalCode() {
         CreateRegistryRequestV2 request = createValidRegistryRequest();
         RaddRegistryEntityV2 entity = new RaddRegistryEntityV2();

@@ -1,25 +1,45 @@
 function convertToRegistryRequest(csvRow) {
-  return {
+  const request = {
     partnerId: csvRow.partnerId,
     locationId: csvRow.locationId,
     description: csvRow.description,
     phoneNumbers: csvRow.phoneNumbers ? csvRow.phoneNumbers.split('|') : [],
-    email: csvRow.email || null,
-    openingTime: csvRow.openingTime,
-    startValidity: csvRow.startValidity,
-    endValidity: csvRow.endValidity,
     externalCodes: csvRow.externalCodes ? csvRow.externalCodes.split('|') : [],
-    appointmentRequired: csvRow.appointmentRequired === 'true',
-    website: csvRow.website || null,
-    partnerType: csvRow.partnerType,
     address: {
       addressRow: csvRow.addressRow?.replace(/^"|"$/g, ''),
       cap: csvRow.cap,
       city: csvRow.city,
-      province: csvRow.province,
-      country: csvRow.country
+      province: csvRow.province
     }
   };
+
+  // Add optional fields only if they have values
+  if (!isFieldEmpty(csvRow.email)) {
+    request.email = csvRow.email;
+  }
+  if (!isFieldEmpty(csvRow.openingTime)) {
+    request.openingTime = csvRow.openingTime;
+  }
+  if (!isFieldEmpty(csvRow.startValidity)) {
+    request.startValidity = csvRow.startValidity;
+  }
+  if (!isFieldEmpty(csvRow.endValidity)) {
+    request.endValidity = csvRow.endValidity;
+  }
+  if (!isFieldEmpty(csvRow.website)) {
+    request.website = csvRow.website;
+  }
+  if (!isFieldEmpty(csvRow.partnerType)) {
+    request.partnerType = csvRow.partnerType;
+  }
+  if (!isFieldEmpty(csvRow.appointmentRequired)) {
+    request.appointmentRequired = csvRow.appointmentRequired === 'true';
+  }
+  if (!isFieldEmpty(csvRow.country)) {
+    request.address.country = csvRow.country;
+  }
+
+  return request;
 }
 
 function mapFieldsToUpdate(csvRow) {

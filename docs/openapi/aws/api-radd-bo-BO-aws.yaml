@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: 2mWxxoj2aw1JPTOZeXbNDLTtU8IOcgNZF0sjsaTE8LQ=
+  version: B964W2Ymir8ssa9vyn6LVLt/OUjm4dhEGMg88E2d9x4=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -367,6 +367,9 @@ components:
       required: false
       schema:
         type: number
+        minimum: 1
+        maximum: 1000
+        default: 1000
     lastKey:
       name: lastKey
       description: >-
@@ -443,6 +446,7 @@ components:
           type: string
           description: Descrizione del punto di ritiro.
           example: Sportello ABC.
+          maxLength: 200
         phoneNumbers:
           type: array
           description: Lista dei numeri di telefono del punto di ritiro.
@@ -453,7 +457,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(\+?\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$
+            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{1,2}\d{6,7})$
         email:
           type: string
           description: Indirizzo email del punto di ritiro
@@ -491,6 +495,7 @@ components:
           type: string
           description: Tipologia del punto di ritiro
           pattern: CAF
+          default: CAF
     UpdateRegistryRequestV2:
       type: object
       properties:
@@ -503,6 +508,7 @@ components:
           type: string
           description: Descrizione aggiornata dello sportello.
           example: Registro aggiornato dello sportello.
+          maxLength: 200
         openingTime:
           type: string
           description: Orario di apertura del punto di ritiro nel formato opening_hours
@@ -517,7 +523,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(\+?\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$
+            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{1,2}\d{6,7})$
         endValidity:
           type: string
           description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).
@@ -558,12 +564,11 @@ components:
           type: string
           description: Indirizzo completo
           example: Via Roma 123
-          pattern: ^[a-zA-Z0-9\s\.,''-]{5,100}$
         cap:
           type: string
           description: CAP (Codice di Avviamento Postale).
           example: 100
-          pattern: ^\d{5}$
+          pattern: ^[0-9]{5}$
         city:
           type: string
           description: Città.
@@ -667,7 +672,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(\+?\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}$
+            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{1,2}\d{6,7})$
         email:
           type: string
           description: Indirizzo email del punto di ritiro
@@ -704,6 +709,7 @@ components:
           type: string
           description: Tipologia del punto di ritiro
           pattern: CAF
+          default: CAF
         creationTimestamp:
           type: string
           description: Istante di creazione del punto di ritiro

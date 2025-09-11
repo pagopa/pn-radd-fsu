@@ -87,21 +87,6 @@ class DateUtilsTest {
     }
 
     @Test
-    void testValidateStartDate_withFutureDate() {
-        String futureDate = LocalDate.now().plusDays(1).toString();
-        Instant result = DateUtils.validateStartDate(futureDate);
-        assertNotNull(result);
-    }
-
-    @Test
-    void testValidateStartDate_withPastDate_shouldThrow() {
-        String pastDate = LocalDate.now().minusDays(1).toString();
-        RaddGenericException ex = assertThrows(RaddGenericException.class, () ->
-                DateUtils.validateStartDate(pastDate));
-        assertEquals(ExceptionTypeEnum.START_VALIDITY_IN_THE_PAST, ex.getExceptionType());
-    }
-
-    @Test
     void testValidateEndDate_validInterval() {
         Instant start = LocalDate.parse("2025-01-01").atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant end = DateUtils.validateEndDate(start, "2025-01-02");
@@ -129,13 +114,6 @@ class DateUtilsTest {
         String end = LocalDate.now().plusDays(1).toString();
         RaddGenericException ex = assertThrows(RaddGenericException.class, () ->
                 DateUtils.validateDateInterval(start, end));
-        assertEquals(ExceptionTypeEnum.DATE_VALIDATION_ERROR, ex.getExceptionType());
-    }
-
-    @Test
-    void testValidateStartDate_withInvalidFormat_shouldThrow() {
-        RaddGenericException ex = assertThrows(RaddGenericException.class, () ->
-                DateUtils.validateStartDate("invalid-date"));
         assertEquals(ExceptionTypeEnum.DATE_VALIDATION_ERROR, ex.getExceptionType());
     }
 

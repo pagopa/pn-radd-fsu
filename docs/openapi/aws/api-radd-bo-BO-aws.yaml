@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: >-
     ${stageVariables.ProjectName}-${stageVariables.MicroServiceUniqueName}-${stageVariables.IntendedUsage}
-  version: cWvW4E1wlGvXwJC8SkR7FZ8lhWtheI4s11a1AOW5Qsk=
+  version: WpA4W6V3TV+DzU5jQEK+avauHNQdugfTMcOHOPLse90=
 servers:
   - url: https://${stageVariables.DnsName}/{basePath}
     variables:
@@ -457,7 +457,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{5,9})$
+            pattern: ^(?:\+39|0039)?(?:3\d{9,10})|(?:0[1-9]\d{5,9})|(?:800\d{6,7})$
         email:
           type: string
           description: Indirizzo email del punto di ritiro
@@ -523,7 +523,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{5,9})$
+            pattern: ^(?:\+39|0039^(?:\+39|0039)?(?:3\d{9,10})|(?:0[1-9]\d{5,9})|(?:800\d{6,7})$
         endValidity:
           type: string
           description: Data di fine di validità dello sportello in formato (yyyy-MM-dd).
@@ -672,7 +672,7 @@ components:
           maxItems: 2
           items:
             type: string
-            pattern: ^(?:\+39|0039)?(3\d{9,10}|0[1-9]\d{5,9})$
+            pattern: ^(?:\+39|0039)?(?:3\d{9,10})|(?:0[1-9]\d{5,9})|(?:800\d{6,7})$
         email:
           type: string
           description: Indirizzo email del punto di ritiro

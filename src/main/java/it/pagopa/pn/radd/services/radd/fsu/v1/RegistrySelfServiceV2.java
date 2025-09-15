@@ -16,11 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
-
-import java.util.List;
 
 import static it.pagopa.pn.radd.utils.DateUtils.validateDateInterval;
 import static it.pagopa.pn.radd.utils.OpeningHoursParser.validateOpenHours;
@@ -42,14 +38,12 @@ public class RegistrySelfServiceV2 {
         checkCreateRegistryRequest(request);
         log.info("Creating registry entity for partnerId: {} and locationId: {}", partnerId, locationId);
         AddressV2 inputAddress = request.getAddress();
-        return validateExternalCodes(partnerId, locationId, request.getExternalCodes())
-                .then(Mono.defer(() -> awsGeoService.getCoordinatesForAddress(
+        return Mono.defer(() -> awsGeoService.getCoordinatesForAddress(
                         inputAddress.getAddressRow(),
                         inputAddress.getProvince(),
                         inputAddress.getCap(),
                         inputAddress.getCity(),
                         inputAddress.getCountry()))
-                )
                 .map(coordinatesResult -> buildRaddRegistryEntity(partnerId, locationId, uid, request, coordinatesResult))
                 .flatMap(raddRegistryDAO::putItemIfAbsent)
                 .doOnNext(result -> log.debug("Registry entity with partnerId: {} and locationId: {} created successfully", partnerId, locationId))
@@ -69,8 +63,7 @@ public class RegistrySelfServiceV2 {
     public Mono<RegistryV2> updateRegistry(String partnerId, String locationId, String uid, UpdateRegistryRequestV2 request) {
         checkUpdateRegistryRequest(request);
         log.info("Start updateRegistry for partnerId [{}] and locationId [{}]", partnerId, locationId);
-        return validateExternalCodes(partnerId, locationId, request.getExternalCodes())
-                .then(raddRegistryDAO.find(partnerId, locationId))
+        return raddRegistryDAO.find(partnerId, locationId)
                 .switchIfEmpty(Mono.error(new RaddGenericException(ExceptionTypeEnum.RADD_REGISTRY_NOT_FOUND, HttpStatus.NOT_FOUND)))
                 .flatMap(registryEntity -> raddRegistryDAO.updateRegistryEntity(mapFieldToUpdate(registryEntity, request, uid)))
                 .map(raddRegistryMapper::toDto)
@@ -88,7 +81,7 @@ public class RegistrySelfServiceV2 {
 
     /**
      * Controlla se i codici esterni forniti sono già associati a un'altra sede dello stesso partner.
-     */
+
     private Mono<Void> validateExternalCodes(String partnerId, String locationId, List<String> externalCodes) {
         if (externalCodes == null || externalCodes.isEmpty()) {
             return Mono.empty();
@@ -107,6 +100,7 @@ public class RegistrySelfServiceV2 {
                         HttpStatus.CONFLICT)))
                 .then();
     }
+     */
 
     public Mono<RaddRegistryEntityV2> deleteRegistry(String partnerId, String locationId) {
         return raddRegistryDAO.delete(partnerId, locationId)

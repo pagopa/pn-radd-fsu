@@ -23,8 +23,29 @@ class RegistryService {
   async getRegistriesByPartnerId(partnerId, headers = {}) {
     try {
       const finalHeaders = this.#prepareHeaders(partnerId, headers);
-      const res = await axios.get(`${this.apiBaseUrl}/radd-bo/api/v2/registry`, { headers: finalHeaders });
-      return res.data.items || [];
+      let allItems = [];
+      let lastKey = null;
+
+      do {
+        const params = {};
+        if (lastKey) {
+          params.lastKey = lastKey;
+        }
+
+        const res = await axios.get(`${this.apiBaseUrl}/radd-bo/api/v2/registry`, {
+          headers: finalHeaders,
+          params: params
+        });
+
+        const responseData = res.data || {};
+        const items = responseData.items || [];
+        allItems = allItems.concat(items);
+        lastKey = responseData.lastKey;
+
+      } while (lastKey);
+
+      console.log(`📋 Trovate ${allItems.length} sedi.`);
+      return allItems;
     } catch (err) {
       throw new Error(`Errore lettura sedi da API: ${this.#getErrorMessage(err)}`);
     }

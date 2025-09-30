@@ -24,9 +24,13 @@ fi
 
 CSV_PATH="${PN_CONF_PATH}/${ENV}/_conf/core/app_config/pn-radd-alt"
 
+
 if [ $# -eq 4 ]; then
-    echo -e "\nThis command will upload all csv available into the $CSV_PATH folder. Do you agree?"
-    CSV_LIST=$(ls -1 ${CSV_PATH}/*.csv)
+    echo -e "\nThis command will upload all csv available into the $CSV_PATH folder:"
+    CSV_PATH_2=$(echo $CSV_PATH | sed -e 's|\/|\\\/|g')
+    CSV_LIST=$(ls -1 ${CSV_PATH}/*.csv | sed -e "s/${CSV_PATH_2}\///g")
+    echo -e "\n${CSV_LIST}\n"
+    echo -e "Do you agree?\n"
     while [ "$ANSW" != "y" ] && [ "$ANSW" != "n" ]; do
         read -p "[y/n]: " ANSW
         if [ "$ANSW" == "n" ]; then
@@ -73,7 +77,7 @@ for CSV_FILE in $CSV_LIST
 do
     TAX_ID=$(echo $CSV_FILE | grep -oP '\d+(?=\.csv$)')
     echo -e "\n - Uploading ${TAX_ID}.csv file..."
-    echo "   node index.js $ENV $USER $PW $CLIENTID ${CSV_PATH}/${CSV_FILE}" >> ${OUTPUT_SCRIPT}
+    node index.js $ENV $USER $PW $CLIENTID ${CSV_PATH}/${CSV_FILE} >> ${OUTPUT_SCRIPT}
     echo "   Return code: $?."
     mv report-${TAX_ID}-*.csv ${OUTPUT_FOlDER}
 done
@@ -85,4 +89,3 @@ cd ${OUTPUT_FOlDER}
 tar -cf ${OUTPUT_FOlDER}.tar *.csv
 
 echo -e "\nDone.\n"
-

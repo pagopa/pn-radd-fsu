@@ -2,9 +2,8 @@ package it.pagopa.pn.radd.middleware.msclient;
 
 import it.pagopa.pn.radd.config.BaseTest;
 import it.pagopa.pn.radd.exception.PnRaddException;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataResponseDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactDownloadMetadataWithContentTypeResponseDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactListElementV20Dto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
@@ -21,7 +20,7 @@ class PnDeliveryPushInternalClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetNotificationLegalFacts() {
         String recipientInternalId = "854Bgs31a", iun = "LJLH-GNTJ-DVXR-202209-J-1";
-        Flux<LegalFactListElementDto> fluxResponse = pnDeliveryPushInternalClient.getNotificationLegalFacts(recipientInternalId, iun);
+        Flux<LegalFactListElementV20Dto> fluxResponse = pnDeliveryPushInternalClient.getNotificationLegalFacts(recipientInternalId, iun);
         fluxResponse.collectList().map(response -> {
             assertNotEquals(0, response.size());
             response.forEach(element -> {
@@ -36,7 +35,7 @@ class PnDeliveryPushInternalClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetNotificationLegalFactsCode400() {
         String recipientInternalId = "", iun = "LJLH-GNTJ-DVXR-202209-J-1";
-        Flux<LegalFactListElementDto> response = pnDeliveryPushInternalClient.getNotificationLegalFacts(recipientInternalId, iun);
+        Flux<LegalFactListElementV20Dto> response = pnDeliveryPushInternalClient.getNotificationLegalFacts(recipientInternalId, iun);
         response.onErrorResume(exception -> {
             if (exception instanceof PnRaddException){
                 assertEquals(400, ((PnRaddException) exception).getWebClientEx().getStatusCode().value());
@@ -51,8 +50,7 @@ class PnDeliveryPushInternalClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetLegalFacts() {
         String recipientInternalId = "854Bgs31a", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
-        LegalFactCategoryDto categoryDto = LegalFactCategoryDto.PEC_RECEIPT;
-        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
+        Mono<LegalFactDownloadMetadataWithContentTypeResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, legalFactId);
         monoResponse.map(response -> {
             assertEquals("document", response.getFilename());
             assertEquals(new BigDecimal(54092), response.getContentLength());
@@ -65,8 +63,7 @@ class PnDeliveryPushInternalClientTest extends BaseTest.WithMockServer {
     @Test
     void testGetLegalFactsCode400() {
         String recipientInternalId = "", iun = "LJLH-GNTJ-DVXR-202209-J-1", legalFactId = "98765";
-        LegalFactCategoryDto categoryDto = LegalFactCategoryDto.PEC_RECEIPT;
-        Mono<LegalFactDownloadMetadataResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, categoryDto, legalFactId);
+        Mono<LegalFactDownloadMetadataWithContentTypeResponseDto> monoResponse = pnDeliveryPushInternalClient.getLegalFact(recipientInternalId, iun, legalFactId);
         monoResponse.onErrorResume(exception -> {
             if (exception instanceof PnRaddException){
                 assertEquals(400, ((PnRaddException) exception).getWebClientEx().getStatusCode().value());

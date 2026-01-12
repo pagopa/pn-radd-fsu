@@ -5,8 +5,8 @@ import it.pagopa.pn.radd.mapper.*;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.NotificationAttachmentDownloadMetadataResponseDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.ResponseCheckAarDtoDto;
 import it.pagopa.pn.radd.microservice.msclient.generated.pndelivery.v1.dto.SentNotificationDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryDto;
-import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.NotificationStatusDto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.LegalFactCategoryV20Dto;
+import it.pagopa.pn.radd.microservice.msclient.generated.pndeliverypush.internal.v1.dto.NotificationStatusV26Dto;
 import it.pagopa.pn.radd.middleware.db.RaddTransactionDAO;
 import it.pagopa.pn.radd.middleware.db.entities.RaddTransactionEntity;
 import it.pagopa.pn.radd.middleware.msclient.*;
@@ -181,9 +181,11 @@ public class ActService extends BaseService {
     private ParallelFlux<String> legalFact(TransactionData transaction){
         return pnDeliveryPushInternalClient.getNotificationLegalFacts(transaction.getEnsureRecipientId(), transaction.getIun())
                 .parallel()
-                .filter(legalFact ->( (StringUtils.isEmpty(legalFact.getTaxId())  || (StringUtils.isNotEmpty(legalFact.getTaxId()) && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId()) ) )&&  legalFact.getLegalFactsId().getCategory() != LegalFactCategoryDto.PEC_RECEIPT) )
+                .filter(legalFact ->( (StringUtils.isEmpty(legalFact.getTaxId())  || (StringUtils.isNotEmpty(legalFact.getTaxId()) && legalFact.getTaxId().equalsIgnoreCase(transaction.getRecipientId()) ) )&&  legalFact.getLegalFactsId().getCategory() != LegalFactCategoryV20Dto.PEC_RECEIPT) )
                 .flatMap(item ->
-                        pnDeliveryPushInternalClient.getLegalFact(transaction.getEnsureRecipientId(), transaction.getIun(), item.getLegalFactsId().getCategory(), item.getLegalFactsId().getKey())
+                        pnDeliveryPushInternalClient.getLegalFact(transaction.getEnsureRecipientId(),
+                                        transaction.getIun(),
+                                        item.getLegalFactsId().getKey())
                                 .mapNotNull(legalFact -> {
                                     if (legalFact.getRetryAfter() != null && legalFact.getRetryAfter().intValue() != 0){
                                         log.debug("Finded legal fact with retry after {}", legalFact.getRetryAfter());
@@ -265,7 +267,7 @@ public class ActService extends BaseService {
     private Mono<String> hasNotificationsCancelled(String iun){
         return this.pnDeliveryPushClient.getNotificationHistory(iun)
                 .flatMap(response -> {
-                    if (response.getNotificationStatus() == NotificationStatusDto.CANCELLED){
+                    if (response.getNotificationStatus() == NotificationStatusV26Dto.CANCELLED){
                         return Mono.error(new RaddGenericException(NOTIFICATION_CANCELLED));
                     }
                     return Mono.just(iun);

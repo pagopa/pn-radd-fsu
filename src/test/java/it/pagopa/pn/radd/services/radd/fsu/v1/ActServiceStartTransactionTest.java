@@ -117,12 +117,12 @@ class ActServiceStartTransactionTest extends BaseTest {
         return sentNotificationDto;
     }
 
-    private Stream<LegalFactListElementDto> createLegalFactListElementDto(){
+    private Stream<LegalFactListElementV20Dto> createLegalFactListElementDto(){
 
-        LegalFactsIdDto legalFactsIdDto = new LegalFactsIdDto();
-        legalFactsIdDto.setCategory(LegalFactCategoryDto.SENDER_ACK);
+        LegalFactsIdV20Dto legalFactsIdDto = new LegalFactsIdV20Dto();
+        legalFactsIdDto.setCategory(LegalFactCategoryV20Dto.SENDER_ACK);
         legalFactsIdDto.setKey("Key");
-        LegalFactListElementDto legalFactListElementDto = new LegalFactListElementDto();
+        LegalFactListElementV20Dto legalFactListElementDto = new LegalFactListElementV20Dto();
         legalFactListElementDto.setTaxId("recTaxId");
         legalFactListElementDto.setLegalFactsId(legalFactsIdDto);
 
@@ -154,9 +154,9 @@ class ActServiceStartTransactionTest extends BaseTest {
         notificationAttachmentDownloadMetadataResponseDto1.setUrl("UrlPayment");
         Mockito.when(pnDeliveryClient.getPresignedUrlPaymentDocument (Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(notificationAttachmentDownloadMetadataResponseDto1));
         Mockito.when(pnDeliveryPushInternalClient.getNotificationLegalFacts(Mockito.any(), Mockito.any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
-        LegalFactDownloadMetadataResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataResponseDto();
+        LegalFactDownloadMetadataWithContentTypeResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataWithContentTypeResponseDto();
         legalFactDownloadMetadataResponseDto.setUrl("UrlLegalFact");
-        Mockito.when(pnDeliveryPushInternalClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any(),Mockito.any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
+        Mockito.when(pnDeliveryPushInternalClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
         StartTransactionResponse startTransactionResponse = actService.startTransaction("test", request).block();
         assertNotNull(startTransactionResponse);
         assertEquals(StartTransactionResponseStatus.CodeEnum.NUMBER_0, startTransactionResponse.getStatus().getCode());
@@ -187,10 +187,10 @@ class ActServiceStartTransactionTest extends BaseTest {
         Mockito.when(pnDeliveryClient.getPresignedUrlPaymentDocument (Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(notificationAttachmentDownloadMetadataResponseDto1));
         Mockito.when(pnDeliveryPushInternalClient.getNotificationLegalFacts(Mockito.any(), Mockito.any())).thenReturn(Flux.fromStream(createLegalFactListElementDto()));
 
-        LegalFactDownloadMetadataResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataResponseDto();
+        LegalFactDownloadMetadataWithContentTypeResponseDto legalFactDownloadMetadataResponseDto = new LegalFactDownloadMetadataWithContentTypeResponseDto();
         legalFactDownloadMetadataResponseDto.setUrl("UrlLegalFact");
         legalFactDownloadMetadataResponseDto.setRetryAfter(new BigDecimal(20));
-        Mockito.when(pnDeliveryPushInternalClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any(),Mockito.any()))
+        Mockito.when(pnDeliveryPushInternalClient.getLegalFact(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(Mono.just(legalFactDownloadMetadataResponseDto));
 
         Mockito.when(raddTransactionDAOImpl.getTransaction(Mockito.any(), Mockito.any())).thenReturn(Mono.just(new RaddTransactionEntity()));
